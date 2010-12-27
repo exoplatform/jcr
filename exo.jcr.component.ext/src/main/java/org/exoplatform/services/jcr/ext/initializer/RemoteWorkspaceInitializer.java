@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 
 import java.io.File;
 
@@ -51,10 +52,11 @@ public class RemoteWorkspaceInitializer extends SysViewWorkspaceInitializer
    public RemoteWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
+            AccessManager accessManager, FileCleanerHolder cleanerHolder) throws RepositoryConfigurationException,
+            PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-         accessManager, null);
+               accessManager, cleanerHolder);
 
       if (!isWorkspaceInitialized())
       {

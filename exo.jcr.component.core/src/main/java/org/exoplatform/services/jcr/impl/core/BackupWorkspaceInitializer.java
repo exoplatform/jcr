@@ -40,6 +40,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValu
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 
@@ -74,8 +75,6 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 {
    private final String restoreDir;
 
-   private FileCleaner fileCleaner;
-   
    /**
     * Temporary directory;
     */
@@ -84,12 +83,11 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
    public BackupWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
+            AccessManager accessManager, FileCleanerHolder cleanerHolder) throws RepositoryConfigurationException,
+            PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-         accessManager);
-
-      this.fileCleaner = valueFactory.getFileCleaner();
+               accessManager, cleanerHolder);
 
       restoreDir = restorePath;
 

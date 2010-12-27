@@ -43,6 +43,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
@@ -99,7 +100,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
    /**
     * Cleaner should be started! .
     */
-   private final FileCleaner fileCleaner;
+   protected final FileCleaner fileCleaner;
 
    protected String restorePath;
 
@@ -389,7 +390,8 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
    public SysViewWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
+            AccessManager accessManager, FileCleanerHolder cleanerHolder) throws RepositoryConfigurationException,
+            PathNotFoundException, RepositoryException
    {
 
       this.workspaceName = config.getName();
@@ -399,7 +401,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       this.namespaceRegistry = namespaceRegistry;
       this.locationFactory = locationFactory;
 
-      this.fileCleaner = valueFactory.getFileCleaner();
+      this.fileCleaner = cleanerHolder.getFileCleaner();
       this.maxBufferSize =
          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
@@ -441,7 +443,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
    public SysViewWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager, String restorePath) throws RepositoryException
+      AccessManager accessManager, String restorePath, FileCleanerHolder cleanerHolder) throws RepositoryException
    {
 
       this.workspaceName = config.getName();
@@ -451,7 +453,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       this.namespaceRegistry = namespaceRegistry;
       this.locationFactory = locationFactory;
 
-      this.fileCleaner = valueFactory.getFileCleaner();
+      this.fileCleaner = cleanerHolder.getFileCleaner();
       this.maxBufferSize =
          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
