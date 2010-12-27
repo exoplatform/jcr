@@ -133,6 +133,11 @@ public class FullBackupJob extends AbstractFullBackupJob
    public static final int DB_DIALECT_DB2V8 = DBConstants.DB_DIALECT_DB2V8.hashCode();
 
    /**
+    * PGSQL dialect.
+    */
+   public static final int DB_DIALECT_PGSQL = DBConstants.DB_DIALECT_PGSQL.hashCode();
+
+   /**
     * {@inheritDoc}
     */
    @Override
@@ -179,6 +184,7 @@ public class FullBackupJob extends AbstractFullBackupJob
       notifyListeners();
 
       Connection jdbcConn = null;
+      Statement lockStatemnt = null;
       try
       {
          WorkspaceEntry workspaceEntry = null;
@@ -262,26 +268,29 @@ public class FullBackupJob extends AbstractFullBackupJob
 
          // Lock tables
          ResultSet rs = null;
-         Statement st = null;
          try
          {
             DatabaseMetaData metaData = jdbcConn.getMetaData();
 
             rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-            st = jdbcConn.createStatement();
+            lockStatemnt = jdbcConn.createStatement();
             int dialect = DialectDetecter.detect(metaData).hashCode();
 
-            while (rs.next())
+            if (dialect == DB_DIALECT_HSQLDB)
             {
-               String tableName = rs.getString("TABLE_NAME");
-               if (dialect == DB_DIALECT_HSQLDB)
+               while (rs.next())
                {
-                  st.execute("SET TABLE " + tableName + " READONLY TRUE");
+                  lockStatemnt.execute("SET TABLE " + rs.getString("TABLE_NAME") + " READONLY TRUE");
                }
-               else
+            }
+            else if (dialect == DB_DIALECT_MYSQL || dialect == DB_DIALECT_MYSQL_UTF8)
+            {
+               String lock = "";
+               while (rs.next())
                {
-                  st.execute("LOCK TABLES " + tableName + " WRITE");
+                  lock += rs.getString("TABLE_NAME") + " READ,";
                }
+               lockStatemnt.execute("LOCK TABLES " + lock.substring(0, lock.length() - 1));
             }
          }
          finally
@@ -290,19 +299,15 @@ public class FullBackupJob extends AbstractFullBackupJob
             {
                rs.close();
             }
-
-            if (st != null)
-            {
-               st.close();
-            }
          }
 
+         // dump JCR data
          for (String script[] : scripts)
          {
             dumpTable(jdbcConn, script[0], script[1]);
          }
 
-         // dump LOCK data
+         // dump JCR LOCK data
          LockManagerEntry lockEntry = workspaceEntry.getLockManager();
          if (lockEntry != null)
          {
@@ -355,41 +360,42 @@ public class FullBackupJob extends AbstractFullBackupJob
       {
          if (jdbcConn != null)
          {
-            // unlock tables
             try
             {
-               ResultSet rs = null;
-               Statement st = null;
-               try
+               // unlock tables
+               if (lockStatemnt != null)
                {
-                  DatabaseMetaData metaData = jdbcConn.getMetaData();
-                  st = jdbcConn.createStatement();
-                  int dialect = DialectDetecter.detect(metaData).hashCode();
-
-                  if (dialect == DB_DIALECT_HSQLDB)
+                  ResultSet rs = null;
+                  try
                   {
-                     rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-                     while (rs.next())
+                     DatabaseMetaData metaData = jdbcConn.getMetaData();
+                     int dialect = DialectDetecter.detect(metaData).hashCode();
+
+                     if (dialect == DB_DIALECT_HSQLDB)
                      {
-                        String tableName = rs.getString("TABLE_NAME");
-                        st.execute("SET TABLE " + tableName + " READONLY FALSE");
+                        rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
+                        while (rs.next())
+                        {
+                           String tableName = rs.getString("TABLE_NAME");
+                           lockStatemnt.execute("SET TABLE " + tableName + " READONLY FALSE");
+                        }
+                     }
+                     else
+                     {
+                        lockStatemnt.execute("UNLOCK TABLES");
                      }
                   }
-                  else
+                  finally
                   {
-                     st.execute("UNLOCK TABLES");
-                  }
-               }
-               finally
-               {
-                  if (rs != null)
-                  {
-                     rs.close();
-                  }
+                     if (rs != null)
+                     {
+                        rs.close();
+                     }
 
-                  if (st != null)
-                  {
-                     st.close();
+                     if (lockStatemnt != null)
+                     {
+                        lockStatemnt.close();
+                     }
                   }
                }
 

@@ -169,8 +169,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    protected void fullRdbmsRestore() throws RepositoryException
    {
       Connection jdbcConn = null;
-      Statement st = null;
-
       try
       {
          String dsName = workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
@@ -208,15 +206,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
          RDBMSBackupInfoReader backupInfo = new RDBMSBackupInfoReader(restorePath);
 
-         // Lock db
-         if (dialect != FullBackupJob.DB_DIALECT_HSQLDB)
-         {
-            RestoreTableHelper helper = new RestoreTableHelper(RestoreTableHelper.ITEM_TABLE, isMultiDb, backupInfo);
-
-            st = jdbcConn.createStatement();
-            st.execute("LOCK TABLES " + helper.getTableName() + " WRITE");
-         }
-
          restoreJCRTables(jdbcConn, dialect, isMultiDb, backupInfo);
          restoreLockTables(jdbcConn, isMultiDb, backupInfo);
 
@@ -252,27 +241,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       }
       finally
       {
-         if (st != null)
-         {
-            try
-            {
-               st.execute("UNLOCK TABLES");
-            }
-            catch (SQLException e)
-            {
-               throw new RepositoryException(e);
-            }
-
-            try
-            {
-               st.close();
-            }
-            catch (SQLException e)
-            {
-               throw new RepositoryException(e);
-            }
-         }
-
          if (jdbcConn != null)
          {
             try
@@ -796,7 +764,14 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                      ba.read(readBuffer);
 
                      String value = new String(readBuffer);
-                     insertNode.setBoolean(targetIndex + 1, value.equals("t"));
+                     if (dialect == FullBackupJob.DB_DIALECT_PGSQL)
+                     {
+                        insertNode.setBoolean(targetIndex + 1, value.equals("t"));
+                     }
+                     else
+                     {
+                        insertNode.setBoolean(targetIndex + 1, value.equals("1"));
+                     }
                   }
                   else if (columnType.get(i) == Types.BOOLEAN)
                   {
