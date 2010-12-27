@@ -33,7 +33,8 @@ import javax.ws.rs.core.Response;
 
 /**
  * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
- * @version $Id$
+ * @version $Id: BaseGroovyScriptManager.java 3720 2010-12-23 15:06:33Z
+ *          aparfonov $
  * @deprecated
  */
 // Contains all method what we do not need any more in GroovyScript2RestLoader
@@ -68,12 +69,12 @@ public abstract class BaseGroovyScriptManager
    }
 
    public abstract Response load(String repository, String workspace, String path, boolean state, List<String> sources,
-      List<String> files, List<String> extensions, MultivaluedMap<String, String> properties);
+      List<String> files, MultivaluedMap<String, String> properties);
 
    public Response load(String repository, String workspace, String path, boolean state,
       MultivaluedMap<String, String> properties)
    {
-      return load(repository, workspace, path, state, null, null, null, properties);
+      return load(repository, workspace, path, state, null, null, properties);
    }
 
    public boolean loadScript(ScriptKey key, String name, InputStream stream) throws IOException
@@ -130,9 +131,8 @@ public abstract class BaseGroovyScriptManager
 
    public Response validateScript(String name, final InputStream script)
    {
-      return validateScript(name, script, null, null, null);
+      return validateScript(name, script, null, null);
    }
 
-   public abstract Response validateScript(String name, InputStream script, List<String> sources, List<String> files,
-      List<String> extensions);
+   public abstract Response validateScript(String name, InputStream script, List<String> sources, List<String> files);
 }

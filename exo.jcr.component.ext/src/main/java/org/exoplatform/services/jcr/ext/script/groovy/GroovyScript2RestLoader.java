@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 
 import org.apache.commons.fileupload.FileItem;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
@@ -35,13 +34,12 @@ import org.exoplatform.services.jcr.ext.registry.RegistryService;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ext.groovy.ClassPath;
-import org.exoplatform.services.rest.ext.groovy.ClassPathEntry;
-import org.exoplatform.services.rest.ext.groovy.ClassPathEntry.EntryType;
 import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
 import org.exoplatform.services.rest.ext.groovy.GroovyJaxrsPublisher;
 import org.exoplatform.services.rest.ext.groovy.MalformedScriptException;
 import org.exoplatform.services.rest.ext.groovy.ResourceId;
+import org.exoplatform.services.rest.ext.groovy.SourceFile;
+import org.exoplatform.services.rest.ext.groovy.SourceFolder;
 import org.exoplatform.services.rest.impl.ResourceBinder;
 import org.exoplatform.services.rest.impl.ResourcePublicationException;
 import org.exoplatform.services.script.groovy.GroovyScriptInstantiator;
@@ -55,6 +53,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -523,12 +523,20 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
          LOG.debug(">>> Save init parametrs in registry service.");
       }
 
-      Document doc = SecurityHelper.doPrivilegedParserConfigurationAction(new PrivilegedExceptionAction<Document>() {
-         public Document run() throws Exception
-         {
-            return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-         }
-      });
+      Document doc;
+      try
+      {
+         doc = AccessController.doPrivileged(new PrivilegedExceptionAction<Document>() {
+            public Document run() throws ParserConfigurationException
+            {
+               return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+            }
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         throw (ParserConfigurationException)e.getCause();
+      }
 
       Element root = doc.createElement(SERVICE_NAME);
       doc.appendChild(root);
@@ -750,26 +758,51 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
     *           <code>null</code> then GroovyClassLoader will use automatically
     *           generated name
     * @param script Groovy source stream
-    * @param sources locations (URL) of source folders that should be add in
-    *           class path when compile Groovy script
-    * @param files locations (URL) of source files that should be add in class
-    *           path when compile Groovy script
-    * @param extensions extensions of files from source folders that should be
-    *           added in class path. By default only files with .groovy
-    *           extension are processed. Extensions must be set in form
-    *           '.{extensions}'
+    * @param sources locations (string representation of URL) of source folders
+    *           that should be add in class path when compile Groovy script.
+    *           <b>NOTE</b> To be able load Groovy source files from specified
+    *           folders the following rules must be observed:
+    *           <ul>
+    *           <li>Groovy source files must be located in folder with respect
+    *           to package structure</li>
+    *           <li>Name of Groovy source files must be the same as name of
+    *           class located in file</li>
+    *           <li>Groovy source file must have extension '.groovy'</li>
+    *           </ul>
+    * <br/>
+    *           Example: If source stream that we want validate contains the
+    *           following code:
+    * 
+    *           <pre>
+    *           package c.b.a
+    *           
+    *           import a.b.c.A
+    *           
+    *           class B extends A {
+    *           // Do something.
+    *           }
+    * </pre>
+    * 
+    *           Assume we store dependencies in JCR then URL of folder with
+    *           Groovy sources may be like this:
+    *           <code>jcr://repository/workspace#/groovy-library</code>. Then
+    *           absolute path to JCR node that contains Groovy source must be as
+    *           following: <code>/groovy-library/a/b/c/A.groovy</code>
+    * @param files locations (string representation of URL) of source files that
+    *           should be add in class path when compile Groovy script. Each
+    *           location must point directly to file that contains Groovy
+    *           source. Source file can have any name and extension
     * @return Response with corresponded status. 200 if source code is valid
     */
    @POST
    @Consumes({"script/groovy"})
    @Path("validate{name:.*}")
    public Response validateScript(@PathParam("name") String name, final InputStream script,
-      @QueryParam("sources") List<String> sources, @QueryParam("file") List<String> files,
-      @QueryParam("extension") List<String> extensions)
+      @QueryParam("sources") List<String> sources, @QueryParam("file") List<String> files)
    {
       try
       {
-         validateScript(name, script, createClassPath(sources, files, extensions));
+         validateScript(name, script, createSourceFolders(sources), createSourceFiles(files));
          return Response.ok().build();
       }
       catch (MalformedScriptException e)
@@ -794,15 +827,32 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
     *           <code>null</code> then GroovyClassLoader will use automatically
     *           generated name
     * @param script Groovy source stream
-    * @param classPath class path
+    * @param src set of folders that contains Groovy source files that should be
+    *           add in class-path when validate <code>script</code>, see
+    *           {@link SourceFolder#getPath()}. <b>NOTE</b> To be able load
+    *           Groovy source files from specified folders the following rules
+    *           must be observed:
+    *           <ul>
+    *           <li>Groovy source files must be located in folder with respect
+    *           to package structure</li>
+    *           <li>Name of Groovy source files must be the same as name of
+    *           class located in file</li>
+    *           <li>Groovy source file must have extension '.groovy'</li>
+    *           </ul>
+    * @param files set of groovy source files that should be add in class-path
+    *           when validate <code>script</code>. Each item must point directly
+    *           to file that contains Groovy source, see
+    *           {@link SourceFile#getPath()} . Source file can have any name and
+    *           extension
     * @throws MalformedScriptException if <code>script</code> contains not valid
     *            source code
     */
-   public void validateScript(String name, InputStream script, ClassPath classPath) throws MalformedScriptException
+   public void validateScript(String name, InputStream script, SourceFolder[] src, SourceFile[] files)
+      throws MalformedScriptException
    {
       if (name != null && name.length() > 0 && name.startsWith("/"))
          name = name.substring(1);
-      groovyPublisher.validateResource(script, name, classPath);
+      groovyPublisher.validateResource(script, name, src, files);
    }
 
    /**
@@ -931,14 +981,40 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
     * @param state <code>true</code> if resource should be loaded and
     *           <code>false</code> otherwise. If this attribute is not present
     *           in HTTP request then it will be considered as <code>true</code>
-    * @param sources locations (URL) of source folders that should be add in
-    *           class path when compile Groovy script
-    * @param files locations (URL) of source files that should be add in class
-    *           path when compile Groovy script
-    * @param extensions extensions of files from source folders that should be
-    *           added in class path. By default only files with .groovy
-    *           extension are processed. Extensions must be set in form
-    *           '.{extensions}'
+    * @param sources locations (string representation of URL) of source folders
+    *           that should be add in class path when compile Groovy script.
+    *           <b>NOTE</b> To be able load Groovy source files from specified
+    *           folders the following rules must be observed:
+    *           <ul>
+    *           <li>Groovy source files must be located in folder with respect
+    *           to package structure</li>
+    *           <li>Name of Groovy source files must be the same as name of
+    *           class located in file</li>
+    *           <li>Groovy source file must have extension '.groovy'</li>
+    *           </ul>
+    * <br/>
+    *           Example: If source stream that we want validate contains the
+    *           following code:
+    * 
+    *           <pre>
+    *           package c.b.a
+    *           
+    *           import a.b.c.A
+    *           
+    *           class B extends A {
+    *           // Do something.
+    *           }
+    * </pre>
+    * 
+    *           Assume we store dependencies in JCR then URL of folder with
+    *           Groovy sources may be like this:
+    *           <code>jcr://repository/workspace#/groovy-library</code>. Then
+    *           absolute path to JCR node that contains Groovy source must be as
+    *           following: <code>/groovy-library/a/b/c/A.groovy</code>
+    * @param files locations (string representation of URL) of source files that
+    *           should be add in class path when compile Groovy script. Each
+    *           location must point directly to file that contains Groovy
+    *           source. Source file can have any name and extension
     * @param properties optional properties to be applied to loaded resource.
     *           Ignored if <code>state</code> parameter is false
     */
@@ -948,11 +1024,12 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
    public Response load(@PathParam("repository") String repository, @PathParam("workspace") String workspace,
       @PathParam("path") String path, @DefaultValue("true") @QueryParam("state") boolean state,
       @QueryParam("sources") List<String> sources, @QueryParam("file") List<String> files,
-      @QueryParam("extension") List<String> extensions, MultivaluedMap<String, String> properties)
+      MultivaluedMap<String, String> properties)
    {
       try
       {
-         return load(repository, workspace, path, state, properties, createClassPath(sources, files, extensions));
+         return load(repository, workspace, path, state, properties, createSourceFolders(sources),
+            createSourceFiles(files));
       }
       catch (MalformedURLException e)
       {
@@ -976,10 +1053,25 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
     *           in HTTP request then it will be considered as <code>true</code>
     * @param properties optional properties to be applied to loaded resource.
     *           Ignored if <code>state</code> parameter is false
-    * @param classPath class path
+    * @param src set of folders that contains Groovy source files that should be
+    *           add in class-path when compile file located at <code>path</code>
+    *           . <b>NOTE</b> To be able load Groovy source files from specified
+    *           folders the following rules must be observed:
+    *           <ul>
+    *           <li>Groovy source files must be located in folder with respect
+    *           to package structure</li>
+    *           <li>Name of Groovy source files must be the same as name of
+    *           class located in file</li>
+    *           <li>Groovy source file must have extension '.groovy'</li>
+    *           </ul>
+    * @param files set of groovy source files that should be add in class-path
+    *           when compile file located at <code>path</code>. Each item must
+    *           point directly to file that contains Groovy source, see
+    *           {@link SourceFile#getPath()} . Source file can have any name and
+    *           extension
     */
    public Response load(String repository, String workspace, String path, boolean state,
-      MultivaluedMap<String, String> properties, ClassPath classPath)
+      MultivaluedMap<String, String> properties, SourceFolder[] src, SourceFile[] files)
    {
       Session ses = null;
       try
@@ -992,7 +1084,7 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
          if (state)
          {
             groovyPublisher.unpublishResource(key);
-            groovyPublisher.publishPerRequest(script.getProperty("jcr:data").getStream(), key, properties, classPath);
+            groovyPublisher.publishPerRequest(script.getProperty("jcr:data").getStream(), key, properties, src, files);
          }
          else
          {
@@ -1314,46 +1406,44 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
       }
    }
 
-   ///////////////////////////////////////////////////////////////////////////////////////
-
-   private ClassPath createClassPath(List<String> sources, List<String> files, List<String> extensions)
-      throws MalformedURLException
+   private SourceFolder[] createSourceFolders(List<String> sources) throws MalformedURLException
    {
-      if ((sources == null || sources.size() == 0) && (files == null || files.size() == 0)
-         && (extensions == null || extensions.size() == 0))
-         return null;
-
-      List<ClassPathEntry> classPathEntries = new ArrayList<ClassPathEntry>();
-
+      SourceFolder[] src = null;
       if (sources != null && sources.size() > 0)
       {
-         for (String src : sources)
+         src = new SourceFolder[sources.size()];
+         for (int i = 0; i < sources.size(); i++)
          {
-            if (src.startsWith("jcr://"))
-               classPathEntries.add(new JcrClassPathEntry(EntryType.SRC_DIR, new URL(null, src, UnifiedNodeReference
-                  .getURLStreamHandler())));
+            String str = sources.get(i);
+            URL url = null;
+            if (str.startsWith("jcr://"))
+               url = new URL(null, str, UnifiedNodeReference.getURLStreamHandler());
             else
-               classPathEntries.add(new JcrClassPathEntry(EntryType.SRC_DIR, new URL(src)));
+               url = new URL(str);
+            src[i] = new SourceFolder(url);
          }
       }
+      return src;
+   }
 
+   private SourceFile[] createSourceFiles(List<String> files) throws MalformedURLException
+   {
+      SourceFile[] srcFiles = null;
       if (files != null && files.size() > 0)
       {
-         for (String file : files)
+         srcFiles = new SourceFile[files.size()];
+         for (int i = 0; i < files.size(); i++)
          {
-            if (file.startsWith("jcr://"))
-               classPathEntries.add(new JcrClassPathEntry(EntryType.FILE, new URL(null, file, UnifiedNodeReference
-                  .getURLStreamHandler())));
+            String str = files.get(i);
+            URL url = null;
+            if (str.startsWith("jcr://"))
+               url = new URL(null, str, UnifiedNodeReference.getURLStreamHandler());
             else
-               classPathEntries.add(new JcrClassPathEntry(EntryType.FILE, new URL(file)));
+               url = new URL(str);
+            srcFiles[i] = new SourceFile(url);
          }
       }
-
-      ClassPath classPath =
-         new ClassPath(classPathEntries.toArray(new ClassPathEntry[classPathEntries.size()]),
-            (extensions != null && extensions.size() > 0) ? extensions.toArray(new String[extensions.size()]) : null);
-
-      return classPath;
+      return srcFiles;
    }
 
    /**

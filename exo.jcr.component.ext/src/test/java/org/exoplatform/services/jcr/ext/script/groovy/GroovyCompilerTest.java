@@ -22,10 +22,10 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 import groovy.lang.GroovyObject;
 
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
-import org.exoplatform.services.rest.ext.groovy.ClassPath;
-import org.exoplatform.services.rest.ext.groovy.ClassPathEntry;
-import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
-import org.exoplatform.services.rest.ext.groovy.ClassPathEntry.EntryType;
+import org.exoplatform.services.rest.ext.groovy.SourceFolder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jcr.Node;
 
@@ -63,7 +63,7 @@ public class GroovyCompilerTest extends BaseGroovyTest
 
    public void testSnaredDependencies() throws Exception
    {
-      GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
+      JcrGroovyClassLoaderProvider classLoaderProvider = new JcrGroovyClassLoaderProvider();
       classLoaderProvider.getGroovyClassLoader().setResourceLoader(
          new JcrGroovyResourceLoader(new java.net.URL[]{new java.net.URL("jcr://db1/ws#/groovyRepo")}));
       JcrGroovyCompiler compiler = new JcrGroovyCompiler(classLoaderProvider);
@@ -76,7 +76,7 @@ public class GroovyCompilerTest extends BaseGroovyTest
 
    public void testDependenciesBetweenCompiled() throws Exception
    {
-      GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
+      JcrGroovyClassLoaderProvider classLoaderProvider = new JcrGroovyClassLoaderProvider();
       JcrGroovyCompiler compiler = new JcrGroovyCompiler(classLoaderProvider);
       Class<?>[] classes =
          compiler.compile(new UnifiedNodeReference("db1", "ws", scriptB),
@@ -90,13 +90,11 @@ public class GroovyCompilerTest extends BaseGroovyTest
 
    public void testAddDependenciesInRuntime() throws Exception
    {
-      GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
+      JcrGroovyClassLoaderProvider classLoaderProvider = new JcrGroovyClassLoaderProvider();
       JcrGroovyCompiler compiler = new JcrGroovyCompiler(classLoaderProvider);
-      ClassPathEntry[] classPathEntries =
-         new ClassPathEntry[]{new JcrClassPathEntry(EntryType.FILE, new UnifiedNodeReference("db1", "ws", scriptA))};
-      Class<?>[] classes = compiler.compile( //
-         new ClassPath(classPathEntries, null), //
-         new UnifiedNodeReference("db1", "ws", scriptB));
+      SourceFolder[] src =
+         new SourceFolder[]{new SourceFolder(new UnifiedNodeReference("db1", "ws", groovyRepo.getPath()).getURL())};
+      Class<?>[] classes = compiler.compile(src, new UnifiedNodeReference("db1", "ws", scriptB));
       assertEquals(1, classes.length);
       GroovyObject go = (GroovyObject)classes[0].newInstance();
       assertEquals("groovy compiler test", go.invokeMethod("getMessage", new Object[0]));
@@ -104,7 +102,8 @@ public class GroovyCompilerTest extends BaseGroovyTest
 
    public void testCombinedDependencies() throws Exception
    {
-      String scriptC = createScript(otherGroovyRepo, "org.exoplatform.test", "C.groovy", //
+      // Add file without respect to package structure to be sure direct link to source files works any way.
+      String scriptC = createScript(otherGroovyRepo, "org.exoplatform", "C", //
          "package org.exoplatform.test\n" + //
             "import org.exoplatform.*\n" + //
             "class C extends B {}");
@@ -114,7 +113,7 @@ public class GroovyCompilerTest extends BaseGroovyTest
             "import org.exoplatform.test.C\n" + //
             "class D extends C {}");
 
-      GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
+      JcrGroovyClassLoaderProvider classLoaderProvider = new JcrGroovyClassLoaderProvider();
       classLoaderProvider.getGroovyClassLoader().setResourceLoader(
          new JcrGroovyResourceLoader(new java.net.URL[]{new java.net.URL("jcr://db1/ws#/groovyRepo")}));
 
@@ -123,5 +122,11 @@ public class GroovyCompilerTest extends BaseGroovyTest
          compiler.compile(new UnifiedNodeReference("db1", "ws", scriptD),
             new UnifiedNodeReference("db1", "ws", scriptC));
       assertEquals(2, classes.length);
+      List<String> names = new ArrayList<String>(2);
+      for (Class c : classes)
+         names.add(c.getName());
+      assertTrue(names.contains("org.exoplatform.test.C"));
+      assertTrue(names.contains("org.exoplatform.test.other.D"));
+      //System.out.println(">>>>>>>>>>>>>>>>> "+names);      
    }
 }

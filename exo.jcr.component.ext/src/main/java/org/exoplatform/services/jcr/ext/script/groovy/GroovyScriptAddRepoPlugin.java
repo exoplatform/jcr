@@ -19,7 +19,6 @@
 
 package org.exoplatform.services.jcr.ext.script.groovy;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -29,6 +28,8 @@ import org.exoplatform.services.log.Log;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.Collections;
@@ -69,18 +70,19 @@ public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
          final String path = p.getProperty("path");
          try
          {
-            SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<Void>()
+            AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
             {
-               public Void run() throws Exception
+               public Void run() throws MalformedURLException
                {
                   repos.add(new UnifiedNodeReference(repository, workspace, path).getURL());
                   return null;
                }
             });
          }
-         catch (MalformedURLException e)
+         catch (PrivilegedActionException e)
          {
-            LOG.error("Failed add groovy script repository. " + e.getMessage());
+            // MalformedURLException
+            LOG.error("Failed add groovy script repository. " + e.getCause().getMessage());
          }
       }
       return repos;

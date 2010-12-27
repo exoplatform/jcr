@@ -61,24 +61,14 @@ public class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
       return res;
    }
 
-   public JcrGroovyResourceLoader(URL[] roots, URL[] files, String[] extensions) throws MalformedURLException
-   {
-      super(normalizeJcrURL(roots), files, extensions);
-   }
-
-   public JcrGroovyResourceLoader(URL[] roots, URL[] files) throws MalformedURLException
-   {
-      this(roots, files, null);
-   }
-
    public JcrGroovyResourceLoader(URL[] roots) throws MalformedURLException
    {
-      this(roots, new URL[0]);
+      super(normalizeJcrURL(roots));
    }
 
    public JcrGroovyResourceLoader(URL root) throws MalformedURLException
    {
-      this(new URL[]{root}, new URL[0]);
+      this(new URL[]{root});
    }
 
    /**
@@ -89,7 +79,6 @@ public class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
    {
       if (LOG.isDebugEnabled())
          LOG.debug("Process file: " + filename);
-
       URL resource = null;
       filename = filename.intern();
       synchronized (filename)
@@ -98,12 +87,6 @@ public class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
          boolean inCache = resource != null;
          if (inCache && !checkResource(resource))
             resource = null;
-         for (int i = 0; i < files.length && resource == null; i++)
-         {
-            URL tmp = files[i];
-            if (tmp.toString().endsWith(filename) && checkResource(tmp))
-               resource = tmp;
-         }
          for (int i = 0; i < roots.length && resource == null; i++)
          {
             // In JCR URL path represented by fragment jcr://repository/workspace#/path

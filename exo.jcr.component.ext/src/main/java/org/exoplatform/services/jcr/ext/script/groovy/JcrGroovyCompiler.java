@@ -22,15 +22,12 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.exoplatform.services.jcr.ext.resource.JcrURLConnection;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
+import org.exoplatform.services.jcr.ext.script.groovy.JcrGroovyClassLoaderProvider.JcrGroovyClassLoader;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ext.groovy.ClassPath;
-import org.exoplatform.services.rest.ext.groovy.ClassPathEntry;
-import org.exoplatform.services.rest.ext.groovy.ClassPathEntry.EntryType;
-import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
+import org.exoplatform.services.rest.ext.groovy.SourceFile;
+import org.exoplatform.services.rest.ext.groovy.SourceFolder;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
@@ -39,8 +36,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,88 +52,128 @@ public class JcrGroovyCompiler implements Startable
    /** Logger. */
    private static final Log LOG = ExoLogger.getLogger(JcrGroovyCompiler.class);
 
-   protected final GroovyClassLoaderProvider classLoaderProvider;
+   protected final JcrGroovyClassLoaderProvider classLoaderProvider;
 
    protected List<GroovyScriptAddRepoPlugin> addRepoPlugins;
 
-   protected JcrGroovyCompiler(GroovyClassLoaderProvider classLoaderProvider)
+   protected JcrGroovyCompiler(JcrGroovyClassLoaderProvider classLoaderProvider)
    {
       this.classLoaderProvider = classLoaderProvider;
    }
 
    public JcrGroovyCompiler()
    {
-      classLoaderProvider = new JcrGroovyClassLoaderProvider();
+      this(new JcrGroovyClassLoaderProvider());
    }
 
+   /**
+    * Compile Groovy source that located in <code>sourceReferences</code>.
+    * Compiled sources can be dependent to each other and dependent to Groovy
+    * sources that are accessible for this compiler.
+    * 
+    * @param sourceReferences references to Groovy sources to be compiled
+    * @return result of compilation
+    * @throws IOException if any i/o errors occurs
+    */
    public Class<?>[] compile(UnifiedNodeReference... sourceReferences) throws IOException
    {
-      // Add all compiled entries in class-path. Need to do this to resolve dependencies between compiled files.
-      ClassPathEntry[] classPath = new ClassPathEntry[sourceReferences.length];
-      for (int i = 0; i < classPath.length; i++)
-         classPath[i] = new JcrClassPathEntry(EntryType.FILE, sourceReferences[i]);
-      return doCompile(classLoaderProvider.getGroovyClassLoader(new ClassPath(classPath, null)), sourceReferences);
+      return compile(null, sourceReferences);
    }
 
-   public Class<?>[] compile(ClassPath classPath, UnifiedNodeReference... sourceReferences) throws IOException
+   /**
+    * Compile Groovy source that located in <code>sourceReferences</code>.
+    * Compiled sources can be dependent to each other and dependent to Groovy
+    * sources that are accessible for this compiler and with additional Groovy
+    * sources <code>src</code>. <b>NOTE</b> To be able load Groovy source files
+    * from specified folders the following rules must be observed:
+    * <ul>
+    * <li>Groovy source files must be located in folder with respect to package
+    * structure</li>
+    * <li>Name of Groovy source files must be the same as name of class located
+    * in file</li>
+    * <li>Groovy source file must have extension '.groovy'</li>
+    * </ul>
+    * <br/>
+    * Example: If source stream that we want validate contains the following
+    * code:
+    * 
+    * <pre>
+    *           package c.b.a
+    *           
+    *           import a.b.c.A
+    *           
+    *           class B extends A {
+    *           // Do something.
+    *           }
+    * </pre>
+    * 
+    * Assume we store dependencies in JCR then URL of folder with Groovy sources
+    * may be like this: <code>jcr://repository/workspace#/groovy-library</code>.
+    * Then absolute path to JCR node that contains Groovy source must be as
+    * following: <code>/groovy-library/a/b/c/A.groovy</code>
+    * 
+    * @param src additional Groovy source location that should be added in
+    *           class-path when compile <code>sourceReferences</code>
+    * @param sourceReferences references to Groovy sources to be compiled
+    * @return result of compilation
+    * @throws IOException if any i/o errors occurs
+    */
+   public Class<?>[] compile(SourceFolder[] src, UnifiedNodeReference... sourceReferences) throws IOException
    {
-      ClassPathEntry[] compiled = new ClassPathEntry[sourceReferences.length];
-      for (int i = 0; i < compiled.length; i++)
-         compiled[i] = new JcrClassPathEntry(EntryType.FILE, sourceReferences[i]);
-      ClassPathEntry[] classPathEntries = classPath.getEntries();
-      if (classPathEntries == null)
-         classPathEntries = new ClassPathEntry[0];
-      ClassPathEntry[] fullClassPath = new ClassPathEntry[compiled.length + classPathEntries.length];
-      System.arraycopy(compiled, 0, fullClassPath, 0, compiled.length);
-      System.arraycopy(classPathEntries, 0, fullClassPath, compiled.length, classPathEntries.length);
-      return doCompile(
-         classLoaderProvider.getGroovyClassLoader(new ClassPath(fullClassPath, classPath.getExtensions())),
-         sourceReferences);
-   }
-
-   private Class<?>[] doCompile(final GroovyClassLoader cl, final UnifiedNodeReference... sourceReferences)
-      throws IOException
-   {
-      Class<?>[] classes = new Class<?>[sourceReferences.length];
+      SourceFile[] files = new SourceFile[sourceReferences.length];
       for (int i = 0; i < sourceReferences.length; i++)
-      {
-         JcrURLConnection conn = null;
-         try
-         {
-            final URL url = sourceReferences[i].getURL();
-            conn = (JcrURLConnection)url.openConnection();
+         files[i] = new SourceFile(sourceReferences[i].getURL());
+      return doCompile((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader(src), files);
+   }
 
-            final JcrURLConnection fConn = conn;
-            Class<?> clazz;
-            try
-            {
-               clazz = AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
-                  public Class<?> run() throws Exception
-                  {
-                     return cl.parseClass(createCodeSource(fConn.getInputStream(), url.toString()));
-                  }
-               });
-            }
-            catch (PrivilegedActionException pae)
-            {
-               Throwable cause = pae.getCause();
-               if (cause instanceof CompilationFailedException)
-                  throw (CompilationFailedException)cause;
-               else if (cause instanceof IOException)
-                  throw (IOException)cause;
-               else if (cause instanceof RuntimeException)
-                  throw (RuntimeException)cause;
-               else
-                  throw new RuntimeException(cause);
-            }
-            classes[i] = clazz;
-         }
-         finally
+   /**
+    * Compile Groovy source that located in <code>files</code>. Compiled sources
+    * can be dependent to each other and dependent to Groovy sources that are
+    * accessible for this compiler and with additional Groovy sources
+    * <code>src</code>. <b>NOTE</b> To be able load Groovy source files from
+    * specified folders the following rules must be observed:
+    * <ul>
+    * <li>Groovy source files must be located in folder with respect to package
+    * structure</li>
+    * <li>Name of Groovy source files must be the same as name of class located
+    * in file</li>
+    * <li>Groovy source file must have extension '.groovy'</li>
+    * </ul>
+    * 
+    * @param srcadditional Groovy source location that should be added in
+    *           class-path when compile <code>files</code>
+    * @param files Groovy sources to be compiled
+    * @return result of compilation
+    * @throws IOException if any i/o errors occurs
+    */
+   public Class<?>[] compile(SourceFolder[] src, SourceFile[] files) throws IOException
+   {
+      return doCompile((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader(src), files);
+   }
+
+   /**
+    * Compile Groovy source that located in <code>files</code>. Compiled sources
+    * can be dependent to each other and dependent to Groovy sources that are
+    * accessible for this compiler.
+    * 
+    * @param files Groovy sources to be compiled
+    * @return result of compilation
+    * @throws IOException if any i/o errors occurs
+    */
+   public Class<?>[] compile(SourceFile[] files) throws IOException
+   {
+      return doCompile((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader(), files);
+   }
+
+   @SuppressWarnings("rawtypes")
+   private Class<?>[] doCompile(final JcrGroovyClassLoader cl, final SourceFile[] files) throws IOException
+   {
+      Class[] classes = AccessController.doPrivileged(new PrivilegedAction<Class[]>() {
+         public Class[] run()
          {
-            if (conn != null)
-               conn.disconnect();
+            return cl.parseClasses(files);
          }
-      }
+      });
       return classes;
    }
 
@@ -160,7 +195,7 @@ public class JcrGroovyCompiler implements Startable
    @Deprecated
    public void setGroovyClassLoader(GroovyClassLoader gcl)
    {
-      classLoaderProvider.setGroovyClassLoader(gcl);
+      LOG.warn("Method setGroovyClassLoader is deprecated.");
    }
 
    /**
@@ -173,6 +208,7 @@ public class JcrGroovyCompiler implements Startable
     * @return GroovyCodeSource
     */
    // Override this method if need other behavior.
+   @Deprecated
    protected GroovyCodeSource createCodeSource(final InputStream in, final String name)
    {
       GroovyCodeSource gcs = AccessController.doPrivileged(new PrivilegedAction<GroovyCodeSource>() {

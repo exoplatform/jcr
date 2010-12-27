@@ -193,7 +193,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       String path = createScript(testRoot, "test.load", "Test000.groovy", //
          "import test.load.User000\n" + //
             "@javax.ws.rs.Path('test/load') class Test000 {\n" + //
-            "def user = new User(name:'test')\n" + //
+            "def user = new User000(name:'test')\n" + //
             "@javax.ws.rs.GET def m() {user}" + //
             "}\n");
       EnvironmentContext ctx = new EnvironmentContext();
@@ -206,7 +206,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       assertEquals(before, after);
    }
 
-   public void testLoadNoExtClassPath_File() throws Exception
+   public void testLoadExtClassPath_File() throws Exception
    {
       String scriptPath = createScript(testRoot, "test.load", "Test001.groovy", //
          "import test.load.User001\n" + //
@@ -232,7 +232,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       assertEquals(before + 1, after);
    }
 
-   public void testLoadNoExtClassPath_SourceFolder() throws Exception
+   public void testLoadExtClassPath_SourceFolder() throws Exception
    {
       String scriptPath = createScript(testRoot, "test.load", "Test002.groovy", //
          "import test.load.User002\n" + //
@@ -251,33 +251,6 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
             + "?sources=" //
             + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), testRoot.getPath())
                .getURL().toString(), "UTF-8");
-      int before = binder.getSize();
-      ContainerResponse cres = launcher.service("POST", path, "", null, null, ctx);
-      assertEquals(204, cres.getStatus());
-      int after = binder.getSize();
-      assertEquals(before + 1, after);
-   }
-
-   public void testLoadNoExtClassPath_CustomExtension() throws Exception
-   {
-      String scriptPath = createScript(testRoot, "test.load", "Test003.groovy", //
-         "import test.load.User003\n" + //
-            "@javax.ws.rs.Path('test/load_003') class Test003 {\n" + //
-            "def user = new User003(name:'test')\n" + //
-            "@javax.ws.rs.GET def m() {user}" + //
-            "}\n");
-      createScript(testRoot, "test.load", "User003.otherGroovy",// 
-         "package test.load\n" + //
-            "class User003 {def name}");
-
-      EnvironmentContext ctx = new EnvironmentContext();
-      ctx.put(SecurityContext.class, adminSecurityContext);
-      String path =
-         "/script/groovy/load/db1/ws" + scriptPath //
-            + "?sources=" //
-            + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), testRoot.getPath())
-               .getURL().toString(), "UTF-8") + //
-            "&extension=.otherGroovy";
       int before = binder.getSize();
       ContainerResponse cres = launcher.service("POST", path, "", null, null, ctx);
       assertEquals(204, cres.getStatus());
@@ -425,28 +398,6 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
          "/script/groovy/validate/Test?sources=" //
             + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), testRoot.getPath())
                .getURL().toString(), "UTF-8");
-      ContainerResponse cres = launcher.service("POST", path, "", headers, script.getBytes(), null);
-      assertEquals(200, cres.getStatus());
-   }
-
-   public void testValidateExtClassPath_CustomExtension() throws Exception
-   {
-      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      headers.putSingle("Content-Type", "script/groovy");
-      String script = "import test.validate.User003\n" + //
-         "@javax.ws.rs.Path('test/validate') class Test {\n" + //
-         "def user = new User003(name:'test')\n" + //
-         "@javax.ws.rs.GET def m() {user}" + //
-         " }\n";
-      createScript(testRoot, "test.validate", "User003.otherGroovy",// 
-         "package test.validate\n" + //
-            "class User003 {def name}");
-      // Specify source folder location and customized extension '.otherGroovy'.
-      String path =
-         "/script/groovy/validate/Test?sources=" //
-            + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), testRoot.getPath())
-               .getURL().toString(), "UTF-8") + //
-            "&extension=.otherGroovy";
       ContainerResponse cres = launcher.service("POST", path, "", headers, script.getBytes(), null);
       assertEquals(200, cres.getStatus());
    }
