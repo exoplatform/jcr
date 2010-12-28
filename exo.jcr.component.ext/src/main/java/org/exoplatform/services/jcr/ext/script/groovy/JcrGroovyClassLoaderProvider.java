@@ -140,7 +140,7 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
       super(AccessController.doPrivileged(new PrivilegedAction<JcrGroovyClassLoader>() {
          public JcrGroovyClassLoader run()
          {
-            return new JcrGroovyClassLoader(getClass().getClassLoader());
+            return new JcrGroovyClassLoader(JcrGroovyClassLoaderProvider.class.getClassLoader());
          }
       }));
    }
