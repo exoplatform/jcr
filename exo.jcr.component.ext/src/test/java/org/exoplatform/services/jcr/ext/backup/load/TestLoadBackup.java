@@ -18,9 +18,15 @@ package org.exoplatform.services.jcr.ext.backup.load;
 
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.exoplatform.services.jcr.config.ContainerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerParams;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.ValueStorageEntry;
+import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.ext.backup.AbstractBackupTestCase;
+import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
@@ -28,9 +34,12 @@ import org.exoplatform.services.jcr.ext.backup.BackupJob;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
+import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.jcr.LoginException;
+import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -57,7 +68,7 @@ import javax.sql.DataSource;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: TestLoadBackup.java 111 2008-11-11 11:11:11Z serg $
  */
-public class TestLoadBackup extends AbstractBackupTestCase
+public class TestLoadBackup extends BaseStandaloneTest
 {
    protected final String REPOSITORY_NAME = "db7";
 
@@ -68,8 +79,6 @@ public class TestLoadBackup extends AbstractBackupTestCase
    protected final String FULL_BACKUP_TYPE = "org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob";
 
    protected final int BACKUP_TYPE = BackupManager.FULL_BACKUP_ONLY;
-
-   protected ManageableRepository repository;
 
    /**
     * Writer.
@@ -101,6 +110,7 @@ public class TestLoadBackup extends AbstractBackupTestCase
          }
          catch (Exception e)
          {
+            e.printStackTrace();
          }
       }
    }
@@ -112,7 +122,7 @@ public class TestLoadBackup extends AbstractBackupTestCase
     */
    public void testBackupRestore() throws Exception
    {
-      BackupManagerImpl backupManagerImpl = null;
+      BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
 
       List<TreeWriterThread> threads = new ArrayList<TreeWriterThread>();
       List<Session> sessions = new ArrayList<Session>();
@@ -120,7 +130,7 @@ public class TestLoadBackup extends AbstractBackupTestCase
       //writers
       for (int i = 0; i < WRITER_COUNT; i++)
       {
-         Session writerSession = repository.login(credentials, WORKSPACE_NAME);
+         Session writerSession = repositoryService.getRepository(REPOSITORY_NAME).login(credentials, WORKSPACE_NAME);
          TreeWriterThread writer = new TreeWriterThread(writerSession, "subnode" + i);
          writer.start();
          threads.add(writer);
@@ -136,7 +146,6 @@ public class TestLoadBackup extends AbstractBackupTestCase
       backDir.mkdirs();
       BackupChain bch = null;
 
-      backupManagerImpl = (BackupManagerImpl)getBackupManager();
       backupManagerImpl.start();
 
       BackupConfig config = new BackupConfig();
@@ -163,10 +172,10 @@ public class TestLoadBackup extends AbstractBackupTestCase
          Thread.sleep(5 * 1000);
       }
 
-      for (Thread thread : threads)
-      {
-         thread.interrupt();
-      }
+      //      for (Thread thread : threads)
+      //      {
+      //         thread.interrupt();
+      //      }
 
       if (BACKUP_TYPE == BackupManager.FULL_AND_INCREMENTAL)
       {
@@ -199,7 +208,23 @@ public class TestLoadBackup extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restore(bchLog, repositoryNameToBackup, ws1back, false);
+         backupManagerImpl.restore(bchLog, REPOSITORY_NAME, ws1back, false);
+
+         JobWorkspaceRestore restore = backupManagerImpl.getLastRestore(REPOSITORY_NAME, ws1back.getName());
+         if (restore != null)
+         {
+            while (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL
+               || restore.getStateRestore() == JobWorkspaceRestore.RESTORE_SUCCESSFUL)
+            {
+               Thread.sleep(1000);
+            }
+
+            if (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL)
+            {
+               restore.getRestoreException().printStackTrace();
+               fail(restore.getRestoreException().getMessage());
+            }
+         }
       }
       else
       {
@@ -208,7 +233,7 @@ public class TestLoadBackup extends AbstractBackupTestCase
 
       System.out.println(" ============ CHECKING INTEGRITY ============");
 
-      checkIntegrity((NodeImpl)repositoryService.getRepository(repositoryNameToBackup).login(credentials, "ws1back")
+      checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME).login(credentials, "ws1back")
          .getRootNode());
    }
 
@@ -241,7 +266,6 @@ public class TestLoadBackup extends AbstractBackupTestCase
    /**
     * {@inheritDoc}
     */
-   @Override
    protected ExtendedBackupManager getBackupManager()
    {
       InitParams initParams = new InitParams();
@@ -308,7 +332,7 @@ public class TestLoadBackup extends AbstractBackupTestCase
    
    public void _testTableLock() throws Exception
    {
-      Session writerSession = repository.login(credentials, WORKSPACE_NAME);
+      Session writerSession = repositoryService.getRepository(REPOSITORY_NAME).login(credentials, WORKSPACE_NAME);
       //      TreeWriterThread writer = new TreeWriterThread(writerSession, "subnode");
       //      writer.start();
 
@@ -334,6 +358,79 @@ public class TestLoadBackup extends AbstractBackupTestCase
       addChilds(writerSession, writerSession.getRootNode(), 0);
    }
 
+   protected WorkspaceEntry makeWorkspaceEntry(String name, String sourceName) throws LoginException,
+      NoSuchWorkspaceException, RepositoryException, RepositoryConfigurationException
+   {
+      SessionImpl session =
+         (SessionImpl)repositoryService.getRepository(REPOSITORY_NAME).login(credentials, WORKSPACE_NAME);
+
+      WorkspaceEntry ws1e = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+
+      WorkspaceEntry ws1back = new WorkspaceEntry();
+      ws1back.setName(name);
+      // RepositoryContainer rcontainer = (RepositoryContainer)
+      // container.getComponentInstanceOfType(RepositoryContainer.class);
+      ws1back.setUniqueName(((RepositoryImpl)session.getRepository()).getName() + "_" + ws1back.getName()); // EXOMAN
+
+      ws1back.setAccessManager(ws1e.getAccessManager());
+      ws1back.setCache(ws1e.getCache());
+      //      ws1back.setContainer(ws1e.getContainer());
+      ws1back.setLockManager(ws1e.getLockManager());
+      ws1back.setInitializer(ws1e.getInitializer());
+
+      // Indexer
+      ArrayList qParams = new ArrayList();
+      // qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator+ "temp" +
+      // File.separator +"index" + name));
+      qParams.add(new SimpleParameterEntry(QueryHandlerParams.PARAM_INDEX_DIR, "target/temp/index/" + name
+         + System.currentTimeMillis()));
+      QueryHandlerEntry qEntry =
+         new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
+
+      ws1back.setQueryHandler(qEntry); // EXOMAN
+
+      ArrayList params = new ArrayList();
+      for (Iterator i = ws1e.getContainer().getParameters().iterator(); i.hasNext();)
+      {
+         SimpleParameterEntry p = (SimpleParameterEntry)i.next();
+         SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
+
+         if (newp.getName().equals("source-name") && sourceName != null)
+            newp.setValue(sourceName);
+         else if (newp.getName().equals("swap-directory"))
+            newp.setValue("target/temp/swap/" + name + System.currentTimeMillis());
+
+         params.add(newp);
+      }
+
+      ContainerEntry ce =
+         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
+
+      ArrayList<ValueStorageEntry> list = new ArrayList<ValueStorageEntry>();
+
+      // value storage
+      ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
+      ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
+      filterEntry.setPropertyType("Binary");
+      vsparams.add(filterEntry);
+
+      ValueStorageEntry valueStorageEntry =
+         new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage", vsparams);
+      ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
+      spe.add(new SimpleParameterEntry("path", "target/temp/values/" + name + "_" + System.currentTimeMillis()));
+      valueStorageEntry.setId("draft");
+      valueStorageEntry.setParameters(spe);
+      valueStorageEntry.setFilters(vsparams);
+
+      // containerEntry.setValueStorages();
+      list.add(valueStorageEntry);
+      ce.setValueStorages(list);
+
+      ws1back.setContainer(ce);
+
+      return ws1back;
+   }
+
    /**
     * {@inheritDoc}
     */
@@ -341,8 +438,6 @@ public class TestLoadBackup extends AbstractBackupTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-
-      repository = repositoryService.getRepository(REPOSITORY_NAME);
    }
 
    /**

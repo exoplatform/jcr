@@ -30,7 +30,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -63,7 +63,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr1" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -86,7 +86,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr2" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -109,7 +109,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr3" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -132,7 +132,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr4" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -155,7 +155,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr5" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -186,7 +186,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr19" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -217,7 +217,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr77" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -248,7 +248,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr20" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -272,7 +272,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr22" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -303,7 +303,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr21" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -327,7 +327,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr23" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -358,7 +358,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr24" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -381,7 +381,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr25" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -404,7 +404,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr26" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -435,7 +435,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr_to_repository_restore_singel_db" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -468,7 +468,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr_to_repository_restore_singel_db" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -509,7 +509,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr_backup_only_use_1" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
@@ -542,7 +542,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr_backup_only_use_2" />
-                     <property name="dialect" value="hsqldb" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
