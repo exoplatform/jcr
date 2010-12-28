@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.ext.backup.ContainerRequestUserRole;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.ext.backup.server.bean.BackupConfigBean;
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupServiceInfoBean;
@@ -898,7 +899,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitWorkspaceRestore("db6", "ws3");
 
       // Get restore info to workspace /db6/ws3
       {
@@ -1049,7 +1050,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitWorkspaceRestore("db6", "ws3");
 
       // Get restore info to workspace /db6/ws3
       {
@@ -1168,7 +1169,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitWorkspaceRestore("db6", "ws3");
 
       // Get restore info to workspace /db6/ws3
       {
@@ -1260,7 +1261,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitWorkspaceRestore("db6", "ws2");
 
       // Get restore info to workspace /db6/ws2
       {
@@ -1354,7 +1355,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitWorkspaceRestore("db6", "ws2");
 
       // Get restore info to workspace /db6/ws2
       {
@@ -1481,7 +1482,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitWorkspaceRestore("db6", "ws3");
 
       // Get restore info to workspace /db6/ws3
       {
@@ -1583,7 +1584,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitWorkspaceRestore("db6", "ws2");
 
       // Get restore info to workspace /db6/ws2
       {
@@ -1686,7 +1687,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitWorkspaceRestore("db6", "ws2");
 
       // Get restore info to workspace /db6/ws2
       {
@@ -1815,7 +1816,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitWorkspaceRestore("db6", "ws3");
 
       // Get restore info to workspace /db6/ws3
       {
@@ -1950,7 +1951,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitRepositoryRestore("db6backup");
 
       // Get restore info
       {
@@ -2120,7 +2121,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitRepositoryRestore("db6backup");
 
       // Get restore info
       {
@@ -2257,7 +2258,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitRepositoryRestore("db6backup");
 
       // Get restore info
       {
@@ -2349,7 +2350,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitRepositoryRestore("db6");
 
       // Get restore info
       {
@@ -2441,7 +2442,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitRepositoryRestore("db6");
 
       // Get restore info
       {
@@ -2589,7 +2590,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitRepositoryRestore("db6backup");
 
       // Get restore info
       {
@@ -2736,7 +2737,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitRepositoryRestore("db6backup");
 
       // Get restore info
       {
@@ -2837,7 +2838,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitRepositoryRestore("db6");
 
       // Get restore info
       {
@@ -2939,7 +2940,7 @@ public class HTTPBackupAgentTest
          assertEquals(200, cres.getStatus());
       }
 
-      Thread.sleep(2000);
+      waitRepositoryRestore("db6");
 
       // Get restore info
       {
@@ -3088,5 +3089,72 @@ public class HTTPBackupAgentTest
    protected ExtendedBackupManager getBackupManager()
    {
       return (ExtendedBackupManager) container.getComponentInstanceOfType(BackupManager.class);
+   }
+
+   protected void waitWorkspaceRestore(String repoName, String wsName) throws Exception
+   {
+      boolean wait = true;
+
+      while (wait)
+      {
+
+         // Get restore info to workspace /<repoName>/<wsName>
+         MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+         ContainerRequestUserRole creq =
+                  new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+                           + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_WS + "/" + repoName + "/"
+                           + wsName), new URI(""), null, new InputHeadersMap(headers));
+
+         ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+         ContainerResponse cres = new ContainerResponse(responseWriter);
+         handler.handleRequest(creq, cres);
+
+         assertEquals(200, cres.getStatus());
+
+         DetailedInfo info = (DetailedInfo) getObject(DetailedInfo.class, responseWriter.getBody());
+
+         if (info.getState().intValue() == JobWorkspaceRestore.RESTORE_SUCCESSFUL
+                  || info.getState().intValue() == JobWorkspaceRestore.RESTORE_FAIL)
+         {
+            wait = false;
+         }
+         else
+         {
+            Thread.sleep(500);
+         }
+      }
+   }
+
+   protected void waitRepositoryRestore(String repoName) throws Exception
+   {
+      boolean wait = true;
+
+      while (wait)
+      {
+         // Get restore info
+         MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+         ContainerRequestUserRole creq =
+                  new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+                           + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_REPOSITORY + "/"
+                           + repoName), new URI(""), null, new InputHeadersMap(headers));
+
+         ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+         ContainerResponse cres = new ContainerResponse(responseWriter);
+         handler.handleRequest(creq, cres);
+
+         assertEquals(200, cres.getStatus());
+
+         DetailedInfo info = (DetailedInfo) getObject(DetailedInfo.class, responseWriter.getBody());
+
+         if (info.getState().intValue() == JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
+                  || info.getState().intValue() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+         {
+            wait = false;
+         }
+         else
+         {
+            Thread.sleep(500);
+         }
+      }
    }
 }
