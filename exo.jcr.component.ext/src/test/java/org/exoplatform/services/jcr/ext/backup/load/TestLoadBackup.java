@@ -196,7 +196,7 @@ public class TestLoadBackup extends BaseStandaloneTest
       System.out.println(" ============ BACKUP FINISHED ============");
 
       // restore
-      WorkspaceEntry ws1back = makeWorkspaceEntry("ws1back", "jdbcjcr3");
+      WorkspaceEntry ws1back = makeWorkspaceEntry("ws1back", "jdbcrestore");
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
