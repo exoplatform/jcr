@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -136,6 +135,7 @@ public class FullBackupJob extends AbstractFullBackupJob
     * PGSQL dialect.
     */
    public static final int DB_DIALECT_PGSQL = DBConstants.DB_DIALECT_PGSQL.hashCode();
+
 
    /**
     * {@inheritDoc}
@@ -266,40 +266,43 @@ public class FullBackupJob extends AbstractFullBackupJob
          backupInfoWriter.setValueTableName(scripts[1][0]);
          backupInfoWriter.setRefTableName(scripts[2][0]);
 
+
+         // TODO set workspace waiting 
+
          // Lock tables
-         ResultSet rs = null;
-         try
-         {
-            DatabaseMetaData metaData = jdbcConn.getMetaData();
-
-            rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-            lockStatemnt = jdbcConn.createStatement();
-            int dialect = DialectDetecter.detect(metaData).hashCode();
-
-            if (dialect == DB_DIALECT_HSQLDB)
-            {
-               while (rs.next())
-               {
-                  lockStatemnt.execute("SET TABLE " + rs.getString("TABLE_NAME") + " READONLY TRUE");
-               }
-            }
-            else if (dialect == DB_DIALECT_MYSQL || dialect == DB_DIALECT_MYSQL_UTF8)
-            {
-               String lock = "";
-               while (rs.next())
-               {
-                  lock += rs.getString("TABLE_NAME") + " READ,";
-               }
-               lockStatemnt.execute("LOCK TABLES " + lock.substring(0, lock.length() - 1));
-            }
-         }
-         finally
-         {
-            if (rs != null)
-            {
-               rs.close();
-            }
-         }
+         //         ResultSet rs = null;
+         //         try
+         //         {
+         //            DatabaseMetaData metaData = jdbcConn.getMetaData();
+         //
+         //            rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
+         //            lockStatemnt = jdbcConn.createStatement();
+         //            int dialect = DialectDetecter.detect(metaData).hashCode();
+         //
+         //            if (dialect == DB_DIALECT_HSQLDB)
+         //            {
+         //               while (rs.next())
+         //               {
+         //                  lockStatemnt.execute("SET TABLE " + rs.getString("TABLE_NAME") + " READONLY TRUE");
+         //               }
+         //            }
+         //            else if (dialect == DB_DIALECT_MYSQL || dialect == DB_DIALECT_MYSQL_UTF8)
+         //            {
+         //               String lock = "";
+         //               while (rs.next())
+         //               {
+         //                  lock += rs.getString("TABLE_NAME") + " READ,";
+         //               }
+         //               lockStatemnt.execute("LOCK TABLES " + lock.substring(0, lock.length() - 1));
+         //            }
+         //         }
+         //         finally
+         //         {
+         //            if (rs != null)
+         //            {
+         //               rs.close();
+         //            }
+         //         }
 
          // dump JCR data
          for (String script[] : scripts)
@@ -325,6 +328,9 @@ public class FullBackupJob extends AbstractFullBackupJob
 
          // write backup information
          backupInfoWriter.write();
+
+         // TODO set workspace waiting
+
       }
       catch (RepositoryConfigurationException e)
       {
@@ -363,41 +369,41 @@ public class FullBackupJob extends AbstractFullBackupJob
             try
             {
                // unlock tables
-               if (lockStatemnt != null)
-               {
-                  ResultSet rs = null;
-                  try
-                  {
-                     DatabaseMetaData metaData = jdbcConn.getMetaData();
-                     int dialect = DialectDetecter.detect(metaData).hashCode();
-
-                     if (dialect == DB_DIALECT_HSQLDB)
-                     {
-                        rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-                        while (rs.next())
-                        {
-                           String tableName = rs.getString("TABLE_NAME");
-                           lockStatemnt.execute("SET TABLE " + tableName + " READONLY FALSE");
-                        }
-                     }
-                     else
-                     {
-                        lockStatemnt.execute("UNLOCK TABLES");
-                     }
-                  }
-                  finally
-                  {
-                     if (rs != null)
-                     {
-                        rs.close();
-                     }
-
-                     if (lockStatemnt != null)
-                     {
-                        lockStatemnt.close();
-                     }
-                  }
-               }
+               //               if (lockStatemnt != null)
+               //               {
+               //                  ResultSet rs = null;
+               //                  try
+               //                  {
+               //                     DatabaseMetaData metaData = jdbcConn.getMetaData();
+               //                     int dialect = DialectDetecter.detect(metaData).hashCode();
+               //
+               //                     if (dialect == DB_DIALECT_HSQLDB)
+               //                     {
+               //                        rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
+               //                        while (rs.next())
+               //                        {
+               //                           String tableName = rs.getString("TABLE_NAME");
+               //                           lockStatemnt.execute("SET TABLE " + tableName + " READONLY FALSE");
+               //                        }
+               //                     }
+               //                     else
+               //                     {
+               //                        lockStatemnt.execute("UNLOCK TABLES");
+               //                     }
+               //                  }
+               //                  finally
+               //                  {
+               //                     if (rs != null)
+               //                     {
+               //                        rs.close();
+               //                     }
+               //
+               //                     if (lockStatemnt != null)
+               //                     {
+               //                        lockStatemnt.close();
+               //                     }
+               //                  }
+               //               }
 
                jdbcConn.close();
             }
@@ -656,6 +662,7 @@ public class FullBackupJob extends AbstractFullBackupJob
 
             if (out != null)
             {
+               out.flush();
                out.closeEntry();
                out.close();
             }
