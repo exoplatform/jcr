@@ -1,14 +1,23 @@
 @echo off
 if NOT "%1" == "-u" goto :help
 shift
+if "%1" == "" goto :help
 set user=%1
 shift
 if NOT "%1" == "-p" goto :help
 shift
+if "%1" == "" goto :help
 set pass=%1
 shift
+if "%1" == "" goto :help
+if "%1" == "-f" (
 set auth=%1
 shift
+)
+if "%1" == "-b" (
+set auth=%1
+shift
+)
 set host=%1
 shift
 
@@ -32,7 +41,7 @@ set comm=%1 %2 %3 %4 %5 %6
 )
 
 if "%auth%" == "-b" (
-jcrbackup http://%user%:%pass%@%host% %comm%
+jcrbackup http://%user%:%pass%@%host%/rest/private %comm%
 )
 if "%auth%" == "-f" (
 jcrbackup http://%host%/portal/rest form POST /portal/login?username=%user%^^^&password=%pass% %comm%

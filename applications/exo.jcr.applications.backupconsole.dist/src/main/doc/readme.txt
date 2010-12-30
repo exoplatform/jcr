@@ -43,10 +43,11 @@ jcrbackup.cmd and jcrbackup.sh - suitable for Standalone and flexible for variou
 
 exobackup.sh and exobackup.cmd - suitable for use with GateIn based products like Platform
 
-           -u <user> -p <password> <form_of_authentication> <host:port> <command>
+           -u <user> -p <password> [form_of_authentication] <host:port> <command>
 
            <form_of_authentication>  :  -b - is used for basic authentication
                                         -f - is used for form authentication
+                                        if no authentication set basic authentication is used
 
            <command>                 :  start <repo[/ws]> <backup_dir> [<incr>] 
                                         stop <backup_id>

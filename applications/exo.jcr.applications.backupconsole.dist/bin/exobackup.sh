@@ -42,14 +42,19 @@ fi
 
 user="$2"
 pass="$4"
-host=${6#*"http://"}
+
 if [ "$5" = "-f" ]
 then
+  host=${6#*"http://"}
   newargs="http://$host/portal/rest form POST /portal/login?username=$user&password=$pass ${args[@]:6}"
 else
   if [ "$5" = "-b" ]
   then
-    newargs="http://$user:$pass@$host ${args[@]:6}"
+    host=${6#*"http://"}
+    newargs="http://$user:$pass@$host/rest/private ${args[@]:6}"
+  else
+    host=${5#*"http://"}
+    newargs="http://$user:$pass@$host/rest/private ${args[@]:5}"
   fi
 fi
 
