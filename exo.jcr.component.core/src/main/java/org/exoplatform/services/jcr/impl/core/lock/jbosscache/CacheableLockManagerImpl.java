@@ -31,8 +31,8 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -49,6 +49,7 @@ import org.jboss.cache.lock.TimeoutException;
 
 import java.io.Serializable;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -551,13 +552,20 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    /**
     *  Will be created structured node in cache, like /$LOCKS
     */
-   private void createStructuredNode(Fqn<String> fqn)
+   private void createStructuredNode(final Fqn<String> fqn)
    {
       Node<Serializable, Object> node = cache.getRoot().getChild(fqn);
       if (node == null)
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
-         node = cache.getRoot().addChild(fqn);
+         PrivilegedAction<Node<Serializable, Object>> action = new PrivilegedAction<Node<Serializable, Object>>()
+         {
+            public Node<Serializable, Object> run()
+            {
+               return cache.getRoot().addChild(fqn);
+            }
+         };
+         node = AccessController.doPrivileged(action);
       }
       node.setResident(true);
    }
