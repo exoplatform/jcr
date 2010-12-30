@@ -1,4 +1,7 @@
 @echo off
+
+set auth=-b
+
 if NOT "%1" == "-u" goto :help
 shift
 if "%1" == "" goto :help
@@ -15,7 +18,6 @@ set auth=%1
 shift
 )
 if "%1" == "-b" (
-set auth=%1
 shift
 )
 set host=%1
@@ -50,10 +52,11 @@ jcrbackup http://%host%/portal/rest form POST /portal/login?username=%user%^^^&p
 
 goto :eof
 :help
-echo            -u ^<user^> -p ^<password^> ^<form_of_authentication^> ^<host:port^> ^<command^> 
+echo            -u ^<user^> -p ^<password^> [form_of_authentication] ^<host:port^> ^<command^> 
 echo. 
-echo            ^<form_of_authentication^>  :  -b - is used for basic authentication 
+echo            [form_of_authentication]  :  -b - is used for basic authentication 
 echo                                         -f - is used for form authentication 
+echo                                         if no authentication set basic authentication is used
 echo. 
 echo            ^<command^>                 :  start ^<repo[/ws]^> ^<backup_dir^> [^<incr^>]  
 echo                                         stop ^<backup_id^> 
