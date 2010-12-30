@@ -557,11 +557,11 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       Node<Serializable, Object> node = cache.getRoot().getChild(fqn);
       if (node == null)
       {
-         cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
          PrivilegedAction<Node<Serializable, Object>> action = new PrivilegedAction<Node<Serializable, Object>>()
          {
             public Node<Serializable, Object> run()
             {
+               cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
                return cache.getRoot().addChild(fqn);
             }
          };
