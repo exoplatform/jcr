@@ -4,11 +4,11 @@ args=("$@")
 
 if [ "$1" != "-u" ] 
 then
-echo "           -u <user> -p <password> <form_of_authentication> <host:port> <command> "
+echo "           -u <user> -p <password> [form_of_authentication] <host:port> <command> "
 echo " "
-echo "           <form_of_authentication>  :  -b - is used for basic authentication "
+echo "           [form_of_authentication]  :  -b - is used for basic authentication "
 echo "                                        -f - is used for form authentication "
-echo " "
+echo "                                        if no authentication set basic authentication is used"
 echo "           <command>                 :  start <repo[/ws]> <backup_dir> [<incr>]  "
 echo "                                        stop <backup_id> "
 echo "                                        status <backup_id> "
