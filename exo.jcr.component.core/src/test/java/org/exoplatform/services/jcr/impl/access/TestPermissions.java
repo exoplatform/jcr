@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
@@ -296,4 +297,258 @@ public class TestPermissions extends BaseStandaloneTest
          }
       }
    }
+
+   /**
+    * Test restore of exo:privilegeable.
+    */
+   public void testPrivilegeable() throws Exception
+   {
+      final String TESTNODE_NAME = "testRestorePrivilegeable";
+      final String CHILD_TESTNODE_NAME1 = "childTestRestorePrivilegeable1";
+      final String CHILD_TESTNODE_NAME2 = "childTestRestorePrivilegeable2";
+      final String CHILD_TESTNODE_NAME3 = "childTestRestorePrivilegeable3";
+      final String CHILD_TESTNODE_NAME4 = "childTestRestorePrivilegeable4";
+
+      Credentials johnCredentials = new CredentialsImpl("john", "exo".toCharArray());
+      SessionImpl johnSession = (SessionImpl)repositoryService.getRepository("db2").login(johnCredentials, "ws1");
+
+      Credentials anonCredentials = new CredentialsImpl(SystemIdentity.ANONIM, "".toCharArray());
+      SessionImpl anonSession = (SessionImpl)repositoryService.getRepository("db2").login(anonCredentials, "ws1");
+
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode(TESTNODE_NAME);
+      node.addMixin("exo:privilegeable");
+      node.addMixin("exo:owneable");
+      node.addMixin("mix:versionable");
+      node.setPermission("*:/platform/administrators", PermissionType.ALL);
+      node.setPermission("mary",
+         new String[]{PermissionType.READ, PermissionType.SET_PROPERTY, PermissionType.ADD_NODE});
+      node.removePermission(SystemIdentity.ANY);
+      sessionWS1.save();
+
+      // child node exo:privilegeable & exo:owneable
+      NodeImpl childNode1 = (NodeImpl)node.addNode(CHILD_TESTNODE_NAME1);
+      childNode1.addMixin("exo:privilegeable");
+      childNode1.addMixin("exo:owneable");
+      childNode1.setPermission("*:/platform/administrators", PermissionType.ALL);
+      childNode1.setPermission("mary", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY});
+      childNode1.removePermission(SystemIdentity.ANY);
+      sessionWS1.save();
+
+      // child node all inherited from parent
+      NodeImpl childNode2 = (NodeImpl)node.addNode(CHILD_TESTNODE_NAME2);
+      sessionWS1.save();
+
+      // child node exo:owneable
+      node = (NodeImpl)johnSession.getRootNode().getNode(TESTNODE_NAME);
+      NodeImpl childNode3 = (NodeImpl)node.addNode(CHILD_TESTNODE_NAME3);
+      childNode3.addMixin("exo:owneable");
+      johnSession.save();
+
+      node = (NodeImpl)sessionWS1.getRootNode().getNode(TESTNODE_NAME);
+
+      // child node exo:privilegeable
+      NodeImpl childNode4 = (NodeImpl)node.addNode(CHILD_TESTNODE_NAME4);
+      childNode4.addMixin("exo:privilegeable");
+      childNode4.setPermission("*:/platform/administrators", PermissionType.ALL);
+      childNode4.setPermission("mary", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY});
+      childNode4.removePermission(SystemIdentity.ANY);
+      sessionWS1.save();
+
+      // check what we have 
+      NodeImpl marysNode = (NodeImpl)sessionMaryWS1.getRootNode().getNode(TESTNODE_NAME);
+      assertTrue(marysNode.hasPermission(PermissionType.READ));
+      assertTrue(marysNode.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysNode.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysNode.hasPermission(PermissionType.REMOVE));
+      assertEquals(((NodeData)marysNode.getData()).getACL().getOwner(), "admin");
+
+      NodeImpl marysChildNode1 = (NodeImpl)marysNode.getNode(CHILD_TESTNODE_NAME1);
+      assertTrue(marysChildNode1.hasPermission(PermissionType.READ));
+      assertTrue(marysChildNode1.hasPermission(PermissionType.SET_PROPERTY));
+      assertFalse(marysChildNode1.hasPermission(PermissionType.ADD_NODE));
+      assertEquals(((NodeData)marysChildNode1.getData()).getACL().getOwner(), "admin");
+
+      NodeImpl marysChildNode2 = (NodeImpl)marysNode.getNode(CHILD_TESTNODE_NAME2);
+      assertTrue(marysNode.hasPermission(PermissionType.READ));
+      assertTrue(marysNode.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysNode.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysNode.hasPermission(PermissionType.REMOVE));;
+      assertEquals(((NodeData)marysChildNode2.getData()).getACL().getOwner(), "admin");
+      
+      NodeImpl marysChildNode3 = (NodeImpl)marysNode.getNode(CHILD_TESTNODE_NAME3);
+      assertTrue(marysChildNode3.hasPermission(PermissionType.READ));
+      assertTrue(marysChildNode3.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysChildNode3.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysChildNode3.hasPermission(PermissionType.REMOVE));
+      assertEquals(((NodeData)marysChildNode3.getData()).getACL().getOwner(), "john");
+
+      NodeImpl marysChildNode4 = (NodeImpl)marysNode.getNode(CHILD_TESTNODE_NAME4);
+      assertTrue(marysChildNode4.hasPermission(PermissionType.READ));
+      assertTrue(marysChildNode4.hasPermission(PermissionType.SET_PROPERTY));
+      assertFalse(marysChildNode4.hasPermission(PermissionType.REMOVE));;
+      assertEquals(((NodeData)marysChildNode2.getData()).getACL().getOwner(), "admin");
+
+      // for __anonim
+      try
+      {
+         anonSession.getRootNode().getNode(TESTNODE_NAME);
+      }
+      catch (AccessDeniedException e)
+      {
+         // ok
+      }
+
+      // v1
+      node.checkin();
+      node.checkout();
+
+      try
+      {
+         // restore v1
+         node.restore("1", true);
+      }
+      catch (AccessDeniedException e)
+      {
+         fail("Restore should succeed");
+      }
+
+      // check what we have after restore
+      marysNode = (NodeImpl)sessionMaryWS1.getRootNode().getNode(TESTNODE_NAME);
+      assertTrue(marysNode.hasPermission(PermissionType.READ));
+      assertTrue(marysNode.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysNode.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysNode.hasPermission(PermissionType.REMOVE));
+      assertEquals(((NodeData)marysNode.getData()).getACL().getOwner(), "admin");
+
+      marysChildNode1 = (NodeImpl)marysNode.getNode(CHILD_TESTNODE_NAME1);
+      assertTrue(marysChildNode1.hasPermission(PermissionType.READ));
+      assertTrue(marysChildNode1.hasPermission(PermissionType.SET_PROPERTY));
+      assertFalse(marysChildNode1.hasPermission(PermissionType.ADD_NODE));
+      assertEquals(((NodeData)marysChildNode1.getData()).getACL().getOwner(), "admin");
+
+      marysChildNode2 = (NodeImpl)marysNode.getNode(CHILD_TESTNODE_NAME2);
+      assertTrue(marysNode.hasPermission(PermissionType.READ));
+      assertTrue(marysNode.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysNode.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysNode.hasPermission(PermissionType.REMOVE));
+      assertEquals(((NodeData)marysChildNode2.getData()).getACL().getOwner(), "admin");;
+
+      marysChildNode3 = (NodeImpl)marysNode.getNode(CHILD_TESTNODE_NAME3);
+      assertTrue(marysChildNode3.hasPermission(PermissionType.READ));
+      assertTrue(marysChildNode3.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysChildNode3.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysChildNode3.hasPermission(PermissionType.REMOVE));
+      assertEquals(((NodeData)marysChildNode3.getData()).getACL().getOwner(), "john");
+
+      marysChildNode4 = (NodeImpl)marysNode.getNode(CHILD_TESTNODE_NAME4);
+      assertTrue(marysChildNode4.hasPermission(PermissionType.READ));
+      assertTrue(marysChildNode4.hasPermission(PermissionType.SET_PROPERTY));
+      assertFalse(marysChildNode4.hasPermission(PermissionType.REMOVE));;
+      assertEquals(((NodeData)marysChildNode2.getData()).getACL().getOwner(), "admin");
+
+      // for __anonim
+      try
+      {
+         anonSession.getRootNode().getNode(TESTNODE_NAME);
+      }
+      catch (AccessDeniedException e)
+      {
+         // ok
+      }
+      finally
+      {
+         anonSession.logout();
+      }
+
+      johnSession.logout();
+   }
+
+   /**
+    * Test restore of exo:privilegeable.
+    */
+   public void testPrivilegeable2() throws Exception
+   {
+      final String TESTNODE_NAME = "testRestorePrivilegeable2";
+
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode(TESTNODE_NAME);
+      node.addMixin("exo:privilegeable");
+      node.addMixin("mix:versionable");
+      node.setPermission("*:/platform/administrators", PermissionType.ALL);
+      node.setPermission("mary",
+         new String[]{PermissionType.READ, PermissionType.SET_PROPERTY, PermissionType.ADD_NODE});
+      node.removePermission(SystemIdentity.ANY);
+      sessionWS1.save();
+
+      // check what we have 
+      NodeImpl marysNode = (NodeImpl)sessionMaryWS1.getRootNode().getNode(TESTNODE_NAME);
+      assertTrue(marysNode.hasPermission(PermissionType.READ));
+      assertTrue(marysNode.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysNode.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysNode.hasPermission(PermissionType.REMOVE));
+      assertEquals(((NodeData)marysNode.getData()).getACL().getOwner(), SystemIdentity.SYSTEM);
+
+      // v1
+      node.checkin();
+      node.checkout();
+
+      try
+      {
+         // restore v1
+         node.restore("1", true);
+      }
+      catch (AccessDeniedException e)
+      {
+         fail("Restore should succeed");
+      }
+
+      // check what we have after restore
+      marysNode = (NodeImpl)sessionMaryWS1.getRootNode().getNode(TESTNODE_NAME);
+      assertTrue(marysNode.hasPermission(PermissionType.READ));
+      assertTrue(marysNode.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysNode.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysNode.hasPermission(PermissionType.REMOVE));
+      assertEquals(((NodeData)marysNode.getData()).getACL().getOwner(), SystemIdentity.SYSTEM);
+   }
+
+   /**
+    * Test restore of exo:privilegeable.
+    */
+   public void testPrivilegeable3() throws Exception
+   {
+      final String TESTNODE_NAME = "testRestorePrivilegeable3";
+
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode(TESTNODE_NAME);
+      node.addMixin("exo:owneable");
+      node.addMixin("mix:versionable");
+      sessionWS1.save();
+
+      // check what we have 
+      NodeImpl marysNode = (NodeImpl)sessionMaryWS1.getRootNode().getNode(TESTNODE_NAME);
+      assertEquals(marysNode.getACL().getPermissionsSize(), 4);
+      assertEquals(marysNode.getACL().getPermissions(SystemIdentity.ANY).size(), 4);
+      assertEquals(marysNode.getACL().getPermissions("mary").size(), 0);
+      assertEquals(((NodeData)marysNode.getData()).getACL().getOwner(), "admin");
+
+      // v1
+      node.checkin();
+      node.checkout();
+
+      try
+      {
+         // restore v1
+         node.restore("1", true);
+      }
+      catch (AccessDeniedException e)
+      {
+         fail("Restore should succeed");
+      }
+
+      // check what we have after restore
+      marysNode = (NodeImpl)sessionMaryWS1.getRootNode().getNode(TESTNODE_NAME);
+      assertEquals(marysNode.getACL().getPermissionsSize(), 4);
+      assertEquals(marysNode.getACL().getPermissions(SystemIdentity.ANY).size(), 4);
+      assertEquals(marysNode.getACL().getPermissions("mary").size(), 0);
+      assertEquals(((NodeData)marysNode.getData()).getACL().getOwner(), "admin");
+   }
+
 }

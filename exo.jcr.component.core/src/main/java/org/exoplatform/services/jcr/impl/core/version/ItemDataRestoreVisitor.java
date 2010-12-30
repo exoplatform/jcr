@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.version;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
@@ -320,7 +323,10 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENMIXINTYPES, 0),
             ItemType.PROPERTY);
 
+      AccessControlList acl = parentData.getACL();
       InternalQName[] mixins = null;
+      String owner = null;
+
       if (frozenMixinTypes != null)
       {
          try
@@ -331,6 +337,29 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             {
                ValueData mvd = mvs.get(i);
                mixins[i] = InternalQName.parse(new String(mvd.getAsByteArray()));
+
+               if (mixins[i].equals(Constants.EXO_PRIVILEGEABLE))
+               {
+                  PropertyData aclData =
+                     (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.EXO_PERMISSIONS, 0),
+                        ItemType.PROPERTY);
+
+                  acl = new AccessControlList();
+                  acl.removePermissions(SystemIdentity.ANY);
+
+                  for (ValueData value : aclData.getValues())
+                  {
+                     acl.addPermissions(new String(value.getAsByteArray(), Constants.DEFAULT_ENCODING));
+                  }
+               }
+               else if (mixins[i].equals(Constants.EXO_OWNEABLE))
+               {
+                  PropertyData ownerData =
+                     (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.EXO_OWNER, 0),
+                        ItemType.PROPERTY);
+
+                  owner = new String(ownerData.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING);
+               }
             }
          }
          catch (IllegalNameException e)
@@ -349,6 +378,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                + userSession.getLocationFactory().createJCRPath(frozenMixinTypes.getQPath()).getAsString(false), e);
          }
       }
+
+      // set new owner if exists
+      acl.setOwner(owner != null ? owner : parentData.getACL().getOwner());
 
       InternalQName ptName = null;
       try
@@ -374,7 +406,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
       // create restored version of the node
       NodeData restoredData =
          new TransientNodeData(nodePath, fidentifier, (existing != null ? existing.getPersistedVersion() : -1), ptName,
-            mixins == null ? new InternalQName[0] : mixins, 0, parentData.getIdentifier(), parentData.getACL());
+            mixins == null ? new InternalQName[0] : mixins, 0, parentData.getIdentifier(), acl);
 
       changes.add(ItemState.createAddedState(restoredData));
 
@@ -589,10 +621,32 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                }
             }
 
+            boolean isPrivilegeable =
+               nodeTypeDataManager.isNodeType(Constants.EXO_PRIVILEGEABLE, frozen.getPrimaryTypeName(),
+                  frozen.getMixinTypeNames());
+
+            boolean isOwneable =
+               nodeTypeDataManager.isNodeType(Constants.EXO_OWNEABLE, frozen.getPrimaryTypeName(),
+                  frozen.getMixinTypeNames());
+
+            AccessControlList acl = currentNode().getACL();
+            if (isPrivilegeable || isOwneable)
+            {
+               acl = new AccessControlList();
+               acl.removePermissions(SystemIdentity.ANY);
+
+               for (AccessControlEntry entry : (isPrivilegeable ? frozen.getACL() : currentNode().getACL())
+                  .getPermissionEntries())
+               {
+                  acl.addPermissions(entry.getIdentity(), new String[]{entry.getPermission()});
+               }
+
+               acl.setOwner(isOwneable ? frozen.getACL().getOwner() : currentNode().getACL().getOwner());
+            }
+
             NodeData restoredData =
                new TransientNodeData(restoredPath, jcrUuid, frozen.getPersistedVersion(), frozen.getPrimaryTypeName(),
-                  frozen.getMixinTypeNames(), frozen.getOrderNumber(), currentNode().getIdentifier(), // parent
-                  frozen.getACL());
+                  frozen.getMixinTypeNames(), frozen.getOrderNumber(), currentNode().getIdentifier(), acl);
 
             changes.add(ItemState.createAddedState(restoredData));
             pushCurrent(restoredData);
