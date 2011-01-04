@@ -383,6 +383,15 @@ public abstract class BaseXmlImporter implements ContentImporter
     */
    protected void checkReferenceable(ImportNodeData currentNodeInfo, String olUuid) throws RepositoryException
    {
+      // if node is in version storrage - do not assign new id from jcr:uuid
+      // property
+      if (Constants.JCR_VERSION_STORAGE_PATH.getDepth() + 3 <= currentNodeInfo.getQPath().getDepth()
+         && currentNodeInfo.getQPath().getEntries()[Constants.JCR_VERSION_STORAGE_PATH.getDepth() + 3]
+            .equals(Constants.JCR_FROZENNODE)
+         && currentNodeInfo.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+      {
+         return;
+      }
 
       String identifier = validateUuidCollision(olUuid);
 
