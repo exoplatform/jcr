@@ -30,31 +30,25 @@
     <para>Currently the data container is tested with the following
     RDBMS:<itemizedlist>
         <listitem>
-          <para>MySQL (5.x including UTF8 support)</para>
+          <para>MySQL 5.1 MYSQL Connector/J 5.1.8</para>
         </listitem>
 
         <listitem>
-          <para>PostgreSQL (8.x)</para>
+          <para>PostgresSQL 8.3.7 JDBC4 Driver, Version 8.3-605</para>
         </listitem>
 
         <listitem>
-          <para>Oracle Database (9i, 10g)</para>
+          <para>Oracle DB 11g (11.0.1.6), JDBC Driver Oracle 11g R1
+          (11.1.0.6.0)</para>
         </listitem>
 
         <listitem>
-          <para>Microsoft SQL Server (2005)</para>
+          <para>DB2 9,7 IBM Data Server Driver for JDBC and SQLJ (JCC Driver)
+          v.9.1 (fixpack 3a)</para>
         </listitem>
 
         <listitem>
-          <para>Sybase ASE (15.0)</para>
-        </listitem>
-
-        <listitem>
-          <para>Apache Derby/Java DB (10.1.x, 10.2.x)</para>
-        </listitem>
-
-        <listitem>
-          <para>IBM DB2 (8.x, 9.x)</para>
+          <para>MS SQL Server 2005 SP3 JDBC Driver 2.0</para>
         </listitem>
 
         <listitem>
