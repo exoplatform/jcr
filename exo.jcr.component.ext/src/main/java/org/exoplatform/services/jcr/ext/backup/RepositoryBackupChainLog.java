@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -149,8 +150,11 @@ public class RepositoryBackupChainLog
          for (String path : wsLogFilePathList)
          {
             writer.writeStartElement("url");
-            writer.writeCharacters(path.replace(PrivilegedFileHelper.getCanonicalPath(config.getBackupDir())
-                     + File.separator, ""));
+            URL urlPath = new URL("file:" + path);
+            URL urlBackupDir =
+                     new URL("file:" + PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + File.separator);
+
+            writer.writeCharacters(urlPath.toString().replace(urlBackupDir.getPath(), ""));
             writer.writeEndElement();
          }
 
@@ -421,10 +425,13 @@ public class RepositoryBackupChainLog
                   {
                      if (version != null && version.equals(VERSION_LOG_1_1))
                      {
-                        String path =
-                                 PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + File.separator
-                                          + readContent();
-                        wsBackupInfo.add(path);
+                        String path = readContent();
+                        path = path.replace("file:", "file:" + PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + File.separator);
+                        
+
+                        URL urlPath = new URL(path);
+
+                        wsBackupInfo.add(urlPath.getFile());
                      }
                      else
                      {

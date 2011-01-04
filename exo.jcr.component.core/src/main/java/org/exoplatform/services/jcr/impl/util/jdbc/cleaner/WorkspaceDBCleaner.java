@@ -83,7 +83,7 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
       this.containerName = wsEntry.getName();
 
       LockManagerEntry lockEntry = wsEntry.getLockManager();
-      if (lockEntry != null)
+      if (lockEntry != null && lockEntry.getParameters() != null)
       {
          for (String tableName : AbstractCacheableLockManager.getLockTableNames(lockEntry))
          {
