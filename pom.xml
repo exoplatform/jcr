@@ -382,6 +382,12 @@
         <groupId>org.jboss.cache</groupId>
         <artifactId>jbosscache-core</artifactId>
         <version>3.2.6.GA</version>
+        <exclusions>
+          <exclusion>
+            <groupId>jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>jboss.jbossts</groupId>
