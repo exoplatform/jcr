@@ -150,11 +150,11 @@ public class RepositoryBackupChainLog
          for (String path : wsLogFilePathList)
          {
             writer.writeStartElement("url");
-            URL urlPath = new URL("file:" + path);
+            URL urlPath = new URL(resolveFileURL("file:" + path));
             URL urlBackupDir =
-                     new URL("file:" + PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + File.separator);
+                     new URL(resolveFileURL("file:" + PrivilegedFileHelper.getCanonicalPath(config.getBackupDir())));
 
-            writer.writeCharacters(urlPath.toString().replace(urlBackupDir.getPath(), ""));
+            writer.writeCharacters(urlPath.toString().replace(urlBackupDir.getPath() + "/", ""));
             writer.writeEndElement();
          }
 
@@ -426,10 +426,9 @@ public class RepositoryBackupChainLog
                      if (version != null && version.equals(VERSION_LOG_1_1))
                      {
                         String path = readContent();
-                        path = path.replace("file:", "file:" + PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + File.separator);
-                        
+                        path = path.replace("file:", "file:" + PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + "/");
 
-                        URL urlPath = new URL(path);
+                        URL urlPath = new URL(resolveFileURL(path));
 
                         wsBackupInfo.add(urlPath.getFile());
                      }
@@ -541,6 +540,36 @@ public class RepositoryBackupChainLog
       {
          return version;
       }
+   }
+
+   private String resolveFileURL(String url)
+   {
+      // we ensure that we don't have windows path separator in the url
+      url = url.replace('\\', '/');
+      if (!url.startsWith("file:///"))
+      {
+         // The url is invalid, so we will fix it
+         // it happens when we use a path of type file://${path}, under
+         // linux or mac os the path will start with a '/' so the url
+         // will be correct but under windows we will have something
+         // like C:\ so the first '/' is missing
+         if (url.startsWith("file://"))
+         {
+            // The url is of type file://, so one '/' is missing
+            url = "file:///" + url.substring(7);
+         }
+         else if (url.startsWith("file:/"))
+         {
+            // The url is of type file:/, so two '/' are missing
+            url = "file:///" + url.substring(6);
+         }
+         else
+         {
+            // The url is of type file:, so three '/' are missing
+            url = "file:///" + url.substring(5);
+         }
+      }
+      return url;
    }
 
    protected static Log logger = ExoLogger.getLogger("exo.jcr.component.ext.BackupChainLog");
