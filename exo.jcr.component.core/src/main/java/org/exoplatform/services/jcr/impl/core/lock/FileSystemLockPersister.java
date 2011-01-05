@@ -273,14 +273,6 @@ public class FileSystemLockPersister implements LockPersister
       {
          log.debug("Stoping FileSystemLockPersister");
       }
-      try
-      {
-         removeAll();
-      }
-      catch (LockException e)
-      {
-         log.error(e.getLocalizedMessage(), e);
-      }
       if (log.isDebugEnabled())
       {
          log.debug("FileSystemLockPersister stoped");
