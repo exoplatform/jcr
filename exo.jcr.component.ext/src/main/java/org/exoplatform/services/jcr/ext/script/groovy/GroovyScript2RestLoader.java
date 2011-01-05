@@ -429,9 +429,15 @@ public class GroovyScript2RestLoader implements Startable
                {
                   continue;
                }
-
-               loadScript(new NodeScriptKey(repositoryName, workspaceName, node), node.getPath(), node.getProperty(
-                  "jcr:data").getStream());
+               try
+               {
+                  loadScript(new NodeScriptKey(repositoryName, workspaceName, node), node.getPath(),
+                     node.getProperty("jcr:data").getStream());
+               }
+               catch (Exception e)
+               {
+                  LOG.error("Error occured while trying to load script " + node.getParent().getName());
+               }
             }
 
             session.getWorkspace().getObservationManager().addEventListener(
