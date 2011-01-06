@@ -455,10 +455,12 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENMIXINTYPES, 0),
             ItemType.PROPERTY);
 
-      AccessControlList acl = parentData.getACL();
-      InternalQName[] mixins = null;
-      String owner = null;
+      List<AccessControlEntry> accessList =
+         new ArrayList<AccessControlEntry>(parentData.getACL().getPermissionEntries());
 
+      String owner = parentData.getACL().getOwner();
+
+      InternalQName[] mixins = null;
       if (frozenMixinTypes != null)
       {
          try
@@ -476,13 +478,15 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                      (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.EXO_PERMISSIONS, 0),
                         ItemType.PROPERTY);
 
-                  acl = new AccessControlList();
+                  AccessControlList acl = new AccessControlList();
                   acl.removePermissions(SystemIdentity.ANY);
 
                   for (ValueData value : aclData.getValues())
                   {
                      acl.addPermissions(new String(value.getAsByteArray(), Constants.DEFAULT_ENCODING));
                   }
+
+                  accessList = acl.getPermissionEntries();
                }
                else if (mixins[i].equals(Constants.EXO_OWNEABLE))
                {
@@ -511,8 +515,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          }
       }
 
-      // set new owner if exists
-      acl.setOwner(owner != null ? owner : parentData.getACL().getOwner());
+      AccessControlList acl = new AccessControlList(owner, accessList);
 
       InternalQName ptName = null;
       try
@@ -761,6 +764,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                }
             }
 
+            AccessControlList acl = currentNode().getACL();
+
             boolean isPrivilegeable =
                nodeTypeDataManager.isNodeType(Constants.EXO_PRIVILEGEABLE, frozen.getPrimaryTypeName(),
                   frozen.getMixinTypeNames());
@@ -769,19 +774,15 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                nodeTypeDataManager.isNodeType(Constants.EXO_OWNEABLE, frozen.getPrimaryTypeName(),
                   frozen.getMixinTypeNames());
 
-            AccessControlList acl = currentNode().getACL();
             if (isPrivilegeable || isOwneable)
             {
-               acl = new AccessControlList();
-               acl.removePermissions(SystemIdentity.ANY);
+               List<AccessControlEntry> permissionEntries = new ArrayList<AccessControlEntry>();
+               permissionEntries.addAll((isPrivilegeable ? frozen.getACL() : currentNode().getACL())
+                  .getPermissionEntries());
 
-               for (AccessControlEntry entry : (isPrivilegeable ? frozen.getACL() : currentNode().getACL())
-                  .getPermissionEntries())
-               {
-                  acl.addPermissions(entry.getIdentity(), new String[]{entry.getPermission()});
-               }
+               String owner = isOwneable ? frozen.getACL().getOwner() : currentNode().getACL().getOwner();
 
-               acl.setOwner(isOwneable ? frozen.getACL().getOwner() : currentNode().getACL().getOwner());
+               acl = new AccessControlList(owner, permissionEntries);
             }
 
             NodeData restoredData =

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -163,9 +165,27 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
 
       String id = keepIdentifiers ? node.getIdentifier() : IdGenerator.generate();
 
+      AccessControlList acl = parent.getACL();
+
+      boolean isPrivilegeable =
+         ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+      boolean isOwneable =
+         ntManager.isNodeType(Constants.EXO_OWNEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+      if (isPrivilegeable || isOwneable)
+      {
+         List<AccessControlEntry> permissionEntries = new ArrayList<AccessControlEntry>();
+         permissionEntries.addAll((isPrivilegeable ? node.getACL() : parent.getACL()).getPermissionEntries());
+
+         String owner = isOwneable ? node.getACL().getOwner() : parent.getACL().getOwner();
+
+         acl = new AccessControlList(owner, permissionEntries);
+      }
+
       TransientNodeData newNode =
-         new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), orderNum, parent
-            .getIdentifier(), node.getACL());
+         new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), orderNum,
+            parent.getIdentifier(), acl);
 
       parents.push(newNode);
 
