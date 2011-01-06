@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -78,6 +77,8 @@ public class RepositoryBackupChainLog
       private File logFile;
 
       XMLStreamWriter writer;
+
+      private RepositoryChainLogPathHelper helper = new RepositoryChainLogPathHelper();
 
       public LogWriter(File file) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
@@ -150,11 +151,8 @@ public class RepositoryBackupChainLog
          for (String path : wsLogFilePathList)
          {
             writer.writeStartElement("url");
-            URL urlPath = new URL(resolveFileURL("file:" + path));
-            URL urlBackupDir =
-                     new URL(resolveFileURL("file:" + PrivilegedFileHelper.getCanonicalPath(config.getBackupDir())));
-
-            writer.writeCharacters(urlPath.toString().replace(urlBackupDir.getPath() + "/", ""));
+            writer.writeCharacters(helper.getRelativePath(path, PrivilegedFileHelper.getCanonicalPath(config
+                     .getBackupDir())));
             writer.writeEndElement();
          }
 
@@ -286,6 +284,8 @@ public class RepositoryBackupChainLog
       private File logFile;
 
       private XMLStreamReader reader;
+
+      private RepositoryChainLogPathHelper helper = new RepositoryChainLogPathHelper();
 
       private String version;
 
@@ -426,11 +426,8 @@ public class RepositoryBackupChainLog
                      if (version != null && version.equals(VERSION_LOG_1_1))
                      {
                         String path = readContent();
-                        path = path.replace("file:", "file:" + PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + "/");
-
-                        URL urlPath = new URL(resolveFileURL(path));
-
-                        wsBackupInfo.add(urlPath.getFile());
+                        wsBackupInfo.add(helper.getPath(path, PrivilegedFileHelper.getCanonicalPath(config
+                                 .getBackupDir())));
                      }
                      else
                      {
@@ -540,36 +537,6 @@ public class RepositoryBackupChainLog
       {
          return version;
       }
-   }
-
-   private String resolveFileURL(String url)
-   {
-      // we ensure that we don't have windows path separator in the url
-      url = url.replace('\\', '/');
-      if (!url.startsWith("file:///"))
-      {
-         // The url is invalid, so we will fix it
-         // it happens when we use a path of type file://${path}, under
-         // linux or mac os the path will start with a '/' so the url
-         // will be correct but under windows we will have something
-         // like C:\ so the first '/' is missing
-         if (url.startsWith("file://"))
-         {
-            // The url is of type file://, so one '/' is missing
-            url = "file:///" + url.substring(7);
-         }
-         else if (url.startsWith("file:/"))
-         {
-            // The url is of type file:/, so two '/' are missing
-            url = "file:///" + url.substring(6);
-         }
-         else
-         {
-            // The url is of type file:, so three '/' are missing
-            url = "file:///" + url.substring(5);
-         }
-      }
-      return url;
    }
 
    protected static Log logger = ExoLogger.getLogger("exo.jcr.component.ext.BackupChainLog");
