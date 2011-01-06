@@ -436,7 +436,8 @@ public class GroovyScript2RestLoader implements Startable
                }
                catch (Exception e)
                {
-                  LOG.error("Error occured while trying to load script " + node.getParent().getName());
+                  LOG.error("Error occured while trying to load script at " + repositoryName + "/" + workspaceName
+                     + node.getPath(), e);
                }
             }
 
