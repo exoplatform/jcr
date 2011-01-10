@@ -78,8 +78,6 @@ public class RepositoryBackupChainLog
 
       XMLStreamWriter writer;
 
-      private RepositoryChainLogPathHelper helper = new RepositoryChainLogPathHelper();
-
       public LogWriter(File file) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
          this.logFile = file;
@@ -151,7 +149,7 @@ public class RepositoryBackupChainLog
          for (String path : wsLogFilePathList)
          {
             writer.writeStartElement("url");
-            writer.writeCharacters(helper.getRelativePath(path, PrivilegedFileHelper.getCanonicalPath(config
+            writer.writeCharacters(RepositoryChainLogPathHelper.getRelativePath(path, PrivilegedFileHelper.getCanonicalPath(config
                      .getBackupDir())));
             writer.writeEndElement();
          }
@@ -284,8 +282,6 @@ public class RepositoryBackupChainLog
       private File logFile;
 
       private XMLStreamReader reader;
-
-      private RepositoryChainLogPathHelper helper = new RepositoryChainLogPathHelper();
 
       private String version;
 
@@ -426,7 +422,7 @@ public class RepositoryBackupChainLog
                      if (version != null && version.equals(VERSION_LOG_1_1))
                      {
                         String path = readContent();
-                        wsBackupInfo.add(helper.getPath(path, PrivilegedFileHelper.getCanonicalPath(config
+                        wsBackupInfo.add(RepositoryChainLogPathHelper.getPath(path, PrivilegedFileHelper.getCanonicalPath(config
                                  .getBackupDir())));
                      }
                      else

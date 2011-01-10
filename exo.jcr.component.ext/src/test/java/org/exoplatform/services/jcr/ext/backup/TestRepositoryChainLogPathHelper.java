@@ -32,48 +32,40 @@ public class TestRepositoryChainLogPathHelper
 
    public void testGetRelativePathOSLinux() throws Exception
    {
-      RepositoryChainLogPathHelper helper = new RepositoryChainLogPathHelper();
-
       String path = "/path/to/repository-backup-dir/workspace-backup-dir/workspace-backup-log.xml";
       String backupDirCanonicalPath = "/path/to/repository-backup-dir";
 
-      String relativePath = helper.getRelativePath(path, backupDirCanonicalPath);
+      String relativePath = RepositoryChainLogPathHelper.getRelativePath(path, backupDirCanonicalPath);
 
       assertEquals("workspace-backup-dir/workspace-backup-log.xml", relativePath);
    }
 
    public void testGetRelativePathOSWindows() throws Exception
    {
-      RepositoryChainLogPathHelper helper = new RepositoryChainLogPathHelper();
-
       String path = "c:\\\\path\\to\\repository-backup-dir\\workspace-backup-dir\\workspace-backup-log.xml";
       String backupDirCanonicalPath = "c:\\\\path\\to\\repository-backup-dir";
 
-      String relativePath = helper.getRelativePath(path, backupDirCanonicalPath);
+      String relativePath = RepositoryChainLogPathHelper.getRelativePath(path, backupDirCanonicalPath);
 
       assertEquals("workspace-backup-dir/workspace-backup-log.xml", relativePath);
    }
 
    public void testGetPathOSLinux() throws Exception
    {
-      RepositoryChainLogPathHelper helper = new RepositoryChainLogPathHelper();
-
       String relativePath = "workspace-backup-dir/workspace-backup-log.xml";
       String backupDirCanonicalPath = "/path/to/repository-backup-dir";
 
-      String path = helper.getPath(relativePath, backupDirCanonicalPath);
+      String path = RepositoryChainLogPathHelper.getPath(relativePath, backupDirCanonicalPath);
 
       assertEquals("/path/to/repository-backup-dir/workspace-backup-dir/workspace-backup-log.xml", path);
    }
 
    public void testGetPathOSWindiws() throws Exception
    {
-      RepositoryChainLogPathHelper helper = new RepositoryChainLogPathHelper();
-
       String relativePath = "workspace-backup-dir/workspace-backup-log.xml";
       String backupDirCanonicalPath = "c:\\\\path\\to\\repository-backup-dir";
 
-      String path = helper.getPath(relativePath, backupDirCanonicalPath);
+      String path = RepositoryChainLogPathHelper.getPath(relativePath, backupDirCanonicalPath);
 
       assertEquals("/c://path/to/repository-backup-dir/workspace-backup-dir/workspace-backup-log.xml", path);
    }

@@ -30,7 +30,7 @@ import java.net.URL;
 public class RepositoryChainLogPathHelper
 {
 
-   public RepositoryChainLogPathHelper()
+   private RepositoryChainLogPathHelper()
    {
    }
 
@@ -46,7 +46,7 @@ public class RepositoryChainLogPathHelper
     * @throws MalformedURLException
     *           
     */
-   public String getRelativePath(String path, String backupDirCanonicalPath) throws MalformedURLException
+   public static String getRelativePath(String path, String backupDirCanonicalPath) throws MalformedURLException
    {
       URL urlPath = new URL(resolveFileURL("file:" + path));
       URL urlBackupDir = new URL(resolveFileURL("file:" + backupDirCanonicalPath));
@@ -65,7 +65,7 @@ public class RepositoryChainLogPathHelper
     *           Will be returned absolute path.          
     * @throws MalformedURLException
     */
-   public String getPath(String relativePath, String backupDirCanonicalPath) throws MalformedURLException
+   public static String getPath(String relativePath, String backupDirCanonicalPath) throws MalformedURLException
    {
       String path = "file:" + backupDirCanonicalPath + "/" + relativePath;
 
@@ -74,7 +74,7 @@ public class RepositoryChainLogPathHelper
       return urlPath.getFile();
    }
 
-   private String resolveFileURL(String url)
+   private static String resolveFileURL(String url)
    {
       // we ensure that we don't have windows path separator in the url
       url = url.replace('\\', '/');
