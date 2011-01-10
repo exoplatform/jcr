@@ -173,7 +173,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * The <code>IndexMerger</code> for this <code>MultiIndex</code>.
     */
-   private final IndexMerger merger;
+   private IndexMerger merger;
 
    /**
     * Timer to schedule flushes of this index after some idle time.
@@ -266,41 +266,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       removeDeletable();
 
       // initialize IndexMerger
-      merger = new IndexMerger(this);
-      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
-      merger.setMergeFactor(handler.getMergeFactor());
-      merger.setMinMergeDocs(handler.getMinMergeDocs());
+      merger = doInitIndexMerger();
 
       // this method is run in privileged mode internally
       IndexingQueueStore store = new IndexingQueueStore(indexDir);
 
       // initialize indexing queue
       this.indexingQueue = new IndexingQueue(store);
-      // copy current index names
-      Set<String> currentNames = new HashSet<String>(indexNames.getNames());
-
-      // open persistent indexes
-      for (String name : currentNames)
-      {
-         // only open if it still exists
-         // it is possible that indexNames still contains a name for
-         // an index that has been deleted, but indexNames has not been
-         // written to disk.
-         if (!directoryManager.hasDirectory(name))
-         {
-            log.debug("index does not exist anymore: " + name);
-            // move on to next index
-            continue;
-         }
-         PersistentIndex index =
-            new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-               directoryManager);
-         index.setMaxFieldLength(handler.getMaxFieldLength());
-         index.setUseCompoundFile(handler.getUseCompoundFile());
-         index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
-         indexes.add(index);
-         merger.indexAdded(index.getName(), index.getNumDocuments());
-      }
 
       // init volatile index
       resetVolatileIndex();
@@ -1180,8 +1152,44 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       });
    }
 
-   // -------------------------< internal
-   // >-------------------------------------
+   // -------------------------< internal >-------------------------------------
+
+   private IndexMerger doInitIndexMerger() throws IOException
+   {
+      // initialize IndexMerger
+      IndexMerger merger = new IndexMerger(this);
+      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
+      merger.setMergeFactor(handler.getMergeFactor());
+      merger.setMinMergeDocs(handler.getMinMergeDocs());
+
+      // copy current index names
+      Set<String> currentNames = new HashSet<String>(indexNames.getNames());
+
+      // open persistent indexes
+      for (String name : currentNames)
+      {
+         // only open if it still exists
+         // it is possible that indexNames still contains a name for
+         // an index that has been deleted, but indexNames has not been
+         // written to disk.
+         if (!directoryManager.hasDirectory(name))
+         {
+            log.debug("index does not exist anymore: " + name);
+            // move on to next index
+            continue;
+         }
+         PersistentIndex index =
+            new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+               directoryManager);
+         index.setMaxFieldLength(handler.getMaxFieldLength());
+         index.setUseCompoundFile(handler.getUseCompoundFile());
+         index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
+         indexes.add(index);
+         merger.indexAdded(index.getName(), index.getNumDocuments());
+      }
+
+      return merger;
+   }
 
    /**
     * Enqueues unused segments for deletion in {@link #deletable}. This method
@@ -2501,6 +2509,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       // try to stop merger in safe way
       merger.dispose();
+      
       flushTask.cancel();
       FLUSH_TIMER.purge();
       this.redoLog = null;
@@ -2532,7 +2541,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       attemptDelete();
 
       // now that we are ready, start index merger
+      merger = doInitIndexMerger();
       merger.start();
+
       if (redoLogApplied)
       {
          // wait for the index merge to finish pending jobs
