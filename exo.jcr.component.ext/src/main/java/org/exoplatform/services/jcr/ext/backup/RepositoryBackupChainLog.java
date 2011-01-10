@@ -114,7 +114,8 @@ public class RepositoryBackupChainLog
          for (String path : wsLogFilePathList)
          {
             writer.writeStartElement("url");
-            writer.writeCharacters(RepositoryChainLogPathHelper.getRelativePath(path, config.getBackupDir().getCanonicalPath()));
+            writer.writeCharacters(path.replace(config.getBackupDir().getCanonicalPath()
+                     + File.separator, ""));
             writer.writeEndElement();
          }
 
@@ -360,8 +361,9 @@ public class RepositoryBackupChainLog
                   {
                      if (version != null && version.equals(VERSION_LOG_1_1))
                      {
-                        String path = readContent();
-                        wsBackupInfo.add(RepositoryChainLogPathHelper.getPath(path, config.getBackupDir().getCanonicalPath()));
+                        String path = config.getBackupDir().getCanonicalPath() + File.separator
+                                          + readContent();
+                        wsBackupInfo.add(path);
                      }
                      else
                      {
