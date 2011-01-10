@@ -266,7 +266,37 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       removeDeletable();
 
       // initialize IndexMerger
-      merger = doInitIndexMerger();
+      // initialize IndexMerger
+      IndexMerger merger = new IndexMerger(this);
+      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
+      merger.setMergeFactor(handler.getMergeFactor());
+      merger.setMinMergeDocs(handler.getMinMergeDocs());
+
+      // copy current index names
+      Set<String> currentNames = new HashSet<String>(indexNames.getNames());
+
+      // open persistent indexes
+      for (String name : currentNames)
+      {
+         // only open if it still exists
+         // it is possible that indexNames still contains a name for
+         // an index that has been deleted, but indexNames has not been
+         // written to disk.
+         if (!directoryManager.hasDirectory(name))
+         {
+            log.debug("index does not exist anymore: " + name);
+            // move on to next index
+            continue;
+         }
+         PersistentIndex index =
+            new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+               directoryManager);
+         index.setMaxFieldLength(handler.getMaxFieldLength());
+         index.setUseCompoundFile(handler.getUseCompoundFile());
+         index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
+         indexes.add(index);
+         merger.indexAdded(index.getName(), index.getNumDocuments());
+      }
 
       // this method is run in privileged mode internally
       IndexingQueueStore store = new IndexingQueueStore(indexDir);
@@ -1154,38 +1184,19 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
    // -------------------------< internal >-------------------------------------
 
+   /**
+    * Initialize IndexMerger.
+    */
    private IndexMerger doInitIndexMerger() throws IOException
    {
-      // initialize IndexMerger
       IndexMerger merger = new IndexMerger(this);
       merger.setMaxMergeDocs(handler.getMaxMergeDocs());
       merger.setMergeFactor(handler.getMergeFactor());
       merger.setMinMergeDocs(handler.getMinMergeDocs());
 
-      // copy current index names
-      Set<String> currentNames = new HashSet<String>(indexNames.getNames());
-
-      // open persistent indexes
-      for (String name : currentNames)
+      for (Object index : indexes)
       {
-         // only open if it still exists
-         // it is possible that indexNames still contains a name for
-         // an index that has been deleted, but indexNames has not been
-         // written to disk.
-         if (!directoryManager.hasDirectory(name))
-         {
-            log.debug("index does not exist anymore: " + name);
-            // move on to next index
-            continue;
-         }
-         PersistentIndex index =
-            new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-               directoryManager);
-         index.setMaxFieldLength(handler.getMaxFieldLength());
-         index.setUseCompoundFile(handler.getUseCompoundFile());
-         index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
-         indexes.add(index);
-         merger.indexAdded(index.getName(), index.getNumDocuments());
+         merger.indexAdded(((PersistentIndex)index).getName(), ((PersistentIndex)index).getNumDocuments());
       }
 
       return merger;
