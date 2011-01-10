@@ -260,6 +260,27 @@ public class TransientNodeData extends TransientItemData implements Comparable, 
       return nodeData;
    }
 
+   /**
+    * Factory method
+    * 
+    * @param parent NodeData
+    * @param name  InternalQName
+    * @param primaryTypeName InternalQName
+    * @param mixinTypesName InternalQName[]
+    * @param identifier String
+    * @param acl AccessControlList
+    * @return
+    */
+   public static TransientNodeData createNodeData(NodeData parent, InternalQName name, InternalQName primaryTypeName,
+      InternalQName[] mixinTypesName, String identifier, AccessControlList acl)
+   {
+      TransientNodeData nodeData = null;
+      QPath path = QPath.makeChildPath(parent.getQPath(), name);
+      nodeData =
+         new TransientNodeData(path, identifier, -1, primaryTypeName, mixinTypesName, 0, parent.getIdentifier(), acl);
+      return nodeData;
+   }
+
    // ------------- Comparable /////
 
    public int compareTo(Object obj)

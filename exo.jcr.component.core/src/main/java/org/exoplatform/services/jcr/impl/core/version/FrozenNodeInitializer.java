@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.version;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -42,6 +43,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -75,9 +77,7 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
    private final ValueFactory valueFactory;
 
    public FrozenNodeInitializer(NodeData frozen, SessionDataManager dataManager, NodeTypeDataManager ntManager,
-      PlainChangesLog changesLog, ValueFactory valueFactory
-
-   ) throws RepositoryException
+      PlainChangesLog changesLog, ValueFactory valueFactory) throws RepositoryException
    {
       super(dataManager);
       this.dataManager = dataManager;
@@ -250,15 +250,29 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
       }
       else if (action == OnParentVersionAction.COPY)
       {
-         AccessControlList acl =
-            ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames())
-               ? node.getACL() : currentNode().getACL();
+         AccessControlList acl = currentNode().getACL();
+
+         boolean isPrivilegeable =
+            ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+         boolean isOwneable =
+            ntManager.isNodeType(Constants.EXO_OWNEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+         if (isPrivilegeable || isOwneable)
+         {
+            List<AccessControlEntry> permissionEntries = new ArrayList<AccessControlEntry>();
+            permissionEntries.addAll((isPrivilegeable ? node.getACL() : currentNode().getACL()).getPermissionEntries());
+
+            String owner = isOwneable ? node.getACL().getOwner() : currentNode().getACL().getOwner();
+
+            acl = new AccessControlList(owner, permissionEntries);
+         }
 
          QPath frozenPath = QPath.makeChildPath(currentNode().getQPath(), qname, node.getQPath().getIndex());
          frozenNode =
-            new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(), node
-               .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), currentNode().getIdentifier(), // parent
-               acl);
+            new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(),
+               node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), currentNode()
+                  .getIdentifier(), acl);
 
          contextNodes.push(frozenNode);
          changesLog.add(ItemState.createAddedState(frozenNode));
@@ -290,16 +304,30 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
          }
          else
          { // behaviour of COPY
-            AccessControlList acl =
-               ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames())
-                  ? node.getACL() : currentNode().getACL();
+            AccessControlList acl = currentNode().getACL();
+
+            boolean isPrivilegeable =
+               ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+            boolean isOwneable =
+               ntManager.isNodeType(Constants.EXO_OWNEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+            if (isPrivilegeable || isOwneable)
+            {
+               List<AccessControlEntry> accessList = new ArrayList<AccessControlEntry>();
+               accessList.addAll((isPrivilegeable ? node.getACL() : currentNode().getACL())
+                  .getPermissionEntries());
+
+               String owner = isOwneable ? node.getACL().getOwner() : currentNode().getACL().getOwner();
+
+               acl = new AccessControlList(owner, accessList);
+            }
 
             QPath frozenPath = QPath.makeChildPath(currentNode().getQPath(), qname, node.getQPath().getIndex());
             frozenNode =
-               new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(), node
-                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
-                  currentNode().getIdentifier(), // parent
-                  acl);
+               new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(),
+                  node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), currentNode()
+                     .getIdentifier(), acl);
 
             contextNodes.push(frozenNode);
             changesLog.add(ItemState.createAddedState(frozenNode));
@@ -325,7 +353,7 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
          // On checkin of N, a new node C will be created and placed in version
          // storage as a child of VN. This new C will be initialized by some
          // procedure defined for that type of child node.
-         // [PN] 10.04.06 Creatimg simply an new node with same name and same node
+         // [PN] 10.04.06 Creating simply as new node with same name and same node
          // type
          frozenNode =
             TransientNodeData.createNodeData(currentNode(), qname, node.getPrimaryTypeName(), node.getQPath()

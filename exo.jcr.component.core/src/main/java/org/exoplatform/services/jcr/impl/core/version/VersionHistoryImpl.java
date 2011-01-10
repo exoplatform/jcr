@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.version;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -43,7 +47,9 @@ import org.exoplatform.services.jcr.impl.util.EntityCollection;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.InvalidItemStateException;
@@ -95,6 +101,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
    /**
     * {@inheritDoc}
     */
+   @Override
    public VersionHistoryDataHelper getData()
    {
       return (VersionHistoryDataHelper)super.getData();
@@ -539,10 +546,45 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
    public void addVersion(NodeData versionableNodeData, String uuid, SessionChangesLog changesLog)
       throws RepositoryException
    {
+      checkValid();
+
+      NodeTypeDataManager ntManager = session.getWorkspace().getNodeTypesHolder();
+
+      boolean isPrivilegeable =
+         ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, versionableNodeData.getPrimaryTypeName(),
+            versionableNodeData.getMixinTypeNames());
+
+      boolean isOwneable =
+         ntManager.isNodeType(Constants.EXO_OWNEABLE, versionableNodeData.getPrimaryTypeName(),
+            versionableNodeData.getMixinTypeNames());
+
+      List<InternalQName> mixinsList = new ArrayList<InternalQName>();
+      mixinsList.add(Constants.MIX_REFERENCEABLE);
+
+      Set<AccessControlEntry> accessList = new HashSet<AccessControlEntry>();
+      accessList.addAll(nodeData().getACL().getPermissionEntries());
+
+      String owner = nodeData().getACL().getOwner();
+
+      if (isPrivilegeable)
+      {
+         accessList.addAll(versionableNodeData.getACL().getPermissionEntries());
+         mixinsList.add(Constants.EXO_PRIVILEGEABLE);
+      }
+
+      if (isOwneable)
+      {
+         owner = versionableNodeData.getACL().getOwner();
+         mixinsList.add(Constants.EXO_OWNEABLE);
+      }
+
+      AccessControlList acl = new AccessControlList(owner, new ArrayList<AccessControlEntry>(accessList));
+      InternalQName[] mixins = mixinsList.toArray(new InternalQName[mixinsList.size()]);
+
       // nt:version
       NodeData versionData =
          TransientNodeData.createNodeData(nodeData(), new InternalQName(null, nextVersionName()), Constants.NT_VERSION,
-            uuid);
+            mixins, uuid, acl);
       changesLog.add(ItemState.createAddedState(versionData));
 
       // jcr:primaryType
@@ -552,10 +594,39 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       changesLog.add(ItemState.createAddedState(propData));
 
       // jcr:mixinTypes
-      propData =
+      List<ValueData> mixValues = new ArrayList<ValueData>();
+      for (InternalQName mixin : mixins)
+      {
+         mixValues.add(new TransientValueData(mixin));
+      }
+      TransientPropertyData exoMixinTypes =
          TransientPropertyData.createPropertyData(versionData, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
-            new TransientValueData(Constants.MIX_REFERENCEABLE));
-      changesLog.add(ItemState.createAddedState(propData));
+            mixValues);
+      changesLog.add(ItemState.createAddedState(exoMixinTypes));
+
+      // exo:owner
+      if (isOwneable)
+      {
+         TransientPropertyData exoOwner =
+            TransientPropertyData.createPropertyData(versionData, Constants.EXO_OWNER, PropertyType.STRING, false,
+               new TransientValueData(acl.getOwner()));
+         changesLog.add(ItemState.createAddedState(exoOwner));
+      }
+
+      // exo:permissions
+      if (isPrivilegeable)
+      {
+         List<ValueData> permsValues = new ArrayList<ValueData>();
+         for (AccessControlEntry entry : acl.getPermissionEntries())
+         {
+            permsValues.add(new TransientValueData(entry));
+         }
+
+         TransientPropertyData exoPerms =
+            TransientPropertyData.createPropertyData(versionData, Constants.EXO_PERMISSIONS,
+               ExtendedPropertyType.PERMISSION, true, permsValues);
+         changesLog.add(ItemState.createAddedState(exoPerms));
+      }
 
       // jcr:uuid
       propData =

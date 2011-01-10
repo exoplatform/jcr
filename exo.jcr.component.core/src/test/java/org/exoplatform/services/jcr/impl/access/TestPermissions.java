@@ -25,11 +25,18 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.version.VersionHistoryImpl;
+import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Credentials;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.Repository;
+import javax.jcr.Session;
 import javax.jcr.version.Version;
 
 /**
@@ -91,21 +98,46 @@ public class TestPermissions extends BaseStandaloneTest
    @Override
    public void tearDown() throws Exception
    {
-      if (sessionWS1.getRootNode().hasNode("MARY-ReadOnly"))
-      {
-         sessionWS1.getRootNode().getNode("MARY-ReadOnly").remove();
-      }
+      List<SessionImpl> sessions = new ArrayList<SessionImpl>();
 
-      if (sessionWS1.getRootNode().hasNode("MARY-ReadWrite"))
-      {
-         sessionWS1.getRootNode().getNode("MARY-ReadWrite").remove();
-      }
-      sessionWS1.save();
+      sessions.add(sessionMaryWS);
+      sessions.add(sessionMaryWS1);
+      sessions.add(sessionWS);
+      sessions.add(sessionWS1);
 
-      sessionMaryWS.logout();
-      sessionMaryWS1.logout();
-      sessionWS.logout();
-      sessionWS1.logout();
+      for (SessionImpl session : sessions)
+      {
+         if (session != null)
+         {
+            Session sysSession = repository.getSystemSession(session.getWorkspace().getName());
+            try
+            {
+               Node rootNode = sysSession.getRootNode();
+               if (rootNode.hasNodes())
+               {
+                  // clean test root
+                  for (NodeIterator children = rootNode.getNodes(); children.hasNext();)
+                  {
+                     Node node = children.nextNode();
+                     if (!node.getPath().startsWith("/jcr:system"))
+                     {
+                        node.remove();
+                     }
+                  }
+                  sysSession.save();
+               }
+            }
+            catch (Exception e)
+            {
+               log.error("tearDown() ERROR " + getClass().getName() + "." + getName() + " " + e, e);
+            }
+            finally
+            {
+               sysSession.logout();
+               session.logout();
+            }
+         }
+      }
 
       super.tearDown();
    }
@@ -268,34 +300,267 @@ public class TestPermissions extends BaseStandaloneTest
       sessionWS1.save();
       node.addMixin("exo:privilegeable");
       node.getSession().save();
+
       node.setPermission("admin", new String[]{"read", "add_node", "set_property", "remove"});
       node.removePermission(SystemIdentity.ANY);
       NodeImpl subNode = (NodeImpl)node.addNode("subNode");
       node.getSession().save();
+
       node.checkin();
       node.setPermission(SystemIdentity.ANY, new String[]{"read"});
       node.getSession().save();
-      SessionImpl sessionJohnWS1 = null;
 
+      Credentials credentials = new CredentialsImpl("john", "exo".toCharArray());
+      SessionImpl sessionJohnWS1 = (SessionImpl)repositoryService.getRepository("db2").login(credentials, "ws1");
+
+      Credentials anonCredentials = new CredentialsImpl(SystemIdentity.ANONIM, "".toCharArray());
+      SessionImpl anonSession = (SessionImpl)repositoryService.getRepository("db2").login(anonCredentials, "ws1");
       try
       {
-         Credentials credentials = new CredentialsImpl("john", "exo".toCharArray());
-         sessionJohnWS1 = (SessionImpl)repositoryService.getRepository("db2").login(credentials, "ws1");
-         Node vNode = sessionJohnWS1.getRootNode().getNode("testAccessPermission");
+
+         NodeImpl vNode = (NodeImpl)sessionJohnWS1.getRootNode().getNode("testAccessPermission");
          assertNotNull(vNode);
-         vNode = vNode.getVersionHistory().getVersion("1");
+         VersionHistoryImpl vHist = (VersionHistoryImpl)vNode.getVersionHistory();
+         assertEquals(vHist.getACL().getPermissions("admin").size(), 0);
+         assertEquals(vHist.getACL().getPermissions("any").size(), 1); // there is a workaround in ScratchWorkspaceInitializer
+
+         vNode = (NodeImpl)vHist.getVersion("1");
+         assertEquals(vNode.getACL().getPermissions("admin").size(), 4);
+         assertEquals(vNode.getACL().getPermissions("any").size(), 1); // there is a workaround in ScratchWorkspaceInitializer
+
          assertNotNull(vNode);
-         vNode = vNode.getNode("jcr:frozenNode");
+         vNode = (NodeImpl)vNode.getNode("jcr:frozenNode");
          assertNotNull(vNode);
          assertNotNull(vNode.getNode("subNode"));
+
+         assertEquals(vNode.getACL().getPermissions("admin").size(), 4);
+         assertEquals(vNode.getACL().getPermissions("any").size(), 1); // there is a workaround in ScratchWorkspaceInitializer
+
+         //         try
+         //         {
+         //            anonSession.getNodeByUUID(vNode.getUUID());
+         //            fail("Anonim shoul not have permission to node");
+         //         }
+         //         catch (Exception e)
+         //         {
+         //         }
       }
       finally
       {
+         if (anonSession != null)
+         {
+            anonSession.logout();
+         }
+
          if (sessionJohnWS1 != null)
          {
             sessionJohnWS1.logout();
          }
       }
+   }
+
+   public void testAccessPermissionForAny() throws Exception
+   {
+      // At creation time
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode("testAccessPermissionAny");
+      node.addMixin("mix:versionable");
+      sessionWS1.save();
+      node.addMixin("exo:privilegeable");
+      node.getSession().save();
+
+      node.clearACL();
+      node.setPermission("admin", new String[]{"read", "add_node", "set_property", "remove"});
+      node.setPermission(SystemIdentity.ANY, new String[]{"read"});
+
+      NodeImpl subNode = (NodeImpl)node.addNode("subNode");
+      node.getSession().save();
+
+      Version version = node.checkin();
+
+      Credentials credentials = new CredentialsImpl("john", "exo".toCharArray());
+      SessionImpl sessionJohnWS1 = (SessionImpl)repositoryService.getRepository("db2").login(credentials, "ws1");
+
+      Credentials anonCredentials = new CredentialsImpl(SystemIdentity.ANONIM, "".toCharArray());
+      SessionImpl anonSession = (SessionImpl)repositoryService.getRepository("db2").login(anonCredentials, "ws1");
+      try
+      {
+         NodeImpl vNode = (NodeImpl)sessionJohnWS1.getRootNode().getNode("testAccessPermissionAny");
+         assertNotNull(vNode);
+         VersionHistoryImpl vHist = (VersionHistoryImpl)vNode.getVersionHistory();
+         assertEquals(vHist.getACL().getPermissions("admin").size(), 0);
+         assertEquals(vHist.getACL().getPermissions("any").size(), 1); // there is a workaround in ScratchWorkspaceInitializer
+
+         vNode = (NodeImpl)vHist.getVersion("1");
+         assertEquals(vNode.getACL().getPermissions("admin").size(), 4);
+         assertEquals(vNode.getACL().getPermissions("any").size(), 1);
+
+         assertNotNull(vNode);
+         vNode = (NodeImpl)vNode.getNode("jcr:frozenNode");
+         assertNotNull(vNode);
+         assertNotNull(vNode.getNode("subNode"));
+
+         assertEquals(vNode.getACL().getPermissions("admin").size(), 4);
+         assertEquals(vNode.getACL().getPermissions("any").size(), 1);
+
+         vNode = (NodeImpl)anonSession.getRootNode().getNode("testAccessPermissionAny");
+         assertNotNull(vNode);
+         vHist = (VersionHistoryImpl)vNode.getVersionHistory();
+         assertEquals(vHist.getACL().getPermissions("admin").size(), 0);
+         assertEquals(vHist.getACL().getPermissions("any").size(), 1); // there is a workaround in ScratchWorkspaceInitializer
+
+         vNode = (NodeImpl)vHist.getVersion("1");
+         assertEquals(vNode.getACL().getPermissions("admin").size(), 4);
+         assertEquals(vNode.getACL().getPermissions("any").size(), 1);
+
+         assertNotNull(vNode);
+         vNode = (NodeImpl)vNode.getNode("jcr:frozenNode");
+         assertNotNull(vNode);
+         assertNotNull(vNode.getNode("subNode"));
+
+         assertEquals(vNode.getACL().getPermissions("admin").size(), 4);
+         assertEquals(vNode.getACL().getPermissions("any").size(), 1);
+
+         vNode = (NodeImpl)anonSession.getNodeByUUID(vNode.getUUID());
+         assertNotNull(vNode);
+         assertNotNull(vNode.getNode("subNode"));
+      }
+      finally
+      {
+         if (anonSession != null)
+         {
+            anonSession.logout();
+         }
+
+         if (sessionJohnWS1 != null)
+         {
+            sessionJohnWS1.logout();
+         }
+      }
+   }
+
+   public void testAccessPermissionDuringMove1() throws Exception
+   {
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode("srcNode");
+      sessionWS1.save();
+
+      assertEquals(node.getACL().getPermissions("mary").size(), 0);
+      assertEquals(node.getACL().getOwner(), SystemIdentity.SYSTEM);
+
+      // destination node has its own permissions and owner
+      node = (NodeImpl)sessionWS1.getRootNode().addNode("dstNode");
+      node.addMixin("exo:privilegeable");
+      node.addMixin("exo:owneable");
+      node.setPermission("mary", new String[]{"read", "add_node", "set_property", "remove"});
+      sessionWS1.save();
+
+      assertEquals(node.getACL().getPermissions("mary").size(), 4);
+      assertEquals(node.getACL().getOwner(), "admin");
+
+      // move node to new destination with new ACL
+      sessionWS1.move("/srcNode", "/dstNode/newSrc");
+      sessionWS1.save();
+
+      node = (NodeImpl)sessionWS1.getRootNode().getNode("dstNode/newSrc");
+
+      // acl should be changed
+      node = (NodeImpl)sessionWS1.getRootNode().getNode("dstNode/newSrc");
+      assertEquals(node.getACL().getPermissions("mary").size(), 4);
+      assertEquals(node.getACL().getOwner(), "admin");
+   }
+
+   public void testAccessPermissionDuringMove2() throws Exception
+   {
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode("srcNode");
+      node.addMixin("exo:privilegeable");
+      node.addMixin("exo:owneable");
+      node.setPermission("mary", new String[]{"read", "add_node", "set_property", "remove"});
+      sessionWS1.save();
+
+      assertEquals(node.getACL().getPermissions("mary").size(), 4);
+      assertEquals(node.getACL().getPermissions("admin").size(), 0);
+      assertEquals(node.getACL().getOwner(), "admin");
+
+      node = (NodeImpl)sessionWS1.getRootNode().addNode("dstNode");
+      node.addMixin("exo:privilegeable");
+      node.setPermission("admin", new String[]{"read", "add_node", "set_property", "remove"});
+      sessionWS1.save();
+
+      assertEquals(node.getACL().getPermissions("admin").size(), 4);
+      assertEquals(node.getACL().getOwner(), SystemIdentity.SYSTEM);
+
+      // move node to new destination with new ACL
+      sessionWS1.move("/srcNode", "/dstNode/newSrc");
+      sessionWS1.save();
+
+      node = (NodeImpl)sessionWS1.getRootNode().getNode("dstNode/newSrc");
+
+      // acl should not be changed
+      node = (NodeImpl)sessionWS1.getRootNode().getNode("dstNode/newSrc");
+      assertEquals(node.getACL().getPermissions("mary").size(), 4);
+      assertEquals(node.getACL().getPermissions("admin").size(), 0);
+      assertEquals(node.getACL().getOwner(), "admin");
+   }
+
+   public void testAccessPermissionDuringCopy1() throws Exception
+   {
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode("srcNode");
+      sessionWS1.save();
+
+      assertEquals(node.getACL().getPermissions("mary").size(), 0);
+      assertEquals(node.getACL().getOwner(), SystemIdentity.SYSTEM);
+
+      // destination node has its own permissions and owner
+      node = (NodeImpl)sessionWS1.getRootNode().addNode("dstNode");
+      node.addMixin("exo:privilegeable");
+      node.addMixin("exo:owneable");
+      node.setPermission("mary", new String[]{"read", "add_node", "set_property", "remove"});
+      sessionWS1.save();
+
+      assertEquals(node.getACL().getPermissions("mary").size(), 4);
+      assertEquals(node.getACL().getOwner(), "admin");
+
+      // move node to new destination with new ACL
+      sessionWS1.getWorkspace().copy("/srcNode", "/dstNode/newSrc");
+
+      node = (NodeImpl)sessionWS1.getRootNode().getNode("dstNode/newSrc");
+
+      // acl should be changed
+      node = (NodeImpl)sessionWS1.getRootNode().getNode("dstNode/newSrc");
+      assertEquals(node.getACL().getPermissions("mary").size(), 4);
+      assertEquals(node.getACL().getOwner(), "admin");
+   }
+
+   public void testAccessPermissionDuringCopy2() throws Exception
+   {
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode("srcNode");
+      node.addMixin("exo:privilegeable");
+      node.addMixin("exo:owneable");
+      node.setPermission("mary", new String[]{"read", "add_node", "set_property", "remove"});
+      sessionWS1.save();
+
+      assertEquals(node.getACL().getPermissions("mary").size(), 4);
+      assertEquals(node.getACL().getPermissions("admin").size(), 0);
+      assertEquals(node.getACL().getOwner(), "admin");
+
+      node = (NodeImpl)sessionWS1.getRootNode().addNode("dstNode");
+      node.addMixin("exo:privilegeable");
+      node.setPermission("admin", new String[]{"read", "add_node", "set_property", "remove"});
+      sessionWS1.save();
+
+      assertEquals(node.getACL().getPermissions("admin").size(), 4);
+      assertEquals(node.getACL().getOwner(), SystemIdentity.SYSTEM);
+
+      // move node to new destination with new ACL
+      sessionWS1.getWorkspace().copy("/srcNode", "/dstNode/newSrc");
+      sessionWS1.save();
+
+      node = (NodeImpl)sessionWS1.getRootNode().getNode("dstNode/newSrc");
+
+      // acl should not be changed
+      node = (NodeImpl)sessionWS1.getRootNode().getNode("dstNode/newSrc");
+      assertEquals(node.getACL().getPermissions("mary").size(), 4);
+      assertEquals(node.getACL().getPermissions("admin").size(), 0);
+      assertEquals(node.getACL().getOwner(), "admin");
    }
 
    /**
@@ -399,8 +664,45 @@ public class TestPermissions extends BaseStandaloneTest
       }
 
       // v1
-      node.checkin();
+      VersionImpl version = (VersionImpl)node.checkin();
       node.checkout();
+
+      // check frozen node and its children nodes
+      NodeImpl frozenNode =
+         (NodeImpl)sessionMaryWS1.getRootNode().getNode(TESTNODE_NAME).getVersionHistory().getVersion("1")
+            .getNode("jcr:frozenNode");
+
+      assertTrue(frozenNode.hasPermission(PermissionType.READ));
+      assertTrue(frozenNode.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(frozenNode.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(frozenNode.hasPermission(PermissionType.REMOVE));
+      assertEquals(((NodeData)frozenNode.getData()).getACL().getOwner(), "admin");
+
+      marysChildNode1 = (NodeImpl)frozenNode.getNode(CHILD_TESTNODE_NAME1);
+      assertTrue(marysChildNode1.hasPermission(PermissionType.READ));
+      assertTrue(marysChildNode1.hasPermission(PermissionType.SET_PROPERTY));
+      assertFalse(marysChildNode1.hasPermission(PermissionType.ADD_NODE));
+      assertEquals(((NodeData)marysChildNode1.getData()).getACL().getOwner(), "admin");
+
+      marysChildNode2 = (NodeImpl)frozenNode.getNode(CHILD_TESTNODE_NAME2);
+      assertTrue(marysNode.hasPermission(PermissionType.READ));
+      assertTrue(marysNode.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysNode.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysNode.hasPermission(PermissionType.REMOVE));;
+      assertEquals(((NodeData)marysChildNode2.getData()).getACL().getOwner(), "admin");
+
+      marysChildNode3 = (NodeImpl)frozenNode.getNode(CHILD_TESTNODE_NAME3);
+      assertTrue(marysChildNode3.hasPermission(PermissionType.READ));
+      assertTrue(marysChildNode3.hasPermission(PermissionType.SET_PROPERTY));
+      assertTrue(marysChildNode3.hasPermission(PermissionType.ADD_NODE));
+      assertFalse(marysChildNode3.hasPermission(PermissionType.REMOVE));
+      assertEquals(((NodeData)marysChildNode3.getData()).getACL().getOwner(), "john");
+
+      marysChildNode4 = (NodeImpl)frozenNode.getNode(CHILD_TESTNODE_NAME4);
+      assertTrue(marysChildNode4.hasPermission(PermissionType.READ));
+      assertTrue(marysChildNode4.hasPermission(PermissionType.SET_PROPERTY));
+      assertFalse(marysChildNode4.hasPermission(PermissionType.REMOVE));;
+      assertEquals(((NodeData)marysChildNode2.getData()).getACL().getOwner(), "admin");
 
       try
       {
