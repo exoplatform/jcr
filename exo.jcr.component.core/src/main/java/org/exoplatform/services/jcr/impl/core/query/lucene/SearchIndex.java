@@ -62,6 +62,9 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.SearchIndexConfigurationHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Suspendable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -95,7 +98,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
  * Lucene.
  */
-public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
+public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener, Suspendable
 {
 
    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
@@ -2804,6 +2807,42 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       catch (RepositoryException e)
       {
          log.error("Can not recover error log.", e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void suspend() throws SuspendException
+   {
+      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      {
+         try
+         {
+            index.suspend();
+         }
+         catch (IOException e)
+         {
+            throw new SuspendException(e);
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void resume() throws ResumeException
+   {
+      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      {
+         try
+         {
+            index.resume();
+         }
+         catch (IOException e)
+         {
+            throw new ResumeException(e);
+         }
       }
    }
 }

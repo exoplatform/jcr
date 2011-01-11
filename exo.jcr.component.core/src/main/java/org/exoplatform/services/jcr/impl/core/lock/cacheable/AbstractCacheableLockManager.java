@@ -104,6 +104,11 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    protected LockRemover lockRemover;
 
    /**
+    * Workspace configuration;
+    */
+   protected final WorkspaceEntry config;
+
+   /**
     * SessionLockManagers that uses this LockManager.
     */
    protected Map<String, CacheableSessionLockManager> sessionLockManagers;
@@ -164,6 +169,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
          lockTimeOut = DEFAULT_LOCK_TIMEOUT;
       }
 
+      this.config = config;
       this.dataManager = dataManager;
       this.sessionLockManagers = new ConcurrentHashMap<String, CacheableSessionLockManager>();
       this.tm = transactionManager;

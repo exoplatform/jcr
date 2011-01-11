@@ -61,14 +61,14 @@ public class TestRdbmsFullBackupJob
       indexesDir = new File(url.getFile(), FullBackupJob.SYSTEM_INDEX_DIR);
       assertTrue(indexesDir.exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM.dump").exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM.len").exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE.dump").exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE.len").exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF.dump").exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF.len").exists());
 
    }
 
@@ -97,14 +97,14 @@ public class TestRdbmsFullBackupJob
       indexesDir = new File(url.getFile(), FullBackupJob.SYSTEM_INDEX_DIR);
       assertFalse(indexesDir.exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM.dump").exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM.len").exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE.dump").exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE.len").exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF.dump").exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF.len").exists());
 
    }
 }

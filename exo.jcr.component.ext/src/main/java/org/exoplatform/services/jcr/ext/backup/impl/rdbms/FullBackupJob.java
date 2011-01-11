@@ -19,8 +19,6 @@
 package org.exoplatform.services.jcr.ext.backup.impl.rdbms;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
@@ -30,40 +28,25 @@ import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
 import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipWriterImpl;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
 import java.util.Calendar;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SARL Author : Alex Reshetnyak alex.reshetnyak@exoplatform.com.ua Nov
@@ -87,55 +70,9 @@ public class FullBackupJob extends AbstractFullBackupJob
    public static final String VALUE_STORAGE_DIR = "values";
 
    /**
-    * Suffix for content file.
-    */
-   public static final String CONTENT_FILE_SUFFIX = ".dump";
-
-   /**
-    * Suffix for content length file.
-    */
-   public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
-
-   /**
     * Logger.
     */
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
-
-   /**
-    * Generic dialect.
-    */
-   public static final int DB_DIALECT_GENERIC = DBConstants.DB_DIALECT_GENERIC.hashCode();
-
-   /**
-    * HSQLDB dialect.
-    */
-   public static final int DB_DIALECT_HSQLDB = DBConstants.DB_DIALECT_HSQLDB.hashCode();
-
-   /**
-    * MySQL dialect.
-    */
-   public static final int DB_DIALECT_MYSQL = DBConstants.DB_DIALECT_MYSQL.hashCode();
-
-   /**
-    * MySQL-UTF8 dialect.
-    */
-   public static final int DB_DIALECT_MYSQL_UTF8 = DBConstants.DB_DIALECT_MYSQL_UTF8.hashCode();
-
-   /**
-    * DB2 dialect.
-    */
-   public static final int DB_DIALECT_DB2 = DBConstants.DB_DIALECT_DB2.hashCode();
-
-   /**
-    * DB2V8 dialect.
-    */
-   public static final int DB_DIALECT_DB2V8 = DBConstants.DB_DIALECT_DB2V8.hashCode();
-
-   /**
-    * PGSQL dialect.
-    */
-   public static final int DB_DIALECT_PGSQL = DBConstants.DB_DIALECT_PGSQL.hashCode();
-
 
    /**
     * {@inheritDoc}
@@ -183,8 +120,12 @@ public class FullBackupJob extends AbstractFullBackupJob
    {
       notifyListeners();
 
-      Connection jdbcConn = null;
-      Statement lockStatemnt = null;
+      List<Backupable> backupableComponents =
+         repository.getWorkspaceContainer(workspaceName).getComponentInstancesOfType(Backupable.class);
+
+      List<Suspendable> suspendableComponents =
+         repository.getWorkspaceContainer(workspaceName).getComponentInstancesOfType(Suspendable.class);
+
       try
       {
          WorkspaceEntry workspaceEntry = null;
@@ -196,163 +137,39 @@ public class FullBackupJob extends AbstractFullBackupJob
                break;
             }
          }
+
          if (workspaceEntry == null)
          {
             throw new RepositoryConfigurationException("Workpace name " + workspaceName
                + " not found in repository configuration");
          }
 
-         String dsName = workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-         if (dsName == null)
+         // suspend all components
+         for (Suspendable component : suspendableComponents)
          {
-            throw new RepositoryConfigurationException("Data source name not found in workspace configuration "
-               + workspaceName);
+            component.suspend();
          }
 
-         String multiDb = workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB);
-         if (multiDb == null)
+         // backup all components
+         for (Backupable component : backupableComponents)
          {
-            throw new RepositoryConfigurationException(JDBCWorkspaceDataContainer.MULTIDB
-               + " parameter not found in workspace " + workspaceName + " configuration");
-         }
-         boolean isMultiDb = Boolean.parseBoolean(multiDb);
-
-         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-         if (ds == null)
-         {
-            throw new NameNotFoundException("Data source " + dsName + " not found");
-         }
-
-         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-         {
-            public Connection run() throws Exception
-            {
-               return ds.getConnection();
-
-            }
-         });
-         
-         RDBMSBackupInfoWriter backupInfoWriter = new RDBMSBackupInfoWriter(getStorageURL().getFile());
-
-         backupInfoWriter.setRepositoryName(repository.getConfiguration().getName());
-         backupInfoWriter.setWorkspaceName(workspaceName);
-         backupInfoWriter.setMultiDb(isMultiDb);
-
-         // dump JCR data
-         String[][] scripts;
-         if (isMultiDb)
-         {
-            scripts =
-               new String[][]{
-                  {"JCR_MITEM", "select * from JCR_MITEM where JCR_MITEM.name <> '" + Constants.ROOT_PARENT_NAME + "'"},
-                  {"JCR_MVALUE", "select * from JCR_MVALUE"}, {"JCR_MREF", "select * from JCR_MREF"}};
-         }
-         else
-         {
-            scripts =
-               new String[][]{
-                  {"JCR_SITEM", "select * from JCR_SITEM where CONTAINER_NAME='" + workspaceName + "'"},
-                  {
-                     "JCR_SVALUE",
-                     "select * from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
-                        + workspaceName + "')"},
-                  {
-                     "JCR_SREF",
-                     "select * from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
-                        + workspaceName + "')"}};
-         }
-
-         backupInfoWriter.setItemTableName(scripts[0][0]);
-         backupInfoWriter.setValueTableName(scripts[1][0]);
-         backupInfoWriter.setRefTableName(scripts[2][0]);
-
-
-         // TODO set workspace waiting 
-
-         // Lock tables
-         //         ResultSet rs = null;
-         //         try
-         //         {
-         //            DatabaseMetaData metaData = jdbcConn.getMetaData();
-         //
-         //            rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-         //            lockStatemnt = jdbcConn.createStatement();
-         //            int dialect = DialectDetecter.detect(metaData).hashCode();
-         //
-         //            if (dialect == DB_DIALECT_HSQLDB)
-         //            {
-         //               while (rs.next())
-         //               {
-         //                  lockStatemnt.execute("SET TABLE " + rs.getString("TABLE_NAME") + " READONLY TRUE");
-         //               }
-         //            }
-         //            else if (dialect == DB_DIALECT_MYSQL || dialect == DB_DIALECT_MYSQL_UTF8)
-         //            {
-         //               String lock = "";
-         //               while (rs.next())
-         //               {
-         //                  lock += rs.getString("TABLE_NAME") + " READ,";
-         //               }
-         //               lockStatemnt.execute("LOCK TABLES " + lock.substring(0, lock.length() - 1));
-         //            }
-         //         }
-         //         finally
-         //         {
-         //            if (rs != null)
-         //            {
-         //               rs.close();
-         //            }
-         //         }
-
-         // dump JCR data
-         for (String script[] : scripts)
-         {
-            dumpTable(jdbcConn, script[0], script[1]);
-         }
-
-         // dump JCR LOCK data
-         LockManagerEntry lockEntry = workspaceEntry.getLockManager();
-         if (lockEntry != null)
-         {
-            List<String> lockTableNames = AbstractCacheableLockManager.getLockTableNames(lockEntry);
-            backupInfoWriter.setLockTableNames(lockTableNames);
-
-            for (String tableName : lockTableNames)
-            {
-               dumpTable(jdbcConn, tableName, AbstractCacheableLockManager.getSelectScript(tableName));
-            }
+            component.backup(new File(getStorageURL().getFile()));
          }
 
          backupValueStorage(workspaceEntry);
          backupIndex(workspaceEntry);
-
-         // write backup information
-         backupInfoWriter.write();
-
-         // TODO set workspace waiting
-
       }
       catch (RepositoryConfigurationException e)
       {
          log.error("Full backup failed " + getStorageURL().getPath(), e);
          notifyError("Full backup failed", e);
       }
-      catch (NameNotFoundException e)
+      catch (SuspendException e)
       {
          log.error("Full backup failed " + getStorageURL().getPath(), e);
          notifyError("Full backup failed", e);
       }
-      catch (NamingException e)
-      {
-         log.error("Full backup failed " + getStorageURL().getPath(), e);
-         notifyError("Full backup failed", e);
-      }
-      catch (SQLException e)
-      {
-         log.error("Full backup failed " + getStorageURL().getPath(), e);
-         notifyError("Full backup failed", e);
-      }
-      catch (IOException e)
+      catch (BackupException e)
       {
          log.error("Full backup failed " + getStorageURL().getPath(), e);
          notifyError("Full backup failed", e);
@@ -362,52 +179,20 @@ public class FullBackupJob extends AbstractFullBackupJob
          log.error("Full backup failed " + getStorageURL().getPath(), e);
          notifyError("Full backup failed", e);
       }
+      catch (IOException e)
+      {
+         log.error("Full backup failed " + getStorageURL().getPath(), e);
+         notifyError("Full backup failed", e);
+      }
       finally
       {
-         if (jdbcConn != null)
+         for (Suspendable component : suspendableComponents)
          {
             try
             {
-               // unlock tables
-               //               if (lockStatemnt != null)
-               //               {
-               //                  ResultSet rs = null;
-               //                  try
-               //                  {
-               //                     DatabaseMetaData metaData = jdbcConn.getMetaData();
-               //                     int dialect = DialectDetecter.detect(metaData).hashCode();
-               //
-               //                     if (dialect == DB_DIALECT_HSQLDB)
-               //                     {
-               //                        rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-               //                        while (rs.next())
-               //                        {
-               //                           String tableName = rs.getString("TABLE_NAME");
-               //                           lockStatemnt.execute("SET TABLE " + tableName + " READONLY FALSE");
-               //                        }
-               //                     }
-               //                     else
-               //                     {
-               //                        lockStatemnt.execute("UNLOCK TABLES");
-               //                     }
-               //                  }
-               //                  finally
-               //                  {
-               //                     if (rs != null)
-               //                     {
-               //                        rs.close();
-               //                     }
-               //
-               //                     if (lockStatemnt != null)
-               //                     {
-               //                        lockStatemnt.close();
-               //                     }
-               //                  }
-               //               }
-
-               jdbcConn.close();
+               component.resume();
             }
-            catch (SQLException e)
+            catch (ResumeException e)
             {
                log.error("Full backup failed " + getStorageURL().getPath(), e);
                notifyError("Full backup failed", e);
@@ -489,112 +274,6 @@ public class FullBackupJob extends AbstractFullBackupJob
 
                copyDirectory(srcDir, destDir);
             }
-         }
-      }
-   }
-
-   /**
-    * Dump table.
-    */
-   protected void dumpTable(Connection jdbcConn, String tableName, String script) throws SQLException, IOException,
-      BackupOperationException
-   {
-      int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
-
-      ObjectZipWriterImpl contentWriter = null;
-      ObjectZipWriterImpl contentLenWriter = null;
-      PreparedStatement stmt = null;
-      ResultSet rs = null;
-      try
-      {
-         File contentFile = new File(getStorageURL().getFile(), tableName + CONTENT_FILE_SUFFIX);
-         contentWriter = new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(contentFile));
-         contentWriter.putNextEntry(new ZipEntry(tableName));
-
-         File contentLenFile = new File(getStorageURL().getFile(), tableName + CONTENT_LEN_FILE_SUFFIX);
-         contentLenWriter = new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(contentLenFile));
-         contentLenWriter.putNextEntry(new ZipEntry(tableName));
-
-         stmt = jdbcConn.prepareStatement(script);
-         rs = stmt.executeQuery();
-         ResultSetMetaData metaData = rs.getMetaData();
-
-         int columnCount = metaData.getColumnCount();
-         int[] columnType = new int[columnCount];
-
-         contentWriter.writeInt(columnCount);
-         for (int i = 0; i < columnCount; i++)
-         {
-            columnType[i] = metaData.getColumnType(i + 1);
-            contentWriter.writeInt(columnType[i]);
-            contentWriter.writeString(metaData.getColumnName(i + 1));
-         }
-
-         // Now we can output the actual data
-         while (rs.next())
-         {
-            for (int i = 0; i < columnCount; i++)
-            {
-               InputStream value;
-               if (dialect == DB_DIALECT_HSQLDB)
-               {
-                  if (columnType[i] == Types.VARBINARY)
-                  {
-                     value = rs.getBinaryStream(i+1);
-                  }
-                  else
-                  {
-                     String str = rs.getString(i+1);
-                     value = str == null ? null : new ByteArrayInputStream(str.getBytes(Constants.DEFAULT_ENCODING));
-                  }
-               }
-               else
-               {
-                  value = rs.getBinaryStream(i+1);
-               }
-               
-               if (value == null)
-               {
-                  contentLenWriter.writeLong(-1);
-               }
-               else
-               {
-                  long len = 0;
-                  int read = 0;
-                  byte[] tmpBuff = new byte[2048];
-
-                  while ((read = value.read(tmpBuff)) >= 0)
-                  {
-                     contentWriter.write(tmpBuff, 0, read);
-                     len += read;
-                  }
-                  contentLenWriter.writeLong(len);
-               }
-            }
-         }
-      }
-      finally
-      {
-         if (contentWriter != null)
-         {
-            contentWriter.closeEntry();
-            contentWriter.close();
-         }
-
-         if (contentLenWriter != null)
-         {
-            contentLenWriter.closeEntry();
-            contentLenWriter.close();
-         }
-
-         if (rs != null)
-         {
-            rs.close();
-         }
-
-         if (stmt != null)
-         {
-            stmt.close();
          }
       }
    }

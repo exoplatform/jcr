@@ -16,12 +16,16 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
@@ -30,9 +34,15 @@ import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DumpTable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreTable;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -47,6 +57,8 @@ import org.jboss.cache.loader.CacheLoader;
 import org.jboss.cache.loader.CacheLoaderManager;
 import org.jboss.cache.lock.TimeoutException;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -61,6 +73,8 @@ import java.util.Set;
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
@@ -74,7 +88,7 @@ import javax.transaction.TransactionManager;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "lockmanager"))
-public class CacheableLockManagerImpl extends AbstractCacheableLockManager
+public class CacheableLockManagerImpl extends AbstractCacheableLockManager implements Backupable
 {
 
    public static final String JBOSSCACHE_JDBC_CL_DATASOURCE = "jbosscache-cl-cache.jdbc.datasource";
@@ -568,6 +582,201 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          node = AccessController.doPrivileged(action);
       }
       node.setResident(true);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void backup(File storageDir) throws BackupException
+   {
+      Connection jdbcConn = null;
+
+      try
+      {
+         List<String> tableNames = new ArrayList<String>();
+         String dsName = null;
+
+         LockManagerEntry lockManagerEntry = config.getLockManager();
+         if (lockManagerEntry != null)
+         {
+            for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
+            {
+               if (entry.getName().equals(JBOSSCACHE_JDBC_TABLE_NAME))
+               {
+                  tableNames.add(entry.getValue());
+                  tableNames.add(entry.getValue() + "_D");
+               }
+               else if (entry.getName().equals(JBOSSCACHE_JDBC_CL_DATASOURCE))
+               {
+                  dsName = entry.getValue();
+               }
+            }
+         }
+          
+         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
+         if (ds == null)
+         {
+            throw new NameNotFoundException("Data source " + dsName + " not found");
+         }
+
+         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+         {
+            public Connection run() throws Exception
+            {
+               return ds.getConnection();
+
+            }
+         });
+         
+         for (String table : tableNames)
+         {
+            DumpTable.dump(jdbcConn, table, "SELECT * FROM " + table, storageDir);
+         }
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (SQLException e)
+      {
+         SQLException next = e.getNextException();
+         String errorTrace = "";
+         while (next != null)
+         {
+            errorTrace += next.getMessage() + "; ";
+            next = next.getNextException();
+         }
+
+         Throwable cause = e.getCause();
+         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
+
+         throw new BackupException(msg, e);
+      }
+      catch (NamingException e)
+      {
+         throw new BackupException(e);
+      }
+      finally
+      {
+         if (jdbcConn != null)
+         {
+            try
+            {
+               jdbcConn.close();
+            }
+            catch (SQLException e)
+            {
+               throw new BackupException(e);
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restore(File storageDir) throws RestoreException
+   {
+      Connection jdbcConn = null;
+
+      try
+      {
+         List<String> tableNames = new ArrayList<String>();
+         String dsName = null;
+
+         LockManagerEntry lockManagerEntry = config.getLockManager();
+         if (lockManagerEntry != null)
+         {
+            for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
+            {
+               if (entry.getName().equals(JBOSSCACHE_JDBC_TABLE_NAME))
+               {
+                  tableNames.add(entry.getValue());
+                  tableNames.add(entry.getValue() + "_D");
+               }
+               else if (entry.getName().equals(JBOSSCACHE_JDBC_CL_DATASOURCE))
+               {
+                  dsName = entry.getValue();
+               }
+            }
+         }
+          
+         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
+         if (ds == null)
+         {
+            throw new NameNotFoundException("Data source " + dsName + " not found");
+         }
+
+         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+         {
+            public Connection run() throws Exception
+            {
+               return ds.getConnection();
+
+            }
+         });
+         jdbcConn.setAutoCommit(false);
+
+         int maxBufferSize =
+            config.getContainer().getParameterInteger(JDBCWorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+               JDBCWorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+         File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+
+         RestoreTable restoreTable = new RestoreTable(null, tempDir, maxBufferSize);
+         restoreTable.setSrcContainerName(null);
+         restoreTable.setSrcMultiDb(null);
+         restoreTable.setDstContainerName(null);
+         restoreTable.setDstMultiDb(null);
+         restoreTable.setSkipColumnIndex(null);
+         restoreTable.setDeleteColumnIndex(null);
+         restoreTable.setNewColumnIndex(null);
+         restoreTable.setConvertColumnIndex(null);
+         
+         for (String table : tableNames)
+         {
+            restoreTable.setContentFile(new File(storageDir, table + DumpTable.CONTENT_FILE_SUFFIX));
+            restoreTable.setContentLenFile(new File(storageDir, table + DumpTable.CONTENT_LEN_FILE_SUFFIX));
+
+            restoreTable.restore(jdbcConn, table, storageDir);
+         }
+      }
+      catch (IOException e)
+      {
+         throw new RestoreException(e);
+      }
+      catch (SQLException e)
+      {
+         SQLException next = e.getNextException();
+         String errorTrace = "";
+         while (next != null)
+         {
+            errorTrace += next.getMessage() + "; ";
+            next = next.getNextException();
+         }
+
+         Throwable cause = e.getCause();
+         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
+
+         throw new RestoreException(msg, e);
+      }
+      catch (NamingException e)
+      {
+         throw new RestoreException(e);
+      }
+      finally
+      {
+         if (jdbcConn != null)
+         {
+            try
+            {
+               jdbcConn.close();
+            }
+            catch (SQLException e)
+            {
+               throw new RestoreException(e);
+            }
+         }
+      }
    }
 
 }

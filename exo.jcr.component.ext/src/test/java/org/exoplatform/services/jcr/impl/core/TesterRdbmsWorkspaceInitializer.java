@@ -20,11 +20,9 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.access.AccessManager;
-import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RDBMSBackupInfoReader;
 import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
@@ -32,8 +30,6 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceD
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -72,13 +68,10 @@ public class TesterRdbmsWorkspaceInitializer extends RdbmsWorkspaceInitializer
       super.restoreIndex();
    }
 
-   public void restoreTables(Connection jdbcConn, int tableType, boolean isMultiDB, LockManagerEntry lockManagerEntry,
-      String storageDir) throws RepositoryConfigurationException, IOException, SQLException
+   @Override
+   public void fullRdbmsRestore() throws RepositoryException
    {
-      RDBMSBackupInfoReader backupInfo = new RDBMSBackupInfoReader(storageDir);
-      RestoreTableHelper helper = new RestoreTableHelper(tableType, isMultiDB, backupInfo);
-
-      super.restoreTable(jdbcConn, helper);
+      super.fullRdbmsRestore();
    }
 
 }

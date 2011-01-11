@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.core;
 
 import org.exoplatform.services.jcr.impl.WorkspaceContainer;
 
+import java.util.List;
+
 /**
  * Created by The eXo Platform SAS .<br/> An entry point to the implementation, used for extending
  * functionality
@@ -51,6 +53,18 @@ public final class WorkspaceContainerFacade
    public final String getWorkspaceName()
    {
       return this.workspaceName;
+   }
+
+   /**
+    * Returns list of components of specific type.
+    * 
+    * @param componentType
+    *          component type
+    * @return List<Object>
+    */
+   public List getComponentInstancesOfType(Class componentType)
+   {
+      return container.getComponentInstancesOfType(componentType);
    }
 
    /**

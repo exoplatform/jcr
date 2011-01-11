@@ -28,8 +28,7 @@ import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
  */
-public class TestRDBMSBackupManager
-   extends AbstractBackupUseCasesTest
+public class TestRDBMSBackupManager extends AbstractBackupUseCasesTest
 {
 
    @Override

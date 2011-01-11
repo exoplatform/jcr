@@ -18,9 +18,9 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -52,6 +52,9 @@ import org.exoplatform.services.jcr.impl.core.value.NameValue;
 import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Suspendable;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.factories.annotations.NonVolatile;
@@ -86,7 +89,7 @@ import javax.jcr.query.Query;
  * @version $Id: SearchManager.java 1008 2009-12-11 15:14:51Z nzamosenchuk $
  */
 @NonVolatile
-public class SearchManager implements Startable, MandatoryItemsPersistenceListener
+public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable
 {
 
    /**
@@ -140,7 +143,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * The unique name of the related workspace
     */
    protected final String wsId;
-   
+
    /**
     * Creates a new <code>SearchManager</code>.
     * 
@@ -852,6 +855,28 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public String getWsId()
    {
       return wsId;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void suspend() throws SuspendException
+   {
+      if (handler instanceof Suspendable)
+      {
+         ((Suspendable)handler).suspend();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void resume() throws ResumeException
+   {
+      if (handler instanceof Suspendable)
+      {
+         ((Suspendable)handler).resume();
+      }
    }
 
 }

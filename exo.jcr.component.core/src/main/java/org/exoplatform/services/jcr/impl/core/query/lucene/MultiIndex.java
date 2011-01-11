@@ -2576,6 +2576,28 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    }
 
    /**
+    * Suspends multi index: flush volatile index and stop merger.
+    * 
+    * @throws IOException 
+    */
+   protected void suspend() throws IOException
+   {
+      flush();
+      merger.dispose();
+   }
+
+   /**
+    * Resume mulit index by starting merger.
+    * 
+    * @throws IOException 
+    */
+   protected void resume() throws IOException
+   {
+      merger = doInitIndexMerger();
+      merger.start();
+   }
+
+   /**
     * Refresh list of indexes. Used to be called asynchronously when list changes. New, actual list is read from 
     * IndexInfos.
     * @throws IOException

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 eXo Platform SAS.
+ * Copyright (C) 2009 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,20 +16,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.core.security;
+package org.exoplatform.services.jcr.impl.storage.jdbc.backup;
 
 /**
- * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
- * @version $Id: JCRRuntimePermissions.java 111 2010-11-11 11:11:11Z tolusha $
+ * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
+ * @version $Id: SuspendException.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class JCRRuntimePermissions
+public class SuspendException extends Exception
 {
+   /**
+    * Constructor SuspendException.
+    * 
+    * @param cause
+    *          the cause
+    */
+   public SuspendException(Throwable cause)
+   {
+      super(cause);
+   }
 
-   public static final RuntimePermission CREATE_SYSTEM_SESSION_PERMISSION = new RuntimePermission("createSystemSession");
-
-   public static final RuntimePermission INVOKE_INTERNAL_API_PERMISSION = new RuntimePermission("invokeInternalAPI");
-
-   public static final RuntimePermission MANAGE_REPOSITORY_PERMISSION = new RuntimePermission("manageRepository");
-
-
+   /**
+    * Constructor SuspendException.
+    * 
+    * @param message
+    *          the message
+    * @param cause
+    *          the cause
+    */
+   public SuspendException(String message, Throwable cause)
+   {
+      super(message, cause);
+   }
 }
