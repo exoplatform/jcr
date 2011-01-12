@@ -1,6 +1,7 @@
 @echo off
 
 set auth=-b
+set context=portal
 
 if NOT "%1" == "-u" goto :help
 shift
@@ -17,6 +18,12 @@ if "%1" == "-f" (
 set auth=%1
 shift
 )
+if "%1" == "-c" (
+shift
+set context=%2
+shift
+)
+
 if "%1" == "-b" (
 shift
 )
@@ -46,7 +53,7 @@ if "%auth%" == "-b" (
 jcrbackup http://%user%:%pass%@%host%/rest/private %comm%
 )
 if "%auth%" == "-f" (
-jcrbackup http://%host%/portal/rest form POST /portal/login?username=%user%^^^&password=%pass% %comm%
+jcrbackup http://%host%/%context%/rest form POST /portal/login?initialURI=/%context%/private^^^&username=%user%^^^&password=%pass% %comm%
 )
 
 
@@ -55,8 +62,10 @@ goto :eof
 echo            -u ^<user^> -p ^<password^> [form_of_authentication] ^<host:port^> ^<command^> 
 echo. 
 echo            [form_of_authentication]  :  -b - is used for basic authentication 
-echo                                         -f - is used for form authentication 
+echo                                      :  -f [-c ^<context^>] - is used for form authentication with context portal
+echo                                         if parameter context not specified
 echo                                         if no authentication set basic authentication is used
+echo            -c ^<context^>              :  context, by default context is portal
 echo. 
 echo            ^<command^>                 :  start ^<repo[/ws]^> ^<backup_dir^> [^<incr^>]  
 echo                                         stop ^<backup_id^> 

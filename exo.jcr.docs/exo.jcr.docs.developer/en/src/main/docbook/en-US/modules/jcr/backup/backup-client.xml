@@ -982,7 +982,8 @@ failure message in response  - the description of failure</programlisting>
       command "info" with form authentication to GateIn :</para>
 
       <para>./jcrbackup.sh http://127.0.0.1:8080/portal/rest form POST
-      "/portal/login?username=root&amp;password=gtn" info</para>
+      "/portal/login?initialURI=/portal/private&amp;username=root&amp;password=gtn"
+      info</para>
     </highlights>
 
     <para>Backup client is console application.</para>
@@ -999,7 +1000,7 @@ failure message in response  - the description of failure</programlisting>
      &lt;form auth parm&gt;        :   form &lt;method&gt; &lt;form path&gt;
      &lt;method&gt;                :   POST or GET
      &lt;form path&gt;             :   /path/path?&lt;paramName1&gt;=&lt;paramValue1&gt;&amp;&lt;paramName2&gt;=&lt;paramValue2&gt;...
-     Example to &lt;url form authentication&gt; : http://127.0.0.1:8080/portal/rest form POST "/portal/login?username=root&amp;password=gtn"
+     Example to &lt;url form authentication&gt; : http://127.0.0.1:8080/portal/rest form POST "/portal/login?initialURI=/portal/private&amp;username=root&amp;password=gtn"
 
  &lt;cmd&gt;  :   start &lt;repo[/ws]&gt; &lt;backup_dir&gt; [&lt;incr&gt;] 
             stop &lt;backup_id&gt; 
@@ -1281,7 +1282,7 @@ failure message in response  - the description of failure</programlisting>
     </section>
 
     <section>
-      <title>Restoring workspace with original configuation </title>
+      <title>Restoring workspace with original configuation</title>
 
       <para>Restore to workspace "backup" with original configuration of
       workspace (the original configuration was stored in backup set), for

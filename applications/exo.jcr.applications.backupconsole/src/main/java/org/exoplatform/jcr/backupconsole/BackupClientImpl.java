@@ -696,8 +696,7 @@ public class BackupClientImpl
 
          String result =
                   "\nThe backup service information : \n" + "\tfull backup type               : "
- + info.getFullBackupType()
-               + "\n" + "\tincremental backup type         : "
+                           + info.getFullBackupType() + "\n" + "\tincremental backup type        : "
                            + info.getIncrementalBackupType() + "\n" + "\tbackup log folder              : "
                            + info.getBackupLogDir() + "\n" + "\tdefault incremental job period : "
                            + info.getDefaultIncrementalJobPeriod() + "\n\n";

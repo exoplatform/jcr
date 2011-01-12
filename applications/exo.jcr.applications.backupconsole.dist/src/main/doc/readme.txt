@@ -9,7 +9,7 @@ jcrbackup.cmd and jcrbackup.sh - suitable for Standalone and flexible for variou
            <method>                  :  POST or GET
            <form_path>               :  /path/path?<paramName1>=<paramValue1>&<paramName2>=<paramValue2>...
 
-           Example of <url_form_authentication> - http://127.0.0.1:8080/portal/rest form POST "/portal/login?username=root&password=gtn"
+           Example of <url_form_authentication> - http://127.0.0.1:8080/portal/rest form POST "/portal/login?initialURI=/portal/private&username=root&password=gtn"
 
            <command>                 :  start <repo[/ws]> <backup_dir> [<incr>] 
                                         stop <backup_id>
@@ -46,8 +46,9 @@ exobackup.sh and exobackup.cmd - suitable for use with GateIn based products lik
            -u <user> -p <password> [form_of_authentication] <host:port> <command>
 
            <form_of_authentication>  :  -b - is used for basic authentication
-                                        -f - is used for form authentication
+                                        -f [-c <context>] - is used for form authentication with context portal if parameter context not specified 
                                         if no authentication set basic authentication is used
+           -c <context>              :  context, by default context is portal
 
            <command>                 :  start <repo[/ws]> <backup_dir> [<incr>] 
                                         stop <backup_id>
