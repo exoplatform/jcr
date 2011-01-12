@@ -16,31 +16,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.backup;
+package org.exoplatform.services.jcr.impl.storage.jdbc.backup.util;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
+
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
- * @version $Id: DumpTable.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: BackupTables 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class DumpTable
+public class BackupTables
 {
    /**
     * Suffix for content file.
@@ -88,12 +99,80 @@ public class DumpTable
    public static final int DB_DIALECT_PGSQL = DBConstants.DB_DIALECT_PGSQL.hashCode();
 
    /**
+    * {@inheritDoc}
+    */
+   public static void backup(File storageDir, String dsName, Map<String, String> scripts) throws BackupException
+   {
+      Connection jdbcConn = null;
+
+      try
+      {
+         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
+         if (ds == null)
+         {
+            throw new NameNotFoundException("Data source " + dsName + " not found");
+         }
+
+         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+         {
+            public Connection run() throws Exception
+            {
+               return ds.getConnection();
+
+            }
+         });
+
+         for (Entry<String, String> entry : scripts.entrySet())
+         {
+            dumpTable(jdbcConn, entry.getKey(), entry.getValue(), storageDir);
+         }
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (SQLException e)
+      {
+         SQLException next = e.getNextException();
+         String errorTrace = "";
+         while (next != null)
+         {
+            errorTrace += next.getMessage() + "; ";
+            next = next.getNextException();
+         }
+
+         Throwable cause = e.getCause();
+         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
+
+         throw new BackupException(msg, e);
+      }
+      catch (NamingException e)
+      {
+         throw new BackupException(e);
+      }
+      finally
+      {
+         if (jdbcConn != null)
+         {
+            try
+            {
+               jdbcConn.close();
+            }
+            catch (SQLException e)
+            {
+               throw new BackupException(e);
+            }
+         }
+      }
+   }
+
+   /**
     * Dump table.
     * 
     * @throws IOException 
     * @throws SQLException 
     */
-   public static void dump(Connection jdbcConn, String tableName, String script, File storageDir)
+   private static void dumpTable(Connection jdbcConn, String tableName, String script, File storageDir)
       throws IOException, SQLException
    {
       // Need privileges

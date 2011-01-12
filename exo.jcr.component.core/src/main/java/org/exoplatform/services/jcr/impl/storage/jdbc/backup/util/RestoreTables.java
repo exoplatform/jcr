@@ -16,14 +16,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.backup;
+package org.exoplatform.services.jcr.impl.storage.jdbc.backup.util;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
@@ -31,21 +36,28 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
  * @version $Id: DumpTable.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class RestoreTable
+public class RestoreTables
 {
    /**
     * List of temporary files.
@@ -67,30 +79,15 @@ public class RestoreTable
     */
    private final int maxBufferSize;
 
-   private File contentFile;
-
-   private File contentLenFile;
-
-   private Integer deleteColumnIndex = null;
-
-   private Integer skipColumnIndex = null;
-
-   private Integer newColumnIndex = null;
-
-   private Set<Integer> convertColumnIndex = new HashSet<Integer>();
-
-   private String srcContainerName;
-
-   private String dstContainerName;
-
-   private Boolean srcMultiDb;
-
-   private Boolean dstMultiDb;
+   /**
+    * Logger.
+    */
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCWorkspaceDataContainer");
 
    /**
     * Constructor RestoreTable.
     */
-   public RestoreTable(FileCleaner fileCleaner, File tempDir, int maxBufferSize)
+   public RestoreTables(FileCleaner fileCleaner, File tempDir, int maxBufferSize)
    {
       this.fileCleaner = fileCleaner;
       this.tempDir = tempDir;
@@ -98,9 +95,159 @@ public class RestoreTable
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public void restore(File storageDir, String dsName, Map<String, RestoreTableRule> tables)
+      throws RestoreException
+   {
+      Connection jdbcConn = null;
+      Statement st = null;
+      RestoreException exc = null;
+
+      try
+      {
+         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
+         if (ds == null)
+         {
+            throw new NameNotFoundException("Data source " + dsName + " not found");
+         }
+
+         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+         {
+            public Connection run() throws Exception
+            {
+               return ds.getConnection();
+
+            }
+         });
+         jdbcConn.setAutoCommit(false);
+
+         int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
+
+         for (Entry<String, RestoreTableRule> entry : tables.entrySet())
+         {
+            String tableName = entry.getKey();
+            RestoreTableRule restoreRule = entry.getValue();
+
+            String constraint = null;
+            if (tableName.equals("JCR_SITEM") || tableName.equals("JCR_MITEM"))
+            {
+               if (dialect != BackupTables.DB_DIALECT_MYSQL && dialect != BackupTables.DB_DIALECT_MYSQL_UTF8)
+               {
+                  // resolve constraint name depends on database
+                  String constraintName;
+                  if (dialect == BackupTables.DB_DIALECT_DB2 || dialect == BackupTables.DB_DIALECT_DB2V8)
+                  {
+                     constraintName = "JCR_FK_" + (restoreRule.getDstMultiDb() ? "M" : "S") + "ITEM_PAREN";
+                  }
+                  else
+                  {
+                     constraintName = "JCR_FK_" + (restoreRule.getDstMultiDb() ? "M" : "S") + "ITEM_PARENT";
+                  }
+                  constraint =
+                     "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES " + tableName + "(ID)";
+
+                  // drop constraint
+                  st = jdbcConn.createStatement();
+                  st.execute("ALTER TABLE " + tableName + " DROP CONSTRAINT " + constraintName);
+               }
+            }
+
+            restore(storageDir, jdbcConn, tableName, restoreRule);
+
+            if (constraint != null)
+            {
+               // add constraint
+               st.execute("ALTER TABLE " + tableName + " ADD " + constraint);
+            }
+         }
+
+         jdbcConn.commit();
+      }
+      catch (IOException e)
+      {
+         exc = new RestoreException(e);
+         throw exc;
+      }
+      catch (SQLException e)
+      {
+         SQLException next = e.getNextException();
+         String errorTrace = "";
+         while (next != null)
+         {
+            errorTrace += next.getMessage() + "; ";
+            next = next.getNextException();
+         }
+
+         Throwable cause = e.getCause();
+         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
+
+         exc = new RestoreException(msg, e);
+         throw exc;
+      }
+      catch (NamingException e)
+      {
+         exc = new RestoreException(e);
+         throw exc;
+      }
+      finally
+      {
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.warn("Can't close statemnt", e);
+            }
+         }
+
+         if (jdbcConn != null)
+         {
+            try
+            {
+               jdbcConn.rollback();
+            }
+            catch (SQLException e)
+            {
+               if (exc != null)
+               {
+                  throw new RestoreException(e);
+               }
+               else
+               {
+                  throw new RestoreException("Can't rollback connection", exc);
+               }
+            }
+            finally
+            {
+               try
+               {
+                  jdbcConn.close();
+               }
+               catch (SQLException e)
+               {
+                  if (exc != null)
+                  {
+                     throw new RestoreException(e);
+                  }
+                  else
+                  {
+                     throw new RestoreException("Can't close connection", exc);
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   /**
     * Restore table.
     */
-   public void restore(Connection jdbcConn, String tableName, File storageDir) throws IOException, SQLException
+   private void restore(File storageDir, Connection jdbcConn, String tableName, RestoreTableRule restoreRule)
+      throws IOException, SQLException
    {
       // Need privileges
       SecurityManager security = System.getSecurityManager();
@@ -117,12 +264,19 @@ public class RestoreTable
 
       int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
 
+      // switch table name to lower case
+      if (dialect == BackupTables.DB_DIALECT_PGSQL)
+      {
+         tableName = tableName.toLowerCase();
+      }
+
       try
       {
-         contentReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentFile));
+         contentReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(restoreRule.getContentFile()));
          contentReader.getNextEntry();
 
-         contentLenReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentLenFile));
+         contentLenReader =
+            new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(restoreRule.getContentLenFile()));
          contentLenReader.getNextEntry();
 
          // get information about source table
@@ -149,14 +303,14 @@ public class RestoreTable
          }
 
          int targetColumnCount = sourceColumnCount;
-         if (deleteColumnIndex != null)
+         if (restoreRule.getDeleteColumnIndex() != null)
          {
             targetColumnCount--;
          }
-         else if (newColumnIndex != null)
+         else if (restoreRule.getNewColumnIndex() != null)
          {
             targetColumnCount++;
-            columnType.add(newColumnIndex, newColumnType.get(newColumnIndex));
+            columnType.add(restoreRule.getNewColumnIndex(), newColumnType.get(restoreRule.getNewColumnIndex()));
          }
 
          // construct statement
@@ -164,7 +318,7 @@ public class RestoreTable
          String parameters = "";
          for (int i = 0; i < targetColumnCount; i++)
          {
-            if (skipColumnIndex != null && skipColumnIndex == i)
+            if (restoreRule.getSkipColumnIndex() != null && restoreRule.getSkipColumnIndex() == i)
             {
                continue;
             }
@@ -182,9 +336,10 @@ public class RestoreTable
                InputStream stream;
                long len;
 
-               if (newColumnIndex != null && newColumnIndex == i)
+               if (restoreRule.getNewColumnIndex() != null && restoreRule.getNewColumnIndex() == i)
                {
-                  stream = new ByteArrayInputStream(dstContainerName.getBytes(Constants.DEFAULT_ENCODING));
+                  stream =
+                     new ByteArrayInputStream(restoreRule.getDstContainerName().getBytes(Constants.DEFAULT_ENCODING));
                   len = ((ByteArrayInputStream)stream).available();
                }
                else
@@ -213,12 +368,12 @@ public class RestoreTable
                   stream = len == -1 ? null : spoolInputStream(contentReader, len);
                }
 
-               if (skipColumnIndex != null && skipColumnIndex == i)
+               if (restoreRule.getSkipColumnIndex() != null && restoreRule.getSkipColumnIndex() == i)
                {
                   targetIndex--;
                   continue;
                }
-               else if (deleteColumnIndex != null && deleteColumnIndex == i)
+               else if (restoreRule.getDeleteColumnIndex() != null && restoreRule.getDeleteColumnIndex() == i)
                {
                   targetIndex--;
                   continue;
@@ -227,7 +382,7 @@ public class RestoreTable
                // set 
                if (stream != null)
                {
-                  if (convertColumnIndex != null && convertColumnIndex.contains(i))
+                  if (restoreRule.getConvertColumnIndex() != null && restoreRule.getConvertColumnIndex().contains(i))
                   {
                      // convert column value
                      ByteArrayInputStream ba = (ByteArrayInputStream)stream;
@@ -241,21 +396,21 @@ public class RestoreTable
                      }
                      else
                      {
-                        if (dstMultiDb)
+                        if (restoreRule.getDstMultiDb())
                         {
-                           if (!srcMultiDb)
+                           if (!restoreRule.getSrcMultiDb())
                            {
                               stream =
                                  new ByteArrayInputStream(new String(readBuffer, Constants.DEFAULT_ENCODING).substring(
-                                    srcContainerName.length()).getBytes());
+                                    restoreRule.getSrcContainerName().length()).getBytes());
                            }
                         }
                         else
                         {
-                           if (srcMultiDb)
+                           if (restoreRule.getSrcMultiDb())
                            {
                               StringBuilder builder = new StringBuilder();
-                              builder.append(dstContainerName);
+                              builder.append(restoreRule.getDstContainerName());
                               builder.append(currentValue);
 
                               stream = new ByteArrayInputStream(builder.toString().getBytes());
@@ -263,9 +418,9 @@ public class RestoreTable
                            else
                            {
                               StringBuilder builder = new StringBuilder();
-                              builder.append(dstContainerName);
-                              builder.append(new String(readBuffer, Constants.DEFAULT_ENCODING)
-                                 .substring(srcContainerName.length()));
+                              builder.append(restoreRule.getDstContainerName());
+                              builder.append(new String(readBuffer, Constants.DEFAULT_ENCODING).substring(restoreRule
+                                 .getSrcContainerName().length()));
 
                               stream = new ByteArrayInputStream(builder.toString().getBytes());
                            }
@@ -292,7 +447,7 @@ public class RestoreTable
                      ba.read(readBuffer);
 
                      String value = new String(readBuffer);
-                     if (dialect == DumpTable.DB_DIALECT_PGSQL)
+                     if (dialect == BackupTables.DB_DIALECT_PGSQL)
                      {
                         insertNode.setBoolean(targetIndex + 1, value.equals("t"));
                      }
@@ -312,7 +467,7 @@ public class RestoreTable
                   }
                   else
                   {
-                     if (dialect == DumpTable.DB_DIALECT_HSQLDB)
+                     if (dialect == BackupTables.DB_DIALECT_HSQLDB)
                      {
                         if (columnType.get(i) == Types.VARBINARY)
                         {
@@ -337,11 +492,11 @@ public class RestoreTable
                   insertNode.setNull(targetIndex + 1, columnType.get(i));
                }
             }
-            insertNode.addBatch();
+            //            insertNode.addBatch();
+            insertNode.executeUpdate();
          }
 
-         insertNode.executeBatch();
-         jdbcConn.commit();
+         //         insertNode.executeBatch();
       }
       finally
       {
@@ -448,54 +603,6 @@ public class RestoreTable
          }
       }
    }
-
-   public void setContentFile(File contentFile)
-   {
-      this.contentFile = contentFile;
-   }
-
-   public void setContentLenFile(File contentLenFile)
-   {
-      this.contentLenFile = contentLenFile;
-   }
-
-   public void setDeleteColumnIndex(Integer deleteColumnIndex)
-   {
-      this.deleteColumnIndex = deleteColumnIndex;
-   }
-
-   public void setSkipColumnIndex(Integer skipColumnIndex)
-   {
-      this.skipColumnIndex = skipColumnIndex;
-   }
-
-   public void setNewColumnIndex(Integer newColumnIndex)
-   {
-      this.newColumnIndex = newColumnIndex;
-   }
-
-   public void setConvertColumnIndex(Set<Integer> convertColumnIndex)
-   {
-      this.convertColumnIndex = convertColumnIndex;
-   }
-
-   public void setSrcContainerName(String srcContainerName)
-   {
-      this.srcContainerName = srcContainerName;
-   }
-
-   public void setDstContainerName(String dstContainerName)
-   {
-      this.dstContainerName = dstContainerName;
-   }
-
-   public void setSrcMultiDb(Boolean srcMultiDb)
-   {
-      this.srcMultiDb = srcMultiDb;
-   }
-
-   public void setDstMultiDb(Boolean dstMultiDb)
-   {
-      this.dstMultiDb = dstMultiDb;
-   }
 }
+
+

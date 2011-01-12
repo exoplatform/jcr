@@ -17,8 +17,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -35,12 +33,7 @@ import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DumpTable;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreTable;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
@@ -49,8 +42,6 @@ import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -64,8 +55,6 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
@@ -412,194 +401,46 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager i
    /**
     * {@inheritDoc}
     */
-   public void backup(File storageDir) throws BackupException
+   @Override
+   protected List<String> getTableNames()
    {
-      Connection jdbcConn = null;
+      List<String> tableNames = new ArrayList<String>();
 
-      try
+      LockManagerEntry lockManagerEntry = config.getLockManager();
+      if (lockManagerEntry != null)
       {
-         List<String> tableNames = new ArrayList<String>();
-         String dsName = null;
-
-         LockManagerEntry lockManagerEntry = config.getLockManager();
-         if (lockManagerEntry != null)
+         for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
          {
-            for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
+            if (entry.getName().equals(INFINISPAN_JDBC_TABLE_NAME))
             {
-               if (entry.getName().equals(INFINISPAN_JDBC_TABLE_NAME))
-               {
-                  tableNames.add(entry.getValue());
-               }
-               else if (entry.getName().equals(INFINISPAN_JDBC_CL_DATASOURCE))
-               {
-                  dsName = entry.getValue();
-               }
-            }
-         }
+               tableNames.add(entry.getValue());
 
-         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-         if (ds == null)
-         {
-            throw new NameNotFoundException("Data source " + dsName + " not found");
-         }
-
-         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-         {
-            public Connection run() throws Exception
-            {
-               return ds.getConnection();
-
-            }
-         });
-
-         for (String table : tableNames)
-         {
-            DumpTable.dump(jdbcConn, table, "SELECT * FROM " + table, storageDir);
-         }
-      }
-      catch (IOException e)
-      {
-         throw new BackupException(e);
-      }
-      catch (SQLException e)
-      {
-         SQLException next = e.getNextException();
-         String errorTrace = "";
-         while (next != null)
-         {
-            errorTrace += next.getMessage() + "; ";
-            next = next.getNextException();
-         }
-
-         Throwable cause = e.getCause();
-         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
-
-         throw new BackupException(msg, e);
-      }
-      catch (NamingException e)
-      {
-         throw new BackupException(e);
-      }
-      finally
-      {
-         if (jdbcConn != null)
-         {
-            try
-            {
-               jdbcConn.close();
-            }
-            catch (SQLException e)
-            {
-               throw new BackupException(e);
+               return tableNames;
             }
          }
       }
+      
+      return tableNames;
    }
 
    /**
     * {@inheritDoc}
     */
-   public void restore(File storageDir) throws RestoreException
+   @Override
+   protected String getDatasourceName()
    {
-      Connection jdbcConn = null;
-
-      try
+      LockManagerEntry lockManagerEntry = config.getLockManager();
+      if (lockManagerEntry != null)
       {
-         List<String> tableNames = new ArrayList<String>();
-         String dsName = null;
-
-         LockManagerEntry lockManagerEntry = config.getLockManager();
-         if (lockManagerEntry != null)
+         for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
          {
-            for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
+            if (entry.getName().equals(INFINISPAN_JDBC_CL_DATASOURCE))
             {
-               if (entry.getName().equals(INFINISPAN_JDBC_TABLE_NAME))
-               {
-                  tableNames.add(entry.getValue());
-               }
-               else if (entry.getName().equals(INFINISPAN_JDBC_CL_DATASOURCE))
-               {
-                  dsName = entry.getValue();
-               }
-            }
-         }
-
-         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-         if (ds == null)
-         {
-            throw new NameNotFoundException("Data source " + dsName + " not found");
-         }
-
-         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-         {
-            public Connection run() throws Exception
-            {
-               return ds.getConnection();
-
-            }
-         });
-         jdbcConn.setAutoCommit(false);
-
-         int maxBufferSize =
-            config.getContainer().getParameterInteger(JDBCWorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-               JDBCWorkspaceDataContainer.DEF_MAXBUFFERSIZE);
-         File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
-
-         RestoreTable restoreTable = new RestoreTable(null, tempDir, maxBufferSize);
-         restoreTable.setSrcContainerName(null);
-         restoreTable.setSrcMultiDb(null);
-         restoreTable.setDstContainerName(null);
-         restoreTable.setDstMultiDb(null);
-         restoreTable.setSkipColumnIndex(null);
-         restoreTable.setDeleteColumnIndex(null);
-         restoreTable.setNewColumnIndex(null);
-         restoreTable.setConvertColumnIndex(null);
-
-         for (String table : tableNames)
-         {
-            restoreTable.setContentFile(new File(storageDir, table + DumpTable.CONTENT_FILE_SUFFIX));
-            restoreTable.setContentLenFile(new File(storageDir, table + DumpTable.CONTENT_LEN_FILE_SUFFIX));
-
-            restoreTable.restore(jdbcConn, table, storageDir);
-         }
-      }
-      catch (IOException e)
-      {
-         throw new RestoreException(e);
-      }
-      catch (SQLException e)
-      {
-         SQLException next = e.getNextException();
-         String errorTrace = "";
-         while (next != null)
-         {
-            errorTrace += next.getMessage() + "; ";
-            next = next.getNextException();
-         }
-
-         Throwable cause = e.getCause();
-         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
-
-         throw new RestoreException(msg, e);
-      }
-      catch (NamingException e)
-      {
-         throw new RestoreException(e);
-      }
-      finally
-      {
-         if (jdbcConn != null)
-         {
-            try
-            {
-               jdbcConn.close();
-            }
-            catch (SQLException e)
-            {
-               throw new RestoreException(e);
+               return entry.getValue();
             }
          }
       }
+
+      return null;
    }
-
 }

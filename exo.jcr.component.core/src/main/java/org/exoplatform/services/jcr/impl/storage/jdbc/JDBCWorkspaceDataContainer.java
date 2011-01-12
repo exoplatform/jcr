@@ -32,9 +32,10 @@ import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DumpTable;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreTable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.BackupTables;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTableRule;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTables;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
@@ -64,13 +65,14 @@ import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -1004,7 +1006,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    public void backup(File storageDir) throws BackupException
    {
       ObjectWriter backupInfo = null;
-      Connection jdbcConn = null;
 
       try
       {
@@ -1015,69 +1016,33 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          backupInfo.writeString(containerName);
          backupInfo.writeBoolean(multiDb);
 
-         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-         if (ds == null)
-         {
-            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
-         }
+         Map<String, String> scripts = new HashMap<String, String>();
 
-         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-         {
-            public Connection run() throws Exception
-            {
-               return ds.getConnection();
-
-            }
-         });
-
-         String[][] scripts;
          if (multiDb)
          {
-            scripts =
-               new String[][]{
-                  {"JCR_MITEM", "select * from JCR_MITEM where JCR_MITEM.name <> '" + Constants.ROOT_PARENT_NAME + "'"},
-                  {"JCR_MVALUE", "select * from JCR_MVALUE"}, {"JCR_MREF", "select * from JCR_MREF"}};
+            scripts.put("JCR_MITEM", "select * from JCR_MITEM where JCR_MITEM.name <> '" + Constants.ROOT_PARENT_NAME
+               + "'");
+            scripts.put("JCR_MVALUE", "select * from JCR_MVALUE");
+            scripts.put("JCR_MREF", "select * from JCR_MREF");
          }
          else
          {
-            scripts =
-               new String[][]{
-                  {"JCR_SITEM", "select * from JCR_SITEM where CONTAINER_NAME='" + containerName + "'"},
-                  {
-                     "JCR_SVALUE",
-                     "select * from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
-                        + containerName + "')"},
-                  {
-                     "JCR_SREF",
-                     "select * from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
-                        + containerName + "')"}};
+            scripts.put("JCR_SITEM", "select * from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
+            scripts
+               .put(
+                  "JCR_SVALUE",
+                  "select * from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
+                     + containerName + "')");
+            scripts
+               .put(
+                  "JCR_SREF",
+                  "select * from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
+                     + containerName + "')");
          }
 
-         for (String script[] : scripts)
-         {
-            DumpTable.dump(jdbcConn, script[0], script[1], storageDir);
-         }
+         BackupTables.backup(storageDir, dbSourceName, scripts);
       }
       catch (IOException e)
-      {
-         throw new BackupException(e);
-      }
-      catch (SQLException e)
-      {
-         SQLException next = e.getNextException();
-         String errorTrace = "";
-         while (next != null)
-         {
-            errorTrace += next.getMessage() + "; ";
-            next = next.getNextException();
-         }
-
-         Throwable cause = e.getCause();
-         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
-
-         throw new BackupException(msg, e);
-      }
-      catch (NamingException e)
       {
          throw new BackupException(e);
       }
@@ -1090,18 +1055,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                backupInfo.close();
             }
             catch (IOException e)
-            {
-               throw new BackupException(e);
-            }
-         }
-
-         if (jdbcConn != null)
-         {
-            try
-            {
-               jdbcConn.close();
-            }
-            catch (SQLException e)
             {
                throw new BackupException(e);
             }
@@ -1115,29 +1068,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    public void restore(File storageDir) throws RestoreException
    {
       ObjectReader backupInfo = null;
-      Statement st = null;
-      Connection jdbcConn = null;
       
       try
       {
-         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-         if (ds == null)
-         {
-            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
-         }
-
-         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-         {
-            public Connection run() throws Exception
-            {
-               return ds.getConnection();
-
-            }
-         });
-         jdbcConn.setAutoCommit(false);
-         
-         int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
-
          backupInfo =
             new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
                "JDBCWorkspaceDataContainer.info")));
@@ -1145,177 +1078,116 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          String srcContainerName = backupInfo.readString();
          boolean srcMultiDb = backupInfo.readBoolean();
 
-         String[] tablesSuffix = new String[]{"ITEM", "VALUE", "REF"};
+         Map<String, RestoreTableRule> tables = new LinkedHashMap<String, RestoreTableRule>();
 
-         File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
-         RestoreTable restoreTable = new RestoreTable(swapCleaner, tempDir, maxBufferSize);
+         // ITEM table
+         String dstTableName = "JCR_" + (multiDb ? "M" : "S") + "ITEM";
+         String srcTableName = "JCR_" + (srcMultiDb ? "M" : "S") + "ITEM";
 
-         restoreTable.setSrcContainerName(srcContainerName);
-         restoreTable.setSrcMultiDb(srcMultiDb);
-         restoreTable.setDstContainerName(containerName);
-         restoreTable.setDstMultiDb(multiDb);
+         RestoreTableRule restoreTableRule = new RestoreTableRule();
+         restoreTableRule.setSrcContainerName(srcContainerName);
+         restoreTableRule.setSrcMultiDb(srcMultiDb);
+         restoreTableRule.setDstContainerName(containerName);
+         restoreTableRule.setDstMultiDb(multiDb);
+         restoreTableRule.setContentFile(new File(storageDir, srcTableName + BackupTables.CONTENT_FILE_SUFFIX));
+         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + BackupTables.CONTENT_LEN_FILE_SUFFIX));
 
-         for (String tableSuffix : tablesSuffix)
+         if (multiDb)
          {
-            String dstTableName = "JCR_" + (multiDb ? "M" : "S") + tableSuffix;
-            String srcTableName = "JCR_" + (srcMultiDb ? "M" : "S") + tableSuffix;
-
-            restoreTable.setContentFile(new File(storageDir, srcTableName + DumpTable.CONTENT_FILE_SUFFIX));
-            restoreTable.setContentLenFile(new File(storageDir, srcTableName + DumpTable.CONTENT_LEN_FILE_SUFFIX));
-
-            String constraint = null;
-            if (tableSuffix.equals("ITEM"))
+            if (!srcMultiDb)
             {
-               if (dialect != DumpTable.DB_DIALECT_MYSQL && dialect != DumpTable.DB_DIALECT_MYSQL_UTF8)
-               {
-                  // resolve constraint name depends on database
-                  String constraintName;
-                  if (dialect == DumpTable.DB_DIALECT_DB2 || dialect == DumpTable.DB_DIALECT_DB2V8)
-                  {
-                     constraintName = "JCR_FK_" + (multiDb ? "M" : "S") + "ITEM_PAREN";
-                  }
-                  else
-                  {
-                     constraintName = "JCR_FK_" + (multiDb ? "M" : "S") + "ITEM_PARENT";
-                  }
-                  constraint =
-                     "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES " + dstTableName + "(ID)";
+               // CONTAINER_NAME column index
+               restoreTableRule.setDeleteColumnIndex(4);
 
-                  // drop constraint
-                  st = jdbcConn.createStatement();
-                  st.execute("ALTER TABLE " + dstTableName + " DROP CONSTRAINT " + constraintName);
-                  jdbcConn.commit();
-               }
-
-               if (multiDb)
-               {
-                  restoreTable.setSkipColumnIndex(null);
-                  restoreTable.setNewColumnIndex(null);
-
-                  if (!srcMultiDb)
-                  {
-                     // CONTAINER_NAME column index
-                     restoreTable.setDeleteColumnIndex(4);
-
-                     // ID and PARENT_ID column indexes
-                     Set<Integer> convertColumnIndex = new HashSet<Integer>();
-                     convertColumnIndex.add(0);
-                     convertColumnIndex.add(1);
-                     restoreTable.setConvertColumnIndex(convertColumnIndex);
-                  }
-                  else
-                  {
-                     restoreTable.setDeleteColumnIndex(null);
-                     restoreTable.setConvertColumnIndex(null);
-                  }
-               }
-               else
-               {
-                  if (srcMultiDb)
-                  {
-                     // CONTAINER_NAME column index
-                     restoreTable.setNewColumnIndex(4);
-                     restoreTable.setSkipColumnIndex(null);
-                     restoreTable.setDeleteColumnIndex(null);
-
-                     // ID and PARENT_ID column indexes
-                     Set<Integer> convertColumnIndex = new HashSet<Integer>();
-                     convertColumnIndex.add(0);
-                     convertColumnIndex.add(1);
-                     restoreTable.setConvertColumnIndex(convertColumnIndex);
-                  }
-                  else
-                  {
-                     restoreTable.setNewColumnIndex(null);
-                     restoreTable.setSkipColumnIndex(null);
-                     restoreTable.setDeleteColumnIndex(null);
-
-                     // ID and PARENT_ID and CONTAINER_NAME column indexes
-                     Set<Integer> convertColumnIndex = new HashSet<Integer>();
-                     convertColumnIndex.add(0);
-                     convertColumnIndex.add(1);
-                     convertColumnIndex.add(4);
-                     restoreTable.setConvertColumnIndex(convertColumnIndex);
-                  }
-               }
+               // ID and PARENT_ID column indexes
+               Set<Integer> convertColumnIndex = new HashSet<Integer>();
+               convertColumnIndex.add(0);
+               convertColumnIndex.add(1);
+               restoreTableRule.setConvertColumnIndex(convertColumnIndex);
             }
-            else if (tableSuffix.equals("VALUE"))
+         }
+         else
+         {
+            if (srcMultiDb)
             {
-               // auto increment ID column
-               restoreTable.setSkipColumnIndex(0);
-               restoreTable.setDeleteColumnIndex(null);
-               restoreTable.setNewColumnIndex(null);
+               // CONTAINER_NAME column index
+               restoreTableRule.setNewColumnIndex(4);
 
-               if (!multiDb || !srcMultiDb)
-               {
-                  // PROPERTY_ID column index
-                  Set<Integer> convertColumnIndex = new HashSet<Integer>();
-                  convertColumnIndex.add(3);
-                  restoreTable.setConvertColumnIndex(convertColumnIndex);
-               }
-               else
-               {
-                  restoreTable.setConvertColumnIndex(null);
-               }
+               // ID and PARENT_ID column indexes
+               Set<Integer> convertColumnIndex = new HashSet<Integer>();
+               convertColumnIndex.add(0);
+               convertColumnIndex.add(1);
+               restoreTableRule.setConvertColumnIndex(convertColumnIndex);
             }
             else
             {
-               restoreTable.setSkipColumnIndex(null);
-               restoreTable.setDeleteColumnIndex(null);
-               restoreTable.setNewColumnIndex(null);
-
-               if (!multiDb || !srcMultiDb)
-               {
-                  // NODE_ID and PROPERTY_ID column indexes
-                  Set<Integer> convertColumnIndex = new HashSet<Integer>();
-                  convertColumnIndex.add(0);
-                  convertColumnIndex.add(1);
-                  restoreTable.setConvertColumnIndex(convertColumnIndex);
-               }
-               else
-               {
-                  restoreTable.setConvertColumnIndex(null);
-               }
-            }
-
-            restoreTable.restore(jdbcConn, dstTableName, storageDir);
-
-            if (tableSuffix.equals("ITEM"))
-            {
-               if (constraint != null)
-               {
-                  // add constraint
-                  st = jdbcConn.createStatement();
-                  st.execute("ALTER TABLE " + dstTableName + " ADD " + constraint);
-                  jdbcConn.commit();
-               }
+               // ID and PARENT_ID and CONTAINER_NAME column indexes
+               Set<Integer> convertColumnIndex = new HashSet<Integer>();
+               convertColumnIndex.add(0);
+               convertColumnIndex.add(1);
+               convertColumnIndex.add(4);
+               restoreTableRule.setConvertColumnIndex(convertColumnIndex);
             }
          }
+         tables.put(dstTableName, restoreTableRule);
+
+         // VALUE table
+         dstTableName = "JCR_" + (multiDb ? "M" : "S") + "VALUE";
+         srcTableName = "JCR_" + (srcMultiDb ? "M" : "S") + "VALUE";
+
+         restoreTableRule = new RestoreTableRule();
+         restoreTableRule.setSrcContainerName(srcContainerName);
+         restoreTableRule.setSrcMultiDb(srcMultiDb);
+         restoreTableRule.setDstContainerName(containerName);
+         restoreTableRule.setDstMultiDb(multiDb);
+         restoreTableRule.setContentFile(new File(storageDir, srcTableName + BackupTables.CONTENT_FILE_SUFFIX));
+         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + BackupTables.CONTENT_LEN_FILE_SUFFIX));
+
+         // auto increment ID column
+         restoreTableRule.setSkipColumnIndex(0);
+
+         if (!multiDb || !srcMultiDb)
+         {
+            // PROPERTY_ID column index
+            Set<Integer> convertColumnIndex = new HashSet<Integer>();
+            convertColumnIndex.add(3);
+            restoreTableRule.setConvertColumnIndex(convertColumnIndex);
+         }
+         tables.put(dstTableName, restoreTableRule);
+
+         // REF tables
+         dstTableName = "JCR_" + (multiDb ? "M" : "S") + "REF";
+         srcTableName = "JCR_" + (srcMultiDb ? "M" : "S") + "REF";
+
+         restoreTableRule = new RestoreTableRule();
+         restoreTableRule.setSrcContainerName(srcContainerName);
+         restoreTableRule.setSrcMultiDb(srcMultiDb);
+         restoreTableRule.setDstContainerName(containerName);
+         restoreTableRule.setDstMultiDb(multiDb);
+         restoreTableRule.setContentFile(new File(storageDir, srcTableName + BackupTables.CONTENT_FILE_SUFFIX));
+         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + BackupTables.CONTENT_LEN_FILE_SUFFIX));
+
+         if (!multiDb || !srcMultiDb)
+         {
+            // NODE_ID and PROPERTY_ID column indexes
+            Set<Integer> convertColumnIndex = new HashSet<Integer>();
+            convertColumnIndex.add(0);
+            convertColumnIndex.add(1);
+            restoreTableRule.setConvertColumnIndex(convertColumnIndex);
+         }
+         tables.put(dstTableName, restoreTableRule);
+
+         
+         File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+         RestoreTables restoreTable = new RestoreTables(swapCleaner, tempDir, maxBufferSize);
+         
+         restoreTable.restore(storageDir, dbSourceName, tables);
       }
       catch (FileNotFoundException e)
       {
          throw new RestoreException(e);
       }
       catch (IOException e)
-      {
-         throw new RestoreException(e);
-      }
-      catch (SQLException e)
-      {
-         SQLException next = e.getNextException();
-         String errorTrace = "";
-         while (next != null)
-         {
-            errorTrace += next.getMessage() + "; ";
-            next = next.getNextException();
-         }
-
-         Throwable cause = e.getCause();
-         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
-
-         throw new RestoreException(msg, e);
-      }
-      catch (NamingException e)
       {
          throw new RestoreException(e);
       }
@@ -1328,30 +1200,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                backupInfo.close();
             }
             catch (IOException e)
-            {
-               throw new RestoreException(e);
-            }
-         }
-         
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (SQLException e)
-            {
-               throw new RestoreException(e);
-            }
-         }
-
-         if (jdbcConn != null)
-         {
-            try
-            {
-               jdbcConn.close();
-            }
-            catch (SQLException e)
             {
                throw new RestoreException(e);
             }

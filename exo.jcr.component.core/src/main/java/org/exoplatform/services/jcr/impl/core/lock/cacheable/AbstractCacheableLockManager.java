@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.jcr.config.LockManagerEntry;
@@ -47,18 +48,28 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.BackupTables;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTableRule;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTables;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.IdentityConstants;
 import org.picocontainer.Startable;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +87,8 @@ import javax.transaction.TransactionManager;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: AbstractCacheableLockManagerImpl.java 2806 2010-07-21 08:00:15Z tolusha $
  */
-public abstract class AbstractCacheableLockManager implements CacheableLockManager, ItemsPersistenceListener, Startable
+public abstract class AbstractCacheableLockManager implements CacheableLockManager, ItemsPersistenceListener,
+   Startable, Backupable
 {
    /**
     *  The name to property time out.  
@@ -825,4 +837,55 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    {
       return "select * from " + tableName;
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void backup(File storageDir) throws BackupException
+   {
+      Map<String, String> scripts = new HashMap<String, String>();
+      for (String tableName : getTableNames())
+      {
+         scripts.put(tableName, "SELECT * FROM " + tableName);
+      }
+
+      BackupTables.backup(storageDir, getDatasourceName(), scripts);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restore(File storageDir) throws RestoreException
+   {
+      Map<String, RestoreTableRule> tables = new LinkedHashMap<String, RestoreTableRule>();
+      for (String tableName : getTableNames())
+      {
+         RestoreTableRule restoreTableRule = new RestoreTableRule();
+         restoreTableRule.setSrcContainerName(null);
+         restoreTableRule.setSrcMultiDb(null);
+         restoreTableRule.setDstContainerName(null);
+         restoreTableRule.setDstMultiDb(null);
+         restoreTableRule.setSkipColumnIndex(null);
+         restoreTableRule.setDeleteColumnIndex(null);
+         restoreTableRule.setNewColumnIndex(null);
+         restoreTableRule.setConvertColumnIndex(null);
+         restoreTableRule.setContentFile(new File(storageDir, tableName + BackupTables.CONTENT_FILE_SUFFIX));
+         restoreTableRule.setContentLenFile(new File(storageDir, tableName + BackupTables.CONTENT_LEN_FILE_SUFFIX));
+
+         tables.put(tableName, restoreTableRule);
+      }
+
+      File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      int maxBufferSize =
+         config.getContainer().getParameterInteger(JDBCWorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+            JDBCWorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+
+      RestoreTables restoreTable = new RestoreTables(null, tempDir, maxBufferSize);
+      restoreTable.restore(storageDir, getDatasourceName(), tables);
+   }
+
+   protected abstract List<String> getTableNames();
+
+   protected abstract String getDatasourceName();
+
 }
