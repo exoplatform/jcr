@@ -99,6 +99,11 @@ public class BackupTables
    public static final int DB_DIALECT_PGSQL = DBConstants.DB_DIALECT_PGSQL.hashCode();
 
    /**
+    * SYBASE dialect.
+    */
+   public static final int DB_DIALECT_SYBASE = DBConstants.DB_DIALECT_SYBASE.hashCode();
+
+   /**
     * {@inheritDoc}
     */
    public static void backup(File storageDir, String dsName, Map<String, String> scripts) throws BackupException
@@ -219,9 +224,9 @@ public class BackupTables
             for (int i = 0; i < columnCount; i++)
             {
                InputStream value;
-               if (dialect == DB_DIALECT_HSQLDB)
+               if (dialect == DB_DIALECT_HSQLDB || dialect == DB_DIALECT_SYBASE)
                {
-                  if (columnType[i] == Types.VARBINARY)
+                  if (columnType[i] == Types.VARBINARY || columnType[i] == Types.LONGVARBINARY)
                   {
                      value = rs.getBinaryStream(i + 1);
                   }

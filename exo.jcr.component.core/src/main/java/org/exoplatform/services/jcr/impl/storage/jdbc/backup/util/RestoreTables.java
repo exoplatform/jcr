@@ -101,6 +101,7 @@ public class RestoreTables
       throws RestoreException
    {
       Connection jdbcConn = null;
+      Connection jdbcConn1 = null;
       Statement st = null;
       RestoreException exc = null;
 
@@ -132,7 +133,8 @@ public class RestoreTables
             String constraint = null;
             if (tableName.equals("JCR_SITEM") || tableName.equals("JCR_MITEM"))
             {
-               if (dialect != BackupTables.DB_DIALECT_MYSQL && dialect != BackupTables.DB_DIALECT_MYSQL_UTF8)
+               if (dialect != BackupTables.DB_DIALECT_MYSQL && dialect != BackupTables.DB_DIALECT_MYSQL_UTF8
+                  && dialect != BackupTables.DB_DIALECT_SYBASE)
                {
                   // resolve constraint name depends on database
                   String constraintName;
@@ -246,7 +248,8 @@ public class RestoreTables
    /**
     * Restore table.
     */
-   private void restore(File storageDir, Connection jdbcConn, String tableName, RestoreTableRule restoreRule)
+   private void restore(File storageDir, Connection jdbcConn, String tableName,
+      RestoreTableRule restoreRule)
       throws IOException, SQLException
    {
       // Need privileges
@@ -291,17 +294,6 @@ public class RestoreTables
             columnName.add(contentReader.readString());
          }
 
-         // collect information about target table 
-         List<Integer> newColumnType = new ArrayList<Integer>();
-         List<String> newColumnName = new ArrayList<String>();
-
-         tableMetaData = jdbcConn.getMetaData().getColumns(null, null, tableName, "%");
-         while (tableMetaData.next())
-         {
-            newColumnName.add(tableMetaData.getString("COLUMN_NAME"));
-            newColumnType.add(tableMetaData.getInt("DATA_TYPE"));
-         }
-
          int targetColumnCount = sourceColumnCount;
          if (restoreRule.getDeleteColumnIndex() != null)
          {
@@ -310,7 +302,13 @@ public class RestoreTables
          else if (restoreRule.getNewColumnIndex() != null)
          {
             targetColumnCount++;
-            columnType.add(restoreRule.getNewColumnIndex(), newColumnType.get(restoreRule.getNewColumnIndex()));
+
+            columnType.add(restoreRule.getNewColumnIndex(), restoreRule.getNewColumnType());
+
+            String newColumnName =
+               dialect == BackupTables.DB_DIALECT_PGSQL ? restoreRule.getNewColumnName().toLowerCase() : restoreRule
+                  .getNewColumnName();
+            columnName.add(restoreRule.getNewColumnIndex(), newColumnName);
          }
 
          // construct statement
@@ -322,7 +320,7 @@ public class RestoreTables
             {
                continue;
             }
-            names += newColumnName.get(i) + (i == targetColumnCount - 1 ? "" : ",");
+            names += columnName.get(i) + (i == targetColumnCount - 1 ? "" : ",");
             parameters += "?" + (i == targetColumnCount - 1 ? "" : ",");
          }
          insertNode =
@@ -467,9 +465,9 @@ public class RestoreTables
                   }
                   else
                   {
-                     if (dialect == BackupTables.DB_DIALECT_HSQLDB)
+                     if (dialect == BackupTables.DB_DIALECT_HSQLDB || dialect == BackupTables.DB_DIALECT_SYBASE)
                      {
-                        if (columnType.get(i) == Types.VARBINARY)
+                        if (columnType.get(i) == Types.VARBINARY || columnType.get(i) == Types.LONGVARBINARY)
                         {
                            insertNode.setBinaryStream(targetIndex + 1, stream, (int)len);
                         }
@@ -492,11 +490,10 @@ public class RestoreTables
                   insertNode.setNull(targetIndex + 1, columnType.get(i));
                }
             }
-            //            insertNode.addBatch();
-            insertNode.executeUpdate();
+            insertNode.addBatch();
          }
 
-         //         insertNode.executeBatch();
+         insertNode.executeBatch();
       }
       finally
       {

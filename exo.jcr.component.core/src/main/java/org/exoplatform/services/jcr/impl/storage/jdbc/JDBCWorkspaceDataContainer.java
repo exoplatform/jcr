@@ -65,6 +65,7 @@ import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -1112,6 +1113,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             {
                // CONTAINER_NAME column index
                restoreTableRule.setNewColumnIndex(4);
+               restoreTableRule.setNewColumnName("CONTAINER_NAME");
+               restoreTableRule.setNewColumnType(Types.VARCHAR);
 
                // ID and PARENT_ID column indexes
                Set<Integer> convertColumnIndex = new HashSet<Integer>();

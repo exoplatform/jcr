@@ -38,15 +38,19 @@ public class RestoreTableRule
 
    private Integer newColumnIndex = null;
 
+   private String newColumnName = null;
+
+   private Integer newColumnType = null;
+
    private Set<Integer> convertColumnIndex = new HashSet<Integer>();
 
-   private String srcContainerName;
+   private String srcContainerName = null;
 
-   private String dstContainerName;
+   private String dstContainerName = null;
 
-   private Boolean srcMultiDb;
+   private Boolean srcMultiDb = null;
 
-   private Boolean dstMultiDb;
+   private Boolean dstMultiDb = null;
 
    public File getContentFile()
    {
@@ -147,4 +151,25 @@ public class RestoreTableRule
    {
       this.dstMultiDb = dstMultiDb;
    }
+
+   public String getNewColumnName()
+   {
+      return newColumnName;
+   }
+
+   public void setNewColumnName(String newColumnName)
+   {
+      this.newColumnName = newColumnName;
+   }
+
+   public Integer getNewColumnType()
+   {
+      return newColumnType;
+   }
+
+   public void setNewColumnType(Integer newColumnType)
+   {
+      this.newColumnType = newColumnType;
+   }
+
 }
