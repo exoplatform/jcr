@@ -248,8 +248,7 @@ public class RestoreTables
    /**
     * Restore table.
     */
-   private void restore(File storageDir, Connection jdbcConn, String tableName,
-      RestoreTableRule restoreRule)
+   private void restore(File storageDir, Connection jdbcConn, String tableName, RestoreTableRule restoreRule)
       throws IOException, SQLException
    {
       // Need privileges
@@ -465,9 +464,11 @@ public class RestoreTables
                   }
                   else
                   {
-                     if (dialect == BackupTables.DB_DIALECT_HSQLDB || dialect == BackupTables.DB_DIALECT_SYBASE)
+                     if (dialect == BackupTables.DB_DIALECT_HSQLDB || dialect == BackupTables.DB_DIALECT_SYBASE
+                        || dialect == BackupTables.DB_DIALECT_DB2 || dialect == BackupTables.DB_DIALECT_DB2V8)
                      {
-                        if (columnType.get(i) == Types.VARBINARY || columnType.get(i) == Types.LONGVARBINARY)
+                        if (columnType.get(i) == Types.VARBINARY || columnType.get(i) == Types.LONGVARBINARY
+                           || columnType.get(i) == Types.BLOB)
                         {
                            insertNode.setBinaryStream(targetIndex + 1, stream, (int)len);
                         }

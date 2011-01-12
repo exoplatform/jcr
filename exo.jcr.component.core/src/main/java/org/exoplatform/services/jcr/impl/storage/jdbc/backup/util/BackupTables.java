@@ -224,9 +224,11 @@ public class BackupTables
             for (int i = 0; i < columnCount; i++)
             {
                InputStream value;
-               if (dialect == DB_DIALECT_HSQLDB || dialect == DB_DIALECT_SYBASE)
+               if (dialect == DB_DIALECT_HSQLDB || dialect == DB_DIALECT_SYBASE || dialect == DB_DIALECT_DB2
+                  || dialect == DB_DIALECT_DB2V8)
                {
-                  if (columnType[i] == Types.VARBINARY || columnType[i] == Types.LONGVARBINARY)
+                  if (columnType[i] == Types.VARBINARY || columnType[i] == Types.LONGVARBINARY
+                     || columnType[i] == Types.BLOB)
                   {
                      value = rs.getBinaryStream(i + 1);
                   }
