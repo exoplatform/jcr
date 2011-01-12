@@ -207,10 +207,6 @@ public class DBCleanerService
          {
             dbCleaner = new HSQLSingleDBCleaner(wsEntry, conn);
          }
-         else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
-         {
-            dbCleaner = new MySQLSingleDBCleaner(wsEntry, conn);
-         }
          else
          {
             dbCleaner = new SingleDBCleaner(wsEntry, conn);
