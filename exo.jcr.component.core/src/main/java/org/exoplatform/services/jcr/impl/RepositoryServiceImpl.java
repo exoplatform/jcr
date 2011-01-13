@@ -422,7 +422,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          repositoryContainer.stop();
          repositoryContainers.remove(name);
          config.getRepositoryConfigurations().remove(repconfig);
-         parentContainer.unregisterComponentByInstance(repositoryContainer);
+         parentContainer.unregisterComponent(repositoryContainer.getName());
       }
       catch (RepositoryConfigurationException e)
       {
