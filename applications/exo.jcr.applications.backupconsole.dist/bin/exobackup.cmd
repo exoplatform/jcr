@@ -53,7 +53,7 @@ if "%auth%" == "-b" (
 jcrbackup http://%user%:%pass%@%host%/rest/private %comm%
 )
 if "%auth%" == "-f" (
-jcrbackup http://%host%/%context%/rest form POST /portal/login?initialURI=/%context%/private^^^&username=%user%^^^&password=%pass% %comm%
+jcrbackup http://%host%/%context%/rest form POST /%context%/login?initialURI=/%context%/private^^^&username=%user%^^^&password=%pass% %comm%
 )
 
 

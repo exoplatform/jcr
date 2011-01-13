@@ -51,11 +51,11 @@ then
   then
     context="$7"
     host=${8#*"http://"}
-    newargs="http://$host/$context/rest form POST /portal/login?initialURI=/$context/private&username=$user&password=$pass ${args[@]:8}"
+    newargs="http://$host/$context/rest form POST /$context/login?initialURI=/$context/private&username=$user&password=$pass ${args[@]:8}"
   else
     context="portal"
     host=${6#*"http://"}
-    newargs="http://$host/$context/rest form POST /portal/login?initialURI=/$context/private&username=$user&password=$pass ${args[@]:6}"
+    newargs="http://$host/$context/rest form POST /$context/login?initialURI=/$context/private&username=$user&password=$pass ${args[@]:6}"
   fi
 
 else
