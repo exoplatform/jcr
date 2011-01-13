@@ -43,9 +43,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.StringTokenizer;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
@@ -240,7 +239,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          repositoryContainer.stop();
          repositoryContainers.remove(name);
          config.getRepositoryConfigurations().remove(repconfig);
-         parentContainer.unregisterComponentByInstance(repositoryContainer);
+         parentContainer.unregisterComponent(repositoryContainer.getName());
       }
       catch (RepositoryConfigurationException e)
       {

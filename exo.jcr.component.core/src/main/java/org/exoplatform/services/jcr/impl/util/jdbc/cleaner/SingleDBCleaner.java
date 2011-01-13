@@ -66,7 +66,7 @@ public class SingleDBCleaner extends WorkspaceDBCleaner
          .add("delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
             + containerName + "')");
       commonSingleDBCleanScripts
-         .add("delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
+         .add("delete from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
             + containerName + "')");
       commonSingleDBCleanScripts.addAll(commonDBCleanScripts);
    }
