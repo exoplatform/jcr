@@ -465,10 +465,11 @@ public class RestoreTables
                   else
                   {
                      if (dialect == BackupTables.DB_DIALECT_HSQLDB || dialect == BackupTables.DB_DIALECT_SYBASE
-                        || dialect == BackupTables.DB_DIALECT_DB2 || dialect == BackupTables.DB_DIALECT_DB2V8)
+                        || dialect == BackupTables.DB_DIALECT_DB2 || dialect == BackupTables.DB_DIALECT_DB2V8
+                        || dialect == BackupTables.DB_DIALECT_PGSQL)
                      {
                         if (columnType.get(i) == Types.VARBINARY || columnType.get(i) == Types.LONGVARBINARY
-                           || columnType.get(i) == Types.BLOB)
+                           || columnType.get(i) == Types.BLOB || columnType.get(i) == Types.BINARY)
                         {
                            insertNode.setBinaryStream(targetIndex + 1, stream, (int)len);
                         }
