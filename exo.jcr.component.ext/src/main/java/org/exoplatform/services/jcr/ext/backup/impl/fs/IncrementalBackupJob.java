@@ -124,7 +124,8 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
       }
    }
 
-   public void writeExternal(ObjectOutputStream out, TransactionChangesLog changesLog, FileCleaner fileCleaner)
+   public synchronized void writeExternal(ObjectOutputStream out, TransactionChangesLog changesLog,
+            FileCleaner fileCleaner)
       throws IOException
    {
 
