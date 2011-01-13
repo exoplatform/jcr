@@ -130,52 +130,55 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 
       PendingChangesLog pendingChangesLog = new PendingChangesLog(changesLog, fileCleaner);
 
-      if (pendingChangesLog.getConteinerType() == PendingChangesLog.Type.CHANGESLOG_WITH_STREAM)
+      synchronized (out)
       {
-
-         out.writeInt(PendingChangesLog.Type.CHANGESLOG_WITH_STREAM);
-         out.writeObject(changesLog);
-
-         // Write FixupStream
-         List<FixupStream> listfs = pendingChangesLog.getFixupStreams();
-         out.writeInt(listfs.size());
-
-         for (int i = 0; i < listfs.size(); i++)
+         if (pendingChangesLog.getConteinerType() == PendingChangesLog.Type.CHANGESLOG_WITH_STREAM)
          {
-            listfs.get(i).writeExternal(out);
+   
+            out.writeInt(PendingChangesLog.Type.CHANGESLOG_WITH_STREAM);
+            out.writeObject(changesLog);
+   
+            // Write FixupStream
+            List<FixupStream> listfs = pendingChangesLog.getFixupStreams();
+            out.writeInt(listfs.size());
+   
+            for (int i = 0; i < listfs.size(); i++)
+            {
+               listfs.get(i).writeExternal(out);
+            }
+   
+            // write stream data
+            List<InputStream> listInputList = pendingChangesLog.getInputStreams();
+   
+            // write file count
+            out.writeInt(listInputList.size());
+   
+            for (int i = 0; i < listInputList.size(); i++)
+            {
+               File tempFile = getAsFile(listInputList.get(i));
+               FileInputStream fis = new FileInputStream(tempFile);
+   
+               // write file size
+               out.writeLong(tempFile.length());
+   
+               // write file content
+               writeContent(fis, out);
+   
+               fis.close();
+               fileCleaner.addFile(tempFile);
+            }
+   
+            // restore changes log worlds
+   
          }
-
-         // write stream data
-         List<InputStream> listInputList = pendingChangesLog.getInputStreams();
-
-         // write file count
-         out.writeInt(listInputList.size());
-
-         for (int i = 0; i < listInputList.size(); i++)
+         else
          {
-            File tempFile = getAsFile(listInputList.get(i));
-            FileInputStream fis = new FileInputStream(tempFile);
-
-            // write file size
-            out.writeLong(tempFile.length());
-
-            // write file content
-            writeContent(fis, out);
-
-            fis.close();
-            fileCleaner.addFile(tempFile);
+            out.writeInt(PendingChangesLog.Type.CHANGESLOG_WITHOUT_STREAM);
+            out.writeObject(changesLog);
          }
-
-         // restore changes log worlds
-
+   
+         out.flush();
       }
-      else
-      {
-         out.writeInt(PendingChangesLog.Type.CHANGESLOG_WITHOUT_STREAM);
-         out.writeObject(changesLog);
-      }
-
-      out.flush();
    }
 
    private File getAsFile(InputStream is) throws IOException
