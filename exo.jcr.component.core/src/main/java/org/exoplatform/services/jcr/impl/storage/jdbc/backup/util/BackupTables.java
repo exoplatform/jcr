@@ -64,16 +64,6 @@ public class BackupTables
    public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
 
    /**
-    * Generic dialect.
-    */
-   public static final int DB_DIALECT_GENERIC = DBConstants.DB_DIALECT_GENERIC.hashCode();
-
-   /**
-    * HSQLDB dialect.
-    */
-   public static final int DB_DIALECT_HSQLDB = DBConstants.DB_DIALECT_HSQLDB.hashCode();
-
-   /**
     * MySQL dialect.
     */
    public static final int DB_DIALECT_MYSQL = DBConstants.DB_DIALECT_MYSQL.hashCode();
@@ -224,23 +214,15 @@ public class BackupTables
             for (int i = 0; i < columnCount; i++)
             {
                InputStream value;
-               if (dialect == DB_DIALECT_HSQLDB || dialect == DB_DIALECT_SYBASE || dialect == DB_DIALECT_DB2
-                  || dialect == DB_DIALECT_DB2V8 || dialect == DB_DIALECT_PGSQL)
+               if (columnType[i] == Types.VARBINARY || columnType[i] == Types.LONGVARBINARY
+                  || columnType[i] == Types.BLOB || columnType[i] == Types.BINARY)
                {
-                  if (columnType[i] == Types.VARBINARY || columnType[i] == Types.LONGVARBINARY
-                     || columnType[i] == Types.BLOB || columnType[i] == Types.BINARY)
-                  {
-                     value = rs.getBinaryStream(i + 1);
-                  }
-                  else
-                  {
-                     String str = rs.getString(i + 1);
-                     value = str == null ? null : new ByteArrayInputStream(str.getBytes(Constants.DEFAULT_ENCODING));
-                  }
+                  value = rs.getBinaryStream(i + 1);
                }
                else
                {
-                  value = rs.getBinaryStream(i + 1);
+                  String str = rs.getString(i + 1);
+                  value = str == null ? null : new ByteArrayInputStream(str.getBytes(Constants.DEFAULT_ENCODING));
                }
 
                if (value == null)

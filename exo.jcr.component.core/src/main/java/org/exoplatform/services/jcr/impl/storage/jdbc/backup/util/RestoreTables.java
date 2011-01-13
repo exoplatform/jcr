@@ -462,29 +462,17 @@ public class RestoreTables
                      String value = new String(readBuffer);
                      insertNode.setBoolean(targetIndex + 1, value.equals("true"));
                   }
+                  else if (columnType.get(i) == Types.VARBINARY || columnType.get(i) == Types.LONGVARBINARY
+                     || columnType.get(i) == Types.BLOB || columnType.get(i) == Types.BINARY)
+                  {
+                     insertNode.setBinaryStream(targetIndex + 1, stream, (int)len);
+                  }
                   else
                   {
-                     if (dialect == BackupTables.DB_DIALECT_HSQLDB || dialect == BackupTables.DB_DIALECT_SYBASE
-                        || dialect == BackupTables.DB_DIALECT_DB2 || dialect == BackupTables.DB_DIALECT_DB2V8
-                        || dialect == BackupTables.DB_DIALECT_PGSQL)
-                     {
-                        if (columnType.get(i) == Types.VARBINARY || columnType.get(i) == Types.LONGVARBINARY
-                           || columnType.get(i) == Types.BLOB || columnType.get(i) == Types.BINARY)
-                        {
-                           insertNode.setBinaryStream(targetIndex + 1, stream, (int)len);
-                        }
-                        else
-                        {
-                           byte[] readBuffer = new byte[(int)len];
-                           stream.read(readBuffer);
+                     byte[] readBuffer = new byte[(int)len];
+                     stream.read(readBuffer);
 
-                           insertNode.setString(targetIndex + 1, new String(readBuffer, Constants.DEFAULT_ENCODING));
-                        }
-                     }
-                     else
-                     {
-                        insertNode.setBinaryStream(targetIndex + 1, stream, (int)len);
-                     }
+                     insertNode.setString(targetIndex + 1, new String(readBuffer, Constants.DEFAULT_ENCODING));
                   }
                }
                else
