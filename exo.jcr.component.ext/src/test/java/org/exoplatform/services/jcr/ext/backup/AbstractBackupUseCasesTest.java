@@ -517,7 +517,7 @@ public abstract class AbstractBackupUseCasesTest
          Thread.sleep(50);
       }
 
-      Thread.sleep(16000);
+      Thread.sleep(32000);
 
       for (BackupChain chain : backup.getCurrentBackups())
          if (bch.getBackupId().equals(chain.getBackupId()))
@@ -1128,7 +1128,7 @@ public abstract class AbstractBackupUseCasesTest
          Thread.sleep(50);
       }
 
-      Thread.sleep(16000);
+      Thread.sleep(32000);
 
       for (RepositoryBackupChain chain : backup.getCurrentRepositoryBackups())
          if (bch.getBackupId().equals(chain.getBackupId()))
