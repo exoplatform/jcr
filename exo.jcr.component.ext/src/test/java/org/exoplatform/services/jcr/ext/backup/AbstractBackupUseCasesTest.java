@@ -446,7 +446,7 @@ public abstract class AbstractBackupUseCasesTest
 
       BackupChain bch = backup.startBackup(config);
 
-      while (!bch.isFinished())
+      while (bch.getFullBackupState() != BackupJob.FINISHED)
       {
          Thread.yield();
          Thread.sleep(50);
@@ -481,6 +481,8 @@ public abstract class AbstractBackupUseCasesTest
          Thread.sleep(50);
       }
 
+      Thread.sleep(6000);
+
       boolean isFail = true;
 
       for (BackupChain chain : backup.getCurrentBackups())
@@ -509,13 +511,13 @@ public abstract class AbstractBackupUseCasesTest
 
       final BackupChain bch = backup.startBackup(config);
 
-      while (!bch.isFinished())
+      while (bch.getFullBackupState() != BackupJob.FINISHED)
       {
          Thread.yield();
          Thread.sleep(50);
       }
 
-      Thread.sleep(5000);
+      Thread.sleep(16000);
 
       for (BackupChain chain : backup.getCurrentBackups())
          if (bch.getBackupId().equals(chain.getBackupId()))
@@ -1120,13 +1122,13 @@ public abstract class AbstractBackupUseCasesTest
 
       final RepositoryBackupChain bch = backup.startBackup(config);
 
-      while (!bch.isFinished())
+      while (bch.getState() != RepositoryBackupChain.FINISHED)
       {
          Thread.yield();
          Thread.sleep(50);
       }
 
-      Thread.sleep(5000);
+      Thread.sleep(16000);
 
       for (RepositoryBackupChain chain : backup.getCurrentRepositoryBackups())
          if (bch.getBackupId().equals(chain.getBackupId()))
