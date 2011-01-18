@@ -117,7 +117,7 @@ public class DefaultChangesFilter extends IndexerChangesFilter
          log.error("Error indexing changes " + e, e);
          try
          {
-            parentHandler.logErrorChanges(removedNodes, addedNodes);
+            parentHandler.logErrorChanges(parentRemovedNodes, parentAddedNodes);
          }
          catch (IOException ioe)
          {
