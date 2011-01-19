@@ -2815,16 +2815,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void suspend() throws SuspendException
    {
-      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      try
       {
-         try
-         {
-            index.suspend();
-         }
-         catch (IOException e)
-         {
-            throw new SuspendException(e);
-         }
+         index.suspend();
+      }
+      catch (IOException e)
+      {
+         throw new SuspendException(e);
       }
    }
 
@@ -2833,16 +2830,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void resume() throws ResumeException
    {
-      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      try
       {
-         try
-         {
-            index.resume();
-         }
-         catch (IOException e)
-         {
-            throw new ResumeException(e);
-         }
+         index.resume();
+      }
+      catch (IOException e)
+      {
+         throw new ResumeException(e);
       }
    }
 }

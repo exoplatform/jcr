@@ -2582,8 +2582,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    protected void suspend() throws IOException
    {
-      flush();
-      merger.dispose();
+      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      {
+         try
+         {
+            indexUpdateMonitor.setUpdateInProgress(true, true);
+            flush();
+
+            merger.dispose();
+         }
+         finally
+         {
+            indexUpdateMonitor.setUpdateInProgress(false, true);
+         }
+      }
    }
 
    /**
@@ -2593,8 +2605,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    protected void resume() throws IOException
    {
-      merger = doInitIndexMerger();
-      merger.start();
+      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      {
+         merger = doInitIndexMerger();
+         merger.start();
+      }
    }
 
    /**
