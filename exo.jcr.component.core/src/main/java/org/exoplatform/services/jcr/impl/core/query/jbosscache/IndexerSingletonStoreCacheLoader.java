@@ -62,7 +62,9 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
             final boolean debugEnabled = log.isDebugEnabled();
 
             if (debugEnabled)
+            {
                log.debug("start pushing in-memory state to cache cacheLoader collection");
+            }
 
             // merging all lists stored in memory
             Collection<NodeSPI> children = cache.getRoot().getChildren();
@@ -89,13 +91,21 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
                      parentRemovedNodes.addAll(listsWrapper.getParentAddedNodes());
                   }                  
                }
-               //TODO: recover logic is here, lists are: removedNodes and addedNodes      String id = IdGenerator.generate();
                String id = IdGenerator.generate();
                cache.put(Fqn.fromRelativeElements(wsChildren.getFqn(), id), JBossCacheIndexChangesFilter.LISTWRAPPER, new ChangesFilterListsWrapper(addedNodes,
                   removedNodes, parentAddedNodes, parentRemovedNodes));
+               // Once we put the merged changes into the cache we can remove other changes from the cache 
+               for (NodeSPI aChildren : children) 
+               { 
+                  // Remove the node from the cache and do it asynchronously 
+                  cache.getInvocationContext().getOptionOverrides().setForceAsynchronous(true); 
+                  cache.removeNode(aChildren.getFqn()); 
+               } 
             }
             if (debugEnabled)
+            {
                log.debug("in-memory state passed to cache cacheLoader successfully");
+            }
             return null;
          }
       };
