@@ -51,4 +51,13 @@ public interface Backupable
     */
    void restore(File storageDir) throws RestoreException;
 
+   /**
+    * Returns DataCleaner for two-phase cleaning.
+    * 
+    * @return DataCleaner
+    * @throws CleanException
+    *          if any exception occurred
+    */
+   DataCleaner getDataCleaner() throws CleanException;
+
 }

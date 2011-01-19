@@ -14,12 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
-
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
+package org.exoplatform.services.jcr.impl.storage.jdbc.cleaner;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -27,16 +26,17 @@ import java.sql.SQLException;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id$
+ * @version $Id: IngresSQLDBCleaner.java 3655 2010-12-10 08:25:41Z tolusha $
  */
-public class IngresSQLSingleDBCleaner extends SingleDBCleaner
+public class IngresSQLDBCleaner extends DBCleaner
 {
+
    /**
-    * IngresSQLSingleDBCleaner constructor.
+    * OracleSingleDBCleaner constructor.
     */
-   public IngresSQLSingleDBCleaner(WorkspaceEntry wsEntry, Connection connection)
+   public IngresSQLDBCleaner(Connection connection, List<String> cleanScripts)
    {
-      super(wsEntry, connection);
+      super(connection, cleanScripts);
    }
 
    /**

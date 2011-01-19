@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
@@ -31,6 +31,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.Session;
@@ -48,7 +50,7 @@ import javax.sql.DataSource;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: TestRemoveWorkspace.java 111 2008-11-11 11:11:11Z serg $
  */
-public class TestDBCleanerService extends JcrImplBaseTest
+public class TestDBCleaner extends JcrImplBaseTest
 {
    private final static String DS_NAME = "testdbcleaner";
 
@@ -56,7 +58,7 @@ public class TestDBCleanerService extends JcrImplBaseTest
 
    private WorkspaceEntry wsEntry;
 
-   public TestDBCleanerService()
+   public TestDBCleaner()
    {
       super();
       this.helper = TesterConfigurationHelper.getInstence();
@@ -171,8 +173,18 @@ public class TestDBCleanerService extends JcrImplBaseTest
       ResultSet res = statement.executeQuery("select * from JCR_MITEM where ID='" + id + "'");
       assertTrue(res.next());
 
-      // remove repository;
-      new DBCleanerService().cleanRepositoryData(repositoryEntry);
+      // remove content
+      List<Backupable> backupable = new ArrayList<Backupable>();
+      for (String name : repositoryService.getRepository(repositoryName).getWorkspaceNames())
+      {
+         backupable.addAll(repositoryService.getRepository(repositoryName).getWorkspaceContainer(name)
+            .getComponentInstancesOfType(Backupable.class));
+      }
+
+      for (Backupable component : backupable)
+      {
+         component.getDataCleaner().clean();
+      }
 
       // check - does JCR_SITEM become empty
       try
@@ -214,8 +226,18 @@ public class TestDBCleanerService extends JcrImplBaseTest
       ResultSet res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
       assertTrue(res.next());
 
-      // remove repository content
-      new DBCleanerService().cleanRepositoryData(repositoryEntry);
+      // remove content
+      List<Backupable> backupable = new ArrayList<Backupable>();
+      for (String name : repositoryService.getRepository(repositoryName).getWorkspaceNames())
+      {
+         backupable.addAll(repositoryService.getRepository(repositoryName).getWorkspaceContainer(name)
+            .getComponentInstancesOfType(Backupable.class));
+      }
+
+      for (Backupable component : backupable)
+      {
+         component.getDataCleaner().clean();
+      }
 
       // check - does JCR_SITEM become empty
       res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
@@ -250,8 +272,15 @@ public class TestDBCleanerService extends JcrImplBaseTest
       ResultSet res = statement.executeQuery("select * from JCR_MITEM where ID='" + id + "'");
       assertTrue(res.next());
 
-      // remove workspace data from database
-      new DBCleanerService().cleanWorkspaceData(repositoryEntry.getWorkspaceEntries().get(0));
+      // remove content
+      List<Backupable> backupable =
+         repositoryService.getRepository(repositoryName).getWorkspaceContainer(wsName)
+            .getComponentInstancesOfType(Backupable.class);
+
+      for (Backupable component : backupable)
+      {
+         component.getDataCleaner().clean();
+      }
 
       // check - does JCR_SITEM become empty
       try
@@ -307,8 +336,15 @@ public class TestDBCleanerService extends JcrImplBaseTest
          statement.executeQuery("select * from JCR_SITEM where ID='" + workspaceEntry.getName() + id + "'");
       assertTrue(res.next());
 
-      // remove workspace data from database
-      new DBCleanerService().cleanWorkspaceData(workspaceEntry);
+      // remove content
+      List<Backupable> backupable =
+         repositoryService.getRepository(repositoryName).getWorkspaceContainer(workspaceEntry.getName())
+            .getComponentInstancesOfType(Backupable.class);
+
+      for (Backupable component : backupable)
+      {
+         component.getDataCleaner().clean();
+      }
 
       // check - does JCR_SITEM become empty
       res = statement.executeQuery("select * from JCR_SITEM where ID='" + workspaceEntry.getName() + id + "'");

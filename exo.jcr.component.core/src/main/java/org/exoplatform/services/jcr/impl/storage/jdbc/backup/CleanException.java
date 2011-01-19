@@ -14,36 +14,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
+package org.exoplatform.services.jcr.impl.storage.jdbc.backup;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
- * @version $Id$
+ * @version $Id: CleanException.java 3679 2010-12-20 09:24:04Z tolusha $
  */
-public class DBCleanerException extends Exception
+public class CleanException extends Exception
 {
 
    /**
-    * Constructor DBCleanerException.
+    * Constructor CleanException.
     * 
     * @param message
     *          error message
-    * @param e
+    * @param cause
     *          caused exception
     */
-   public DBCleanerException(String message, Exception e)
+   public CleanException(String message, Throwable cause)
    {
-      super(message, e);
+      super(message, cause);
    }
 
    /**
-    * Constructor DBCleanerException.
+    * Constructor CleanException.
     * 
-    * @param message
-    *          error message
+    * @param cause
+    *          caused exception
     */
-   public DBCleanerException(String message)
+   public CleanException(Throwable cause)
    {
-      super(message);
+      super(cause);
    }
+
 }

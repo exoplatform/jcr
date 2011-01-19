@@ -32,10 +32,17 @@ import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DataCleaner;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.BackupTables;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTableRule;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTables;
+import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.DBCleanHelper;
+import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.DBCleaner;
+import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.IngresSQLDBCleaner;
+import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.OracleDBCleaner;
+import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.PgSQLDBCleaner;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
@@ -66,14 +73,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -1210,4 +1220,90 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public DataCleaner getDataCleaner() throws CleanException
+   {
+      DataCleaner dbCleaner;
+
+      try
+      {
+         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+         if (ds == null)
+         {
+            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
+         }
+
+         Connection jdbcConn =
+            SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+            {
+               public Connection run() throws Exception
+               {
+                  return ds.getConnection();
+
+               }
+            });
+
+         String dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+
+         List<String> cleanScripts = new ArrayList<String>();
+         if (multiDb)
+         {
+            cleanScripts.add("drop table JCR_MREF");
+            cleanScripts.add("drop table JCR_MVALUE");
+            cleanScripts.add("drop table JCR_MITEM");
+         }
+         else
+         {
+            cleanScripts
+               .add("delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
+                  + containerName + "')");
+            cleanScripts
+               .add("delete from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
+                  + containerName + "')");
+         }
+
+         if (!multiDb && dialect.equals(DBConstants.DB_DIALECT_HSQLDB))
+         {
+            cleanScripts.add("delete from JCR_SITEM where I_CLASS=2 and CONTAINER_NAME='" + containerName + "'");
+
+            dbCleaner = new DBCleaner(jdbcConn, cleanScripts, new DBCleanHelper(containerName, jdbcConn));
+         }
+         else
+         {
+            if (!multiDb)
+            {
+               cleanScripts.add("delete from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
+            }
+
+            if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
+            {
+               dbCleaner = new PgSQLDBCleaner(jdbcConn, cleanScripts);
+            }
+            else if (dialect.equals(DBConstants.DB_DIALECT_INGRES))
+            {
+               dbCleaner = new IngresSQLDBCleaner(jdbcConn, cleanScripts);
+            }
+            else if (dialect.equals(DBConstants.DB_DIALECT_ORACLE) || dialect.equals(DBConstants.DB_DIALECT_ORACLEOCI))
+            {
+               dbCleaner = new OracleDBCleaner(jdbcConn, cleanScripts);
+            }
+            else
+            {
+               dbCleaner = new DBCleaner(jdbcConn, cleanScripts);
+            }
+         }
+
+         return dbCleaner;
+      }
+      catch (NamingException e)
+      {
+         throw new CleanException(e);
+      }
+      catch (SQLException e)
+      {
+         throw new CleanException(e);
+      }
+   }
 }

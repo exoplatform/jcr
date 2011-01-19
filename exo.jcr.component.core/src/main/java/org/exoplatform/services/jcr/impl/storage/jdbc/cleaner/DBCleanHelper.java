@@ -14,10 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
+package org.exoplatform.services.jcr.impl.storage.jdbc.cleaner;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -74,7 +75,7 @@ public class DBCleanHelper
     * @throws SQLException 
     *          SQL exception. 
     */
-   public void clean() throws DBCleanerException
+   public void clean() throws CleanException
    {
       try
       {
@@ -94,7 +95,7 @@ public class DBCleanHelper
          {
             LOG.error("Can not rollback changes after exception " + e.getMessage(), rollbackException);
          }
-         throw new DBCleanerException(e.getMessage(), e);
+         throw new CleanException(e.getMessage(), e);
       }
    }
 

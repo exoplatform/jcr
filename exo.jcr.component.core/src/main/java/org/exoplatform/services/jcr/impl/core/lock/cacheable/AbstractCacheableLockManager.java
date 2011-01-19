@@ -17,11 +17,10 @@
 package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
-import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
@@ -42,8 +41,6 @@ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
-import org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl;
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -51,10 +48,13 @@ import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DataCleaner;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.BackupTables;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTableRule;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTables;
+import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.DBCleaner;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -65,6 +65,9 @@ import java.io.File;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedExceptionAction;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -76,6 +79,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
@@ -803,42 +810,6 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    }
 
    /**
-    * Return table name for lock data.
-    */
-   public static List<String> getLockTableNames(LockManagerEntry lockManagerEntry)
-   {
-      List<String> tableNames = new ArrayList<String>();
-
-      if (lockManagerEntry != null)
-      {
-         for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
-         {
-            if (entry.getName().equals(CacheableLockManagerImpl.JBOSSCACHE_JDBC_TABLE_NAME))
-            {
-               tableNames.add(entry.getValue());
-               tableNames.add(entry.getValue() + "_D");
-
-               return tableNames;
-            }
-            else if (entry.getName().equals(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME))
-            {
-               throw new RuntimeException("Not supported");
-            }
-         }
-      }
-
-      return tableNames;
-   }
-
-   /**
-    * Return select data script.
-    */
-   public static String getSelectScript(String tableName)
-   {
-      return "select * from " + tableName;
-   }
-
-   /**
     * {@inheritDoc}
     */
    public void backup(File storageDir) throws BackupException
@@ -883,9 +854,62 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       RestoreTables restoreTable = new RestoreTables(null, tempDir, maxBufferSize);
       restoreTable.restore(storageDir, getDatasourceName(), tables);
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public DataCleaner getDataCleaner() throws CleanException
+   {
+      try
+      {
+         String dsName = getDatasourceName();
 
+         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
+         if (ds == null)
+         {
+            throw new NameNotFoundException("Data source " + dsName + " not found");
+         }
+
+         Connection jdbcConn =
+            SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+            {
+               public Connection run() throws Exception
+               {
+                  return ds.getConnection();
+
+               }
+            });
+
+         List<String> cleanScripts = new ArrayList<String>();
+         for (String tableName : getTableNames())
+         {
+            cleanScripts.add("drop table " + tableName);
+         }
+
+         return new DBCleaner(jdbcConn, cleanScripts);
+      }
+      catch (SQLException e)
+      {
+         throw new CleanException(e);
+      }
+      catch (NamingException e)
+      {
+         throw new CleanException(e);
+      }
+   }
+
+   /**
+    * Get list of tables names used by CacheableLockManager.
+    * 
+    * @return List
+    */
    protected abstract List<String> getTableNames();
 
+   /**
+    * Get data source name used by CacheableLockManager.
+    * 
+    * @return String
+    */
    protected abstract String getDatasourceName();
 
 }
