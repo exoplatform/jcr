@@ -41,11 +41,10 @@ import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
-import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerException;
-import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -118,7 +117,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          {
             log.error("Can't rollback changes", e1);
          }
-         catch (DBCleanerException e1)
+         catch (CleanException e1)
          {
             log.error("Can't rollback changes", e1);
          }
@@ -239,10 +238,10 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
     * 
     * @throws RepositoryConfigurationException 
     * @throws RepositoryException 
-    * @throws DBCleanerException 
+    * @throws CleanException 
     * @throws IOException 
     */
-   protected void rollback() throws RepositoryException, RepositoryConfigurationException, DBCleanerException,
+   protected void rollback() throws RepositoryException, RepositoryConfigurationException, CleanException,
       IOException
    {
       boolean isSystem =
@@ -252,8 +251,15 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       //close all session
       forceCloseSession(repositoryEntry.getName(), workspaceEntry.getName());
 
+      List<Backupable> backupable =
+         repositoryService.getRepository(repositoryEntry.getName()).getWorkspaceContainer(workspaceEntry.getName())
+            .getComponentInstancesOfType(Backupable.class);
+
       //clean database
-      new DBCleanerService().cleanWorkspaceData(workspaceEntry);
+      for (Backupable component : backupable)
+      {
+         component.getDataCleaner().clean();
+      }
 
       //clean index
       new IndexCleanHelper().removeWorkspaceIndex(workspaceEntry, isSystem);

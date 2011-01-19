@@ -16,11 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import java.util.ArrayList;
-import java.util.Map;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -32,7 +27,14 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DataCleaner;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -44,11 +46,6 @@ import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
  */
 public class JobExistedRepositoryRestore extends JobRepositoryRestore
 {
-
-   /**
-    * Database cleaner.
-    */
-   private final DBCleanerService dbCleanerService;
 
    /**
     * Value storage cleaner.
@@ -69,7 +66,6 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
    {
       super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLog);
 
-      this.dbCleanerService = new DBCleanerService();
       this.valueStorageCleanHelper = new ValueStorageCleanHelper();
       this.indexCleanHelper = new IndexCleanHelper();
    }
@@ -105,6 +101,24 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
             forceCloseSession(repositoryEntry.getName(), wEntry.getName());
          }
 
+         List<DataCleaner> dataCleaners = new ArrayList<DataCleaner>();
+
+         // collect all DataCleaners
+         for (WorkspaceEntry wEntry : workspaceList)
+         {
+            forceCloseSession(repositoryEntry.getName(), wEntry.getName());
+
+            List<Backupable> backupable =
+               repositoryService.getRepository(this.repositoryEntry.getName()).getWorkspaceContainer(wEntry.getName())
+                  .getComponentInstancesOfType(Backupable.class);
+
+
+            for (Backupable component : backupable)
+            {
+               dataCleaners.add(component.getDataCleaner());
+            }
+         }
+
          //remove repository
          if (isDefault)
          {
@@ -116,9 +130,10 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
          }
 
          //clean database
-         RepositoryEntry re = new RepositoryEntry();
-         re.setWorkspaceEntries(workspaceList);
-         dbCleanerService.cleanRepositoryData(re);
+         for (DataCleaner cleaner : dataCleaners)
+         {
+            cleaner.clean();
+         }
 
          //clean index
          for (WorkspaceEntry wEntry : workspaceList)

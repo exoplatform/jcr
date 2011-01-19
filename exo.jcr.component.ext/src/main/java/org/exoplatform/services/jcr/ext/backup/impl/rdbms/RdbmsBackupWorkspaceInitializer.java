@@ -28,8 +28,8 @@ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
-import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -98,7 +98,7 @@ public class RdbmsBackupWorkspaceInitializer extends RdbmsWorkspaceInitializer
          {
             log.error("Can't rollback changes", e1);
          }
-         catch (DBCleanerException e1)
+         catch (CleanException e1)
          {
             log.error("Can't rollback changes", e1);
          }

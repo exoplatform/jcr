@@ -37,7 +37,8 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
+import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DataCleaner;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.jcr.ItemExistsException;
@@ -67,8 +69,7 @@ import javax.sql.DataSource;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: AbstractBackupTestCase.java 760 2008-02-07 15:08:07Z pnedonosko $
  */
-public abstract class AbstractBackupTestCase
-   extends BaseStandaloneTest
+public abstract class AbstractBackupTestCase extends BaseStandaloneTest
 {
 
    protected SessionImpl ws1Session;
@@ -92,11 +93,6 @@ public abstract class AbstractBackupTestCase
    protected String repositoryNameToRestore = "db8backup";
 
    protected String workspaceNameToRestore = "ws1backup";
-
-   /**
-    * Database cleaner.
-    */
-   private DBCleanerService dbCleanerService = new DBCleanerService();
 
    /**
     * Value storage cleaner.
@@ -499,7 +495,6 @@ public abstract class AbstractBackupTestCase
       repositoryService.getRepository(repositoryName).removeWorkspace(wEntry.getName());
 
       //clean database
-      //      dbCleanerService.cleanWorkspaceData(wEntry);
       DataSource ds =
          (DataSource)new InitialContext().lookup(wEntry.getContainer().getParameterValue(
             JDBCWorkspaceDataContainer.SOURCE_NAME));
@@ -557,13 +552,27 @@ public abstract class AbstractBackupTestCase
          repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName()
             .equals(wEntry.getName());
 
+      List<DataCleaner> dataCleaners = new ArrayList<DataCleaner>();
+
+      List<Backupable> backupable =
+         repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
+            .getComponentInstancesOfType(Backupable.class);
+
+      for (Backupable component : backupable)
+      {
+         dataCleaners.add(component.getDataCleaner());
+      }
+
       //close all session
       forceCloseSession(repositoryName, wEntry.getName());
 
       repositoryService.getRepository(repositoryName).removeWorkspace(wEntry.getName());
 
       //clean database
-      dbCleanerService.cleanWorkspaceData(wEntry);
+      for (DataCleaner cleaner : dataCleaners)
+      {
+         cleaner.clean();
+      }
 
       //clean index
       indexCleanHelper.removeWorkspaceIndex(wEntry, isSystem);
@@ -595,6 +604,23 @@ public abstract class AbstractBackupTestCase
          forceCloseSession(repositoryEntry.getName(), wEntry.getName());
       }
 
+      List<DataCleaner> dataCleaners = new ArrayList<DataCleaner>();
+
+      // collect all DataCleaners
+      for (WorkspaceEntry wEntry : workspaceList)
+      {
+         forceCloseSession(repositoryEntry.getName(), wEntry.getName());
+
+         List<Backupable> backupable =
+            repositoryService.getRepository(repositoryEntry.getName()).getWorkspaceContainer(wEntry.getName())
+               .getComponentInstancesOfType(Backupable.class);
+
+         for (Backupable component : backupable)
+         {
+            dataCleaners.add(component.getDataCleaner());
+         }
+      }
+
       //remove repository
       if (isDefault)
       {
@@ -606,9 +632,10 @@ public abstract class AbstractBackupTestCase
       }
 
       //clean database
-      RepositoryEntry re = new RepositoryEntry();
-      re.setWorkspaceEntries(workspaceList);
-      dbCleanerService.cleanRepositoryData(re);
+      for (DataCleaner cleaner : dataCleaners)
+      {
+         cleaner.clean();
+      }
 
       //clean index
       for (WorkspaceEntry wEntry : workspaceList)
