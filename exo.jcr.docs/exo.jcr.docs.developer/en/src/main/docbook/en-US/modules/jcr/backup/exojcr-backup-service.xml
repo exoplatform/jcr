@@ -380,6 +380,168 @@ repo.removeWorkspace(workspace);</programlisting></para>
           </itemizedlist></para>
       </section>
     </section>
+
+    <section>
+      <title>Repository and Workspace initialization from backup</title>
+
+      <para>Repository and Workspace initialization from backup can use the
+      BackupWorkspaceInitializer.</para>
+
+      <para>Will be configured BackupWorkspaceInitializer in configuration of
+      workspace to restore the Workspace from backup over initializer.</para>
+
+      <para>Will be configured BackupWorkspaceInitializer in all
+      configurations workspaces of the Repository to restore the Repository
+      from backup over initializer. </para>
+
+      <para></para>
+
+      <para>Restoring the repository or workspace requires to shutdown the
+      repository.</para>
+
+      <para>Follow these steps : <itemizedlist>
+          <listitem>
+            <para>Stop repository (will be skipped this step if repository or
+            workace is not exists)</para>
+          </listitem>
+
+          <listitem>
+            <para>Clean database, value storage, index; (will be skipped this
+            step if repository or worksace is new)</para>
+          </listitem>
+
+          <listitem>
+            <para>In configuration, the workspace/-s set
+            BackupWorkspaceInitializer to refer to your backup.</para>
+          </listitem>
+
+          <listitem>
+            <para>Start repository</para>
+          </listitem>
+        </itemizedlist></para>
+
+      <para></para>
+
+      <para>Example of configuration initializer to restore workspace "backup"
+      over BackupWorkspaceInitializer:</para>
+
+      <programlisting>&lt;workspaces&gt;
+  &lt;workspace name="backup" ... &gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+      ...
+    &lt;/container&gt;
+    &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+      &lt;properties&gt;
+         &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_backup-20110120_044734"/&gt;
+      &lt;/properties&gt;
+   &lt;/initializer&gt;
+    ...
+&lt;/workspace&gt;</programlisting>
+
+      <section>
+        <title>Restore the Workspace over BackupWorksaceInitializer</title>
+
+        <para>Example of configuration initializer to resore the workspace
+        "backup" over BackupWorkspaceInitializer :<itemizedlist>
+            <listitem>
+              <para>Stop repository (will be skipped this step if workspace is
+              not exists)</para>
+            </listitem>
+
+            <listitem>
+              <para>Clean database, value storage, index; (will be skipped
+              this step if workspace is new)</para>
+            </listitem>
+
+            <listitem>
+              <para>In configuration, the workspace/-s set
+              BackupWorkspaceInitializer to refer to your
+              backup<programlisting>&lt;workspaces&gt;
+  &lt;workspace name="backup" ... &gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+      ...
+    &lt;/container&gt;
+    &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+      &lt;properties&gt;
+         &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_backup-20110120_044734"/&gt;
+      &lt;/properties&gt;
+   &lt;/initializer&gt;
+    ...
+&lt;/workspace&gt;</programlisting></para>
+            </listitem>
+
+            <listitem>
+              <para>Start repository</para>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Restore the Repository over BackupWorksaceInitializer</title>
+
+        <para>Example of configuration initializers to restore the repository
+        "repository" over BackupWorkspaceInitializer : <itemizedlist>
+            <listitem>
+              <para>Stop repository (will be skipped this step if repository
+              is not exists)</para>
+            </listitem>
+
+            <listitem>
+              <para>Clean database, value storage, index; (will be skipped
+              this step if repository is new)</para>
+            </listitem>
+
+            <listitem>
+              <para>In configuration of repository will be configured
+              initializers of workspace to refer to your backup.</para>
+
+              <para>For example :<programlisting>...
+&lt;workspaces&gt;
+ &lt;workspace name="system" ... &gt;
+  &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+  ...
+  &lt;/container&gt;
+  &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+   &lt;properties&gt;
+    &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_system-20110120_052334"/&gt;
+   &lt;/properties&gt;
+  &lt;/initializer&gt;
+  ...
+ &lt;/workspace&gt;
+
+ &lt;workspace name="collaboration" ... &gt;
+   &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+   ...
+  &lt;/container&gt;
+  &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+   &lt;properties&gt;
+    &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_collaboration-20110120_052341"/&gt;
+   &lt;/properties&gt;
+  &lt;/initializer&gt;
+  ...
+ &lt;/workspace&gt;
+
+ &lt;workspace name="backup" ... &gt;
+  &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+  ...
+  &lt;/container&gt;
+
+  &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+   &lt;properties&gt;
+    &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_backup-20110120_052417"/&gt;
+   &lt;/properties&gt;
+  &lt;/initializer&gt;
+  ...
+  &lt;/workspace&gt;
+&lt;/workspaces&gt;</programlisting></para>
+            </listitem>
+
+            <listitem>
+              <para>Start repository.</para>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+    </section>
   </section>
 
   <section>
