@@ -222,7 +222,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       @Override
       void close() throws IOException
       {
-         this.decoder.flush();
+         this.decoder.close();
       }
 
       @Override
@@ -297,7 +297,9 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          super.flush();
 
          if (buff != null)
+         {
             buff.close();
+         }
       }
 
       File getFile() throws IOException

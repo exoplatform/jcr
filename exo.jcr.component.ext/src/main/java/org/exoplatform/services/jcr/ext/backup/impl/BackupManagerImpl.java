@@ -805,6 +805,13 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public void start()
    {
+      //remove if exists all old jcrrestorewi*.tmp files.
+      File[] files = PrivilegedFileHelper.listFiles(tempDir, new JcrRestoreWiFilter());
+      for (int i = 0; i < files.length; i++)
+      {
+         PrivilegedFileHelper.delete(files[i]);
+      }
+      
       // start all scheduled before tasks
 
       if (registryService != null && !registryService.getForceXMLConfigurationValue(initParams))
