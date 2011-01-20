@@ -23,11 +23,13 @@ import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
+import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.io.ReaderSource;
 import org.codehaus.groovy.control.io.URLReaderSource;
 import org.exoplatform.services.rest.ext.groovy.ExtendedGroovyClassLoader;
 import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
+import org.exoplatform.services.rest.ext.groovy.SourceFile;
 import org.exoplatform.services.rest.ext.groovy.SourceFolder;
 
 import java.io.File;
@@ -36,6 +38,12 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.CodeSource;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
@@ -64,6 +72,58 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
       protected CompilationUnit createCompilationUnit(CompilerConfiguration config, CodeSource cs)
       {
          return new JcrCompilationUnit(config, cs, this);
+      }
+
+      @SuppressWarnings("rawtypes")
+      public Class[] parseClasses(SourceFile[] files, boolean includeLoadedClasses)
+      {
+         return doParseClasses(files, Phases.CLASS_GENERATION, null, includeLoadedClasses);
+      }
+
+      @SuppressWarnings("rawtypes")
+      private Class[] doParseClasses(SourceFile[] sources, int phase, CompilerConfiguration config,
+         boolean includeLoadedClasses)
+      {
+         synchronized (classCache)
+         {
+            CodeSource cs = new CodeSource(getCodeSource(), (java.security.cert.Certificate[])null);
+            CompilationUnit cunit = createCompilationUnit(config, cs);
+            Set<SourceUnit> setSunit = new HashSet<SourceUnit>();
+            for (int i = 0; i < sources.length; i++)
+               setSunit.add(cunit.addSource(sources[i].getPath()));
+            MultipleClassCollector collector = createMultipleCollector(cunit, setSunit);
+            cunit.setClassgenCallback(collector);
+            cunit.compile(phase);
+
+            for (Iterator iter = collector.getLoadedClasses().iterator(); iter.hasNext();)
+            {
+               Class clazz = (Class)iter.next();
+               String classname = clazz.getName();
+               int i = classname.lastIndexOf('.');
+               if (i != -1)
+               {
+                  String pkgname = classname.substring(0, i);
+                  Package pkg = getPackage(pkgname);
+                  if (pkg == null)
+                     definePackage(pkgname, null, null, null, null, null, null, null);
+               }
+               setClassCacheEntry(clazz);
+            }
+            List<Class> compiledClasses;
+            if (includeLoadedClasses)
+            {
+System.out.println("+++++++++++++++++++++++++ " + cunit.getClasses());            
+               Collection loadedClasses = collector.getLoadedClasses();
+               compiledClasses = new ArrayList<Class>(loadedClasses.size());
+               for (Iterator iter = loadedClasses.iterator(); iter.hasNext();)
+                  compiledClasses.add((Class)iter.next());
+            }
+            else
+            {
+               compiledClasses = collector.getCompiledClasses();
+            }
+            return compiledClasses.toArray(new Class[compiledClasses.size()]);
+         }
       }
    }
 
