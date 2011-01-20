@@ -19,7 +19,10 @@
 package org.exoplatform.services.jcr.ext.script.groovy;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyResourceLoader;
 
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
@@ -33,17 +36,15 @@ import org.exoplatform.services.rest.ext.groovy.SourceFile;
 import org.exoplatform.services.rest.ext.groovy.SourceFolder;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.CodeSource;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
@@ -74,56 +75,57 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
          return new JcrCompilationUnit(config, cs, this);
       }
 
-      @SuppressWarnings("rawtypes")
-      public Class[] parseClasses(SourceFile[] files, boolean includeLoadedClasses)
+      public URL[] findDependencies(final SourceFolder[] sources, final SourceFile[] files) throws IOException
       {
-         return doParseClasses(files, Phases.CLASS_GENERATION, null, includeLoadedClasses);
+         return findDependencies(sources, files, Phases.SEMANTIC_ANALYSIS, null);
       }
 
       @SuppressWarnings("rawtypes")
-      private Class[] doParseClasses(SourceFile[] sources, int phase, CompilerConfiguration config,
-         boolean includeLoadedClasses)
+      private URL[] findDependencies(SourceFolder[] sources, SourceFile[] files, int phase, CompilerConfiguration config)
+         throws IOException
       {
-         synchronized (classCache)
+         CodeSource cs = new CodeSource(getCodeSource(), (java.security.cert.Certificate[])null);
+         JcrGroovyResourceLoader actualLoader = null;
+         URL[] roots = null;
+         if (sources != null && sources.length > 0)
          {
-            CodeSource cs = new CodeSource(getCodeSource(), (java.security.cert.Certificate[])null);
-            CompilationUnit cunit = createCompilationUnit(config, cs);
-            Set<SourceUnit> setSunit = new HashSet<SourceUnit>();
+            roots = new URL[sources.length];
             for (int i = 0; i < sources.length; i++)
-               setSunit.add(cunit.addSource(sources[i].getPath()));
-            MultipleClassCollector collector = createMultipleCollector(cunit, setSunit);
-            cunit.setClassgenCallback(collector);
-            cunit.compile(phase);
-
-            for (Iterator iter = collector.getLoadedClasses().iterator(); iter.hasNext();)
-            {
-               Class clazz = (Class)iter.next();
-               String classname = clazz.getName();
-               int i = classname.lastIndexOf('.');
-               if (i != -1)
-               {
-                  String pkgname = classname.substring(0, i);
-                  Package pkg = getPackage(pkgname);
-                  if (pkg == null)
-                     definePackage(pkgname, null, null, null, null, null, null, null);
-               }
-               setClassCacheEntry(clazz);
-            }
-            List<Class> compiledClasses;
-            if (includeLoadedClasses)
-            {
-System.out.println("+++++++++++++++++++++++++ " + cunit.getClasses());            
-               Collection loadedClasses = collector.getLoadedClasses();
-               compiledClasses = new ArrayList<Class>(loadedClasses.size());
-               for (Iterator iter = loadedClasses.iterator(); iter.hasNext();)
-                  compiledClasses.add((Class)iter.next());
-            }
-            else
-            {
-               compiledClasses = collector.getCompiledClasses();
-            }
-            return compiledClasses.toArray(new Class[compiledClasses.size()]);
+               roots[i] = sources[i].getPath();
+            actualLoader = new JcrGroovyResourceLoader(roots);
          }
+
+         final HierarchicalResourceLoader loader =
+            new HierarchicalResourceLoader(actualLoader, JcrGroovyClassLoader.this.getResourceLoader());
+         
+         CompilationUnit cunit =
+            new JcrCompilationUnit(config, cs, new JcrGroovyClassLoader(
+               JcrGroovyClassLoaderProvider.class.getClassLoader()) {
+               public GroovyResourceLoader getResourceLoader()
+               {
+                  return loader;
+               }
+            });
+         
+         for (int i = 0; i < files.length; i++)
+            cunit.addSource(files[i].getPath());
+         cunit.compile(phase);
+         
+         List classNodes = cunit.getAST().getClasses();
+         List<URL> dependencies = new ArrayList<URL>(classNodes.size());
+         for (Iterator iter = classNodes.iterator(); iter.hasNext();)
+         {
+            ClassNode classNode = (ClassNode)iter.next();
+            ModuleNode module = classNode.getModule();
+            if (module != null)
+            {
+               SourceUnit currentSunit = module.getContext();
+               if (currentSunit instanceof JcrSourceUnit)
+                  dependencies.add(((JcrSourceUnit)currentSunit).getUrl());
+            }
+         }
+         
+         return dependencies.toArray(new URL[dependencies.size()]);
       }
    }
 
@@ -169,6 +171,8 @@ System.out.println("+++++++++++++++++++++++++ " + cunit.getClasses());
    /** Adapter for JCR like URLs. */
    public static class JcrSourceUnit extends SourceUnit
    {
+      private URL url;
+
       public JcrSourceUnit(File source, CompilerConfiguration configuration, GroovyClassLoader loader, ErrorCollector er)
       {
          super(source, configuration, loader, er);
@@ -192,9 +196,40 @@ System.out.println("+++++++++++++++++++++++++ " + cunit.getClasses());
           * jcr://repository/workspace#/path */
          super("jcr".equals(source.getProtocol()) ? source.getRef() : source.getPath(), new URLReaderSource(source,
             configuration), configuration, loader, er);
+         this.url = source;
+      }
+
+      public URL getUrl()
+      {
+         return url;
       }
    }
 
+   private static class HierarchicalResourceLoader implements GroovyResourceLoader
+   {
+      private final GroovyResourceLoader actual;
+      private final GroovyResourceLoader parent;
+   
+      HierarchicalResourceLoader(GroovyResourceLoader actual, GroovyResourceLoader parent)
+         throws MalformedURLException
+      {
+         this.actual = actual;
+         this.parent = parent;
+      }
+   
+      public URL loadGroovySource(String filename) throws MalformedURLException
+      {
+         URL resource = null;
+         if (actual != null)
+            resource = actual.loadGroovySource(filename);
+         if (resource == null && parent != null)
+            resource = parent.loadGroovySource(filename);
+         return resource;
+      }
+   }
+
+   /* ========================================================================== */ 
+   
    public JcrGroovyClassLoaderProvider()
    {
       super(AccessController.doPrivileged(new PrivilegedAction<JcrGroovyClassLoader>() {

@@ -36,6 +36,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,25 +79,7 @@ public class JcrGroovyCompiler implements Startable
     */
    public Class<?>[] compile(UnifiedNodeReference... sourceReferences) throws IOException
    {
-      return compile(false, sourceReferences);
-   }
-
-   /**
-    * Compile Groovy source that located in <code>sourceReferences</code>.
-    * Compiled sources can be dependent to each other and dependent to Groovy
-    * sources that are accessible for this compiler.
-    * 
-    * @param includeLoadedClasses if <code>true</code> then array of classes
-    *           which method method return contains all loaded classes. If
-    *           <code>false</code> then only classes created from
-    *           <code>sourceReferences</code> included in result array
-    * @param sourceReferences references to Groovy sources to be compiled
-    * @return result of compilation
-    * @throws IOException if any i/o errors occurs
-    */
-   public Class<?>[] compile(boolean includeLoadedClasses, UnifiedNodeReference... sourceReferences) throws IOException
-   {
-      return compile(includeLoadedClasses, null, sourceReferences);
+      return compile(null, sourceReferences);
    }
 
    /**
@@ -138,58 +122,10 @@ public class JcrGroovyCompiler implements Startable
     */
    public Class<?>[] compile(SourceFolder[] src, UnifiedNodeReference... sourceReferences) throws IOException
    {
-      return compile(false, src, sourceReferences);
-   }
-
-   /**
-    * Compile Groovy source that located in <code>sourceReferences</code>.
-    * Compiled sources can be dependent to each other and dependent to Groovy
-    * sources that are accessible for this compiler and with additional Groovy
-    * sources <code>src</code>. <b>NOTE</b> To be able load Groovy source files
-    * from specified folders the following rules must be observed:
-    * <ul>
-    * <li>Groovy source files must be located in folder with respect to package
-    * structure</li>
-    * <li>Name of Groovy source files must be the same as name of class located
-    * in file</li>
-    * <li>Groovy source file must have extension '.groovy'</li>
-    * </ul>
-    * <br/>
-    * Example: If source stream that we want compile contains the following
-    * code:
-    * 
-    * <pre>
-    *           package c.b.a
-    *           
-    *           import a.b.c.A
-    *           
-    *           class B extends A {
-    *           // Do something.
-    *           }
-    * </pre>
-    * 
-    * Assume we store dependencies in JCR then URL of folder with Groovy sources
-    * may be like this: <code>jcr://repository/workspace#/groovy-library</code>.
-    * Then absolute path to JCR node that contains Groovy source must be as
-    * following: <code>/groovy-library/a/b/c/A.groovy</code>
-    * 
-    * @param includeLoadedClasses if <code>true</code> then array of classes
-    *           which method method return contains all loaded classes. If
-    *           <code>false</code> then only classes created from
-    *           <code>sourceReferences</code> included in result array
-    * @param src additional Groovy source location that should be added in
-    *           class-path when compile <code>sourceReferences</code>
-    * @param sourceReferences references to Groovy sources to be compiled
-    * @return result of compilation
-    * @throws IOException if any i/o errors occurs
-    */
-   public Class<?>[] compile(boolean includeLoadedClasses, SourceFolder[] src, UnifiedNodeReference... sourceReferences)
-      throws IOException
-   {
       SourceFile[] files = new SourceFile[sourceReferences.length];
       for (int i = 0; i < sourceReferences.length; i++)
          files[i] = new SourceFile(sourceReferences[i].getURL());
-      return doCompile((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader(src), files, includeLoadedClasses);
+      return doCompile((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader(src), files);
    }
 
    /**
@@ -214,36 +150,7 @@ public class JcrGroovyCompiler implements Startable
     */
    public Class<?>[] compile(SourceFolder[] src, SourceFile[] files) throws IOException
    {
-      return compile(false, src, files);
-   }
-
-   /**
-    * Compile Groovy source that located in <code>files</code>. Compiled sources
-    * can be dependent to each other and dependent to Groovy sources that are
-    * accessible for this compiler and with additional Groovy sources
-    * <code>src</code>. <b>NOTE</b> To be able load Groovy source files from
-    * specified folders the following rules must be observed:
-    * <ul>
-    * <li>Groovy source files must be located in folder with respect to package
-    * structure</li>
-    * <li>Name of Groovy source files must be the same as name of class located
-    * in file</li>
-    * <li>Groovy source file must have extension '.groovy'</li>
-    * </ul>
-    * 
-    * @param includeLoadedClasses if <code>true</code> then array of classes
-    *           which method method return contains all loaded classes. If
-    *           <code>false</code> then only classes created from
-    *           <code>sourceReferences</code> included in result array
-    * @param src additional Groovy source location that should be added in
-    *           class-path when compile <code>files</code>
-    * @param files Groovy sources to be compiled
-    * @return result of compilation
-    * @throws IOException if any i/o errors occurs
-    */
-   public Class<?>[] compile(boolean includeLoadedClasses, SourceFolder[] src, SourceFile[] files) throws IOException
-   {
-      return doCompile((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader(src), files, includeLoadedClasses);
+      return doCompile((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader(src), files);
    }
 
    /**
@@ -257,38 +164,38 @@ public class JcrGroovyCompiler implements Startable
     */
    public Class<?>[] compile(SourceFile[] files) throws IOException
    {
-      return compile(false, files);
-   }
-
-   /**
-    * Compile Groovy source that located in <code>files</code>. Compiled sources
-    * can be dependent to each other and dependent to Groovy sources that are
-    * accessible for this compiler.
-    * 
-    * @param includeLoadedClasses if <code>true</code> then array of classes
-    *           which method method return contains all loaded classes. If
-    *           <code>false</code> then only classes created from
-    *           <code>sourceReferences</code> included in result array
-    * @param files Groovy sources to be compiled
-    * @return result of compilation
-    * @throws IOException if any i/o errors occurs
-    */
-   public Class<?>[] compile(boolean includeLoadedClasses, SourceFile[] files) throws IOException
-   {
-      return doCompile((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader(), files, includeLoadedClasses);
+      return doCompile((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader(), files);
    }
 
    @SuppressWarnings("rawtypes")
-   private Class<?>[] doCompile(final JcrGroovyClassLoader cl, final SourceFile[] files,
-      final boolean includeLoadedClasses) throws IOException
+   private Class<?>[] doCompile(final JcrGroovyClassLoader cl, final SourceFile[] files) throws IOException
    {
       Class[] classes = AccessController.doPrivileged(new PrivilegedAction<Class[]>() {
          public Class[] run()
          {
-            return cl.parseClasses(files, includeLoadedClasses);
+            return cl.parseClasses(files);
          }
       });
       return classes;
+   }
+
+   public URL[] getDependencies(final SourceFolder[] sources, final SourceFile[] files) throws IOException
+   {
+      try
+      {
+         return AccessController.doPrivileged(new PrivilegedExceptionAction<URL[]>() {
+            public URL[] run() throws IOException
+            {
+               return ((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader()).findDependencies(sources,
+                  files);
+            }
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         throw (IOException)cause;
+      }
    }
 
    /**
