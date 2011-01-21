@@ -58,7 +58,7 @@ public class JcrGroovyCompiler implements Startable
 
    protected List<GroovyScriptAddRepoPlugin> addRepoPlugins;
 
-   protected JcrGroovyCompiler(JcrGroovyClassLoaderProvider classLoaderProvider)
+   public JcrGroovyCompiler(JcrGroovyClassLoaderProvider classLoaderProvider)
    {
       this.classLoaderProvider = classLoaderProvider;
    }
