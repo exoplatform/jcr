@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.webdav.command.AclCommand;
 import org.exoplatform.services.jcr.webdav.command.CopyCommand;
 import org.exoplatform.services.jcr.webdav.command.DeleteCommand;
 import org.exoplatform.services.jcr.webdav.command.GetCommand;
@@ -51,6 +52,7 @@ import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ExtHttpHeaders;
+import org.exoplatform.services.rest.ext.webdav.method.ACL;
 import org.exoplatform.services.rest.ext.webdav.method.CHECKIN;
 import org.exoplatform.services.rest.ext.webdav.method.CHECKOUT;
 import org.exoplatform.services.rest.ext.webdav.method.COPY;
@@ -935,7 +937,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             + "<exo:xpath xmlns:exo=\"http://exoplatform.com/jcr\"/>";
 
       return Response.ok().header(ExtHttpHeaders.ALLOW, /* allowCommands */ALLOW).header(ExtHttpHeaders.DAV,
-         "1, 2, ordered-collections").header(ExtHttpHeaders.DASL, DASL_VALUE).header(ExtHttpHeaders.MSAUTHORVIA, "DAV")
+         "1, 2, ordered-collections, access-control").header(ExtHttpHeaders.DASL, DASL_VALUE).header(ExtHttpHeaders.MSAUTHORVIA, "DAV")
          .build();
    }
 
@@ -1261,6 +1263,41 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
+    * {@inheritDoc}
+    */
+   @ACL
+   @Path("/{repoName}/{repoPath:.*}/")
+   public Response acl(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
+      @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
+      HierarchicalProperty body)
+   {
+      if (log.isDebugEnabled())
+      {
+         log.debug("ACL " + repoName + "/" + repoPath);
+      }
+
+      repoPath = normalizePath(repoPath);
+
+      try
+      {
+         List<String> lockTokens = lockTokens(lockTokenHeader, ifHeader);
+         Session session = session(repoName, workspaceName(repoPath), lockTokens);
+         return new AclCommand().acl(session, path(repoPath), body);
+      }
+
+      catch (NoSuchWorkspaceException exc)
+      {
+         log.error("NoSuchWorkspace. " + exc.getMessage());
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+      }
+      catch (Exception exc)
+      {
+         log.error(exc.getMessage(), exc);
+         return Response.status(HTTPStatus.INTERNAL_ERROR).entity(exc.getMessage()).build();
+      }
+   }
+   
+      /**
     * Gives access to the current session.
     * 
     * @param repoName repository name

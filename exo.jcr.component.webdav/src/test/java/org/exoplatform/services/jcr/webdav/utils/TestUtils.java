@@ -21,10 +21,13 @@ package org.exoplatform.services.jcr.webdav.utils;
 import org.exoplatform.common.http.client.HTTPConnection;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDav;
+import org.exoplatform.services.jcr.webdav.command.propfind.PropFindResponseEntity;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
+import org.exoplatform.services.rest.impl.ContainerResponse;
 import org.w3c.dom.Document;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -225,6 +228,18 @@ public class TestUtils
       Node node = session.getRootNode().getNode(TextUtil.relativizePath(path));
       Node content = node.getNode("jcr:content");
       return content.getMixinNodeTypes();
+   }
+
+   public static InputStream getResponseAsStream(ContainerResponse response) throws IOException
+   {
+      if (response.getEntity() instanceof PropFindResponseEntity)
+      {
+         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+         ((PropFindResponseEntity)response.getEntity()).write(outputStream);
+         return new ByteArrayInputStream(outputStream.toByteArray());
+      }
+
+      return null;
    }
 
 }

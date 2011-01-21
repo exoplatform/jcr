@@ -256,4 +256,17 @@ public interface WebDavService
     * @return the instance of javax.ws.rs.core.Response
     */
    Response search(String repoName, String repoPath, UriInfo baseURI, HierarchicalProperty body);
+
+   /**
+    * WebDAV ACL method according to protocol extension - Access Control Protocol: RFC3744
+    * More details here: <a href='http://www.webdav.org/specs/rfc3744.html'>Web Distributed 
+    * Authoring and Versioning (WebDAV) Access Control Protocol</a>
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response
+    */
+   Response acl(String repoName, String repoPath, String lockTokenHeader, String ifHeader, HierarchicalProperty body);
 }

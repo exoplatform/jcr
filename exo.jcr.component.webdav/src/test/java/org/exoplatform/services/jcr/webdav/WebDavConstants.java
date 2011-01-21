@@ -208,6 +208,8 @@ public class WebDavConstants
 
       public static final String ORDERPATCH = "ORDERPATCH";
 
+      public static final String ACL = "ACL";
+
    }
 
 }

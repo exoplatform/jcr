@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.webdav.resource;
 
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.webdav.command.acl.ACLProperties;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
@@ -310,6 +312,14 @@ public class CollectionResource extends GenericResource
          }
          throw new PathNotFoundException();
 
+      }
+      else if (name.equals(ACLProperties.ACL))
+      {
+         return ACLProperties.getACL((NodeImpl)node);
+      }
+      else if (name.equals(OWNER))
+      {
+         return ACLProperties.getOwner((NodeImpl)node);
       }
       else
       {

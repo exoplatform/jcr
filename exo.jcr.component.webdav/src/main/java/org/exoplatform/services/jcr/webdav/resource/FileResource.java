@@ -19,7 +19,9 @@
 package org.exoplatform.services.jcr.webdav.resource;
 
 import org.exoplatform.common.util.HierarchicalProperty;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
+import org.exoplatform.services.jcr.webdav.command.acl.ACLProperties;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -291,6 +293,14 @@ public class FileResource extends GenericResource
       else if (name.equals(SUPPORTEDMETHODSET))
       {
          return supportedMethodSet();
+      }
+      else if (name.equals(ACLProperties.ACL))
+      {
+         return ACLProperties.getACL((NodeImpl)node);
+      }
+      else if (name.equals(OWNER))
+      {
+         return ACLProperties.getOwner((NodeImpl)node);
       }
       else
       {

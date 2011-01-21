@@ -20,22 +20,37 @@ package org.exoplatform.services.jcr.webdav.command;
 
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.Depth;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.command.acl.ACLProperties;
 import org.exoplatform.services.jcr.webdav.command.propfind.PropFindResponseEntity;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
+import org.exoplatform.services.rest.ext.provider.HierarchicalPropertyEntityProvider;
 import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.impl.EnvironmentContext;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
+import org.exoplatform.services.rest.impl.RequestHandlerImpl;
+import org.exoplatform.services.rest.tools.DummySecurityContext;
+import org.exoplatform.services.rest.tools.ResourceLauncher;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.jcr.Node;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
+import javax.ws.rs.core.SecurityContext;
+import javax.xml.namespace.QName;
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
  * work.visor.ck@gmail.com Aug 13, 2008
@@ -50,6 +65,12 @@ public class TestPropFind extends BaseStandaloneTest
    private final String authorProp = "webdav:Author";
 
    private final String nt_webdave_file = "webdav:file";
+
+   private final String USER_ROOT = "root";
+
+   private final String USER_JOHN = "john";
+
+   private final String BASE_URI = "http://localhost";
 
    private String propFindXML =
       "<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:propfind xmlns:D=\"DAV:\">"
@@ -239,6 +260,177 @@ public class TestPropFind extends BaseStandaloneTest
       assertTrue(find.contains(authorValue));
    }
    
+   /**
+    * Here we check for correct response for PROPFIND request.
+    * Response should not only contain an acl element with its properties
+    * (ace, principle, privelege, grant, etc.) but also be correctly composed and contain
+    * ACL information about user root.
+    * @throws Exception
+    */
+   public void testPropfindPermissionsOnRoot() throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.putSingle("Depth", "0");
+      EnvironmentContext ctx = new EnvironmentContext();
+
+      Set<String> adminRoles = new HashSet<String>();
+      adminRoles.add("administrators");
+
+      DummySecurityContext adminSecurityContext = new DummySecurityContext(new Principal()
+      {
+         public String getName()
+         {
+            return USER_ROOT;
+         }
+      }, adminRoles);
+
+      ctx.put(SecurityContext.class, adminSecurityContext);
+
+      RequestHandlerImpl handler = (RequestHandlerImpl)container.getComponentInstanceOfType(RequestHandlerImpl.class);
+      ResourceLauncher launcher = new ResourceLauncher(handler);
+
+      String request =
+         "<?xml version=\"1.0\" encoding=\"utf-8\" ?>" + "<D:propfind xmlns:D=\"DAV:\">" + "<D:prop>" + "<D:owner/>"
+            + "<D:acl/>" + "</D:prop>" + "</D:propfind>";
+
+      ContainerResponse response =
+         launcher.service(WebDAVMethods.PROPFIND, getPathWS(), BASE_URI, headers, request.getBytes(), null, ctx);
+
+      assertEquals(HTTPStatus.MULTISTATUS, response.getStatus());
+      assertNotNull(response.getEntity());
+
+      HierarchicalPropertyEntityProvider provider = new HierarchicalPropertyEntityProvider();
+      InputStream inputStream = TestUtils.getResponseAsStream(response);
+      HierarchicalProperty multistatus = provider.readFrom(null, null, null, null, null, inputStream);
+
+      assertEquals(new QName("DAV:", "multistatus"), multistatus.getName());
+      assertEquals(1, multistatus.getChildren().size());
+
+      HierarchicalProperty resourceProp = multistatus.getChildren().get(0);
+
+      HierarchicalProperty resourceHref = resourceProp.getChild(new QName("DAV:", "href"));
+      assertNotNull(resourceHref);
+      assertEquals(BASE_URI + getPathWS() + "/", resourceHref.getValue());
+
+      HierarchicalProperty propstatProp = resourceProp.getChild(new QName("DAV:", "propstat"));
+      HierarchicalProperty propProp = propstatProp.getChild(new QName("DAV:", "prop"));
+
+      HierarchicalProperty ownerProp = propProp.getChild(new QName("DAV:", "owner"));
+      HierarchicalProperty ownerHrefProp = ownerProp.getChild(new QName("DAV:", "href"));
+
+      assertEquals("__system", ownerHrefProp.getValue());
+
+      HierarchicalProperty aclProp = propProp.getChild(ACLProperties.ACL);
+      assertEquals(1, aclProp.getChildren().size());
+
+      HierarchicalProperty aceProp = aclProp.getChild(ACLProperties.ACE);
+      assertEquals(2, aceProp.getChildren().size());
+
+      HierarchicalProperty principalProp = aceProp.getChild(ACLProperties.PRINCIPAL);
+      assertEquals(1, principalProp.getChildren().size());
+
+      HierarchicalProperty allProp = principalProp.getChild(ACLProperties.ALL);
+      assertNotNull(allProp);
+
+      HierarchicalProperty grantProp = aceProp.getChild(ACLProperties.GRANT);
+      assertEquals(2, grantProp.getChildren().size());
+
+      HierarchicalProperty writeProp = grantProp.getChild(0).getChild(ACLProperties.WRITE);
+      assertNotNull(writeProp);
+      HierarchicalProperty readProp = grantProp.getChild(1).getChild(ACLProperties.READ);
+      assertNotNull(readProp);
+   }
+
+   /**
+    * Here we check for correct response for PROPFIND request.
+    * Response should contain all available acl information on current node, i.e.
+    * ace for user "__system", "john" etc.
+    * @throws Exception
+    */
+   public void testPropfindPropOwnerAndAclOnNode() throws Exception
+   {
+
+      NodeImpl testNode = (NodeImpl)root.addNode("test_acl_property", "nt:folder");
+      testNode.addMixin("exo:owneable");
+      testNode.addMixin("exo:privilegeable");
+      session.save();
+
+      Map<String, String[]> permissions = new HashMap<String, String[]>();
+
+      String userName = USER_JOHN;
+      permissions.put(userName, PermissionType.ALL);
+
+      testNode.setPermissions(permissions);
+      testNode.getSession().save();
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.putSingle("Depth", "1");
+      headers.putSingle(HttpHeaders.CONTENT_TYPE, "text/xml; charset=\"utf-8\"");
+
+      EnvironmentContext ctx = new EnvironmentContext();
+
+      Set<String> adminRoles = new HashSet<String>();
+      adminRoles.add("administrators");
+
+      DummySecurityContext adminSecurityContext = new DummySecurityContext(new Principal()
+      {
+         public String getName()
+         {
+            return USER_ROOT;
+         }
+      }, adminRoles);
+
+      ctx.put(SecurityContext.class, adminSecurityContext);
+
+      RequestHandlerImpl handler = (RequestHandlerImpl)container.getComponentInstanceOfType(RequestHandlerImpl.class);
+      ResourceLauncher launcher = new ResourceLauncher(handler);
+
+      String request =
+         "<?xml version=\"1.0\" encoding=\"utf-8\" ?>" + "<D:propfind xmlns:D=\"DAV:\">" + "<D:prop>" + "<D:owner/>"
+            + "<D:acl/>" + "</D:prop>" + "</D:propfind>";
+
+      ContainerResponse cres =
+         launcher.service(WebDAVMethods.PROPFIND, getPathWS() + testNode.getPath(), BASE_URI, headers,
+            request.getBytes(), null, ctx);
+
+      assertEquals(HTTPStatus.MULTISTATUS, cres.getStatus());
+
+      HierarchicalPropertyEntityProvider provider = new HierarchicalPropertyEntityProvider();
+      InputStream inputStream = TestUtils.getResponseAsStream(cres);
+      HierarchicalProperty multistatus = provider.readFrom(null, null, null, null, null, inputStream);
+
+      assertEquals(new QName("DAV:", "multistatus"), multistatus.getName());
+      assertEquals(1, multistatus.getChildren().size());
+
+      HierarchicalProperty resourceProp = multistatus.getChildren().get(0);
+
+      HierarchicalProperty resourceHref = resourceProp.getChild(new QName("DAV:", "href"));
+      assertNotNull(resourceHref);
+      assertEquals(BASE_URI + getPathWS() + testNode.getPath() + "/", resourceHref.getValue());
+
+      HierarchicalProperty propstatProp = resourceProp.getChild(new QName("DAV:", "propstat"));
+      HierarchicalProperty propProp = propstatProp.getChild(new QName("DAV:", "prop"));
+
+      HierarchicalProperty aclProp = propProp.getChild(ACLProperties.ACL);
+      assertEquals(1, aclProp.getChildren().size());
+
+      HierarchicalProperty aceProp = aclProp.getChild(ACLProperties.ACE);
+      assertEquals(2, aceProp.getChildren().size());
+
+      HierarchicalProperty principalProp = aceProp.getChild(ACLProperties.PRINCIPAL);
+      assertEquals(1, principalProp.getChildren().size());
+
+      assertEquals(userName, principalProp.getChildren().get(0).getValue());
+
+      HierarchicalProperty grantProp = aceProp.getChild(ACLProperties.GRANT);
+      assertEquals(2, grantProp.getChildren().size());
+
+      HierarchicalProperty writeProp = grantProp.getChild(0).getChild(ACLProperties.WRITE);
+      assertNotNull(writeProp);
+      HierarchicalProperty readProp = grantProp.getChild(1).getChild(ACLProperties.READ);
+      assertNotNull(readProp);
+
+   }
 
    @Override
    protected String getRepositoryName()
