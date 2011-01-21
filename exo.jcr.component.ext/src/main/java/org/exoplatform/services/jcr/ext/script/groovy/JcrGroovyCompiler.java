@@ -179,6 +179,17 @@ public class JcrGroovyCompiler implements Startable
       return classes;
    }
 
+   /**
+    * Get URLs of classes (stored in JCR only) required to compile sources
+    * <code>files</code>. Result array includes URLs of <code>files</code> plus
+    * URLs of other required sources if they can be found in class-path.
+    * 
+    * @param sources additional Groovy source location that should be added in
+    *           class-path when analyze <code>files</code>
+    * @param files set of sources for analyzing
+    * @return URLs
+    * @throws IOException if any i/o errors occurs
+    */
    public URL[] getDependencies(final SourceFolder[] sources, final SourceFile[] files) throws IOException
    {
       try
