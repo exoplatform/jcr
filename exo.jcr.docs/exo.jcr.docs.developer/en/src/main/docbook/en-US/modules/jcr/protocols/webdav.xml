@@ -355,6 +355,12 @@
             <entry>Workspace.getQueryManager(); QueryManager.createQuery();
             Query.execute()</entry>
           </row>
+          
+          <row>
+            <entry>ACL</entry>
+
+            <entry>Node.setPermission(...)</entry>
+          </row>
         </tbody>
       </tgroup>
     </table>
@@ -393,20 +399,6 @@
           <para>Change the value to 2 </para>
         </listitem>
       </orderedlist>
-    </section>
-
-    <section>
-      <title>Mac OS 10.5.3 and higher </title>
-
-      <para>There is a known Finder bug started from Mac OS v.10.5.3 and not
-      yet fixed.</para>
-
-      <para>When you upload file to webdav server, the file will appear with 0
-      kb. size. </para>
-
-      <para>For more details follow: <ulink
-      url="http://discussions.apple.com/thread.jspa?threadID=1538882&amp;start=0&amp;tstart=0">Apple
-      Disscussion thread.</ulink></para>
     </section>
   </section>
 </chapter>
