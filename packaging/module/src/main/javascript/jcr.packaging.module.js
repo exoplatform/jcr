@@ -22,12 +22,12 @@ function getModule(params) {
     addDependency(new Project("jcr", "jcr", "jar", "1.0")).
     addDependency(new Project("concurrent", "concurrent", "jar", "1.3.4")).
     addDependency(new Project("jgroups", "jgroups", "jar", "2.6.13.GA")).
-    addDependency(new Project("stax", "stax-api", "jar", "1.0")).
-//	addDependency(new Project("stax", "stax", "jar", "1.2.0")).
-	addDependency(new Project("org.jboss.cache","jbosscache-core","jar","3.2.6.GA")).		
-	addDependency(new Project("jboss.jbossts","jbossjts","jar","4.6.1.GA")).		
-	addDependency(new Project("jboss.jbossts","jbossts-common","jar","4.6.1.GA")).		
-	addDependency(new Project("org.apache.ws.commons","ws-commons-util","jar","1.0.1")).		
+//  addDependency(new Project("stax", "stax-api", "jar", "1.0")).
+//  addDependency(new Project("stax", "stax", "jar", "1.2.0")).
+    addDependency(new Project("org.jboss.cache","jbosscache-core","jar","3.2.6.GA")).
+    addDependency(new Project("jboss.jbossts","jbossjts","jar","4.6.1.GA")).
+    addDependency(new Project("jboss.jbossts","jbossts-common","jar","4.6.1.GA")).
+    addDependency(new Project("org.apache.ws.commons","ws-commons-util","jar","1.0.1")).
     addDependency(new Project("org.apache.lucene", "lucene-core", "jar", "2.4.1")).
     addDependency(new Project("org.apache.lucene", "lucene-spellchecker", "jar", "2.4.1")).
     addDependency(new Project("org.apache.lucene", "lucene-memory", "jar", "2.4.1"));
