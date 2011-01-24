@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.io.File;
@@ -44,7 +45,7 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
 
    protected ExtendedBackupManager getBackupManager()
    {
-      return (ExtendedBackupManager) container.getComponentInstanceOfType(BackupManager.class);
+      return (ExtendedBackupManager)container.getComponentInstanceOfType(BackupManager.class);
    }
 
    public void testCreateRepository() throws Exception
@@ -53,6 +54,8 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       // backup
       File backDir = new File("target/backup");
       backDir.mkdirs();
+
+      RepositoryImpl repository = getReposityToBackup();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
       config.setRepository(repository.getName());

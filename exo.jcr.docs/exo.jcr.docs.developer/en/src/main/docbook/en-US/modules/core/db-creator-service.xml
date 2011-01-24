@@ -72,6 +72,9 @@
             &lt;property name="url" value="jdbc:mysql://localhost/" /&gt;
             &lt;property name="username" value="root" /&gt;
             &lt;property name="password" value="admin" /&gt;
+            &lt;property name="additional_property" value="value"&gt;
+            ...
+            &lt;property name="additional_property_n" value="value"&gt;
          &lt;/properties-param&gt;
          &lt;properties-param&gt;
             &lt;name&gt;db-creation&lt;/name&gt;.
@@ -85,6 +88,20 @@
 
     <para><envar>db-connection</envar> properties section contains parameters
     needed for connection to database server</para>
+
+    <para>There is four reserved and mandatory properties
+    <emphasis>driverClassName</emphasis>, <emphasis>url</emphasis>,
+    <emphasis>username</emphasis> and <emphasis>password</emphasis>. But
+    db-connection may contain additonal properties.</para>
+
+    <para>For example, next additional proprites allows reconnect to MySQL
+    database when connection was refused:<programlisting>         &lt;properties-param&gt;
+            &lt;name&gt;db-connection&lt;/name&gt;
+            ...
+            &lt;property name="validationQuery" value="select 1"/&gt;
+            &lt;property name="testOnReturn" value="true"/&gt;
+            ...
+         &lt;/properties-param&gt;</programlisting></para>
 
     <para><envar>db-creation</envar> properties section contains paramaters
     for database creation using DDL script:</para>

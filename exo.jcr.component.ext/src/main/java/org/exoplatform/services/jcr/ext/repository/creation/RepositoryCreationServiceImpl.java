@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
@@ -433,6 +434,10 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             refAddr.put("url", dbConnectionInfo.getUrl());
             refAddr.put("username", dbConnectionInfo.getUsername());
             refAddr.put("password", dbConnectionInfo.getPassword());
+            for (Entry<String, String> entry : dbConnectionInfo.getAdditionalProperties().entrySet())
+            {
+               refAddr.put(entry.getKey(), entry.getValue());
+            }
          }
          catch (DBCreatorException e)
          {
@@ -523,6 +528,10 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
                refAddr.put("url", dbConnectionInfo.getUrl());
                refAddr.put("username", dbConnectionInfo.getUsername());
                refAddr.put("password", dbConnectionInfo.getPassword());
+               for (Entry<String, String> entry : dbConnectionInfo.getAdditionalProperties().entrySet())
+               {
+                  refAddr.put(entry.getKey(), entry.getValue());
+               }
             }
             catch (DBCreatorException e)
             {
