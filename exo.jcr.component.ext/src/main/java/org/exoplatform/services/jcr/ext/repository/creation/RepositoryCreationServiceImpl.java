@@ -52,12 +52,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
@@ -426,18 +424,11 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       for (String dataSource : dataSourceNames)
       {
          // create related DB
-         Map<String, String> refAddr = new HashMap<String, String>();
+         Map<String, String> refAddr = null;
          try
          {
             DBConnectionInfo dbConnectionInfo = dbCreator.createDatabase(rEntry.getName() + "_" + dataSource);
-            refAddr.put("driverClassName", dbConnectionInfo.getDriver());
-            refAddr.put("url", dbConnectionInfo.getUrl());
-            refAddr.put("username", dbConnectionInfo.getUsername());
-            refAddr.put("password", dbConnectionInfo.getPassword());
-            for (Entry<String, String> entry : dbConnectionInfo.getAdditionalProperties().entrySet())
-            {
-               refAddr.put(entry.getKey(), entry.getValue());
-            }
+            refAddr = dbConnectionInfo.getProperties();
          }
          catch (DBCreatorException e)
          {
@@ -519,19 +510,12 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          for (String dataSource : dataSourceNames)
          {
             // get data base info 
-            Map<String, String> refAddr = new HashMap<String, String>();
+            Map<String, String> refAddr = null;
             try
             {
                DBConnectionInfo dbConnectionInfo =
                   dbCreator.getDBConnectionInfo(repositoryEntry.getName() + "_" + dataSource);
-               refAddr.put("driverClassName", dbConnectionInfo.getDriver());
-               refAddr.put("url", dbConnectionInfo.getUrl());
-               refAddr.put("username", dbConnectionInfo.getUsername());
-               refAddr.put("password", dbConnectionInfo.getPassword());
-               for (Entry<String, String> entry : dbConnectionInfo.getAdditionalProperties().entrySet())
-               {
-                  refAddr.put(entry.getKey(), entry.getValue());
-               }
+               refAddr = dbConnectionInfo.getProperties();
             }
             catch (DBCreatorException e)
             {
