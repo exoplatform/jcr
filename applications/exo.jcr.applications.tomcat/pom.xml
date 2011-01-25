@@ -22,7 +22,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.config</artifactId>
-      <version>1.14.0-CR1-SNAPSHOT</version>
+      <version>1.14.0-Beta03</version>
       <relativePath>exo.jcr.applications.config</relativePath>
    </parent>
 
@@ -101,14 +101,14 @@
                   <!-- Removing timestamps from SNAPSHOT jars-->
                   <move todir="${basedir}/target/lib-binary.dir/">
                     <fileset dir="${basedir}/target/lib-binary.dir/">
-                      <include name="**/*.jar"/>
+                      <include name="**/*.jar" />
                     </fileset>
                     <mapper>
                       <firstmatchmapper>
                         <!-- If a timestamped SNAPSHOT is used -->
-                        <regexpmapper from="(.*)-([0-9]+(.[0-9]+)*-(.*))-([0-9]{8}.[0-9]{6})-([0-9]+).jar" to="\1-${project.version}.jar" casesensitive="no"/>
+                        <regexpmapper from="(.*)-([0-9]+(.[0-9]+)*-(.*))-([0-9]{8}.[0-9]{6})-([0-9]+).jar" to="\1-${project.version}.jar" casesensitive="no" />
                         <!-- By default keep the name -->
-                        <flattenmapper/>
+                        <flattenmapper />
                       </firstmatchmapper>
                     </mapper>
                   </move>
