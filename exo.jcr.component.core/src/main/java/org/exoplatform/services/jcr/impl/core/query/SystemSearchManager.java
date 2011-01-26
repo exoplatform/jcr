@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
@@ -107,8 +108,33 @@ public class SystemSearchManager extends SearchManager
       throws RepositoryConfigurationException
    {
       QueryHandlerContext context =
-         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDir() + "_"
-            + INDEX_DIR_SUFFIX, extractor, true, virtualTableResolver);
+         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDirectory(),
+            extractor, true, virtualTableResolver);
       return context;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected String getIndexDirectory() throws RepositoryConfigurationException
+   {
+      return getIndexDir() + "_" + INDEX_DIR_SUFFIX;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected String getStorageName()
+   {
+      return super.getStorageName() + "_" + INDEX_DIR_SUFFIX;
+   }
+
+   @Override
+   protected void suspendLocally() throws SuspendException
+   {
+      super.suspendLocally();
+      isStarted = false;
    }
 }

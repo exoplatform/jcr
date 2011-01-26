@@ -21,10 +21,8 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
@@ -33,7 +31,6 @@ import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
@@ -64,7 +61,7 @@ import javax.transaction.TransactionManager;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "lockmanager"))
-public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager implements Backupable
+public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
 {
 
    /**
@@ -399,48 +396,20 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager i
    }
 
    /**
-    * {@inheritDoc}
-    */
+   * {@inheritDoc}
+   */
    @Override
-   protected List<String> getTableNames()
+   protected void putDirectly(LockData lockData)
    {
-      List<String> tableNames = new ArrayList<String>();
-
-      LockManagerEntry lockManagerEntry = config.getLockManager();
-      if (lockManagerEntry != null)
-      {
-         for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
-         {
-            if (entry.getName().equals(INFINISPAN_JDBC_TABLE_NAME))
-            {
-               tableNames.add(entry.getValue());
-
-               return tableNames;
-            }
-         }
-      }
-      
-      return tableNames;
+      PrivilegedISPNCacheHelper.putIfAbsent(cache, lockData.getNodeIdentifier(), lockData);
    }
 
    /**
     * {@inheritDoc}
     */
    @Override
-   protected String getDatasourceName()
+   protected void cleanCacheDirectly()
    {
-      LockManagerEntry lockManagerEntry = config.getLockManager();
-      if (lockManagerEntry != null)
-      {
-         for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
-         {
-            if (entry.getName().equals(INFINISPAN_JDBC_CL_DATASOURCE))
-            {
-               return entry.getValue();
-            }
-         }
-      }
-
-      return null;
+      cache.clear();
    }
 }

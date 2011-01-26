@@ -14,13 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.cleaner;
-
-import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.DBCleaner;
+package org.exoplatform.services.jcr.impl.clean.rdbms;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -29,15 +26,15 @@ import java.util.List;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: OracleDBCleaner.java 3655 2010-12-10 08:25:41Z tolusha $
+ * @version $Id: PgSQLDBClean.java 3655 2010-12-10 08:25:41Z tolusha $
  */
-public class OracleDBCleaner extends DBCleaner
+public class PgSQLDBClean extends DBClean
 {
 
    /**
-    * OracleSingleDBCleaner constructor.
+    * PgSQLDBClean constructor.
     */
-   public OracleDBCleaner(Connection connection, List<String> cleanScripts)
+   public PgSQLDBClean(Connection connection, List<String> cleanScripts)
    {
       super(connection, cleanScripts);
    }
@@ -48,33 +45,6 @@ public class OracleDBCleaner extends DBCleaner
    @Override
    protected boolean isTableExists(Connection conn, String tableName) throws SQLException
    {
-      Statement st = null;
-      try
-      {
-         st = conn.createStatement();
-         st.executeUpdate("SELECT 1 FROM " + tableName);
-         return true;
-      }
-      catch (SQLException e)
-      {
-         // check: ORA-00942: table or view does not exist
-         if (e.getMessage().indexOf("ORA-00942") >= 0)
-            return false;
-         throw e;
-      }
-      finally
-      {
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error("Can't close the Statement: " + e);
-            }
-         }
-      }
+      return super.isTableExists(conn, tableName.toLowerCase());
    }
 }

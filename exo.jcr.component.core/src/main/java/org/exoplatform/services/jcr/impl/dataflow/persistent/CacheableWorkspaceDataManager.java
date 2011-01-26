@@ -31,17 +31,27 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+import org.exoplatform.services.rpc.RPCException;
+import org.exoplatform.services.rpc.RPCService;
+import org.exoplatform.services.rpc.RemoteCommand;
+import org.exoplatform.services.rpc.TopologyChangeEvent;
+import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.transaction.TransactionService;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.RepositoryException;
 import javax.transaction.TransactionManager;
@@ -55,7 +65,8 @@ import javax.transaction.TransactionManager;
  * 
  * @version $Id$
  */
-public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager
+public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager implements Suspendable,
+   TopologyChangeListener
 {
 
    /**
@@ -69,6 +80,46 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected final ConcurrentMap<Integer, DataRequest> requestCache;
 
    private TransactionManager transactionManager;
+
+   /**
+    * The service for executing commands on all nodes of cluster.
+    */
+   protected final RPCService rpcService;
+
+   /**
+    * The amount of current working threads.
+    */
+   protected AtomicInteger workingThreads = new AtomicInteger();
+
+   /**
+    * Indicates if component suspended or not.
+    */
+   protected boolean isSuspended = false;
+
+   /**
+    * Allows to make all threads waiting until resume. 
+    */
+   protected CountDownLatch latcher = null;
+
+   /**
+    * Indicates that node keep responsible for resuming.
+    */
+   protected Boolean isResponsibleForResuming = false;
+
+   /**
+    * Request to all nodes to check if there is someone who responsible for resuming.
+    */
+   private RemoteCommand requestForResponsibleForResuming;
+
+   /**
+    * Suspend remote command.
+    */
+   private RemoteCommand suspend;
+
+   /**
+    * Resume remote command.
+    */
+   private RemoteCommand resume;
 
    /**
     * ItemData request, used on get operations.
@@ -318,10 +369,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          Items cache
     * @param systemDataContainerHolder
     *          System Workspace data container (persistent level)
-    * @param transactionService TransactionService         
+    * @param transactionService 
+    *          TransactionService  
+    * @param rpcService
+    *          the service for executing commands on all nodes of cluster
     */
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionService transactionService)
+      SystemDataContainerHolder systemDataContainerHolder, TransactionService transactionService, RPCService rpcService)
    {
       super(dataContainer, systemDataContainerHolder);
       this.cache = cache;
@@ -330,6 +384,58 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       addItemPersistenceListener(new CacheItemsPersistenceListener());
 
       transactionManager = transactionService.getTransactionManager();
+
+      this.rpcService = rpcService;
+      doInitRemoteCommands();
+   }
+
+   /**
+    * CacheableWorkspaceDataManager constructor.
+    * 
+    * @param dataContainer
+    *          Workspace data container (persistent level)
+    * @param cache
+    *          Items cache
+    * @param systemDataContainerHolder
+    *          System Workspace data container (persistent level)
+    * @param transactionService TransactionService         
+    */
+   public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
+      SystemDataContainerHolder systemDataContainerHolder, TransactionService transactionService)
+   {
+      this(dataContainer, cache, systemDataContainerHolder, transactionService, null);
+   }
+
+   /**
+    * CacheableWorkspaceDataManager constructor.
+    * 
+    * @param dataContainer
+    *          Workspace data container (persistent level)
+    * @param cache
+    *          Items cache
+    * @param systemDataContainerHolder
+    *          System Workspace data container (persistent level)
+    */
+   public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
+      SystemDataContainerHolder systemDataContainerHolder, RPCService rpcService)
+   {
+      super(dataContainer, systemDataContainerHolder);
+      this.cache = cache;
+
+      this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
+      addItemPersistenceListener(new CacheItemsPersistenceListener());
+
+      if (cache instanceof JBossCacheWorkspaceStorageCache)
+      {
+         transactionManager = ((JBossCacheWorkspaceStorageCache)cache).getTransactionManager();
+      }
+      else
+      {
+         transactionManager = null;
+      }
+
+      this.rpcService = rpcService;
+      doInitRemoteCommands();
    }
 
    /**
@@ -359,6 +465,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          transactionManager = null;
       }
+
+      this.rpcService = null;
    }
 
    /**
@@ -566,18 +674,40 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @Override
    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
    {
-      if (isTxAware())
+      if (isSuspended)
       {
-         // save in dedicated XA transaction
-         new SaveInTransaction(changesLog).perform();
+         try
+         {
+            latcher.await();
+         }
+         catch (InterruptedException e)
+         {
+            throw new RepositoryException(e);
+         }
       }
-      else
-      {
-         // save normaly 
-         super.save(changesLog);
 
-         // notify listeners after storage commit
-         notifySaveItems(changesLog, false);
+      workingThreads.incrementAndGet();
+
+      try
+      {
+         if (isTxAware())
+         {
+            // save in dedicated XA transaction
+            new SaveInTransaction(changesLog).perform();
+         }
+         else
+         {
+
+            // save normaly 
+            super.save(changesLog);
+
+            // notify listeners after storage commit
+            notifySaveItems(changesLog, false);
+         }
+      }
+      finally
+      {
+         workingThreads.decrementAndGet();
       }
    }
 
@@ -959,6 +1089,202 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       finally
       {
          conn.close();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void suspend() throws SuspendException
+   {
+      isResponsibleForResuming = true;
+
+      if (rpcService != null)
+      {
+         try
+         {
+            rpcService.executeCommandOnAllNodes(suspend, true, null);
+         }
+         catch (SecurityException e)
+         {
+            throw new SuspendException(e);
+         }
+         catch (RPCException e)
+         {
+            throw new SuspendException(e);
+         }
+      }
+      else
+      {
+         suspendLocally();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void resume() throws ResumeException
+   {
+      if (rpcService != null)
+      {
+         try
+         {
+            rpcService.executeCommandOnAllNodes(resume, true, null);
+         }
+         catch (SecurityException e)
+         {
+            throw new ResumeException(e);
+         }
+         catch (RPCException e)
+         {
+            throw new ResumeException(e);
+         }
+      }
+      else
+      {
+         resumeLocally();
+      }
+
+      isResponsibleForResuming = false;
+   }
+
+   private void suspendLocally() throws SuspendException
+   {
+      if (isSuspended)
+      {
+         throw new SuspendException("Component already suspended.");
+      }
+
+      latcher = new CountDownLatch(1);
+      isSuspended = true;
+
+      while (workingThreads.get() != 0)
+      {
+         try
+         {
+            Thread.sleep(50);
+         }
+         catch (InterruptedException e)
+         {
+            throw new SuspendException(e);
+         }
+      }
+   }
+
+   private void resumeLocally() throws ResumeException
+   {
+      if (!isSuspended)
+      {
+         throw new ResumeException("Component is not suspended.");
+      }
+
+      isSuspended = false;
+      latcher.countDown();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void onChange(TopologyChangeEvent event)
+   {
+      if (isSuspended)
+      {
+         new Thread()
+         {
+            @Override
+            public synchronized void run()
+            {
+               try
+               {
+                  List<Object> results = rpcService.executeCommandOnAllNodes(requestForResponsibleForResuming, true);
+
+                  for (Object result : results)
+                  {
+                     if ((Boolean)result)
+                     {
+                        return;
+                     }
+                  }
+
+                  // node which was responsible for resuming leave the cluster, so resume component
+                  try
+                  {
+                     resumeLocally();
+                  }
+                  catch (ResumeException e)
+                  {
+                     LOG.error("Can not resume component", e);
+                  }
+               }
+               catch (SecurityException e1)
+               {
+                  LOG.error("You haven't privileges to execute remote command", e1);
+               }
+               catch (RPCException e1)
+               {
+                  LOG.error("Exception during command execution", e1);
+               }
+            }
+         }.start();
+      }
+   }
+
+   /**
+    * Initialization remote commands.
+    */
+   private void doInitRemoteCommands()
+   {
+      if (rpcService != null)
+      {
+         // register commands
+         suspend = rpcService.registerCommand(new RemoteCommand()
+         {
+
+            public String getId()
+            {
+               return "org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager-suspend-"
+                  + dataContainer.getUniqueName();
+            }
+
+            public Serializable execute(Serializable[] args) throws Throwable
+            {
+               suspendLocally();
+               return null;
+            }
+         });
+
+         resume = rpcService.registerCommand(new RemoteCommand()
+         {
+
+            public String getId()
+            {
+               return "org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager-resume-"
+                  + dataContainer.getUniqueName();
+            }
+
+            public Serializable execute(Serializable[] args) throws Throwable
+            {
+               resumeLocally();
+               return null;
+            }
+         });
+
+         requestForResponsibleForResuming = rpcService.registerCommand(new RemoteCommand()
+         {
+
+            public String getId()
+            {
+               return "org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager-requestForResponsibilityForResuming-"
+                  + dataContainer.getUniqueName();
+            }
+
+            public Serializable execute(Serializable[] args) throws Throwable
+            {
+               return isResponsibleForResuming;
+            }
+         });
+
+         rpcService.registerTopologyChangeListener(this);
       }
    }
 }

@@ -579,7 +579,7 @@
         </properties-param>
       </init-params>
     </component-plugin>
-<component-plugin>
+   <component-plugin>
       <name>bind.datasource</name>
       <set-method>addPlugin</set-method>
       <type>org.exoplatform.services.naming.BindReferencePlugin</type>

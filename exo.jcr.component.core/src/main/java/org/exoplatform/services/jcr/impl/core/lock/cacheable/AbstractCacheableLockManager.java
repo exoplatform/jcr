@@ -16,8 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -37,6 +36,10 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
@@ -45,44 +48,32 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DataCleaner;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.BackupTables;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTableRule;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTables;
-import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.DBCleaner;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.IdentityConstants;
+import org.jboss.cache.Cache;
 import org.picocontainer.Startable;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
@@ -812,104 +803,182 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    /**
     * {@inheritDoc}
     */
+   public void clean() throws BackupException
+   {
+      cleanCacheDirectly();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public void backup(File storageDir) throws BackupException
    {
-      Map<String, String> scripts = new HashMap<String, String>();
-      for (String tableName : getTableNames())
-      {
-         scripts.put(tableName, "SELECT * FROM " + tableName);
-      }
-
-      BackupTables.backup(storageDir, getDatasourceName(), scripts);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void restore(File storageDir) throws RestoreException
-   {
-      Map<String, RestoreTableRule> tables = new LinkedHashMap<String, RestoreTableRule>();
-      for (String tableName : getTableNames())
-      {
-         RestoreTableRule restoreTableRule = new RestoreTableRule();
-         restoreTableRule.setSrcContainerName(null);
-         restoreTableRule.setSrcMultiDb(null);
-         restoreTableRule.setDstContainerName(null);
-         restoreTableRule.setDstMultiDb(null);
-         restoreTableRule.setSkipColumnIndex(null);
-         restoreTableRule.setDeleteColumnIndex(null);
-         restoreTableRule.setNewColumnIndex(null);
-         restoreTableRule.setConvertColumnIndex(null);
-         restoreTableRule.setContentFile(new File(storageDir, tableName + BackupTables.CONTENT_FILE_SUFFIX));
-         restoreTableRule.setContentLenFile(new File(storageDir, tableName + BackupTables.CONTENT_LEN_FILE_SUFFIX));
-
-         tables.put(tableName, restoreTableRule);
-      }
-
-      File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
-      int maxBufferSize =
-         config.getContainer().getParameterInteger(JDBCWorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-            JDBCWorkspaceDataContainer.DEF_MAXBUFFERSIZE);
-
-      RestoreTables restoreTable = new RestoreTables(null, tempDir, maxBufferSize);
-      restoreTable.restore(storageDir, getDatasourceName(), tables);
-   }
-   
-   /**
-    * {@inheritDoc}
-    */
-   public DataCleaner getDataCleaner() throws CleanException
-   {
+      ObjectOutputStream out = null;
       try
       {
-         String dsName = getDatasourceName();
+         File contentFile = new File(storageDir, "CacheLocks" + DBBackup.CONTENT_FILE_SUFFIX);
+         out = new ObjectOutputStream(new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(contentFile)));
+         
+         List<LockData> locks = getLockList();
 
-         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-         if (ds == null)
+         out.writeInt(locks.size());
+         for (LockData lockData : locks)
          {
-            throw new NameNotFoundException("Data source " + dsName + " not found");
+            lockData.writeExternal(out);
          }
-
-         Connection jdbcConn =
-            SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+      }
+      catch (FileNotFoundException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      finally
+      {
+         if (out != null)
+         {
+            try
             {
-               public Connection run() throws Exception
-               {
-                  return ds.getConnection();
-
-               }
-            });
-
-         List<String> cleanScripts = new ArrayList<String>();
-         for (String tableName : getTableNames())
-         {
-            cleanScripts.add("drop table " + tableName);
+               out.flush();
+               out.close();
+            }
+            catch (IOException e)
+            {
+               LOG.error("Can't close output stream", e);
+            }
          }
-
-         return new DBCleaner(jdbcConn, cleanScripts);
-      }
-      catch (SQLException e)
-      {
-         throw new CleanException(e);
-      }
-      catch (NamingException e)
-      {
-         throw new CleanException(e);
       }
    }
 
    /**
-    * Get list of tables names used by CacheableLockManager.
-    * 
-    * @return List
+    * {@inheritDoc}
     */
-   protected abstract List<String> getTableNames();
+   public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
+   {
+      List<LockData> locks = new ArrayList<LockData>();
+
+      ObjectInputStream in = null;
+      try
+      {
+         File contentFile = new File(storageDir, "CacheLocks" + DBBackup.CONTENT_FILE_SUFFIX);
+         in = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(contentFile));
+
+         int count = in.readInt();
+         for (int i = 0; i < count; i++)
+         {
+            LockData lockData = new LockData();
+            lockData.readExternal(in);
+
+            locks.add(lockData);
+         }
+      }
+      catch (FileNotFoundException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new BackupException(e);
+      }
+      finally
+      {
+         if (in != null)
+         {
+            try
+            {
+               in.close();
+            }
+            catch (IOException e)
+            {
+               LOG.error("Can't close output stream", e);
+            }
+         }
+      }
+
+      return new CacheLocksRestor(locks);
+   }
 
    /**
-    * Get data source name used by CacheableLockManager.
-    * 
-    * @return String
+    * Cache restorer.
     */
-   protected abstract String getDatasourceName();
+   protected class CacheLocksRestor implements DataRestor
+   {
+
+      final private List<LockData> backupLocks = new ArrayList<LockData>();
+
+      private List<LockData> actualLocks;
+
+      CacheLocksRestor(final List<LockData> backupLocks)
+      {
+         this.backupLocks.addAll(backupLocks);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void clean() throws BackupException
+      {
+         actualLocks.addAll(getLockList());
+         cleanCacheDirectly();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void restore() throws BackupException
+      {
+         for (LockData lockData : backupLocks)
+         {
+            putDirectly(lockData);
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void commit() throws BackupException
+      {
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void rollback() throws BackupException
+      {
+         cleanCacheDirectly();
+         for (LockData lockData : actualLocks)
+         {
+            putDirectly(lockData);
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void close() throws BackupException
+      {
+         backupLocks.clear();
+         actualLocks.clear();
+      }
+   }
+
+   /**
+    * Puts lock data directly into cache.
+    * 
+    * @param lockData
+    *          the lock data to put
+    */
+   protected abstract void putDirectly(LockData lockData);
+
+   /**
+    * Clean cache directly.
+    */
+   protected abstract void cleanCacheDirectly();
 
 }

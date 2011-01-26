@@ -20,10 +20,10 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
@@ -31,8 +31,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.Session;
@@ -174,28 +172,12 @@ public class TestDBCleaner extends JcrImplBaseTest
       assertTrue(res.next());
 
       // remove content
-      List<Backupable> backupable = new ArrayList<Backupable>();
-      for (String name : repositoryService.getRepository(repositoryName).getWorkspaceNames())
-      {
-         backupable.addAll(repositoryService.getRepository(repositoryName).getWorkspaceContainer(name)
-            .getComponentInstancesOfType(Backupable.class));
-      }
-
-      for (Backupable component : backupable)
-      {
-         component.getDataCleaner().clean();
-      }
+      DBCleanService.cleanRepositoryData(repositoryEntry);
 
       // check - does JCR_SITEM become empty
-      try
-      {
-         res = statement.executeQuery("select * from JCR_MITEM where ID='" + id + "'");
-         fail();
-      }
-      catch (SQLException e)
-      {
-         //ok
-      }
+      res = statement.executeQuery("select * from JCR_MITEM where ID='" + id + "'");
+      assertFalse(res.next());
+
       statement.close();
 
       service.removeRepository(repositoryName);
@@ -227,17 +209,7 @@ public class TestDBCleaner extends JcrImplBaseTest
       assertTrue(res.next());
 
       // remove content
-      List<Backupable> backupable = new ArrayList<Backupable>();
-      for (String name : repositoryService.getRepository(repositoryName).getWorkspaceNames())
-      {
-         backupable.addAll(repositoryService.getRepository(repositoryName).getWorkspaceContainer(name)
-            .getComponentInstancesOfType(Backupable.class));
-      }
-
-      for (Backupable component : backupable)
-      {
-         component.getDataCleaner().clean();
-      }
+      DBCleanService.cleanRepositoryData(repositoryEntry);
 
       // check - does JCR_SITEM become empty
       res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
@@ -273,25 +245,11 @@ public class TestDBCleaner extends JcrImplBaseTest
       assertTrue(res.next());
 
       // remove content
-      List<Backupable> backupable =
-         repositoryService.getRepository(repositoryName).getWorkspaceContainer(wsName)
-            .getComponentInstancesOfType(Backupable.class);
-
-      for (Backupable component : backupable)
-      {
-         component.getDataCleaner().clean();
-      }
+      DBCleanService.cleanWorkspaceData(repositoryEntry.getWorkspaceEntries().get(0));
 
       // check - does JCR_SITEM become empty
-      try
-      {
-         res = statement.executeQuery("select * from JCR_MITEM where ID='" + id + "'");
-         fail();
-      }
-      catch (SQLException e)
-      {
-         //ok
-      }
+      res = statement.executeQuery("select * from JCR_MITEM where ID='" + id + "'");
+      assertFalse(res.next());
       statement.close();
 
       service.removeRepository(repositoryName);
@@ -337,14 +295,7 @@ public class TestDBCleaner extends JcrImplBaseTest
       assertTrue(res.next());
 
       // remove content
-      List<Backupable> backupable =
-         repositoryService.getRepository(repositoryName).getWorkspaceContainer(workspaceEntry.getName())
-            .getComponentInstancesOfType(Backupable.class);
-
-      for (Backupable component : backupable)
-      {
-         component.getDataCleaner().clean();
-      }
+      DBCleanService.cleanWorkspaceData(repositoryEntry.getWorkspaceEntries().get(0));
 
       // check - does JCR_SITEM become empty
       res = statement.executeQuery("select * from JCR_SITEM where ID='" + workspaceEntry.getName() + id + "'");

@@ -87,9 +87,9 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       // store parsed FQN to avoid it's parsing each time cache event is generated
       this.parametersFqn = Fqn.fromRelativeElements(rootFqn, system ? INDEX_PARAMETERS : SYSINDEX_PARAMETERS);
       modeHandler.addIndexerIoModeListener(this);
+
       Node<Serializable, Object> cacheRoot = cache.getRoot();
 
-      // prepare cache structures
       if (!cacheRoot.hasChild(parametersFqn))
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
@@ -112,7 +112,6 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
          Object value = cache.get(parametersFqn, PARAMETER_NAME);
          localUpdateInProgress = value != null ? (Boolean)value : false;
       }
-
    }
 
    /**

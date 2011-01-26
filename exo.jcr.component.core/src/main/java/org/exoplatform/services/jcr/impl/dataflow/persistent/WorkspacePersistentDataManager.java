@@ -42,9 +42,6 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.ResumeException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.SuspendException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Suspendable;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
@@ -58,7 +55,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -71,7 +67,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id$
  */
-public abstract class WorkspacePersistentDataManager implements PersistentDataManager, Suspendable
+public abstract class WorkspacePersistentDataManager implements PersistentDataManager
 {
 
    /**
@@ -110,8 +106,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    protected boolean readOnly = false;
 
-   protected ReentrantReadWriteLock rwl = new ReentrantReadWriteLock(true);
-   
    /**
     * WorkspacePersistentDataManager constructor.
     * 
@@ -136,8 +130,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
    {
-      rwl.readLock().lock();
-
       // check if this workspace container is not read-only
       if (readOnly && !(changesLog instanceof ReadOnlyThroughChanges))
       {
@@ -186,8 +178,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       }
 
       notifySaveItems(persistedLog, true);
-
-      rwl.readLock().unlock();
    }
 
    class ChangesLogPersister
@@ -841,21 +831,4 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    {
       this.readOnly = status;
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void suspend() throws SuspendException
-   {
-      rwl.writeLock().lock();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void resume() throws ResumeException
-   {
-      rwl.writeLock().unlock();
-   }
-
 }

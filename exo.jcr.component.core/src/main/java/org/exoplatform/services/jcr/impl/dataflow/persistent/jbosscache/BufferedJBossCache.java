@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -988,7 +989,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       public void apply()
       {
          setCacheLocalMode();
-         cache.removeNode(fqn);
+         PrivilegedJBossCacheHelper.removeNode(cache, fqn);
       }
    }
 }

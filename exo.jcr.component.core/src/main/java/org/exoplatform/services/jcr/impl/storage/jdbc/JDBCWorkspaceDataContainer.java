@@ -23,26 +23,23 @@ import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.backup.ComplexDataRestor;
+import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestor;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestor;
+import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.BackupException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DataCleaner;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.RestoreException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.BackupTables;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTableRule;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.util.RestoreTables;
-import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.DBCleanHelper;
-import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.DBCleaner;
-import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.IngresSQLDBCleaner;
-import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.OracleDBCleaner;
-import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.PgSQLDBCleaner;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
@@ -54,6 +51,8 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
+import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
@@ -136,6 +135,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
    protected final String containerName;
 
+   protected final String uniqueName;
+
    protected final String dbSourceName;
 
    protected final boolean multiDb;
@@ -169,6 +170,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * For default hints are enabled.
     */
    protected boolean useQueryHints;
+
+   /**
+    * Workspace configuration.
+    */
+   protected final WorkspaceEntry wsConfig;
 
    /**
     * Shared connection factory.
@@ -246,7 +252,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       contextInit.recall();
 
       checkIntegrity(wsConfig, repConfig);
+      this.wsConfig = wsConfig;
       this.containerName = wsConfig.getName();
+      this.uniqueName = wsConfig.getUniqueName();
       this.multiDb = Boolean.parseBoolean(wsConfig.getContainer().getParameterValue(MULTIDB));
       this.valueStorageProvider = valueStorageProvider;
 
@@ -877,6 +885,14 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    {
       return containerName;
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public String getUniqueName()
+   {
+      return uniqueName;
+   }
 
    /**
     * {@inheritDoc}
@@ -1014,6 +1030,45 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
+   public void clean() throws BackupException
+   {
+      try
+      {
+         DBCleanService.cleanWorkspaceData(wsConfig);
+
+         if (wsConfig.getContainer().getValueStorages() != null)
+         {
+            for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
+            {
+               File valueStorageDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+               if (PrivilegedFileHelper.exists(valueStorageDir))
+               {
+                  DirectoryHelper.removeDirectory(valueStorageDir);
+               }
+            }
+         }
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (NamingException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (SQLException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public void backup(File storageDir) throws BackupException
    {
       ObjectWriter backupInfo = null;
@@ -1051,9 +1106,58 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                      + containerName + "')");
          }
 
-         BackupTables.backup(storageDir, dbSourceName, scripts);
+         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+         if (ds == null)
+         {
+            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
+         }
+
+         Connection jdbcConn =
+            SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+            {
+               public Connection run() throws Exception
+               {
+                  return ds.getConnection();
+
+               }
+            });
+
+         DBBackup.backup(storageDir, jdbcConn, scripts);
+
+         // backup value storage
+         if (wsConfig.getContainer().getValueStorages() != null)
+         {
+            for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
+            {
+               File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+               if (!PrivilegedFileHelper.exists(srcDir))
+               {
+                  throw new BackupException("Can't backup value storage. Directory " + srcDir.getName()
+                     + " doesn't exists");
+               }
+               else
+               {
+                  File destValuesDir = new File(storageDir, "values");
+                  File destDir = new File(destValuesDir, valueStorage.getId());
+
+                  DirectoryHelper.compressDirectory(srcDir, destDir);
+               }
+            }
+         }
       }
       catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (NamingException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (SQLException e)
       {
          throw new BackupException(e);
       }
@@ -1076,10 +1180,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public void restore(File storageDir) throws RestoreException
+   public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
    {
+      List<DataRestor> restorers = new ArrayList<DataRestor>();
+
       ObjectReader backupInfo = null;
-      
       try
       {
          backupInfo =
@@ -1100,8 +1205,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          restoreTableRule.setSrcMultiDb(srcMultiDb);
          restoreTableRule.setDstContainerName(containerName);
          restoreTableRule.setDstMultiDb(multiDb);
-         restoreTableRule.setContentFile(new File(storageDir, srcTableName + BackupTables.CONTENT_FILE_SUFFIX));
-         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + BackupTables.CONTENT_LEN_FILE_SUFFIX));
+         restoreTableRule.setContentFile(new File(storageDir, srcTableName + DBBackup.CONTENT_FILE_SUFFIX));
+         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + DBBackup.CONTENT_LEN_FILE_SUFFIX));
 
          if (multiDb)
          {
@@ -1153,8 +1258,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          restoreTableRule.setSrcMultiDb(srcMultiDb);
          restoreTableRule.setDstContainerName(containerName);
          restoreTableRule.setDstMultiDb(multiDb);
-         restoreTableRule.setContentFile(new File(storageDir, srcTableName + BackupTables.CONTENT_FILE_SUFFIX));
-         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + BackupTables.CONTENT_LEN_FILE_SUFFIX));
+         restoreTableRule.setContentFile(new File(storageDir, srcTableName + DBBackup.CONTENT_FILE_SUFFIX));
+         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + DBBackup.CONTENT_LEN_FILE_SUFFIX));
 
          // auto increment ID column
          restoreTableRule.setSkipColumnIndex(0);
@@ -1177,8 +1282,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          restoreTableRule.setSrcMultiDb(srcMultiDb);
          restoreTableRule.setDstContainerName(containerName);
          restoreTableRule.setDstMultiDb(multiDb);
-         restoreTableRule.setContentFile(new File(storageDir, srcTableName + BackupTables.CONTENT_FILE_SUFFIX));
-         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + BackupTables.CONTENT_LEN_FILE_SUFFIX));
+         restoreTableRule.setContentFile(new File(storageDir, srcTableName + DBBackup.CONTENT_FILE_SUFFIX));
+         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + DBBackup.CONTENT_LEN_FILE_SUFFIX));
 
          if (!multiDb || !srcMultiDb)
          {
@@ -1189,20 +1294,75 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             restoreTableRule.setConvertColumnIndex(convertColumnIndex);
          }
          tables.put(dstTableName, restoreTableRule);
+         
+         restorers.add(new DBRestor(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
 
-         
-         File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
-         RestoreTables restoreTable = new RestoreTables(swapCleaner, tempDir, maxBufferSize);
-         
-         restoreTable.restore(storageDir, dbSourceName, tables);
+         // prepare value storage restorer
+         File backupValueStorageDir = new File(storageDir, "values");
+         if (wsConfig.getContainer().getValueStorages() != null)
+         {
+            List<File> dataDirs = new ArrayList<File>();
+            List<File> backupDirs = new ArrayList<File>();
+
+            List<ValueStorageEntry> valueStorages = wsConfig.getContainer().getValueStorages();
+            String[] valueStoragesFiles = PrivilegedFileHelper.list(backupValueStorageDir);
+
+            if ((valueStoragesFiles == null && valueStorages.size() != 0)
+               || (valueStoragesFiles != null && valueStoragesFiles.length != valueStorages.size()))
+            {
+               throw new RepositoryConfigurationException("Workspace configuration [" + wsConfig.getName()
+                  + "] has a different amount of value storages than exist in backup");
+            }
+
+            for (ValueStorageEntry valueStorage : valueStorages)
+            {
+               File backupDir = new File(backupValueStorageDir, valueStorage.getId());
+               if (!PrivilegedFileHelper.exists(backupDir))
+               {
+                  throw new RepositoryConfigurationException("Can't restore value storage. Directory "
+                     + backupDir.getName() + " doesn't exists");
+               }
+               else
+               {
+                  File dataDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+
+                  dataDirs.add(dataDir);
+                  backupDirs.add(backupDir);
+               }
+            }
+
+            restorers.add(new DirectoryRestor(dataDirs, backupDirs));
+         }
+         else
+         {
+            if (PrivilegedFileHelper.exists(backupValueStorageDir))
+            {
+               throw new RepositoryConfigurationException("Value storage didn't configure in workspace ["
+                  + wsConfig.getName() + "] configuration but value storage backup files exist");
+            }
+         }
+
+         return new ComplexDataRestor(restorers);
       }
       catch (FileNotFoundException e)
       {
-         throw new RestoreException(e);
+         throw new BackupException(e);
       }
       catch (IOException e)
       {
-         throw new RestoreException(e);
+         throw new BackupException(e);
+      }
+      catch (NamingException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (SQLException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
       }
       finally
       {
@@ -1214,96 +1374,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             }
             catch (IOException e)
             {
-               throw new RestoreException(e);
+               LOG.error("Can't close object reader", e);
             }
          }
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public DataCleaner getDataCleaner() throws CleanException
-   {
-      DataCleaner dbCleaner;
-
-      try
-      {
-         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-         if (ds == null)
-         {
-            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
-         }
-
-         Connection jdbcConn =
-            SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-            {
-               public Connection run() throws Exception
-               {
-                  return ds.getConnection();
-
-               }
-            });
-
-         String dialect = DialectDetecter.detect(jdbcConn.getMetaData());
-
-         List<String> cleanScripts = new ArrayList<String>();
-         if (multiDb)
-         {
-            cleanScripts.add("drop table JCR_MREF");
-            cleanScripts.add("drop table JCR_MVALUE");
-            cleanScripts.add("drop table JCR_MITEM");
-         }
-         else
-         {
-            cleanScripts
-               .add("delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
-                  + containerName + "')");
-            cleanScripts
-               .add("delete from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
-                  + containerName + "')");
-         }
-
-         if (!multiDb && dialect.equals(DBConstants.DB_DIALECT_HSQLDB))
-         {
-            cleanScripts.add("delete from JCR_SITEM where I_CLASS=2 and CONTAINER_NAME='" + containerName + "'");
-
-            dbCleaner = new DBCleaner(jdbcConn, cleanScripts, new DBCleanHelper(containerName, jdbcConn));
-         }
-         else
-         {
-            if (!multiDb)
-            {
-               cleanScripts.add("delete from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
-            }
-
-            if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
-            {
-               dbCleaner = new PgSQLDBCleaner(jdbcConn, cleanScripts);
-            }
-            else if (dialect.equals(DBConstants.DB_DIALECT_INGRES))
-            {
-               dbCleaner = new IngresSQLDBCleaner(jdbcConn, cleanScripts);
-            }
-            else if (dialect.equals(DBConstants.DB_DIALECT_ORACLE) || dialect.equals(DBConstants.DB_DIALECT_ORACLEOCI))
-            {
-               dbCleaner = new OracleDBCleaner(jdbcConn, cleanScripts);
-            }
-            else
-            {
-               dbCleaner = new DBCleaner(jdbcConn, cleanScripts);
-            }
-         }
-
-         return dbCleaner;
-      }
-      catch (NamingException e)
-      {
-         throw new CleanException(e);
-      }
-      catch (SQLException e)
-      {
-         throw new CleanException(e);
       }
    }
 }

@@ -16,38 +16,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.storage;
+package org.exoplatform.services.jcr.impl.backup;
 
 /**
- * Created by The eXo Platform SAS. <br/>
- * 
- * Abstract jcr data storage
- * 
- * @author Gennady Azarenkov
- * @version $Id: DataContainer.java 11907 2008-03-13 15:36:21Z ksm $
+ * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
+ * @version $Id: BackupException.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-
-public abstract interface DataContainer
+public class BackupException extends Exception
 {
+   /**
+    * Constructor BackupException.
+    * 
+    * @param message
+    *          the message
+    */
+   public BackupException(String message)
+   {
+      super(message);
+   }
 
    /**
-    * @return some info about this container
+    * Constructor BackupException.
+    * 
+    * @param cause
+    *          the cause
     */
-   String getInfo();
+   public BackupException(Throwable cause)
+   {
+      super(cause);
+   }
 
    /**
-    * @return name of this container
+    * Constructor BackupException.
+    * 
+    * @param message
+    *          the message 
+    * @param cause
+    *          the cause
     */
-   String getName();
-
-   /**
-    * @return unique name of this container
-    */
-   String getUniqueName();
-
-   /**
-    * @return current storage version
-    */
-   String getStorageVersion();
-
+   public BackupException(String message, Throwable cause)
+   {
+      super(message, cause);
+   }
 }

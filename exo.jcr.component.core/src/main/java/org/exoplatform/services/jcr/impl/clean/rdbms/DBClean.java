@@ -14,12 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.cleaner;
+package org.exoplatform.services.jcr.impl.clean.rdbms;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DataCleaner;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -38,14 +36,14 @@ import java.util.regex.Pattern;
  * The goal of this class is removing workspace data from database.
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: DBCleaner.java 3769 2011-01-04 15:36:06Z areshetnyak $
+ * @version $Id: DBClean.java 3769 2011-01-04 15:36:06Z areshetnyak $
  */
-public class DBCleaner implements DataCleaner
+public class DBClean
 {
    /**
     * Logger.
     */
-   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceDBCleaner");
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBClean");
 
    /**
     * Connection to database.
@@ -75,7 +73,7 @@ public class DBCleaner implements DataCleaner
     * @param connection 
     *          connection to database where workspace tables is placed
     */
-   public DBCleaner(Connection connection, List<String> cleanScripts)
+   public DBClean(Connection connection, List<String> cleanScripts)
    {
       this(connection, cleanScripts, null);
    }
@@ -88,9 +86,8 @@ public class DBCleaner implements DataCleaner
     * @param connection 
     *          connection to database where workspace tables is placed
     * @param dbCleanHelper
-    *          TODO          
     */
-   public DBCleaner(Connection connection, List<String> cleanScripts, DBCleanHelper dbCleanHelper)
+   public DBClean(Connection connection, List<String> cleanScripts, DBCleanHelper dbCleanHelper)
    {
       this.dbObjectNamePattern = Pattern.compile(DBInitializer.SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
       this.connection = connection;
@@ -99,9 +96,12 @@ public class DBCleaner implements DataCleaner
    }
 
    /**
-    * {@inheritDoc}
+    * Clean data from database. The method doesn't close connection or perform commit.
+    * 
+    * @throws SQLException
+    *          if any errors occurred 
     */
-   public void prepare() throws CleanException
+   public void clean() throws SQLException
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
@@ -113,9 +113,8 @@ public class DBCleaner implements DataCleaner
       Statement st = null;
       try
       {
-         connection.setAutoCommit(false);
          st = connection.createStatement();
-         for (String scr : getDBCleanScripts())
+         for (String scr : cleanScripts)
          {
             String s = cleanWhitespaces(scr.trim());
             if (s.length() > 0)
@@ -139,10 +138,6 @@ public class DBCleaner implements DataCleaner
             dbCleanHelper.clean();
          }
       }
-      catch (SQLException e)
-      {
-         throw new CleanException(e);
-      }
       finally
       {
          if (st != null)
@@ -154,97 +149,6 @@ public class DBCleaner implements DataCleaner
             catch (SQLException e)
             {
                LOG.error("Can't close the Statement." + e);
-            }
-         }
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void commit() throws CleanException
-   {
-      try
-      {
-         connection.commit();
-      }
-      catch (SQLException e)
-      {
-         throw new CleanException(e);
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void rollback() throws CleanException
-   {
-      try
-      {
-         connection.rollback();
-      }
-      catch (SQLException e)
-      {
-         throw new CleanException(e);
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void close() throws CleanException
-   {
-      try
-      {
-         connection.close();
-      }
-      catch (SQLException e)
-      {
-         throw new CleanException(e);
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void clean() throws CleanException
-   {
-      CleanException cleanExc = null;
-
-      try
-      {
-         prepare();
-         commit();
-      }
-      catch (CleanException e)
-      {
-         cleanExc = e;
-         try
-         {
-            rollback();
-         }
-         catch (CleanException rollbackExc)
-         {
-            LOG.error("Can't rollback changes", rollbackExc);
-         }
-         throw cleanExc;
-      }
-      finally
-      {
-         try
-         {
-            close();
-         }
-         catch (CleanException e)
-         {
-            if (cleanExc != null)
-            {
-               LOG.error("Can't close DataCleaner", e);
-               throw cleanExc;
-            }
-            else
-            {
-               throw e;
             }
          }
       }
@@ -331,16 +235,5 @@ public class DBCleaner implements DataCleaner
          return new String(cc);
       }
       return string;
-   }
-
-   /**
-    * Get SQL scripts for data cleaning.
-    * 
-    * @return
-    *          List of sql scripts
-    */
-   protected List<String> getDBCleanScripts()
-   {
-      return cleanScripts;
    }
 }

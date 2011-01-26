@@ -14,39 +14,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.cleaner;
+package org.exoplatform.services.jcr.impl.backup;
 
-import org.exoplatform.services.jcr.impl.storage.jdbc.cleaner.DBCleaner;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
-
-/**
+/***
  * Created by The eXo Platform SAS.
- * 
- * <br/>Date: 
  *
- * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: PgSQLDBCleaner.java 3655 2010-12-10 08:25:41Z tolusha $
+ * Date: 21 01 2011
+ * 
+ * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
+ * @version $Id: DummyDataRestor.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class PgSQLDBCleaner extends DBCleaner
+public class DummyDataRestor implements DataRestor
 {
-
    /**
-    * OracleSingleDBCleaner constructor.
+    * {@inheritDoc}
     */
-   public PgSQLDBCleaner(Connection connection, List<String> cleanScripts)
+   public void restore() throws BackupException
    {
-      super(connection, cleanScripts);
    }
 
    /**
     * {@inheritDoc}
     */
-   @Override
-   protected boolean isTableExists(Connection conn, String tableName) throws SQLException
+   public void clean() throws BackupException
    {
-      return super.isTableExists(conn, tableName.toLowerCase());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void commit() throws BackupException
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void rollback() throws BackupException
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void close() throws BackupException
+   {
    }
 }

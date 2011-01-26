@@ -20,10 +20,8 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
@@ -165,8 +163,6 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    {
       super(dataManager, config, transactionManager, lockRemoverHolder);
 
-      lockRoot = Fqn.fromElements(LOCKS);
-
       // make cache
       if (config.getLockManager() != null)
       {
@@ -180,6 +176,9 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          cache = factory.createCache(config.getLockManager());
         
          Fqn<String> rootFqn = Fqn.fromElements(config.getUniqueName());
+
+         lockRoot = Fqn.fromRelativeElements(rootFqn, LOCKS);
+
          shareable =
             config.getLockManager().getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT)
                .booleanValue();
@@ -575,45 +574,22 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    /**
     * {@inheritDoc}
     */
-   protected List<String> getTableNames()
+   @Override
+   protected void putDirectly(LockData lockData)
    {
-      List<String> tableNames = new ArrayList<String>();
+      Fqn<String> lockPath = makeLockFqn(lockData.getNodeIdentifier());
 
-      LockManagerEntry lockManagerEntry = config.getLockManager();
-      if (lockManagerEntry != null)
-      {
-         for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
-         {
-            if (entry.getName().equals(JBOSSCACHE_JDBC_TABLE_NAME))
-            {
-               tableNames.add(entry.getValue());
-               tableNames.add(entry.getValue() + "_D");
-
-               return tableNames;
-            }
-         }
-      }
-      
-      return tableNames;
+      Node<Serializable, Object> node = cache.getRoot().addChild(lockPath);
+      node.putIfAbsent(LOCK_DATA, lockData);
    }
-
+   
    /**
     * {@inheritDoc}
     */
-   protected String getDatasourceName()
+   @Override
+   protected void cleanCacheDirectly()
    {
-      LockManagerEntry lockManagerEntry = config.getLockManager();
-      if (lockManagerEntry != null)
-      {
-         for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
-         {
-            if (entry.getName().equals(JBOSSCACHE_JDBC_CL_DATASOURCE))
-            {
-               return entry.getValue();
-            }
-         }
-      }
-      
-      return null;
+      cache.removeNode(lockRoot);
+      createStructuredNode(lockRoot);
    }
 }

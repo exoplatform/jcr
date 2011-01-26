@@ -74,7 +74,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
     */
    protected IndexInfos indexInfos;
 
-   private IndexUpdateMonitor indexUpdateMonitor;
+   protected IndexUpdateMonitor indexUpdateMonitor;
 
    public boolean isInitialized()
    {
@@ -209,6 +209,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
     * 
     * @param idleTime the query handler idle time.
     */
+   @Deprecated
    public void setIdleTime(String idleTime)
    {
       log.warn("Parameter 'idleTime' is not supported anymore. "

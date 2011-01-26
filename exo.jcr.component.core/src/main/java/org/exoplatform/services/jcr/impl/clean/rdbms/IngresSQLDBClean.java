@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.cleaner;
+package org.exoplatform.services.jcr.impl.clean.rdbms;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,15 +26,15 @@ import java.util.List;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: IngresSQLDBCleaner.java 3655 2010-12-10 08:25:41Z tolusha $
+ * @version $Id: IngresSQLDBClean.java 3655 2010-12-10 08:25:41Z tolusha $
  */
-public class IngresSQLDBCleaner extends DBCleaner
+public class IngresSQLDBClean extends DBClean
 {
 
    /**
-    * OracleSingleDBCleaner constructor.
+    * IngresSQLDBClean constructor.
     */
-   public IngresSQLDBCleaner(Connection connection, List<String> cleanScripts)
+   public IngresSQLDBClean(Connection connection, List<String> cleanScripts)
    {
       super(connection, cleanScripts);
    }

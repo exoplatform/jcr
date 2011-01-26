@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.cleaner;
+package org.exoplatform.services.jcr.impl.clean.rdbms;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -28,6 +27,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * 
+ * Created by The eXo Platform SAS.
+ *
+ * Date: 21.01.2011
+ * 
+ * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
+ * @version $Id: DBCleanHelper.java.java 34360 2010-11-11 11:11:11Z tolusha $
+ */
 public class DBCleanHelper
 {
 
@@ -37,19 +45,14 @@ public class DBCleanHelper
    protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleanHelper");
 
    /**
-    * SELECT_ITEMS.
+    * Select items query.
     */
-   private final String SELECT_ITEMS = "select ID from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
+   private final String selectItems;
 
    /**
-    * REMOVE_ITEMS.
+    * Remove items query.
     */
-   private final String REMOVE_ITEMS = "delete from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
-
-   /**
-    * Container name.
-    */
-   protected final String containerName;
+   private final String removeItems;
 
    /**
     * Connection to database.
@@ -59,64 +62,44 @@ public class DBCleanHelper
    /**
     * DBCleanerHelper constructor.
     */
-   public DBCleanHelper(String containerName, Connection connection)
+   public DBCleanHelper(Connection connection, String selectItemds, String removeItems)
    {
       this.connection = connection;
-      this.containerName = containerName;
+      this.selectItems = selectItemds;
+      this.removeItems = removeItems;
    }
 
    /**
-    * Removing rows from JCR_SITEM table. Some database do not support cascade delete, 
-    * or need special sittings, so query "delete from JCR_SITEM where CONTAINER_NAME=?" 
-    * may cause constraint violation exception. In such case will be used deleting like
+    * Removing rows from table. Some database do not support cascade delete, 
+    * or need special sittings. In such case will be used deleting like
     * visitor does. First traverse to the bottom of the tree and then go up to the root
     * and perform deleting children.
     * 
     * @throws SQLException 
     *          SQL exception. 
     */
-   public void clean() throws CleanException
+   public void clean() throws SQLException
    {
-      try
-      {
-         connection.setAutoCommit(false);
-
-         recursiveClean(Constants.ROOT_PARENT_UUID);
-
-         connection.commit();
-      }
-      catch (SQLException e)
-      {
-         try
-         {
-            connection.rollback();
-         }
-         catch (SQLException rollbackException)
-         {
-            LOG.error("Can not rollback changes after exception " + e.getMessage(), rollbackException);
-         }
-         throw new CleanException(e.getMessage(), e);
-      }
+      recursiveClean(Constants.ROOT_PARENT_UUID);
    }
 
    private void recursiveClean(String parentID) throws SQLException
    {
-      PreparedStatement selectItems = null;
-      PreparedStatement removeItems = null;
+      PreparedStatement selectStatement = null;
+      PreparedStatement removeStatement = null;
       ResultSet result = null;
 
       try
       {
-         selectItems = connection.prepareStatement(SELECT_ITEMS);
-         selectItems.setString(1, containerName);
-         selectItems.setString(2, parentID);
+         selectStatement = connection.prepareStatement(this.selectItems);
+         selectStatement.setString(1, parentID);
 
-         final PreparedStatement selectStatement = selectItems;
+         final PreparedStatement fSelectStatement = selectStatement;
          result = (ResultSet)SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {
-               return selectStatement.executeQuery();
+               return fSelectStatement.executeQuery();
             }
          });
 
@@ -130,16 +113,15 @@ public class DBCleanHelper
             while (result.next());
 
             // go up to the root and remove all nodes
-            removeItems = connection.prepareStatement(REMOVE_ITEMS);
-            removeItems.setString(1, containerName);
-            removeItems.setString(2, parentID);
+            removeStatement = connection.prepareStatement(this.removeItems);
+            removeStatement.setString(1, parentID);
 
-            final PreparedStatement deleteStatement = removeItems;
+            final PreparedStatement fRemoveStatement = removeStatement;
             SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
             {
                public Object run() throws Exception
                {
-                  deleteStatement.executeUpdate();
+                  fRemoveStatement.executeUpdate();
                   return null;
                }
             });
@@ -147,14 +129,14 @@ public class DBCleanHelper
       }
       finally
       {
-         if (selectItems != null)
+         if (selectStatement != null)
          {
-            selectItems.close();
+            selectStatement.close();
          }
 
-         if (removeItems != null)
+         if (removeStatement != null)
          {
-            removeItems.close();
+            removeStatement.close();
          }
 
          if (result != null)

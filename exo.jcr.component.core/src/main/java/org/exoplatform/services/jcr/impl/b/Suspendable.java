@@ -16,38 +16,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.storage;
+package org.exoplatform.services.jcr.impl.backup;
 
 /**
- * Created by The eXo Platform SAS. <br/>
- * 
- * Abstract jcr data storage
- * 
- * @author Gennady Azarenkov
- * @version $Id: DataContainer.java 11907 2008-03-13 15:36:21Z ksm $
+ * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
+ * @version $Id: Suspendable.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-
-public abstract interface DataContainer
+public interface Suspendable
 {
 
    /**
-    * @return some info about this container
+    *  Suspend component.
+    *  
+    *  @throws SuspendException of error occurred 
     */
-   String getInfo();
+   void suspend() throws SuspendException;
 
    /**
-    * @return name of this container
+    *  Resume component.
+    *  
+    *  @throws ResumeException of error occurred 
     */
-   String getName();
-
-   /**
-    * @return unique name of this container
-    */
-   String getUniqueName();
-
-   /**
-    * @return current storage version
-    */
-   String getStorageVersion();
+   void resume() throws ResumeException;
 
 }

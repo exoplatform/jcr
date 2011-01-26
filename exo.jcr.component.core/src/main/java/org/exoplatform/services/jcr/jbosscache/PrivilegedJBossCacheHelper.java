@@ -164,4 +164,39 @@ public class PrivilegedJBossCacheHelper
       }
    }
 
+   /**
+    * Remove node in privileged mode.
+    * 
+    * @param cache
+    */
+   public static Object removeNode(final Cache<Serializable, Object> cache, final Fqn fqn) throws CacheException
+   {
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            return cache.removeNode(fqn);
+         }
+      };
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof CacheException)
+         {
+            throw (CacheException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
 }

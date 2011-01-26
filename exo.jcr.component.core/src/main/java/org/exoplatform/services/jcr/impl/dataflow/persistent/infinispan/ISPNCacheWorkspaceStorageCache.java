@@ -40,6 +40,9 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.backup.DataRestor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
@@ -47,11 +50,11 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.security.PrivilegedExceptionAction;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -87,7 +90,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: ISPNCacheWorkspaceStorageCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  */
-public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache
+public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable
 {
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ISPNCacheWorkspaceStorageCache");
@@ -1132,5 +1135,66 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache
       {
          return null;
       }
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void backup(File storageDir) throws BackupException
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void clean() throws BackupException
+   {
+      cache.clear();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
+   {
+      return new DataRestor()
+      {
+         /**
+          * {@inheritDoc}
+          */
+         public void clean() throws BackupException
+         {
+            cache.clear();
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public void restore() throws BackupException
+         {
+
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public void commit() throws BackupException
+         {
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public void rollback() throws BackupException
+         {
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public void close() throws BackupException
+         {
+         }
+      };
    }
 }

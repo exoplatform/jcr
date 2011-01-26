@@ -21,6 +21,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -39,6 +40,13 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestor;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
@@ -52,17 +60,23 @@ import org.exoplatform.services.jcr.impl.core.value.NameValue;
 import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.ResumeException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.SuspendException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Suspendable;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rpc.RPCException;
+import org.exoplatform.services.rpc.RPCService;
+import org.exoplatform.services.rpc.RemoteCommand;
+import org.exoplatform.services.rpc.TopologyChangeEvent;
+import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.jboss.cache.factories.annotations.NonVolatile;
 import org.picocontainer.Startable;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -89,7 +103,8 @@ import javax.jcr.query.Query;
  * @version $Id: SearchManager.java 1008 2009-12-11 15:14:51Z nzamosenchuk $
  */
 @NonVolatile
-public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable
+public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable, Backupable,
+   TopologyChangeListener
 {
 
    /**
@@ -145,6 +160,36 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected final String wsId;
 
    /**
+    * The service for executing commands on all nodes of cluster.
+    */
+   protected final RPCService rpcService;
+
+   /**
+    * Indicates if component suspended or not.
+    */
+   protected boolean isSuspended = false;
+
+   /**
+    * Indicates that node keep responsible for resuming.
+    */
+   protected Boolean isResponsibleForResuming = false;
+
+   /**
+    * Suspend remote command.
+    */
+   private RemoteCommand suspend;
+
+   /**
+    * Resume remote command.
+    */
+   private RemoteCommand resume;
+
+   /**
+    * Request to all nodes to check if there is someone who responsible for resuming.
+    */
+   private RemoteCommand requestForResponsibleForResuming;
+
+   /**
     * Creates a new <code>SearchManager</code>.
     * 
     * @param config
@@ -168,11 +213,47 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * @throws RepositoryConfigurationException
     */
 
-   public SearchManager(WorkspaceEntry wsConfig, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
-      WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
+   public SearchManager(WorkspaceEntry wsConfig, QueryHandlerEntry config, NamespaceRegistryImpl nsReg,
+      NodeTypeDataManager ntReg, WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
       throws RepositoryException, RepositoryConfigurationException
    {
+      this(wsConfig, config, nsReg, ntReg, itemMgr, parentSearchManager, extractor, cfm, indexSearcherHolder, null);
+   }
+
+   /**
+    * Creates a new <code>SearchManager</code>.
+    * 
+    * @param config
+    *            the search configuration.
+    * @param nsReg
+    *            the namespace registry.
+    * @param ntReg
+    *            the node type registry.
+    * @param itemMgr
+    *            the shared item state manager.
+    * @param rootNodeId
+    *            the id of the root node.
+    * @param parentMgr
+    *            the parent search manager or <code>null</code> if there is no
+    *            parent search manager.
+    * @param excludedNodeId
+    *            id of the node that should be excluded from indexing. Any
+    *            descendant of that node will also be excluded from indexing.
+    * @param rpcService
+    *             the service for executing commands on all nodes of cluster           
+    * @throws RepositoryException
+    *             if the search manager cannot be initialized
+    * @throws RepositoryConfigurationException
+    */
+
+   public SearchManager(WorkspaceEntry wsConfig, QueryHandlerEntry config, NamespaceRegistryImpl nsReg,
+      NodeTypeDataManager ntReg, WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
+      DocumentReaderService extractor, ConfigurationManager cfm,
+      final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      this.rpcService = rpcService;
       this.wsId = wsConfig.getUniqueName();
       this.extractor = extractor;
       indexSearcherHolder.addIndexSearcher(this);
@@ -186,6 +267,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       if (parentSearchManager != null)
       {
          ((WorkspacePersistentDataManager)this.itemMgr).addItemPersistenceListener(this);
+      }
+
+      if (rpcService != null)
+      {
+         doInitRemoteCommands();
       }
    }
 
@@ -459,7 +545,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             indexingTree = new IndexingTree(indexingRootData, excludedPath);
          }
          initializeQueryHandler();
-
       }
       catch (RepositoryException e)
       {
@@ -578,7 +663,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
 
       QueryHandlerContext context =
-         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDir(),
+         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDirectory(),
             extractor, true, virtualTableResolver);
       return context;
    }
@@ -862,9 +947,26 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void suspend() throws SuspendException
    {
-      if (handler instanceof Suspendable)
+      isResponsibleForResuming = true;
+
+      if (rpcService != null)
       {
-         ((Suspendable)handler).suspend();
+         try
+         {
+            rpcService.executeCommandOnAllNodes(suspend, true);
+         }
+         catch (SecurityException e)
+         {
+            throw new SuspendException(e);
+         }
+         catch (RPCException e)
+         {
+            throw new SuspendException(e);
+         }
+      }
+      else
+      {
+         suspendLocally();
       }
    }
 
@@ -873,10 +975,257 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void resume() throws ResumeException
    {
+      if (rpcService != null)
+      {
+         try
+         {
+            rpcService.executeCommandOnAllNodes(resume, true);
+         }
+         catch (SecurityException e)
+         {
+            throw new ResumeException(e);
+         }
+         catch (RPCException e)
+         {
+            throw new ResumeException(e);
+         }
+      }
+      else
+      {
+         resumeLocally();
+      }
+
+      isResponsibleForResuming = false;
+   }
+   
+   /**
+    * Register remote commands.
+    */
+   private void doInitRemoteCommands()
+   {
+      // register commands
+      suspend = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-suspend-" + wsId;
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            suspendLocally();
+            return null;
+         }
+      });
+
+      resume = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-resume-" + wsId;
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            resumeLocally();
+            return null;
+         }
+      });
+
+      requestForResponsibleForResuming = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-requestForResponsibilityForResuming-"
+               + wsId;
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            return isResponsibleForResuming;
+         }
+      });
+
+      rpcService.registerTopologyChangeListener(this);
+   }
+
+   protected void suspendLocally() throws SuspendException
+   {
+      if (isSuspended)
+      {
+         throw new SuspendException("Component already suspended.");
+      }
+
+      isSuspended = true;
+
+      stop();
+
+      if (handler instanceof Suspendable)
+      {
+         ((Suspendable)handler).suspend();
+      }
+   }
+
+   protected void resumeLocally() throws ResumeException
+   {
+      if (!isSuspended)
+      {
+         throw new ResumeException("Component is not suspended.");
+      }
+
+      start();
+      
       if (handler instanceof Suspendable)
       {
          ((Suspendable)handler).resume();
       }
+
+      isSuspended = false;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void onChange(TopologyChangeEvent event)
+   {
+      if (isSuspended)
+      {
+         new Thread()
+         {
+            @Override
+            public synchronized void run()
+            {
+               try
+               {
+                  List<Object> results = rpcService.executeCommandOnAllNodes(requestForResponsibleForResuming, true);
+
+                  for (Object result : results)
+                  {
+                     if ((Boolean)result)
+                     {
+                        return;
+                     }
+                  }
+
+                  // node which was responsible for resuming leave the cluster, so resume component
+                  try
+                  {
+                     resumeLocally();
+                  }
+                  catch (ResumeException e)
+                  {
+                     log.error("Can not resume component", e);
+                  }
+               }
+               catch (SecurityException e1)
+               {
+                  log.error("You haven't privileges to execute remote command", e1);
+               }
+               catch (RPCException e1)
+               {
+                  log.error("Exception during command execution", e1);
+               }
+            }
+         }.start();
+      }
+   }
+
+   /**
+    * {@inheritDoc}}
+    */
+   public void clean() throws BackupException
+   {
+      try
+      {
+         DirectoryHelper.removeDirectory(new File(getIndexDirectory()));
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}}
+    */
+   public void backup(File storageDir) throws BackupException
+   {
+      try
+      {
+         File indexDir = new File(getIndexDirectory());
+
+         if (!PrivilegedFileHelper.exists(indexDir))
+         {
+            throw new BackupException("Can't backup index. Directory "
+               + PrivilegedFileHelper.getCanonicalPath(indexDir) + " doesn't exists");
+         }
+         else
+         {
+            File destDir = new File(storageDir, getStorageName());
+            DirectoryHelper.compressDirectory(indexDir, destDir);
+         }
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+   }
+
+   /**
+    * Return index directory.
+    * 
+    * @return String
+    * @throws RepositoryConfigurationException
+    */
+   protected String getIndexDirectory() throws RepositoryConfigurationException
+   {
+      return getIndexDir();
+   }
+
+   /**
+    * Returns storage name of index.
+    * 
+    * @return String
+    */
+   protected String getStorageName()
+   {
+      return "index";
+   }
+
+   /**
+    * {@inheritDoc}}
+    */
+   public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
+   {
+      try
+      {
+         File indexDir = new File(getIndexDirectory());
+         File backupDir = new File(storageDir, getStorageName());
+
+         if (!PrivilegedFileHelper.exists(backupDir))
+         {
+            throw new RepositoryConfigurationException("Can't restore index. Directory " + backupDir.getName()
+               + " doesn't exists");
+         }
+         else
+         {
+            return new DirectoryRestor(indexDir, backupDir);
+         }
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+   }
 }

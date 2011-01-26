@@ -97,4 +97,5 @@ public interface WorkspaceDataContainer extends DataContainer
     * @return the value of 'check-sns-new-connection' parameter 
     */
    boolean isCheckSNSNewConnection();
+
 }

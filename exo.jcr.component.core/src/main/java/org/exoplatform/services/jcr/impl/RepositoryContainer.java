@@ -245,7 +245,7 @@ public class RepositoryContainer extends ExoContainer
          final boolean isSystem = config.getSystemWorkspaceName().equals(wsConfig.getName());
 
          if (getWorkspaceContainer(wsConfig.getName()) != null)
-            throw new RepositoryException("Workspace " + wsConfig.getName() + " already registred");
+            throw new RepositoryException("Workspace " + wsConfig.getName() + " already registered");
 
          WorkspaceContainer workspaceContainer = new WorkspaceContainer(this, wsConfig);
 

@@ -37,6 +37,9 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.backup.DataRestor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
@@ -47,13 +50,15 @@ import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.config.Configuration.CacheMode;
+import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.picocontainer.Startable;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -100,7 +105,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
  * @version $Id: JBossCacheWorkspaceStorageCache.java 13869 2008-05-05 08:40:10Z pnedonosko $
  */
-public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, Startable
+public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, Startable, Backupable
 {
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheWorkspaceStorageCache");
@@ -1518,9 +1523,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    }
 
    /**
-          * Allows to commit the cache changes in a dedicated XA Tx in order to avoid potential
-          * deadlocks
-          */
+    * Allows to commit the cache changes in a dedicated XA Tx in order to avoid potential
+    * deadlocks
+    */
    private void dedicatedTxCommit()
    {
       // Ensure that the commit is done in a dedicated tx to avoid deadlock due
@@ -1556,5 +1561,90 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void backup(File storageDir) throws BackupException
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void clean() throws BackupException
+   {
+      cleanCache();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
+   {
+      return new DataRestor()
+      {
+         /**
+          * {@inheritDoc}
+          */
+         public void clean() throws BackupException
+         {
+            cleanCache();
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public void restore() throws BackupException
+         {
+
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public void commit() throws BackupException
+         {
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public void rollback() throws BackupException
+         {
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public void close() throws BackupException
+         {
+         }
+      };
+   }
+
+   /**
+    * Clean all cache data.
+    */
+   private void cleanCache()
+   {
+      cache.beginTransaction();
+
+      cache.removeNode(itemsRoot);
+      cache.removeNode(refRoot);
+      cache.removeNode(childNodes);
+      cache.removeNode(childProps);
+      cache.removeNode(childNodesList);
+      cache.removeNode(childPropsList);
+
+      cache.commitTransaction();
+
+      createResidentNode(childNodes);
+      createResidentNode(refRoot);
+      createResidentNode(childNodesList);
+      createResidentNode(childProps);
+      createResidentNode(childPropsList);
+      createResidentNode(itemsRoot);
    }
 }

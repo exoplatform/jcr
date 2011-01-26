@@ -107,4 +107,12 @@ public class InmemoryContainerImpl extends WorkspaceDataContainerBase
    {
       return true;
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String getUniqueName()
+   {
+      return name;
+   }
 }

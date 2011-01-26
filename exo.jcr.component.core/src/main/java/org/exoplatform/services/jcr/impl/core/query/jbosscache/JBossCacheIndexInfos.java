@@ -103,8 +103,9 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
       modeHandler.addIndexerIoModeListener(this);
       // store parsed FQN to avoid it's parsing each time cache event is generated
       namesFqn = Fqn.fromRelativeElements(rootFqn, system ? SYSINDEX_NAMES : INDEX_NAMES);
+
       Node<Serializable, Object> cacheRoot = cache.getRoot();
-      // prepare cache structures
+
       if (!cacheRoot.hasChild(namesFqn))
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
@@ -114,6 +115,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
       {
          cache.getNode(namesFqn).setResident(true);
       }
+
       if (modeHandler.getMode() == IndexerIoMode.READ_ONLY)
       {
          // Currently READ_ONLY is set, so new lists should be fired to multiIndex.

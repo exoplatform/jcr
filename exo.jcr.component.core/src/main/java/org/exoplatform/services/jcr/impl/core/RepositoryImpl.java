@@ -456,21 +456,17 @@ public class RepositoryImpl implements ManageableRepository
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      WorkspaceContainer workspaceContainer = null;
-      if (isWorkspaceInitialized(workspaceName))
+      WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
+      try
       {
-         workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
-         try
-         {
-            workspaceContainer.stop();
-         }
-         catch (Exception e)
-         {
-            throw new RepositoryException(e);
-         }
-         repositoryContainer.unregisterComponentByInstance(workspaceContainer);
-         repositoryContainer.unregisterComponent(workspaceName);
+         workspaceContainer.stop();
       }
+      catch (Exception e)
+      {
+         throw new RepositoryException(e);
+      }
+      repositoryContainer.unregisterComponentByInstance(workspaceContainer);
+      repositoryContainer.unregisterComponent(workspaceName);
    }
 
    /**

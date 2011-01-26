@@ -586,6 +586,12 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          return "0";
       }
 
+      @Override
+      public String getUniqueName()
+      {
+         return "MyWorkspaceDataContainer";
+      }
+
    };
 
 }
