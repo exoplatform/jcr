@@ -44,8 +44,7 @@ import javax.jcr.lock.Lock;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
  */
-public abstract class AbstractBackupUseCasesTest
-   extends AbstractBackupTestCase
+public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 {
 
    private static volatile long uuIndex;
@@ -87,8 +86,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1back = makeWorkspaceEntry(workspaceNameToRestore, dataSourceToWorkspaceRestore);
 
       // BackupChainLog bchLog = new BackupChainLog(backDir, rconfig);
@@ -106,10 +104,10 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToRestore);
+            back1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToRestore);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -168,8 +166,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1back = makeWorkspaceEntry(workspaceNameToRestore, dataSourceToWorkspaceRestore);
 
       File backLog = new File(bch.getLogFilePath());
@@ -186,16 +183,16 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToRestore);
+            back1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToRestore);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertFalse("Node should be removed", ws1backTestRoot.hasNode("node_3"));
             assertFalse("Node should be removed", ws1backTestRoot.hasNode("node_4"));
             assertFalse("Node should be removed", ws1backTestRoot.hasNode("node_5"));
 
             assertEquals("Restored content should be same", "property #3", ws1backTestRoot.getNode("node #3")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
             assertEquals("Restored content should be same", "property #5", ws1backTestRoot.getNode("node #5")
-                     .getProperty("exo:extraData").getString());
+               .getProperty("exo:extraData").getString());
 
             assertFalse("Proeprty should be removed", ws1backTestRoot.getNode("node #5").hasProperty("exo:data"));
          }
@@ -252,12 +249,12 @@ public abstract class AbstractBackupUseCasesTest
       // BLOBs for incr
       ws1TestRoot.getNode("node_1").setProperty("exo:extraData", new FileInputStream(tempf));
       ws1TestRoot.getNode("node_5").setProperty("exo:data", new FileInputStream(tempf));
-
       ws1TestRoot.addNode("node_101").setProperty("exo:data", new FileInputStream(tempf));
       ws1TestRoot.addNode("node_102").setProperty("exo:data", new FileInputStream(tempf));
+
       ws1TestRoot.save(); // log here via listener
 
-      ws1TestRoot.getNode("node_2").setProperty("exo:data", (Value) null); // remove property
+      ws1TestRoot.getNode("node_2").setProperty("exo:data", (Value)null); // remove property
       ws1TestRoot.getNode("node_3").setProperty("exo:data", new ByteArrayInputStream("aaa".getBytes())); // set
       // aaa
       // bytes
@@ -268,7 +265,7 @@ public abstract class AbstractBackupUseCasesTest
       ws1TestRoot.save(); // log here via listener
       Lock n107lock = ws1TestRoot.getNode("node_5").lock(true, false);
       ws1TestRoot.getSession().move(ws1TestRoot.getNode("node #53").getPath(),
-               ws1TestRoot.getNode("node_5").getPath() + "/node #53");
+         ws1TestRoot.getNode("node_5").getPath() + "/node #53");
       ws1TestRoot.save(); // log here via listener
 
       ws1TestRoot.getNode("node_6").addMixin("mix:referenceable");
@@ -276,8 +273,8 @@ public abstract class AbstractBackupUseCasesTest
       ws1TestRoot.save(); // log here via listener
 
       // before(*), log here via listener
-      ws1TestRoot.getSession().getWorkspace().move(ws1TestRoot.getNode("node_6").getPath(),
-               ws1TestRoot.getPath() + "/node_4"); // in place of
+      ws1TestRoot.getSession().getWorkspace()
+         .move(ws1TestRoot.getNode("node_6").getPath(), ws1TestRoot.getPath() + "/node_4"); // in place of
       // 4 removed
 
       // stop all
@@ -287,8 +284,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1back = makeWorkspaceEntry(workspaceNameToRestore, dataSourceToWorkspaceRestore);
 
       File backLog = new File(bch.getLogFilePath());
@@ -305,12 +301,12 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToRestore);
+            back1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToRestore);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
 
             assertTrue("Node should exists", ws1backTestRoot.getNode("node_5").hasNode("node #53"));
             assertTrue("Property should exists", ws1backTestRoot.getNode("node_5")
-                     .hasProperty("node #53/exo:extraData"));
+               .hasProperty("node #53/exo:extraData"));
 
             assertTrue("Node should exists", ws1backTestRoot.hasNode("node_7"));
             assertTrue("Property should exists", ws1backTestRoot.hasProperty("node_5/exo:data"));
@@ -318,20 +314,20 @@ public abstract class AbstractBackupUseCasesTest
             assertTrue("Node should exists", ws1backTestRoot.hasNode("node_102"));
 
             compareStream(new FileInputStream(tempf), ws1backTestRoot.getNode("node_5").getProperty("exo:data")
-                     .getStream());
+               .getStream());
             compareStream(new FileInputStream(tempf), ws1backTestRoot.getNode("node_1").getProperty("exo:extraData")
-                     .getStream());
+               .getStream());
 
             assertFalse("Property should be removed", ws1backTestRoot.getNode("node_2").hasProperty("exo:data"));
 
-            compareStream(new ByteArrayInputStream("aaa".getBytes()), ws1backTestRoot.getNode("node_3").getProperty(
-                     "exo:data").getStream());
+            compareStream(new ByteArrayInputStream("aaa".getBytes()),
+               ws1backTestRoot.getNode("node_3").getProperty("exo:data").getStream());
 
             assertTrue("Node should be mix:lockable ", ws1backTestRoot.getNode("node_5").isNodeType("mix:lockable"));
             assertFalse("Node should be not locked ", ws1backTestRoot.getNode("node_5").isLocked());
 
-            assertEquals("Node should be mix:referenceable and UUID should be " + id6, id6, ws1backTestRoot.getNode(
-                     "node_4").getUUID());
+            assertEquals("Node should be mix:referenceable and UUID should be " + id6, id6,
+               ws1backTestRoot.getNode("node_4").getUUID());
          }
          catch (Exception e)
          {
@@ -350,9 +346,9 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testFullBackupRestoreAsync() throws Exception
    {
-      SessionImpl sessionWS1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToBackup);
-      sessionWS1.getRootNode().getNode("backupTest").getNode("node_5").setProperty("exo:data",
-               "Restored content should be same");
+      SessionImpl sessionWS1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToBackup);
+      sessionWS1.getRootNode().getNode("backupTest").getNode("node_5")
+         .setProperty("exo:data", "Restored content should be same");
       sessionWS1.save();
 
       // backup
@@ -398,23 +394,23 @@ public abstract class AbstractBackupUseCasesTest
          backup.restore(bchLog, repositoryNameToBackup, ws1back, true);
 
          while (backup.getLastRestore(repositoryNameToBackup, workspaceNameToRestore).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
-                  && backup.getLastRestore(repositoryNameToBackup, workspaceNameToRestore).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
+            && backup.getLastRestore(repositoryNameToBackup, workspaceNameToRestore).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
          {
             Thread.sleep(50);
          }
 
          if (backup.getLastRestore(repositoryNameToBackup, workspaceNameToRestore).getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL)
-            throw (Exception) backup.getLastRestore(repositoryNameToBackup, workspaceNameToRestore)
-                     .getRestoreException();
+            throw (Exception)backup.getLastRestore(repositoryNameToBackup, workspaceNameToRestore)
+               .getRestoreException();
 
          // check
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToRestore);
+            back1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToRestore);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
-            assertEquals("Restored content should be same", "Restored content should be same", ws1backTestRoot.getNode(
-                     "node_5").getProperty("exo:data").getString());
+            assertEquals("Restored content should be same", "Restored content should be same",
+               ws1backTestRoot.getNode("node_5").getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -527,10 +523,10 @@ public abstract class AbstractBackupUseCasesTest
    public void testTwoRestores() throws Exception
    {
       {
-         SessionImpl sessionWS1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToBackup);
+         SessionImpl sessionWS1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToBackup);
 
-         sessionWS1.getRootNode().addNode("asdasdasda", "nt:unstructured").setProperty("data",
-                  new FileInputStream(createBLOBTempFile(1024)));
+         sessionWS1.getRootNode().addNode("asdasdasda", "nt:unstructured")
+            .setProperty("data", new FileInputStream(createBLOBTempFile(1024)));
          sessionWS1.save();
 
          // 1-st backup
@@ -563,12 +559,12 @@ public abstract class AbstractBackupUseCasesTest
             backup.restore(bchLog, repositoryNameToBackup, ws1_restore_1, false);
 
             // check
-            SessionImpl back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToRestore);
+            SessionImpl back1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToRestore);
             assertNotNull(back1.getRootNode().getNode("asdasdasda").getProperty("data"));
 
             // add date to restored workspace
-            back1.getRootNode().addNode("gdfgrghfhf", "nt:unstructured").setProperty("data",
-                     new FileInputStream(createBLOBTempFile(1024)));
+            back1.getRootNode().addNode("gdfgrghfhf", "nt:unstructured")
+               .setProperty("data", new FileInputStream(createBLOBTempFile(1024)));
             back1.save();
          }
          else
@@ -608,7 +604,7 @@ public abstract class AbstractBackupUseCasesTest
             backup.restore(bchLog, repositoryNameToBackup, ws1_restore_2, false);
 
             // check
-            SessionImpl back2 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToRestore);
+            SessionImpl back2 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToRestore);
             assertNotNull(back2.getRootNode().getNode("gdfgrghfhf").getProperty("data"));
          }
          else
@@ -723,8 +719,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1back = makeWorkspaceEntry(workspaceNameToRestore, dataSourceToWorkspaceRestore + "NOT_EXIST");
 
       File backLog = new File(bch.getLogFilePath());
@@ -750,10 +745,10 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToRestore);
+            back1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToRestore);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -799,8 +794,8 @@ public abstract class AbstractBackupUseCasesTest
 
       // restore
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
-                        dataSourceToRepositoryRestore, null);
+         makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
+            dataSourceToRepositoryRestore, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -811,8 +806,8 @@ public abstract class AbstractBackupUseCasesTest
          assertNotNull(bchLog.getFinishedTime());
 
          backup.restore(bchLog, newRepositoryEntry, false);
-         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(
-                  newRepositoryEntry.getName()).getStateRestore());
+         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL,
+            backup.getLastRepositoryRestore(newRepositoryEntry.getName()).getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToRestore);
@@ -822,10 +817,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -870,8 +865,8 @@ public abstract class AbstractBackupUseCasesTest
       //will be saved in incremental backup
       //will be saved in incremental backup
       Session wsSession = getReposityToBackup().login(credentials, "ws");
-      wsSession.getRootNode().getNode("backupTest").addNode("binary_data").setProperty("data",
-               new FileInputStream(createBLOBTempFile(500)));
+      wsSession.getRootNode().getNode("backupTest").addNode("binary_data")
+         .setProperty("data", new FileInputStream(createBLOBTempFile(500)));
       wsSession.save();
 
       // stop fullBackup
@@ -879,8 +874,8 @@ public abstract class AbstractBackupUseCasesTest
 
       // restore
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
-                        dataSourceToRepositoryRestore, null);
+         makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
+            dataSourceToRepositoryRestore, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -900,10 +895,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
 
                if (wsName.equals("ws"))
                {
@@ -956,8 +951,8 @@ public abstract class AbstractBackupUseCasesTest
 
       // restore
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
-                        dataSourceToRepositoryRestore, null);
+         makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
+            dataSourceToRepositoryRestore, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -972,7 +967,7 @@ public abstract class AbstractBackupUseCasesTest
          JobRepositoryRestore job = backup.getLastRepositoryRestore(repositoryNameToRestore);
 
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
-                  || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+            || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
          {
             Thread.yield();
             Thread.sleep(50);
@@ -986,10 +981,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -1036,8 +1031,8 @@ public abstract class AbstractBackupUseCasesTest
 
       // restore
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
-                        dataSourceToRepositoryRestore, null);
+         makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
+            dataSourceToRepositoryRestore, null);
 
       // create workspace mappingS
       Map<String, String> workspaceMapping = new HashedMap();
@@ -1072,7 +1067,7 @@ public abstract class AbstractBackupUseCasesTest
          JobRepositoryRestore job = backup.getLastRepositoryRestore(repositoryNameToRestore);
 
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
-                  || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+            || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
          {
             Thread.yield();
             Thread.sleep(50);
@@ -1086,10 +1081,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, workspaceMapping.get(wsName));
+               back1 = (SessionImpl)restoredRepository.login(credentials, workspaceMapping.get(wsName));
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -1167,8 +1162,7 @@ public abstract class AbstractBackupUseCasesTest
 
       // restore
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(repoName, getReposityToBackup().getConfiguration(), dataSourceToRepositoryRestore,
-                        null);
+         makeRepositoryEntry(repoName, getReposityToBackup().getConfiguration(), dataSourceToRepositoryRestore, null);
 
       //create broken system workspaceEntry
       newRepositoryEntry.getWorkspaceEntries().get(0).getQueryHandler().setType("gg");
@@ -1261,7 +1255,7 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToRestore);
+            back1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToRestore);
 
             Node node_101 = back1.getRootNode().getNode("node_101");
             assertNotNull(node_101);
@@ -1328,8 +1322,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1 = null;
       for (WorkspaceEntry we : re.getWorkspaceEntries())
       {
@@ -1373,9 +1366,9 @@ public abstract class AbstractBackupUseCasesTest
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   public void testExistedWorkspaceRestore() throws Exception
+   public void ExistedWorkspaceRestore() throws Exception
    {
-      SessionImpl ws1Session = (SessionImpl) repositoryService.getRepository("db7").login(credentials, "ws1");
+      SessionImpl ws1Session = (SessionImpl)repositoryService.getRepository("db7").login(credentials, "ws1");
 
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
@@ -1407,8 +1400,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1 = null;
       for (WorkspaceEntry we : re.getWorkspaceEntries())
       {
@@ -1433,10 +1425,10 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) repositoryService.getRepository("db7").login(credentials, "ws1");
+            back1 = (SessionImpl)repositoryService.getRepository("db7").login(credentials, "ws1");
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -1485,8 +1477,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1 = null;
       for (WorkspaceEntry we : re.getWorkspaceEntries())
       {
@@ -1508,7 +1499,7 @@ public abstract class AbstractBackupUseCasesTest
          backup.restoreExistingWorkspace(bchLog, repositoryNameToBackup, ws1, true);
 
          while (backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
-                  && backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
+            && backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
          {
             Thread.sleep(50);
          }
@@ -1518,11 +1509,11 @@ public abstract class AbstractBackupUseCasesTest
          try
          {
             back1 =
-                     (SessionImpl) repositoryService.getRepository(repositoryNameToBackup).login(credentials,
-                              workspaceNameToBackup);
+               (SessionImpl)repositoryService.getRepository(repositoryNameToBackup).login(credentials,
+                  workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -1572,8 +1563,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1 = null;
       for (WorkspaceEntry we : re.getWorkspaceEntries())
       {
@@ -1595,7 +1585,7 @@ public abstract class AbstractBackupUseCasesTest
          backup.restoreExistingWorkspace(bchLog.getBackupId(), repositoryNameToBackup, ws1, true);
 
          while (backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
-                  && backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
+            && backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
          {
             Thread.sleep(50);
          }
@@ -1605,11 +1595,11 @@ public abstract class AbstractBackupUseCasesTest
          try
          {
             back1 =
-                     (SessionImpl) repositoryService.getRepository(repositoryNameToBackup).login(credentials,
-                              workspaceNameToBackup);
+               (SessionImpl)repositoryService.getRepository(repositoryNameToBackup).login(credentials,
+                  workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -1655,7 +1645,7 @@ public abstract class AbstractBackupUseCasesTest
 
       // restore             
       RepositoryEntry re =
-               makeRepositoryEntry(repositoryNameToBackup, getReposityToBackup().getConfiguration(), null, null);
+         makeRepositoryEntry(repositoryNameToBackup, getReposityToBackup().getConfiguration(), null, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -1668,7 +1658,7 @@ public abstract class AbstractBackupUseCasesTest
          backup.restoreExistingRepository(bchLog, re, false);
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
-                  .getStateRestore());
+            .getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
@@ -1678,10 +1668,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -1701,8 +1691,8 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testExistedRepositoryRestoreSingelDB() throws Exception
    {
-      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
-      SessionImpl sessionWS = (SessionImpl) repositoryDB7.login(credentials, workspaceNameToBackup);
+      RepositoryImpl repositoryDB7 = (RepositoryImpl)repositoryService.getRepository(repositoryNameToBackupSingleDB);
+      SessionImpl sessionWS = (SessionImpl)repositoryDB7.login(credentials, workspaceNameToBackup);
 
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
@@ -1731,7 +1721,7 @@ public abstract class AbstractBackupUseCasesTest
 
       // restore             
       RepositoryEntry baseRE =
-               (RepositoryEntry) sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+         (RepositoryEntry)sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       RepositoryEntry re = makeRepositoryEntry(baseRE.getName(), baseRE, null, null);
 
       File backLog = new File(bch.getLogFilePath());
@@ -1745,7 +1735,7 @@ public abstract class AbstractBackupUseCasesTest
          backup.restoreExistingRepository(bchLog, re, false);
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(re.getName())
-                  .getStateRestore());
+            .getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackupSingleDB);
@@ -1755,10 +1745,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -1805,7 +1795,7 @@ public abstract class AbstractBackupUseCasesTest
 
       // restore
       RepositoryEntry re =
-               makeRepositoryEntry(repositoryNameToBackup, getReposityToBackup().getConfiguration(), null, null);
+         makeRepositoryEntry(repositoryNameToBackup, getReposityToBackup().getConfiguration(), null, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -1820,13 +1810,13 @@ public abstract class AbstractBackupUseCasesTest
          JobRepositoryRestore job = backup.getLastRepositoryRestore(repositoryNameToBackup);
 
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
-                  && job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+            && job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
          {
             Thread.sleep(50);
          }
 
-         assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(
-                  repositoryNameToBackup).getStateRestore());
+         assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL,
+            backup.getLastRepositoryRestore(repositoryNameToBackup).getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
@@ -1836,10 +1826,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -1886,7 +1876,7 @@ public abstract class AbstractBackupUseCasesTest
 
       // restore
       RepositoryEntry re =
-               makeRepositoryEntry(repositoryNameToBackup, getReposityToBackup().getConfiguration(), null, null);
+         makeRepositoryEntry(repositoryNameToBackup, getReposityToBackup().getConfiguration(), null, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -1901,13 +1891,13 @@ public abstract class AbstractBackupUseCasesTest
          JobRepositoryRestore job = backup.getLastRepositoryRestore(repositoryNameToBackup);
 
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
-                  && job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+            && job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
          {
             Thread.sleep(50);
          }
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
-                  .getStateRestore());
+            .getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
@@ -1917,10 +1907,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -1940,8 +1930,8 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testExistedWorkspaceRestoreSingelDB() throws Exception
    {
-      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
-      SessionImpl sessionWS = (SessionImpl) repositoryDB7.login(credentials, workspaceNameToBackup);
+      RepositoryImpl repositoryDB7 = (RepositoryImpl)repositoryService.getRepository(repositoryNameToBackupSingleDB);
+      SessionImpl sessionWS = (SessionImpl)repositoryDB7.login(credentials, workspaceNameToBackup);
 
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
@@ -1973,7 +1963,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       // restore
-      RepositoryEntry re = (RepositoryEntry) sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re = (RepositoryEntry)sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1 = null;
       for (WorkspaceEntry we : re.getWorkspaceEntries())
       {
@@ -1998,11 +1988,11 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
-            back1 = (SessionImpl) repositoryDB7.login(credentials, workspaceNameToBackup);
+            repositoryDB7 = (RepositoryImpl)repositoryService.getRepository(repositoryNameToBackupSingleDB);
+            back1 = (SessionImpl)repositoryDB7.login(credentials, workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -2066,11 +2056,11 @@ public abstract class AbstractBackupUseCasesTest
          try
          {
             back1 =
-                     (SessionImpl) repositoryService.getRepository(repositoryNameToBackup).login(credentials,
-                              workspaceNameToBackup);
+               (SessionImpl)repositoryService.getRepository(repositoryNameToBackup).login(credentials,
+                  workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -2128,7 +2118,7 @@ public abstract class AbstractBackupUseCasesTest
          backup.restoreExistingRepository(bchLog.getBackupId(), false);
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
-                  .getStateRestore());
+            .getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
@@ -2138,10 +2128,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -2208,10 +2198,10 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) repositoryService.getRepository(repositoryNameToBackup).login(credentials, "ws1");
+            back1 = (SessionImpl)repositoryService.getRepository(repositoryNameToBackup).login(credentials, "ws1");
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -2271,7 +2261,7 @@ public abstract class AbstractBackupUseCasesTest
          backup.restoreRepository(bchLog.getBackupId(), false);
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
-                  .getStateRestore());
+            .getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
@@ -2281,10 +2271,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -2345,7 +2335,7 @@ public abstract class AbstractBackupUseCasesTest
          backup.restore(bchLog, null, false);
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
-                  .getStateRestore());
+            .getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
@@ -2355,10 +2345,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -2434,10 +2424,10 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToBackup);
+            back1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -2500,10 +2490,10 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToBackup);
+            back1 = (SessionImpl)getReposityToBackup().login(credentials, workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -2561,7 +2551,7 @@ public abstract class AbstractBackupUseCasesTest
          backup.restoreExistingRepository(bchLog.getBackupConfig().getBackupDir(), false);
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
-                  .getStateRestore());
+            .getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
@@ -2571,10 +2561,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {
@@ -2640,10 +2630,10 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, "ws1");
+            back1 = (SessionImpl)getReposityToBackup().login(credentials, "ws1");
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                     .getProperty("exo:data").getString());
+               .getProperty("exo:data").getString());
          }
          catch (Exception e)
          {
@@ -2703,7 +2693,7 @@ public abstract class AbstractBackupUseCasesTest
          backup.restoreRepository(bchLog.getBackupConfig().getBackupDir(), false);
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
-                  .getStateRestore());
+            .getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
@@ -2713,10 +2703,10 @@ public abstract class AbstractBackupUseCasesTest
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
+               back1 = (SessionImpl)restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-                        .getProperty("exo:data").getString());
+                  .getProperty("exo:data").getString());
             }
             catch (Exception e)
             {

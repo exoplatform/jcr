@@ -31,12 +31,6 @@ import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
-import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
@@ -57,32 +51,26 @@ import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RdbmsWorkspaceInitiali
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
-import org.exoplatform.services.jcr.ext.replication.FixupStream;
+import org.exoplatform.services.jcr.impl.backup.JCRRestor;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
-import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
-import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
-import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.ws.frameworks.json.impl.JsonException;
+import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
 import org.picocontainer.Startable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -949,209 +937,12 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       throws RepositoryException, RepositoryConfigurationException, BackupOperationException, FileNotFoundException,
       IOException, ClassNotFoundException
    {
-      SessionImpl sesion = (SessionImpl)repoService.getRepository(repositoryName).getSystemSession(workspaceName);
       WorkspacePersistentDataManager dataManager =
-         (WorkspacePersistentDataManager)sesion.getContainer().getComponentInstanceOfType(
-            WorkspacePersistentDataManager.class);
+         (WorkspacePersistentDataManager)repoService.getRepository(repositoryName).getWorkspaceContainer(workspaceName)
+            .getComponent(WorkspacePersistentDataManager.class);
 
-      ObjectInputStream ois = null;
-      File backupFile = null;
-      try
-      {
-         backupFile = new File(pathBackupFile);
-         ois = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(backupFile));
-
-         while (true)
-         {
-            TransactionChangesLog changesLog = readExternal(ois);
-
-            ChangesLogIterator cli = changesLog.getLogIterator();
-            while (cli.hasNextLog())
-            {
-               if (cli.nextLog().getEventType() == ExtendedEvent.LOCK)
-                  cli.removeLog();
-            }
-
-            saveChangesLog(dataManager, changesLog);
-         }
-      }
-      catch (EOFException ioe)
-      {
-         // ok - reading all data from backup file;
-      }
-      finally
-      {
-         if (sesion != null)
-            sesion.logout();
-      }
-   }
-
-   private void saveChangesLog(WorkspacePersistentDataManager dataManager, TransactionChangesLog changesLog)
-      throws RepositoryException, BackupOperationException
-   {
-      try
-      {
-         dataManager.save(changesLog);
-      }
-      catch (JCRInvalidItemStateException e)
-      {
-         TransactionChangesLog normalizeChangesLog =
-            getNormalizedChangesLog(e.getIdentifier(), e.getState(), changesLog);
-         if (normalizeChangesLog != null)
-            saveChangesLog(dataManager, normalizeChangesLog);
-         else
-            throw new BackupOperationException(
-               "Collisions found during save of restore changes log, but caused item is not found by ID "
-                  + e.getIdentifier() + ". " + e, e);
-      }
-      catch (JCRItemExistsException e)
-      {
-         TransactionChangesLog normalizeChangesLog =
-            getNormalizedChangesLog(e.getIdentifier(), e.getState(), changesLog);
-         if (normalizeChangesLog != null)
-            saveChangesLog(dataManager, normalizeChangesLog);
-         else
-            throw new RepositoryException(
-               "Collisions found during save of restore changes log, but caused item is not found by ID "
-                  + e.getIdentifier() + ". " + e, e);
-      }
-
-   }
-
-   private TransactionChangesLog getNormalizedChangesLog(String collisionID, int state, TransactionChangesLog changesLog)
-   {
-      ItemState citem = changesLog.getItemState(collisionID);
-
-      if (citem != null)
-      {
-
-         TransactionChangesLog result = new TransactionChangesLog();
-         result.setSystemId(changesLog.getSystemId());
-
-         ChangesLogIterator cli = changesLog.getLogIterator();
-         while (cli.hasNextLog())
-         {
-            ArrayList<ItemState> normalized = new ArrayList<ItemState>();
-            PlainChangesLog next = cli.nextLog();
-            for (ItemState change : next.getAllStates())
-            {
-               if (state == change.getState())
-               {
-                  ItemData item = change.getData();
-                  // targeted state
-                  if (citem.isNode())
-                  {
-                     // Node... by ID and desc path
-                     if (!item.getIdentifier().equals(collisionID)
-                        && !item.getQPath().isDescendantOf(citem.getData().getQPath()))
-                        normalized.add(change);
-                  }
-                  else if (!item.getIdentifier().equals(collisionID))
-                  {
-                     // Property... by ID
-                     normalized.add(change);
-                  }
-               }
-               else
-                  // another state
-                  normalized.add(change);
-            }
-
-            PlainChangesLog plog = new PlainChangesLogImpl(normalized, next.getSessionId(), next.getEventType());
-            result.addLog(plog);
-         }
-
-         return result;
-      }
-
-      return null;
-   }
-
-   private TransactionChangesLog readExternal(ObjectInputStream in) throws IOException, ClassNotFoundException
-   {
-      int changesLogType = in.readInt();
-
-      TransactionChangesLog transactionChangesLog = null;
-
-      if (changesLogType == PendingChangesLog.Type.CHANGESLOG_WITH_STREAM)
-      {
-
-         // read ChangesLog
-         transactionChangesLog = (TransactionChangesLog)in.readObject();
-
-         // read FixupStream count
-         int iFixupStream = in.readInt();
-
-         ArrayList<FixupStream> listFixupStreams = new ArrayList<FixupStream>();
-
-         for (int i = 0; i < iFixupStream; i++)
-         {
-            FixupStream fs = new FixupStream();
-            fs.readExternal(in);
-            listFixupStreams.add(fs);
-         }
-         // listFixupStreams.add((FixupStream) in.readObject());
-
-         // read stream data
-         int iStreamCount = in.readInt();
-         ArrayList<File> listFiles = new ArrayList<File>();
-
-         for (int i = 0; i < iStreamCount; i++)
-         {
-
-            // read file size
-            long fileSize = in.readLong();
-
-            // read content file
-            File contentFile = getAsFile(in, fileSize);
-            listFiles.add(contentFile);
-         }
-
-         PendingChangesLog pendingChangesLog =
-            new PendingChangesLog(transactionChangesLog, listFixupStreams, listFiles, fileCleaner);
-
-         pendingChangesLog.restore();
-
-         TransactionChangesLog log = pendingChangesLog.getItemDataChangesLog();
-
-      }
-      else if (changesLogType == PendingChangesLog.Type.CHANGESLOG_WITHOUT_STREAM)
-      {
-         transactionChangesLog = (TransactionChangesLog)in.readObject();
-      }
-
-      return transactionChangesLog;
-   }
-
-   private File getAsFile(ObjectInputStream ois, long fileSize) throws IOException
-   {
-      int bufferSize = /* 8191 */1024 * 8;
-      byte[] buf = new byte[bufferSize];
-
-      File tempFile = SpoolFile.createTempFile("" + System.currentTimeMillis(), ".stmp", tempDir);
-      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
-      long readBytes = fileSize;
-
-      while (readBytes > 0)
-      {
-         // long longTemp = readByte - bufferSize;
-         if (readBytes >= bufferSize)
-         {
-            ois.readFully(buf);
-            fos.write(buf);
-         }
-         else if (readBytes < bufferSize)
-         {
-            ois.readFully(buf, 0, (int)readBytes);
-            fos.write(buf, 0, (int)readBytes);
-         }
-         readBytes -= bufferSize;
-      }
-
-      fos.flush();
-      fos.close();
-
-      return tempFile;
+      JCRRestor restorer = new JCRRestor(dataManager, fileCleaner);
+      restorer.incrementalRestore(new File(pathBackupFile));
    }
 
    /**
@@ -1695,7 +1486,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     * {@inheritDoc}
     */
    public void restoreExistingRepository(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
-            boolean asynchronous) throws BackupOperationException, BackupConfigurationException
+      boolean asynchronous) throws BackupOperationException, BackupConfigurationException
    {
       try
       {
@@ -1748,8 +1539,47 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
       }
       
-      JobExistedRepositoryRestore jobExistedRepositoryRestore =
-         new JobExistedRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, rblog);
+      // check if need to restore with same configuration or not
+      boolean isSameConfig = false;
+      try
+      {
+         String newConf = new JsonGeneratorImpl().createJsonObject(repositoryEntry).toString();
+         String currnetConf =
+            new JsonGeneratorImpl().createJsonObject(
+               repoService.getRepository(repositoryEntry.getName()).getConfiguration()).toString();
+
+         isSameConfig = newConf.equals(currnetConf);
+      }
+      catch (JsonException e)
+      {
+         this.log.error("Can't get JSON object from wokrspace configuration", e);
+      }
+      catch (RepositoryException e)
+      {
+         this.log.error(e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         this.log.error(e);
+      }
+
+      // check if we have deal with RDBMS backup
+      boolean isRDBMSBackup = false;
+      try
+      {
+         isRDBMSBackup =
+            (Class.forName(workspacesMapping.get(repositoryEntry.getWorkspaceEntries().get(0).getName())
+               .getFullBackupType()).equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class));
+      }
+      catch (ClassNotFoundException e)
+      {
+         this.log.error(e);
+      }
+
+      JobRepositoryRestore jobExistedRepositoryRestore =
+         isSameConfig && isRDBMSBackup ? new JobExistedRepositoryRestoreSameConfig(repoService, this, repositoryEntry,
+            workspacesMapping, rblog) : new JobExistedRepositoryRestore(repoService, this, repositoryEntry,
+            workspacesMapping, rblog);
 
       restoreRepositoryJobs.add(jobExistedRepositoryRestore);
       if (asynchronous)
@@ -1760,7 +1590,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       {
          jobExistedRepositoryRestore.restore();
       }
-      
    }
 
    /**
@@ -1793,7 +1622,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     * {@inheritDoc}
     */
    public void restoreExistingWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry,
-            boolean asynchronous) throws BackupOperationException, BackupConfigurationException
+      boolean asynchronous) throws BackupOperationException, BackupConfigurationException
    {
       try 
       {
@@ -1814,20 +1643,73 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       {
          throw new WorkspaceRestoreException("Repository \"" + repositoryName + "\" should be existed", e);
       }
-      
-      JobExistedWorkspaceRestore jobRestore =
-         new JobExistedWorkspaceRestore(repoService, this, repositoryName, log, workspaceEntry);
+
+      // check if need to restore with same configuration or not
+      boolean isSameConfig = false;
+      try
+      {
+         WorkspaceEntry currentWsEntry = null;
+         for (WorkspaceEntry wsEntry : repoService.getRepository(repositoryName).getConfiguration().getWorkspaceEntries())
+         {
+            if (wsEntry.getName().equals(workspaceEntry.getName()))
+            {
+               currentWsEntry = wsEntry;
+               break;
+            }
+         }
+         
+         String newConf = new JsonGeneratorImpl().createJsonObject(workspaceEntry).toString();
+         String currnetConf = new JsonGeneratorImpl().createJsonObject(currentWsEntry).toString();
+
+         isSameConfig = newConf.equals(currnetConf);
+      }
+      catch (JsonException e)
+      {
+         this.log.error("Can't get JSON object from wokrspace configuration", e);
+      }
+      catch (RepositoryException e)
+      {
+         this.log.error(e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         this.log.error(e);
+      }
+
+      // check if we have deal with RDBMS backup
+      boolean isRDBMSBackup = false;
+      try
+      {
+         isRDBMSBackup =
+            (Class.forName(log.getFullBackupType())
+               .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class));
+      }
+      catch (ClassNotFoundException e)
+      {
+         this.log.error(e);
+      }
+
+      JobWorkspaceRestore jobRestore =
+         isSameConfig && isRDBMSBackup ? new JobExistedWorkspaceRestoreSameConfig(repoService, this, repositoryName,
+            log, workspaceEntry) : new JobExistedWorkspaceRestore(repoService, this, repositoryName, log,
+            workspaceEntry);
       restoreJobs.add(jobRestore);
-      
+
       if (asynchronous)
       {
          jobRestore.start();
       }
       else
       {
-         jobRestore.restore();
+         try
+         {
+            jobRestore.restore();
+         }
+         catch (Throwable e)
+         {
+            throw new BackupOperationException(e);
+         }
       }
-      
    }
 
    /**

@@ -45,114 +45,6 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 {
    TesterConfigurationHelper helper = TesterConfigurationHelper.getInstence();
 
-   public void testRDBMSInitializerSystemWorkspace() throws Exception
-   {
-      FullBackupJob job = new FullBackupJob();
-      BackupConfig config = new BackupConfig();
-      config.setRepository("db1");
-      config.setWorkspace("ws");
-      config.setBackupDir(new File("target/backup/testJob/testRDBMSInitializerSystemWorkspace"));
-
-      Calendar calendar = Calendar.getInstance();
-
-      job.init(repositoryService.getRepository("db1"), "ws", config, calendar);
-      job.run();
-
-      URL url = job.getStorageURL();
-
-      for (WorkspaceEntry workspaceEntry : repositoryService.getRepository("db1").getConfiguration()
-         .getWorkspaceEntries())
-      {
-         if (workspaceEntry.getName().equals("ws"))
-         {
-            String newValueStoragePath = "target/temp/values/" + IdGenerator.generate();
-            String newIndexPath = "target/temp/index/" + IdGenerator.generate();
-
-            // set the initializer
-            WorkspaceEntry newEntry =
-               helper.getNewWs("ws", true, null, newValueStoragePath, newIndexPath, workspaceEntry.getContainer(),
-                  workspaceEntry.getContainer().getValueStorages());
-
-            WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
-            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
-
-            List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
-            wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(url
-               .getFile()).getParent()));
-
-            wiEntry.setParameters(wieParams);
-
-            newEntry.setInitializer(wiEntry);
-
-            TesterRdbmsWorkspaceInitializer initializer =
-               new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db1").getConfiguration(),
-                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService, new FileCleanerHolder());
-
-            initializer.restoreValueFiles();
-            assertTrue(new File(newValueStoragePath).list().length > 0);
-
-            initializer.restoreIndexFiles();
-            assertTrue(new File(newIndexPath).list().length > 0);
-            assertTrue(new File(newIndexPath + "_" + SystemSearchManager.INDEX_DIR_SUFFIX).exists());
-            assertTrue(new File(newIndexPath + "_" + SystemSearchManager.INDEX_DIR_SUFFIX).list().length > 0);
-         }
-      }
-   }
-
-   public void testRDBMSInitializer() throws Exception
-   {
-      FullBackupJob job = new FullBackupJob();
-      BackupConfig config = new BackupConfig();
-      config.setRepository("db1");
-      config.setWorkspace("ws1");
-      config.setBackupDir(new File("target/backup/testJob/testRDBMSInitializer"));
-
-      Calendar calendar = Calendar.getInstance();
-
-      job.init(repositoryService.getRepository("db1"), "ws1", config, calendar);
-      job.run();
-
-      URL url = job.getStorageURL();
-
-      for (WorkspaceEntry workspaceEntry : repositoryService.getRepository("db1").getConfiguration()
-         .getWorkspaceEntries())
-      {
-         if (workspaceEntry.getName().equals("ws1"))
-         {
-            String newValueStoragePath = "target/temp/values/" + IdGenerator.generate();
-            String newIndexPath = "target/temp/index/" + IdGenerator.generate();
-
-            // set the initializer
-            WorkspaceEntry newEntry =
-               helper.getNewWs("ws1", true, null, newValueStoragePath, newIndexPath, workspaceEntry.getContainer(),
-                  workspaceEntry.getContainer().getValueStorages());
-
-            WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
-            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
-
-            List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
-            wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(url
-               .getFile()).getParent()));
-
-            wiEntry.setParameters(wieParams);
-
-            newEntry.setInitializer(wiEntry);
-
-            TesterRdbmsWorkspaceInitializer initializer =
-               new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db1").getConfiguration(),
-                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService,
-                  new FileCleanerHolder());
-
-            initializer.restoreValueFiles();
-            assertFalse(new File(newValueStoragePath).exists());
-
-            initializer.restoreIndexFiles();
-            assertTrue(new File(newIndexPath).list().length > 0);
-            assertFalse(new File(newIndexPath + "_" + SystemSearchManager.INDEX_DIR_SUFFIX).exists());
-         }
-      }
-   }
-
    public void testRDBMSInitializerRestoreTablesMultiDB() throws Exception
    {
       FullBackupJob job = new FullBackupJob();
@@ -221,6 +113,10 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             repositoryService.getRepository("db1").configWorkspace(newEntry);
             repositoryService.getRepository("db1").createWorkspace(newEntry.getName());
+
+            assertFalse(new File(newValueStoragePath).exists());
+            assertTrue(new File(newIndexPath).list().length > 0);
+            assertFalse(new File(newIndexPath + "_" + SystemSearchManager.INDEX_DIR_SUFFIX).exists());
          }
 
          break;
@@ -299,6 +195,10 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             repositoryService.getRepository("db1").configWorkspace(newEntry);
             repositoryService.getRepository("db1").createWorkspace(newEntry.getName());
+
+            assertFalse(new File(newValueStoragePath).exists());
+            assertTrue(new File(newIndexPath).list().length > 0);
+            assertFalse(new File(newIndexPath + "_" + SystemSearchManager.INDEX_DIR_SUFFIX).exists());
          }
 
          break;

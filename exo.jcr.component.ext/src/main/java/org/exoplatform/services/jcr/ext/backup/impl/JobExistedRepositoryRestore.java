@@ -26,9 +26,8 @@ import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DataCleaner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +47,6 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
 {
 
    /**
-    * Value storage cleaner.
-    */
-   private final ValueStorageCleanHelper valueStorageCleanHelper;
-
-   /**
-    * Index storage cleaner.
-    */
-   private final IndexCleanHelper indexCleanHelper;
-
-   /**
     * JobExistedRepositoryRestore constructor.
     */
    public JobExistedRepositoryRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
@@ -65,9 +54,6 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
       RepositoryBackupChainLog backupChainLog)
    {
       super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLog);
-
-      this.valueStorageCleanHelper = new ValueStorageCleanHelper();
-      this.indexCleanHelper = new IndexCleanHelper();
    }
 
    @Override
@@ -76,6 +62,9 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
     */
    protected void restoreRepository() throws RepositoryRestoreExeption
    {
+      // list of components to clean
+      List<Backupable> backupable = new ArrayList<Backupable>();
+
       try
       {
          // get current repository configuration
@@ -91,32 +80,24 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
          boolean isDefault =
             repositoryService.getDefaultRepository().getConfiguration().getName().equals(repositoryEntry.getName());
 
+         String systemWsName =
+            repositoryService.getRepository(this.repositoryEntry.getName()).getConfiguration().getSystemWorkspaceName();
+
          //Create local copy of WorkspaceEntry for all workspaces
          ArrayList<WorkspaceEntry> workspaceList = new ArrayList<WorkspaceEntry>();
          workspaceList.addAll(repositoryEntry.getWorkspaceEntries());
+
+         // get all backupable components
+         for (WorkspaceEntry wEntry : workspaceList)
+         {
+            backupable.addAll(repositoryService.getRepository(this.repositoryEntry.getName())
+               .getWorkspaceContainer(wEntry.getName()).getComponentInstancesOfType(Backupable.class));
+         }
 
          //close all session
          for (WorkspaceEntry wEntry : workspaceList)
          {
             forceCloseSession(repositoryEntry.getName(), wEntry.getName());
-         }
-
-         List<DataCleaner> dataCleaners = new ArrayList<DataCleaner>();
-
-         // collect all DataCleaners
-         for (WorkspaceEntry wEntry : workspaceList)
-         {
-            forceCloseSession(repositoryEntry.getName(), wEntry.getName());
-
-            List<Backupable> backupable =
-               repositoryService.getRepository(this.repositoryEntry.getName()).getWorkspaceContainer(wEntry.getName())
-                  .getComponentInstancesOfType(Backupable.class);
-
-
-            for (Backupable component : backupable)
-            {
-               dataCleaners.add(component.getDataCleaner());
-            }
          }
 
          //remove repository
@@ -129,23 +110,10 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
             repositoryService.removeRepository(repositoryEntry.getName());
          }
 
-         //clean database
-         for (DataCleaner cleaner : dataCleaners)
+         // clean
+         for (Backupable component : backupable)
          {
-            cleaner.clean();
-         }
-
-         //clean index
-         for (WorkspaceEntry wEntry : workspaceList)
-         {
-            indexCleanHelper.removeWorkspaceIndex(wEntry,
-               repositoryEntry.getSystemWorkspaceName().equals(wEntry.getName()));
-         }
-
-         //clean value storage
-         for (WorkspaceEntry wEntry : workspaceList)
-         {
-            valueStorageCleanHelper.removeWorkspaceValueStorage(wEntry);
+            component.clean();
          }
 
          super.restoreRepository();
@@ -157,7 +125,16 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
    }
 
    /**
-    * forceCloseSession. Close sessions on specific workspace.
+    * {@inheritDoc}
+    */
+   @Override
+   protected void removeRepository(RepositoryService repositoryService, String repositoryName)
+      throws RepositoryException, RepositoryConfigurationException
+   {
+   }
+
+   /**
+    * Close sessions on specific workspace.
     * 
     * @param repositoryName
     *          repository name
@@ -179,5 +156,4 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
 
       return sessionRegistry.closeSessions(workspaceName);
    }
-
 }

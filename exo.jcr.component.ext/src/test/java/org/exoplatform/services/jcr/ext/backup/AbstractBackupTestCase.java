@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
@@ -30,25 +31,24 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
-import org.exoplatform.services.jcr.ext.backup.impl.IndexCleanHelper;
-import org.exoplatform.services.jcr.ext.backup.impl.ValueStorageCleanHelper;
 import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.Backupable;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.DataCleaner;
+import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.jcr.ItemExistsException;
@@ -93,16 +93,6 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
    protected String repositoryNameToRestore = "db8backup";
 
    protected String workspaceNameToRestore = "ws1backup";
-
-   /**
-    * Value storage cleaner.
-    */
-   private ValueStorageCleanHelper valueStorageCleanHelper = new ValueStorageCleanHelper();
-
-   /**
-    * Index storage cleaner.
-    */
-   private IndexCleanHelper indexCleanHelper = new IndexCleanHelper();
 
    class LogFilter
       implements FileFilter
@@ -521,11 +511,24 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
          conn.close();
       }
 
-      //clean index
-      indexCleanHelper.removeWorkspaceIndex(wEntry, isSystem);
+      if (wEntry.getContainer().getValueStorages() != null)
+      {
+         for (ValueStorageEntry valueStorage : wEntry.getContainer().getValueStorages())
+         {
+            removeDirectory(new File(valueStorage.getParameterValue(FileValueStorage.PATH)));
+         }
+      }
 
-      //clean value storage
-      valueStorageCleanHelper.removeWorkspaceValueStorage(wEntry);
+      if (wEntry.getQueryHandler() != null)
+      {
+         removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR, null)));
+         if (isSystem)
+         {
+            removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR,
+               null)
+               + "_" + SystemSearchManager.INDEX_DIR_SUFFIX));
+         }
+      }
    }
 
    protected void removeWorkspaceFullySingleDB(String repositoryName, String workspaceName) throws Exception
@@ -552,33 +555,31 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
          repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName()
             .equals(wEntry.getName());
 
-      List<DataCleaner> dataCleaners = new ArrayList<DataCleaner>();
-
-      List<Backupable> backupable =
-         repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
-            .getComponentInstancesOfType(Backupable.class);
-
-      for (Backupable component : backupable)
-      {
-         dataCleaners.add(component.getDataCleaner());
-      }
-
       //close all session
       forceCloseSession(repositoryName, wEntry.getName());
 
       repositoryService.getRepository(repositoryName).removeWorkspace(wEntry.getName());
 
-      //clean database
-      for (DataCleaner cleaner : dataCleaners)
+      DBCleanService.cleanWorkspaceData(wEntry);
+
+      if (wEntry.getContainer().getValueStorages() != null)
       {
-         cleaner.clean();
+         for (ValueStorageEntry valueStorage : wEntry.getContainer().getValueStorages())
+         {
+            removeDirectory(new File(valueStorage.getParameterValue(FileValueStorage.PATH)));
+         }
       }
 
-      //clean index
-      indexCleanHelper.removeWorkspaceIndex(wEntry, isSystem);
-
-      //clean value storage
-      valueStorageCleanHelper.removeWorkspaceValueStorage(wEntry);
+      if (wEntry.getQueryHandler() != null)
+      {
+         removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR, null)));
+         if (isSystem)
+         {
+            removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR,
+               null)
+               + "_" + SystemSearchManager.INDEX_DIR_SUFFIX));
+         }
+      }
    }
 
    protected void removeRepositoryFully(String repositoryName) throws Exception
@@ -604,52 +605,45 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
          forceCloseSession(repositoryEntry.getName(), wEntry.getName());
       }
 
-      List<DataCleaner> dataCleaners = new ArrayList<DataCleaner>();
-
-      // collect all DataCleaners
-      for (WorkspaceEntry wEntry : workspaceList)
-      {
-         forceCloseSession(repositoryEntry.getName(), wEntry.getName());
-
-         List<Backupable> backupable =
-            repositoryService.getRepository(repositoryEntry.getName()).getWorkspaceContainer(wEntry.getName())
-               .getComponentInstancesOfType(Backupable.class);
-
-         for (Backupable component : backupable)
-         {
-            dataCleaners.add(component.getDataCleaner());
-         }
-      }
+      String systemWorkspaceName =
+         repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName();
 
       //remove repository
       if (isDefault)
       {
-         ((RepositoryServiceImpl) repositoryService).removeDefaultRepository();
+         ((RepositoryServiceImpl)repositoryService).removeDefaultRepository();
       }
       else
       {
          repositoryService.removeRepository(repositoryEntry.getName());
       }
 
-      //clean database
-      for (DataCleaner cleaner : dataCleaners)
-      {
-         cleaner.clean();
-      }
-
-      //clean index
       for (WorkspaceEntry wEntry : workspaceList)
       {
-         indexCleanHelper.removeWorkspaceIndex(wEntry, repositoryEntry.getSystemWorkspaceName()
-                  .equals(wEntry.getName()));
-      }
+         DBCleanService.cleanWorkspaceData(wEntry);
 
-      //clean value storage
-      for (WorkspaceEntry wEntry : workspaceList)
-      {
-         valueStorageCleanHelper.removeWorkspaceValueStorage(wEntry);
-      }
+         if (wEntry.getContainer().getValueStorages() != null)
+         {
+            for (ValueStorageEntry valueStorage : wEntry.getContainer().getValueStorages())
+            {
+               removeDirectory(new File(valueStorage.getParameterValue(FileValueStorage.PATH)));
+            }
+         }
 
+         boolean isSystem = systemWorkspaceName.equals(wEntry.getName());
+
+         if (wEntry.getQueryHandler() != null)
+         {
+            removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR,
+               null)));
+            if (isSystem)
+            {
+               removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR,
+                  null)
+                  + "_" + SystemSearchManager.INDEX_DIR_SUFFIX));
+            }
+         }
+      }
    }
 
    /**
@@ -676,4 +670,34 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       return sessionRegistry.closeSessions(workspaceName);
    }
 
+   /**
+    * Remove directory.
+    * 
+    * @param dir
+    *          directory to remove
+    * @throws IOException
+    *          if any exception occurred
+    */
+   private void removeDirectory(File dir) throws IOException
+   {
+      if (PrivilegedFileHelper.isDirectory(dir))
+      {
+         for (File subFile : PrivilegedFileHelper.listFiles(dir))
+         {
+            removeDirectory(subFile);
+         }
+
+         if (!PrivilegedFileHelper.delete(dir))
+         {
+            throw new IOException("Can't remove folder : " + PrivilegedFileHelper.getCanonicalPath(dir));
+         }
+      }
+      else
+      {
+         if (!PrivilegedFileHelper.delete(dir))
+         {
+            throw new IOException("Can't remove file : " + PrivilegedFileHelper.getCanonicalPath(dir));
+         }
+      }
+   }
 }

@@ -115,7 +115,7 @@ public class JobWorkspaceRestore extends Thread
    /**
     * The BackupChainLog for restore.
     */
-   private final BackupChainLog backupChainLog;
+   protected final BackupChainLog backupChainLog;
 
    /**
     * JobWorkspaceRestore constructor.
@@ -145,6 +145,7 @@ public class JobWorkspaceRestore extends Thread
    /**
     * {@inheritDoc}
     */
+   @Override
    public void run()
    {
       try
@@ -210,11 +211,10 @@ public class JobWorkspaceRestore extends Thread
             }
          }
       }
-
    }
 
    /**
-    * removeWorkspace.
+    * Remove workspace.
     *
     * @param mr
     *          ManageableRepository, the manageable repository
@@ -223,7 +223,7 @@ public class JobWorkspaceRestore extends Thread
     * @throws RepositoryException
     *           will be generated the RepositoryException
     */
-   private void removeWorkspace(ManageableRepository mr, String workspaceName) throws RepositoryException
+   protected void removeWorkspace(ManageableRepository mr, String workspaceName) throws RepositoryException
    {
 
       boolean isExists = false;

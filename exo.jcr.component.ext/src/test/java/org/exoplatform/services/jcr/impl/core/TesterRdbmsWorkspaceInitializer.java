@@ -29,8 +29,6 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 
-import java.io.IOException;
-
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
@@ -56,16 +54,6 @@ public class TesterRdbmsWorkspaceInitializer extends RdbmsWorkspaceInitializer
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
                accessManager, repositoryService, cleanerHolder);
-   }
-
-   public void restoreValueFiles() throws RepositoryConfigurationException, IOException
-   {
-      super.restoreValueStorage();
-   }
-
-   public void restoreIndexFiles() throws RepositoryConfigurationException, IOException
-   {
-      super.restoreIndex();
    }
 
    @Override

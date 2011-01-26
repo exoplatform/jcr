@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.ext.backup.impl;
 
 
 import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -60,7 +61,7 @@ public class JobRepositoryRestore extends Thread
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobRepositoryRestore");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobRepositoryRestore");
 
    /**
     * REPOSITORY_RESTORE_STARTED. The state of start restore.
@@ -108,7 +109,7 @@ public class JobRepositoryRestore extends Thread
 
    protected RepositoryEntry repositoryEntry;
 
-   private Map<String, BackupChainLog> workspacesMapping;
+   protected Map<String, BackupChainLog> workspacesMapping;
 
    private RepositoryBackupChainLog repositoryBackupChainLog;
 
@@ -245,23 +246,7 @@ public class JobRepositoryRestore extends Thread
          {
             try
             {
-               ManageableRepository mr = null;
-
-               try
-               {
-                  mr = repositoryService.getRepository(repositoryEntry.getName());
-               }
-               catch (RepositoryException e)
-               {
-                  // The repository not exist.
-               }
-
-               if (mr != null)
-               {
-                  closeAllSession(mr);
-                  repositoryService.removeRepository(repositoryEntry.getName());
-                  repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
-               }
+               removeRepository(repositoryService, repositoryEntry.getName());
             }
             catch (Throwable thr)
             {
@@ -269,6 +254,40 @@ public class JobRepositoryRestore extends Thread
                   thr);
             }
          }
+      }
+   }
+
+   /**
+    * Remove repository.
+    *
+    * @param repositoryService
+    *          RepositoryService, the repository service
+    * @param repositoryName
+    *          String, the repository name
+    * @throws RepositoryException
+    *           will be generated the RepositoryException
+    * @throws RepositoryConfigurationException 
+    */
+   protected void removeRepository(RepositoryService repositoryService, String repositoryName)
+      throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      ManageableRepository mr = null;
+
+      try
+      {
+         mr = repositoryService.getRepository(repositoryName);
+      }
+      catch (RepositoryException e)
+      {
+         // The repository not exist.
+      }
+
+      if (mr != null)
+      {
+         closeAllSession(mr);
+         repositoryService.removeRepository(repositoryName);
+         repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
       }
    }
 

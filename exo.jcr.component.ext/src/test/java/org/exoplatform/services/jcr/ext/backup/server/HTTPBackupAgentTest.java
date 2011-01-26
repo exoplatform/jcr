@@ -99,6 +99,7 @@ public class HTTPBackupAgentTest
    /**
     * {@inheritDoc}
     */
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -1470,10 +1471,10 @@ public class HTTPBackupAgentTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          headers.putSingle("Content-Type", "application/json; charset=UTF-8");
          ContainerRequestUserRole creq =
-                  new ContainerRequestUserRole("POST", new URI(HTTP_BACKUP_AGENT_PATH
-                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + "db6" + "/"
-                           + backupSetPath + "/" + "true"), new URI(""), new ByteArrayInputStream(json.toString()
-                           .getBytes("UTF-8")), new InputHeadersMap(headers));
+            new ContainerRequestUserRole("POST", new URI(HTTP_BACKUP_AGENT_PATH
+               + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + "db6" + "/" + backupSetPath + "/"
+               + "true"), new URI(""), new ByteArrayInputStream(json.toString().getBytes("UTF-8")),
+               new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
          ContainerResponse cres = new ContainerResponse(responseWriter);
@@ -3003,6 +3004,7 @@ public class HTTPBackupAgentTest
       return sessionRegistry.closeSessions(workspaceName);
    }
 
+   @Override
    protected WorkspaceEntry makeWorkspaceEntry(WorkspaceEntry defWEntry, String repoNmae, String wsName,
             String sourceName)
    {
@@ -3086,6 +3088,7 @@ public class HTTPBackupAgentTest
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ExtendedBackupManager getBackupManager()
    {
       return (ExtendedBackupManager) container.getComponentInstanceOfType(BackupManager.class);

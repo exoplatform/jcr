@@ -21,18 +21,18 @@ import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.JCRRestor;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
-import org.exoplatform.services.jcr.impl.storage.jdbc.backup.CleanException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.jcr.PathNotFoundException;
@@ -59,62 +59,42 @@ public class RdbmsBackupWorkspaceInitializer extends RdbmsWorkspaceInitializer
    public RdbmsBackupWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-            AccessManager accessManager, RepositoryService repositoryService, FileCleanerHolder cleanerHolder)
-            throws RepositoryConfigurationException,
-      PathNotFoundException, RepositoryException
+      AccessManager accessManager, RepositoryService repositoryService, FileCleanerHolder cleanerHolder)
+      throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-               accessManager, repositoryService, cleanerHolder);
+         accessManager, repositoryService, cleanerHolder);
    }
 
    /**
     * {@inheritDoc}
     */
    @Override
-   public NodeData initWorkspace() throws RepositoryException
+   protected void restoreAction() throws RepositoryException
    {
-      if (isWorkspaceInitialized())
-      {
-         return (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
-      }
+      // restore from full rdbms backup
+      fullRdbmsRestore();
 
-      long start = System.currentTimeMillis();
-
-      try
-      {
-         // restore from full rdbms backup
-         fullRdbmsRestore();
-
-         // restore from incremental backup
-         incrementalRead();
-      }
-      catch (Throwable e)
+      // restore from incremental backup
+      JCRRestor restorer = new JCRRestor(dataManager, fileCleaner);
+      for (File incrBackupFile : JCRRestor.getIncrementalFiles(new File(restoreDir)))
       {
          try
          {
-            rollback();
+            restorer.incrementalRestore(incrBackupFile);
          }
-         catch (RepositoryConfigurationException e1)
+         catch (FileNotFoundException e)
          {
-            log.error("Can't rollback changes", e1);
+            throw new RepositoryException(e);
          }
-         catch (CleanException e1)
+         catch (IOException e)
          {
-            log.error("Can't rollback changes", e1);
+            throw new RepositoryException(e);
          }
-         catch (IOException e1)
+         catch (ClassNotFoundException e)
          {
-            log.error("Can't rollback changes", e1);
+            throw new RepositoryException(e);
          }
-         throw new RepositoryException(e);
       }
-
-      final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
-
-      log.info("Workspace [" + workspaceName + "] restored from storage " + restorePath + " in "
-         + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
-
-      return root;
    }
-
 }

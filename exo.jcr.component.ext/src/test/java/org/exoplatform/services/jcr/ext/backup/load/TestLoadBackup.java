@@ -33,6 +33,9 @@ import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.BackupJob;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -43,8 +46,6 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -57,8 +58,6 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.version.VersionException;
 import javax.jcr.version.VersionHistory;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -70,11 +69,13 @@ import javax.sql.DataSource;
  */
 public class TestLoadBackup extends BaseStandaloneTest
 {
-   protected final String REPOSITORY_NAME = "db7";
+   protected final String REPOSITORY_NAME_SINGLE_DB = "db7";
+
+   protected final String REPOSITORY_NAME_MULTI_DB = "db8";
 
    protected final String WORKSPACE_NAME = "ws1";
 
-   protected final int WRITER_COUNT = 100;
+   protected final int WRITER_COUNT = 0;
 
    protected final String FULL_BACKUP_TYPE = "org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob";
 
@@ -120,7 +121,7 @@ public class TestLoadBackup extends BaseStandaloneTest
     * 
     * @throws Exception
     */
-   public void testBackupRestore() throws Exception
+   public void _testBackupRestore() throws Exception
    {
       BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
 
@@ -130,7 +131,8 @@ public class TestLoadBackup extends BaseStandaloneTest
       //writers
       for (int i = 0; i < WRITER_COUNT; i++)
       {
-         Session writerSession = repositoryService.getRepository(REPOSITORY_NAME).login(credentials, WORKSPACE_NAME);
+         Session writerSession =
+            repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).login(credentials, WORKSPACE_NAME);
          TreeWriterThread writer = new TreeWriterThread(writerSession, "subnode" + i);
          writer.start();
          threads.add(writer);
@@ -149,14 +151,14 @@ public class TestLoadBackup extends BaseStandaloneTest
       backupManagerImpl.start();
 
       BackupConfig config = new BackupConfig();
-      config.setRepository(REPOSITORY_NAME);
+      config.setRepository(REPOSITORY_NAME_SINGLE_DB);
       config.setWorkspace(WORKSPACE_NAME);
       config.setBackupType(BACKUP_TYPE);
       config.setBackupDir(backDir);
 
       backupManagerImpl.startBackup(config);
 
-      bch = backupManagerImpl.findBackup(REPOSITORY_NAME, WORKSPACE_NAME);
+      bch = backupManagerImpl.findBackup(REPOSITORY_NAME_SINGLE_DB, WORKSPACE_NAME);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -191,7 +193,7 @@ public class TestLoadBackup extends BaseStandaloneTest
       {
          fail("Can't get fullBackup chain");
       }
-      Thread.sleep(5 * 1000);
+      Thread.sleep(10 * 1000);
 
       System.out.println(" ============ BACKUP FINISHED ============");
 
@@ -208,9 +210,9 @@ public class TestLoadBackup extends BaseStandaloneTest
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backupManagerImpl.restore(bchLog, REPOSITORY_NAME, ws1back, false);
+         backupManagerImpl.restore(bchLog, REPOSITORY_NAME_SINGLE_DB, ws1back, false);
 
-         JobWorkspaceRestore restore = backupManagerImpl.getLastRestore(REPOSITORY_NAME, ws1back.getName());
+         JobWorkspaceRestore restore = backupManagerImpl.getLastRestore(REPOSITORY_NAME_SINGLE_DB, ws1back.getName());
          if (restore != null)
          {
             while (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL
@@ -233,8 +235,440 @@ public class TestLoadBackup extends BaseStandaloneTest
 
       System.out.println(" ============ CHECKING INTEGRITY ============");
 
-      checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME).login(credentials, "ws1back")
+      checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).login(credentials, "ws1back")
          .getRootNode());
+   }
+
+   /**
+    * Test Backup/Restore.
+    * 
+    * @throws Exception
+    */
+   public void testBackupRestoreExistingWorkspaceSingleDB() throws Exception
+   {
+      WorkspaceEntry entry = null;
+      for (WorkspaceEntry en : repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).getConfiguration()
+         .getWorkspaceEntries())
+      {
+         if (en.getName().equals(WORKSPACE_NAME))
+         {
+            entry = en;
+            break;
+         }
+      }
+
+      BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
+
+      List<TreeWriterThread> threads = new ArrayList<TreeWriterThread>();
+      List<Session> sessions = new ArrayList<Session>();
+
+      //writers
+      for (int i = 0; i < WRITER_COUNT; i++)
+      {
+         Session writerSession =
+            repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).login(credentials, WORKSPACE_NAME);
+         TreeWriterThread writer = new TreeWriterThread(writerSession, "subnode" + i);
+         writer.start();
+         threads.add(writer);
+         sessions.add(writerSession);
+      }
+
+      // backup
+      File backDir = new File("target/backup/ws1");
+      backDir.mkdirs();
+      BackupChain bch = null;
+
+      backupManagerImpl.start();
+
+      BackupConfig config = new BackupConfig();
+      config.setRepository(REPOSITORY_NAME_SINGLE_DB);
+      config.setWorkspace(WORKSPACE_NAME);
+      config.setBackupType(BACKUP_TYPE);
+      config.setBackupDir(backDir);
+
+      Thread.sleep(5 * 1000);
+
+      System.out.println(" ============ BACKUP START ============");
+
+      backupManagerImpl.startBackup(config);
+
+      bch = backupManagerImpl.findBackup(REPOSITORY_NAME_SINGLE_DB, WORKSPACE_NAME);
+
+      // wait till full backup will be stopped
+      while (bch.getFullBackupState() != BackupJob.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(30);
+      }
+
+      if (bch != null)
+      {
+         backupManagerImpl.stopBackup(bch);
+      }
+      else
+      {
+         fail("Can't get fullBackup chain");
+      }
+
+      System.out.println(" ============ BACKUP FINISHED ============");
+
+      // restore
+      File backLog = new File(bch.getLogFilePath());
+      if (backLog.exists())
+      {
+         BackupChainLog bchLog = new BackupChainLog(backLog);
+
+         System.out.println(" ============ RESTORE START ============");
+
+         assertNotNull(bchLog.getStartedTime());
+         assertNotNull(bchLog.getFinishedTime());
+
+         backupManagerImpl.restoreExistingWorkspace(bchLog, REPOSITORY_NAME_SINGLE_DB, entry, false);
+
+         JobWorkspaceRestore restore = backupManagerImpl.getLastRestore(REPOSITORY_NAME_SINGLE_DB, WORKSPACE_NAME);
+         if (restore != null)
+         {
+            while (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL
+               || restore.getStateRestore() == JobWorkspaceRestore.RESTORE_SUCCESSFUL)
+            {
+               Thread.sleep(1000);
+            }
+
+            if (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL)
+            {
+               restore.getRestoreException().printStackTrace();
+               fail(restore.getRestoreException().getMessage());
+            }
+         }
+      }
+      else
+      {
+         fail("There are no backup files in " + backDir.getAbsolutePath());
+      }
+
+      System.out.println(" ============ CHECKING INTEGRITY ============");
+
+      checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB)
+         .login(credentials, WORKSPACE_NAME)
+         .getRootNode());
+   }
+
+   /**
+    * Test Backup/Restore.
+    * 
+    * @throws Exception
+    */
+   public void testBackupRestoreExistingRepositorySingleDB() throws Exception
+   {
+
+      BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
+
+      List<TreeWriterThread> threads = new ArrayList<TreeWriterThread>();
+      List<Session> sessions = new ArrayList<Session>();
+
+      //writers
+      for (int i = 0; i < WRITER_COUNT; i++)
+      {
+         Session writerSession =
+            repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).login(credentials, WORKSPACE_NAME);
+         TreeWriterThread writer = new TreeWriterThread(writerSession, "subnode" + i);
+         writer.start();
+         threads.add(writer);
+         sessions.add(writerSession);
+      }
+
+      // backup
+      File backDir = new File("target/backup/db7");
+      backDir.mkdirs();
+      RepositoryBackupChain bch = null;
+
+      backupManagerImpl.start();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(REPOSITORY_NAME_SINGLE_DB);
+      config.setBackupType(BACKUP_TYPE);
+      config.setBackupDir(backDir);
+
+      Thread.sleep(5 * 1000);
+
+      System.out.println(" ============ BACKUP START ============");
+
+      backupManagerImpl.startBackup(config);
+
+      bch = backupManagerImpl.findRepositoryBackup(REPOSITORY_NAME_SINGLE_DB);
+
+      // wait till full backup will be stopped
+      while (bch.getState() != BackupJob.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(30);
+      }
+
+      if (bch != null)
+      {
+         backupManagerImpl.stopBackup(bch);
+      }
+
+      System.out.println(" ============ BACKUP FINISHED ============");
+
+      // restore
+      File backLog = new File(bch.getLogFilePath());
+      if (backLog.exists())
+      {
+         RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+
+         System.out.println(" ============ RESTORE START ============");
+
+         assertNotNull(bchLog.getStartedTime());
+         assertNotNull(bchLog.getFinishedTime());
+
+         backupManagerImpl.restoreExistingRepository(bchLog, repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB)
+            .getConfiguration(), false);
+
+         JobWorkspaceRestore restore = backupManagerImpl.getLastRestore(REPOSITORY_NAME_SINGLE_DB, WORKSPACE_NAME);
+         if (restore != null)
+         {
+            while (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL
+               || restore.getStateRestore() == JobWorkspaceRestore.RESTORE_SUCCESSFUL)
+            {
+               Thread.sleep(1000);
+            }
+
+            if (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL)
+            {
+               restore.getRestoreException().printStackTrace();
+               fail(restore.getRestoreException().getMessage());
+            }
+         }
+      }
+      else
+      {
+         fail("There are no backup files in " + backDir.getAbsolutePath());
+      }
+
+      System.out.println(" ============ CHECKING INTEGRITY ============");
+
+      for (String wsName : repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).getWorkspaceNames())
+      {
+         checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).login(credentials, wsName)
+            .getRootNode());
+      }
+   }
+
+   /**
+    * Test Backup/Restore.
+    * 
+    * @throws Exception
+    */
+   public void testBackupRestoreExistingWorkspaceMultiDB() throws Exception
+   {
+      WorkspaceEntry entry = null;
+      for (WorkspaceEntry en : repositoryService.getRepository(REPOSITORY_NAME_MULTI_DB).getConfiguration()
+         .getWorkspaceEntries())
+      {
+         if (en.getName().equals(WORKSPACE_NAME))
+         {
+            entry = en;
+            break;
+         }
+      }
+
+      BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
+
+      List<TreeWriterThread> threads = new ArrayList<TreeWriterThread>();
+      List<Session> sessions = new ArrayList<Session>();
+
+      //writers
+      for (int i = 0; i < WRITER_COUNT; i++)
+      {
+         Session writerSession =
+            repositoryService.getRepository(REPOSITORY_NAME_MULTI_DB).login(credentials, WORKSPACE_NAME);
+         TreeWriterThread writer = new TreeWriterThread(writerSession, "subnode" + i);
+         writer.start();
+         threads.add(writer);
+         sessions.add(writerSession);
+      }
+
+      // backup
+      File backDir = new File("target/backup/ws1");
+      backDir.mkdirs();
+      BackupChain bch = null;
+
+      backupManagerImpl.start();
+
+      BackupConfig config = new BackupConfig();
+      config.setRepository(REPOSITORY_NAME_MULTI_DB);
+      config.setWorkspace(WORKSPACE_NAME);
+      config.setBackupType(BACKUP_TYPE);
+      config.setBackupDir(backDir);
+
+      Thread.sleep(5 * 1000);
+
+      System.out.println(" ============ BACKUP START ============");
+
+      backupManagerImpl.startBackup(config);
+
+      bch = backupManagerImpl.findBackup(REPOSITORY_NAME_MULTI_DB, WORKSPACE_NAME);
+
+      // wait till full backup will be stopped
+      while (bch.getFullBackupState() != BackupJob.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(30);
+      }
+
+      if (bch != null)
+      {
+         backupManagerImpl.stopBackup(bch);
+      }
+      else
+      {
+         fail("Can't get fullBackup chain");
+      }
+
+      System.out.println(" ============ BACKUP FINISHED ============");
+
+      // restore
+      File backLog = new File(bch.getLogFilePath());
+      if (backLog.exists())
+      {
+         BackupChainLog bchLog = new BackupChainLog(backLog);
+
+         System.out.println(" ============ RESTORE START ============");
+
+         assertNotNull(bchLog.getStartedTime());
+         assertNotNull(bchLog.getFinishedTime());
+
+         backupManagerImpl.restoreExistingWorkspace(bchLog, REPOSITORY_NAME_MULTI_DB, entry, false);
+
+         JobWorkspaceRestore restore = backupManagerImpl.getLastRestore(REPOSITORY_NAME_MULTI_DB, WORKSPACE_NAME);
+         if (restore != null)
+         {
+            while (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL
+               || restore.getStateRestore() == JobWorkspaceRestore.RESTORE_SUCCESSFUL)
+            {
+               Thread.sleep(1000);
+            }
+
+            if (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL)
+            {
+               restore.getRestoreException().printStackTrace();
+               fail(restore.getRestoreException().getMessage());
+            }
+         }
+      }
+      else
+      {
+         fail("There are no backup files in " + backDir.getAbsolutePath());
+      }
+
+      System.out.println(" ============ CHECKING INTEGRITY ============");
+
+      checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME_MULTI_DB)
+         .login(credentials, WORKSPACE_NAME)
+         .getRootNode());
+   }
+
+   /**
+    * Test Backup/Restore.
+    * 
+    * @throws Exception
+    */
+   public void testBackupRestoreExistingRepositoryMultiDB() throws Exception
+   {
+
+      BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
+
+      List<TreeWriterThread> threads = new ArrayList<TreeWriterThread>();
+      List<Session> sessions = new ArrayList<Session>();
+
+      //writers
+      for (int i = 0; i < WRITER_COUNT; i++)
+      {
+         Session writerSession =
+            repositoryService.getRepository(REPOSITORY_NAME_MULTI_DB).login(credentials, WORKSPACE_NAME);
+         TreeWriterThread writer = new TreeWriterThread(writerSession, "subnode" + i);
+         writer.start();
+         threads.add(writer);
+         sessions.add(writerSession);
+      }
+
+      // backup
+      File backDir = new File("target/backup/db7");
+      backDir.mkdirs();
+      RepositoryBackupChain bch = null;
+
+      backupManagerImpl.start();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(REPOSITORY_NAME_MULTI_DB);
+      config.setBackupType(BACKUP_TYPE);
+      config.setBackupDir(backDir);
+
+      Thread.sleep(5 * 1000);
+
+      System.out.println(" ============ BACKUP START ============");
+
+      backupManagerImpl.startBackup(config);
+
+      bch = backupManagerImpl.findRepositoryBackup(REPOSITORY_NAME_MULTI_DB);
+
+      // wait till full backup will be stopped
+      while (bch.getState() != BackupJob.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(30);
+      }
+
+      if (bch != null)
+      {
+         backupManagerImpl.stopBackup(bch);
+      }
+
+      System.out.println(" ============ BACKUP FINISHED ============");
+
+      // restore
+      File backLog = new File(bch.getLogFilePath());
+      if (backLog.exists())
+      {
+         RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+
+         System.out.println(" ============ RESTORE START ============");
+
+         assertNotNull(bchLog.getStartedTime());
+         assertNotNull(bchLog.getFinishedTime());
+
+         backupManagerImpl.restoreExistingRepository(bchLog, repositoryService.getRepository(REPOSITORY_NAME_MULTI_DB)
+            .getConfiguration(), false);
+
+         JobWorkspaceRestore restore = backupManagerImpl.getLastRestore(REPOSITORY_NAME_MULTI_DB, WORKSPACE_NAME);
+         if (restore != null)
+         {
+            while (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL
+               || restore.getStateRestore() == JobWorkspaceRestore.RESTORE_SUCCESSFUL)
+            {
+               Thread.sleep(1000);
+            }
+
+            if (restore.getStateRestore() == JobWorkspaceRestore.RESTORE_FAIL)
+            {
+               restore.getRestoreException().printStackTrace();
+               fail(restore.getRestoreException().getMessage());
+            }
+         }
+      }
+      else
+      {
+         fail("There are no backup files in " + backDir.getAbsolutePath());
+      }
+
+      System.out.println(" ============ CHECKING INTEGRITY ============");
+
+      for (String wsName : repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).getWorkspaceNames())
+      {
+         checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME_MULTI_DB).login(credentials, wsName)
+            .getRootNode());
+      }
    }
 
    protected void addChilds(Session session, Node root, int layer) throws Exception
@@ -330,39 +764,11 @@ public class TestLoadBackup extends BaseStandaloneTest
       }
    }
    
-   public void _testTableLock() throws Exception
-   {
-      Session writerSession = repositoryService.getRepository(REPOSITORY_NAME).login(credentials, WORKSPACE_NAME);
-      //      TreeWriterThread writer = new TreeWriterThread(writerSession, "subnode");
-      //      writer.start();
-
-      DataSource ds = (DataSource)new InitialContext().lookup("jdbcjcr_to_repository_restore_singel_db");
-      Connection conn = ds.getConnection();
-
-      Thread.sleep(2 * 1000);
-
-      Statement st = conn.createStatement();
-      st.executeQuery("SET PROPERTY \"readonly\" TRUE");
-      System.out.println("LOCK TABLES JCR_SITEM WRITE");
-      Thread.sleep(5 * 1000);
-
-      //      st.executeQuery("SET READONLY FALSE");
-      //      System.out.println("UNLOCK TABLES");
-      //      Thread.sleep(5 * 1000);
-
-      st.close();
-      conn.close();
-      System.out.println("Con closed");
-      Thread.sleep(5 * 1000);
-
-      addChilds(writerSession, writerSession.getRootNode(), 0);
-   }
-
    protected WorkspaceEntry makeWorkspaceEntry(String name, String sourceName) throws LoginException,
       NoSuchWorkspaceException, RepositoryException, RepositoryConfigurationException
    {
       SessionImpl session =
-         (SessionImpl)repositoryService.getRepository(REPOSITORY_NAME).login(credentials, WORKSPACE_NAME);
+         (SessionImpl)repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).login(credentials, WORKSPACE_NAME);
 
       WorkspaceEntry ws1e = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
