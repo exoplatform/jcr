@@ -392,7 +392,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
 
       <para>Will be configured BackupWorkspaceInitializer in all
       configurations workspaces of the Repository to restore the Repository
-      from backup over initializer. </para>
+      from backup over initializer.</para>
 
       <para></para>
 
@@ -897,5 +897,56 @@ repo.removeWorkspace(workspace);</programlisting></para>
     different locations: backup-dir directory of BackupService to support
     interactive operations via Backup API (e.g. console) and backup set files
     for portability (e.g. on another server).</para>
+  </section>
+
+  <section>
+    <title>RDBMS backup</title>
+
+    <para>RDBMS backup It is another implementation of full backup job for
+    BackupManager service. It is useful in case when database is used to store
+    data. </para>
+
+    <para>Brings such advantages:</para>
+
+    <para><itemizedlist>
+        <listitem>
+          <para>fast: backup takes only several minutes to perform full backup
+          of repository with 1 million rows in tables;</para>
+        </listitem>
+
+        <listitem>
+          <para>atomic restore: restore process into existing
+          workspace/repository with same configuration is atomic, it means you
+          don’t loose the data when restore failed, the original data
+          remains;</para>
+        </listitem>
+
+        <listitem>
+          <para>cluster aware: it is possible to make backup/restore in
+          cluster environment into existing workspace/repository with same
+          configuration;</para>
+        </listitem>
+
+        <listitem>
+          <para>consistence backup: all threads make waiting until backup is
+          finished and then continue to work, so, there are no data
+          modification during backup process;</para>
+        </listitem>
+      </itemizedlist>Configuration:</para>
+
+    <para><programlisting>&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.ext.backup.BackupManager&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;properties-param&gt;
+      &lt;name&gt;backup-properties&lt;/name&gt;
+      &lt;property name="default-incremental-job-period" value="3600" /&gt; &lt;!-- set default incremental period = 60 minutes --&gt;
+      &lt;property name="full-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.fs..rdbms.FullBackupJob" /&gt;
+      &lt;property name="incremental-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob" /&gt;
+      &lt;property name="backup-dir" value="target/backup" /&gt;
+    &lt;/properties-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;
+</programlisting></para>
   </section>
 </chapter>
