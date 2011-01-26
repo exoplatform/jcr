@@ -4,7 +4,7 @@
 <chapter id="JCR.DBCleanerService">
   <?dbhtml filename="ch-db-cleaner-service.html"?>
 
-  <title>DBCleanerService</title>
+  <title>DBCleanService</title>
 
   <section>
     <title>API</title>
@@ -12,11 +12,11 @@
     <para>It is special service for removing data from database.</para>
 
     <note>
-      <para>Code that invokes methods of DBCleanerService must have
+      <para>Code that invokes methods of DBCleanService must have
       JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION permission;</para>
     </note>
 
-    <para>There are two methods of DBCleanerService:</para>
+    <para>There are three methods of DBCleanerService:</para>
 
     <table>
       <title>API</title>
@@ -24,7 +24,7 @@
       <tgroup cols="2">
         <tbody>
           <row>
-            <entry>public void cleanWorkspaceData(WorkspaceEntry
+            <entry>public static void cleanWorkspaceData(WorkspaceEntry
             wsEntry)</entry>
 
             <entry>Clean workspace data from database. Tables will be removed
@@ -33,33 +33,22 @@
           </row>
 
           <row>
-            <entry>public void cleanRepositoryData(RepositoryEntry
+            <entry>public static void cleanRepositoryData(RepositoryEntry
             repoEntry)</entry>
 
             <entry>Cleanup repository data from database.</entry>
           </row>
+
+          <row>
+            <entry>public static getDBCleaner(Connection jdbcConn,
+            WorkspaceEntry wsEntry)</entry>
+
+            <entry>Returns DBClean object with defined connection that allow
+            to manual invoke clean method on it. Note: DBClean doesn't perform
+            commit or close connection. It should be done manually.</entry>
+          </row>
         </tbody>
       </tgroup>
     </table>
-  </section>
-
-  <section>
-    <title>How it works</title>
-
-    <para>cleanRepositoryData takes workspaces configs from RepositoryEntry
-    and clean each workspace using cleanWorkspaceData method.</para>
-
-    <para>Lets see cleanWorkspaceData in detail:<itemizedlist>
-        <listitem>
-          <para>at first, it resolves container name (workspace name),
-          database dialect, data source and isMultiDB parameter;</para>
-        </listitem>
-
-        <listitem>
-          <para>then based on database dialect creates instanse of database
-          cleaner (implements DBCleaner interface) and invokes clean()
-          method;</para>
-        </listitem>
-      </itemizedlist></para>
   </section>
 </chapter>
