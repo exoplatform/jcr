@@ -266,8 +266,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       removeDeletable();
 
       // initialize IndexMerger
-      // initialize IndexMerger
-      IndexMerger merger = new IndexMerger(this);
+      merger = new IndexMerger(this);
       merger.setMaxMergeDocs(handler.getMaxMergeDocs());
       merger.setMergeFactor(handler.getMergeFactor());
       merger.setMinMergeDocs(handler.getMinMergeDocs());
@@ -1189,7 +1188,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private IndexMerger doInitIndexMerger() throws IOException
    {
-      IndexMerger merger = new IndexMerger(this);
+      merger = new IndexMerger(this);
       merger.setMaxMergeDocs(handler.getMaxMergeDocs());
       merger.setMergeFactor(handler.getMergeFactor());
       merger.setMinMergeDocs(handler.getMinMergeDocs());
