@@ -1,183 +1,143 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This document was created with Syntext Serna Free. --><!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 <chapter id="JCR.LockManagerConfiguration">
-  <?dbhtml filename="ch-lock-manager-config.html"?>
-
-  <title>LockManager configuration</title>
-
+<?dbhtml filename="ch-lock-manager-config.html"?>  <title>LockManager configuration</title>
   <section>
     <title>Introduction</title>
-
     <para>What LockManager does?</para>
-
-    <para>In general, LockManager stores lock objects, so it can give Lock
+    <para>In general, LockManager stores Lock objects, so it can give a Lock
     object or can release it, etc.</para>
-
     <para>Also, LockManager is responsible for removing Locks that live too
-    long. This parameter may be configured with "time-out" property.</para>
-
-    <para>JCR provide two base implementation of LockManager:</para>
-
+    long. This parameter may be configured with &quot;time-out&quot; property.</para>
+    <para>JCR provides two basic  implementations of LockManager:</para>
     <itemizedlist>
       <listitem>
         <para><classname>org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl</classname>;</para>
       </listitem>
-
       <listitem>
         <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname>;</para>
       </listitem>
     </itemizedlist>
-
-    <para>In this article, we will talk mostly about
+    <para>In this article, we will mostly mention about
     CacheableLockManagerImpl.</para>
-
     <para>You can enable LockManager by adding lock-manager-configuration to
     workspace-configuration.</para>
-
     <para>For example:</para>
-
-    <programlisting>&lt;workspace name="ws"&gt;
+    <programlisting>&lt;workspace name=&quot;ws&quot;&gt;
    ...
-   &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+   &lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
       &lt;properties&gt;
-         &lt;property name="time-out" value="15m" /&gt;
+         &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
          ...
       &lt;/properties&gt;
    &lt;/lock-manager&gt;               
    ...
 &lt;/workspace&gt;</programlisting>
   </section>
-
   <section>
     <title>LockManagerImpl</title>
-
-    <para>LockManagerImpl is simple implementation of LockManager, and also
+    <para>LockManagerImpl is a simple implementation of LockManager, and also
     faster than CacheableLockManager. It stores Lock objects in HashMap and
     may also persist Locks if LockPersister is configured. LockManagerImpl
     does not support replication in any way.</para>
-
-    <para>See more about LockManager Configuration at <link
-    linkend="JCR.eXoJCRconfiguration">here</link>.</para>
+    <para>See more about LockManager Configuration at <link linkend="JCR.eXoJCRconfiguration">here</link>.</para>
   </section>
-
   <section>
     <title>CacheableLockManagerImpl</title>
-
-    <para>CacheableLockManagerImpl stores Lock object in JBoss-cache, so Locks
-    are replicable and affects on cluster, not only a single node. Also
-    JBoss-cache has JDBCCacheLoader, so locks will be stored to
+    <para>CacheableLockManagerImpl stores Lock objects in JBoss-cache, so Locks
+    are replicable and affect on cluster, not only a single node. Also,
+    JBoss-cache has JDBCCacheLoader, so Locks will be stored to the
     database.</para>
-
-    <para>Both implementation supports Expired Locks removing. There is
-    LockRemover - separate thread, that periodically ask LockManager for Locks
-    that live much and must be removed. So, timeout for LockRemover may be set
-    as follows, default value is 30m.</para>
-
+    <para>Both of the implementations support to remove Expired Locks. LockRemover separates threads, that periodically ask LockManager to remove Locks
+    that live so long. So, the timeout for LockRemover may be set
+    as follows, the default value is 30m.</para>
     <programlisting>&lt;properties&gt;
-   &lt;property name="time-out" value="10m" /&gt;
+   &lt;property name=&quot;time-out&quot; value=&quot;10m&quot; /&gt;
    ...
 &lt;/properties&gt;</programlisting>
-
     <section>
       <title>Configuration</title>
-
-      <para>Replication requirements are the same for Cache</para>
-
-      <para> You can see a full JCR configuration example at <link
-      linkend="JCR.ClusterConfig.JCRExternalConfig">here</link>.</para>
-
+      <para>Replication requirements are the same for Cache.</para>
+      <para> You can see a full JCR configuration example at <link linkend="JCR.ClusterConfig.JCRExternalConfig">here</link>.</para>
       <para>Common tips:</para>
-
       <itemizedlist>
         <listitem>
-          <para><parameter>clusterName</parameter> ("jbosscache-cluster-name")
+          <para><parameter>clusterName</parameter> (&quot;jbosscache-cluster-name&quot;)
           must be unique;</para>
         </listitem>
-
         <listitem>
           <para><parameter>cache.jdbc.table.name</parameter> must be unique
           per datasource;</para>
         </listitem>
-
         <listitem>
-          <para><parameter>cache.jdbc.fqn.type</parameter> must and
+          <para><parameter>cache.jdbc.fqn.type</parameter> and
           cache.jdbc.node.type must be configured according to used
           database;</para>
         </listitem>
       </itemizedlist>
-
-      <para>There is a few ways to configure CacheableLockManagerImpl, and all
+      <para>There are a few ways to configure CacheableLockManagerImpl, and all
       of them configure JBoss-cache and JDBCCacheLoader.</para>
-
-      <para>See <ulink
-      url="http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader">http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader</ulink></para>
+      <para>See <ulink url="http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader">http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader</ulink></para>
     </section>
-
     <section>
-      <title>Simple JbossCache Configuraion</title>
-
-      <para>First one is - put JbossCache configuraion file path to
-      CacheableLockManagerImpl</para>
-
+      <title>Simple JbossCache Configuration</title>
+      <para>The first one is  putting JbossCache configuraion file path to
+      CacheableLockManagerImpl.</para>
       <para><note>
-          <para>This configuration is not so good as you can think. Because
-          repository may contain many workspaces, and each workspace must
-          contain LockManager configuration, and LockManager config may
-          contain JbossCache config file. So total configuration is growing
-          up. But it is usefull if we want a single LockManager with special
+          <para>This configuration is not so good as you  think. Because
+          the repository may contain many workspaces, and each workspace must
+          contain LockManager configuration, and LockManager configuration may
+          contain the JbossCache config file. So, the total configuration will grow
+          up. But it is useful if we want to have a single LockManager with a special
           configuration.</para>
         </note></para>
-
-      <para>Config is:</para>
-
-      <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+      <para>Configuration is as follows:</para>
+      <programlisting>&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
    &lt;properties&gt;
-     &lt;property name="time-out" value="15m" /&gt;
-     &lt;property name="jbosscache-configuration" value="conf/standalone/cluster/test-jbosscache-lock-config.xml" /&gt;
+     &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
+     &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;conf/standalone/cluster/test-jbosscache-lock-config.xml&quot; /&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
+      <para><filename>test-jbosscache-lock-config.xml</filename><programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;jbosscache xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns=&quot;urn:jboss:jbosscache-core:config:3.2&quot;&gt;
 
-      <para><filename>test-jbosscache-lock-config.xml</filename><programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.2"&gt;
+ &lt;locking useLockStriping=&quot;false&quot; concurrencyLevel=&quot;50000&quot; lockParentForChildInsertRemove=&quot;false&quot; lockAcquisitionTimeout=&quot;20000&quot; /&gt;
 
- &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false" lockAcquisitionTimeout="20000" /&gt;
-
- &lt;clustering mode="replication" clusterName="JBoss-Cache-Lock-Cluster_Name"&gt;
-  &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" nonBlocking="true" /&gt;
+ &lt;clustering mode=&quot;replication&quot; clusterName=&quot;JBoss-Cache-Lock-Cluster_Name&quot;&gt;
+  &lt;stateRetrieval timeout=&quot;20000&quot; fetchInMemoryState=&quot;false&quot; nonBlocking=&quot;true&quot; /&gt;
   &lt;jgroupsConfig&gt;
 
-   &lt;TCP bind_addr="127.0.0.1" start_port="9800" loopback="true" recv_buf_size="20000000" send_buf_size="640000" discard_incompatible_packets="true"
-    max_bundle_size="64000" max_bundle_timeout="30" use_incoming_packet_handler="true" enable_bundling="false" use_send_queues="false" sock_conn_timeout="300"
-    skip_suspected_members="true" use_concurrent_stack="true" thread_pool.enabled="true" thread_pool.min_threads="1" thread_pool.max_threads="25"
-    thread_pool.keep_alive_time="5000" thread_pool.queue_enabled="false" thread_pool.queue_max_size="100" thread_pool.rejection_policy="run"
-    oob_thread_pool.enabled="true" oob_thread_pool.min_threads="1" oob_thread_pool.max_threads="8" oob_thread_pool.keep_alive_time="5000"
-    oob_thread_pool.queue_enabled="false" oob_thread_pool.queue_max_size="100" oob_thread_pool.rejection_policy="run" /&gt;
-   &lt;MPING timeout="2000" num_initial_members="2" mcast_port="34540" bind_addr="127.0.0.1" mcast_addr="224.0.0.1" /&gt;
+   &lt;TCP bind_addr=&quot;127.0.0.1&quot; start_port=&quot;9800&quot; loopback=&quot;true&quot; recv_buf_size=&quot;20000000&quot; send_buf_size=&quot;640000&quot; discard_incompatible_packets=&quot;true&quot;
+    max_bundle_size=&quot;64000&quot; max_bundle_timeout=&quot;30&quot; use_incoming_packet_handler=&quot;true&quot; enable_bundling=&quot;false&quot; use_send_queues=&quot;false&quot; sock_conn_timeout=&quot;300&quot;
+    skip_suspected_members=&quot;true&quot; use_concurrent_stack=&quot;true&quot; thread_pool.enabled=&quot;true&quot; thread_pool.min_threads=&quot;1&quot; thread_pool.max_threads=&quot;25&quot;
+    thread_pool.keep_alive_time=&quot;5000&quot; thread_pool.queue_enabled=&quot;false&quot; thread_pool.queue_max_size=&quot;100&quot; thread_pool.rejection_policy=&quot;run&quot;
+    oob_thread_pool.enabled=&quot;true&quot; oob_thread_pool.min_threads=&quot;1&quot; oob_thread_pool.max_threads=&quot;8&quot; oob_thread_pool.keep_alive_time=&quot;5000&quot;
+    oob_thread_pool.queue_enabled=&quot;false&quot; oob_thread_pool.queue_max_size=&quot;100&quot; oob_thread_pool.rejection_policy=&quot;run&quot; /&gt;
+   &lt;MPING timeout=&quot;2000&quot; num_initial_members=&quot;2&quot; mcast_port=&quot;34540&quot; bind_addr=&quot;127.0.0.1&quot; mcast_addr=&quot;224.0.0.1&quot; /&gt;
 
 
-   &lt;MERGE2 max_interval="30000" min_interval="10000" /&gt;
+   &lt;MERGE2 max_interval=&quot;30000&quot; min_interval=&quot;10000&quot; /&gt;
    &lt;FD_SOCK /&gt;
-   &lt;FD max_tries="5" shun="true" timeout="10000" /&gt;
-   &lt;VERIFY_SUSPECT timeout="1500" /&gt;
-   &lt;pbcast.NAKACK discard_delivered_msgs="true" gc_lag="0" retransmit_timeout="300,600,1200,2400,4800" use_mcast_xmit="false" /&gt;
-   &lt;UNICAST timeout="300,600,1200,2400,3600" /&gt;
-   &lt;pbcast.STABLE desired_avg_gossip="50000" max_bytes="400000" stability_delay="1000" /&gt;
-   &lt;pbcast.GMS join_timeout="5000" print_local_addr="true" shun="false" view_ack_collection_timeout="5000" view_bundling="true" /&gt;
-   &lt;FRAG2 frag_size="60000" /&gt;
+   &lt;FD max_tries=&quot;5&quot; shun=&quot;true&quot; timeout=&quot;10000&quot; /&gt;
+   &lt;VERIFY_SUSPECT timeout=&quot;1500&quot; /&gt;
+   &lt;pbcast.NAKACK discard_delivered_msgs=&quot;true&quot; gc_lag=&quot;0&quot; retransmit_timeout=&quot;300,600,1200,2400,4800&quot; use_mcast_xmit=&quot;false&quot; /&gt;
+   &lt;UNICAST timeout=&quot;300,600,1200,2400,3600&quot; /&gt;
+   &lt;pbcast.STABLE desired_avg_gossip=&quot;50000&quot; max_bytes=&quot;400000&quot; stability_delay=&quot;1000&quot; /&gt;
+   &lt;pbcast.GMS join_timeout=&quot;5000&quot; print_local_addr=&quot;true&quot; shun=&quot;false&quot; view_ack_collection_timeout=&quot;5000&quot; view_bundling=&quot;true&quot; /&gt;
+   &lt;FRAG2 frag_size=&quot;60000&quot; /&gt;
    &lt;pbcast.STREAMING_STATE_TRANSFER /&gt;
-  &lt;pbcast.FLUSH timeout="0" /&gt;
+  &lt;pbcast.FLUSH timeout=&quot;0&quot; /&gt;
 
   &lt;/jgroupsConfig
 
   &lt;sync /&gt;
  &lt;/clustering&gt;
 
- &lt;loaders passivation="false" shared="true"&gt;
+ &lt;loaders passivation=&quot;false&quot; shared=&quot;true&quot;&gt;
   &lt;preload&gt;
-   &lt;node fqn="/" /&gt;
+   &lt;node fqn=&quot;/&quot; /&gt;
   &lt;/preload&gt;
-  &lt;loader class="org.jboss.cache.loader.JDBCCacheLoader" async="false" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false"&gt;
+  &lt;loader class=&quot;org.jboss.cache.loader.JDBCCacheLoader&quot; async=&quot;false&quot; fetchPersistentState=&quot;false&quot; ignoreModifications=&quot;false&quot; purgeOnStartup=&quot;false&quot;&gt;
    &lt;properties&gt;
     cache.jdbc.table.name=jcrlocks_ws
     cache.jdbc.table.create=true
@@ -195,63 +155,53 @@
  &lt;/loaders&gt;
 
 &lt;/jbosscache&gt;</programlisting></para>
-
       <para>Configuration requirements:</para>
-
       <itemizedlist>
         <listitem>
-          <para>&lt;clustering mode="replication"
-          clusterName="JBoss-Cache-Lock-Cluster_Name"&gt; - cluster name must
+          <para>&lt;clustering mode=&quot;replication&quot;
+          clusterName=&quot;JBoss-Cache-Lock-Cluster_Name&quot;&gt; - the cluster name must
           be unique;</para>
         </listitem>
-
         <listitem>
           <para><parameter>cache.jdbc.table.name</parameter> must be unique
           per datasource;</para>
         </listitem>
-
         <listitem>
           <para><parameter>cache.jdbc.node.type</parameter> and
           <parameter>cache.jdbc.fqn.type</parameter> must be configured
-          according to using database. See <link endterm="datatypes.title"
-          linkend="datatypes"></link> .</para>
+          according to using the database. See <link endterm="datatypes.title" linkend="datatypes"/> .</para>
         </listitem>
       </itemizedlist>
     </section>
-
     <section>
       <title>Template JBossCache Configuration</title>
-
-      <para>Second one is using template JBoss-cache configuration for all
-      LockManagers</para>
-
+      <para>The second one is using the template JBoss-cache configuration for all
+      LockManagers.</para>
       <para><citetitle>Lock template configuration</citetitle></para>
-
       <para><filename>test-jbosscache-lock.xml</filename></para>
+      <programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;jbosscache xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns=&quot;urn:jboss:jbosscache-core:config:3.1&quot;&gt;
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+   &lt;locking useLockStriping=&quot;false&quot; concurrencyLevel=&quot;50000&quot; lockParentForChildInsertRemove=&quot;false&quot;
+      lockAcquisitionTimeout=&quot;20000&quot; /&gt;
 
-   &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
-      lockAcquisitionTimeout="20000" /&gt;
-
-   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
-      &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
-      &lt;jgroupsConfig multiplexerStack="jcr.stack" /&gt;
+   &lt;clustering mode=&quot;replication&quot; clusterName=&quot;${jbosscache-cluster-name}&quot;&gt;
+      &lt;stateRetrieval timeout=&quot;20000&quot; fetchInMemoryState=&quot;false&quot; /&gt;
+      &lt;jgroupsConfig multiplexerStack=&quot;jcr.stack&quot; /&gt;
       &lt;sync /&gt;
    &lt;/clustering&gt;
 
-   &lt;loaders passivation="false" shared="true"&gt;
+   &lt;loaders passivation=&quot;false&quot; shared=&quot;true&quot;&gt;
       &lt;!-- All the data of the JCR locks needs to be loaded at startup --&gt;
       &lt;preload&gt;
-         &lt;node fqn="/" /&gt;
+         &lt;node fqn=&quot;/&quot; /&gt;
       &lt;/preload&gt;  
       &lt;!--
       For another cache-loader class you should use another template with
       cache-loader specific parameters
       -&gt;
-      &lt;loader class="org.jboss.cache.loader.JDBCCacheLoader" async=q"false" fetchPersistentState="false"
-         ignoreModifications="false" purgeOnStartup="false"&gt;
+      &lt;loader class=&quot;org.jboss.cache.loader.JDBCCacheLoader&quot; async=q&quot;false&quot; fetchPersistentState=&quot;false&quot;
+         ignoreModifications=&quot;false&quot; purgeOnStartup=&quot;false&quot;&gt;
          &lt;properties&gt;
             cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
             cache.jdbc.table.create=${jbosscache-cl-cache.jdbc.table.create}
@@ -267,76 +217,70 @@
       &lt;/loader&gt;
    &lt;/loaders&gt;
 &lt;/jbosscache&gt;</programlisting>
-
-      <para>As you see, all configurable paramaters are filled by templates
-      and will be replaced by LockManagers conf parameters:</para>
-
-      <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+      <para>As you see, all configurable parameters are filled by templates
+      and will be replaced by LockManagers configuration parameters:</para>
+      <programlisting>&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
    &lt;properties&gt;
-      &lt;property name="time-out" value="15m" /&gt;
-      &lt;property name="jbosscache-configuration" value="test-jbosscache-lock.xml" /&gt;
-      &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-locks-ws" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_ws" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_ws_pk" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.fqn.type" value="AUTO"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.node.type" value="AUTO"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+      &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
+      &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;test-jbosscache-lock.xml&quot; /&gt;
+      &lt;property name=&quot;jgroups-configuration&quot; value=&quot;udp-mux.xml&quot; /&gt;
+      &lt;property name=&quot;jgroups-multiplexer-stack&quot; value=&quot;true&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cluster-name&quot; value=&quot;JCR-cluster-locks-ws&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.name&quot; value=&quot;jcrlocks_ws&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.create&quot; value=&quot;true&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.drop&quot; value=&quot;false&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.primarykey&quot; value=&quot;jcrlocks_ws_pk&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.fqn.column&quot; value=&quot;fqn&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.fqn.type&quot; value=&quot;AUTO&quot;/&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.node.column&quot; value=&quot;node&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.node.type&quot; value=&quot;AUTO&quot;/&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.parent.column&quot; value=&quot;parent&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.datasource&quot; value=&quot;jdbcjcr&quot; /&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
-
       <para>Configuration requirements:<itemizedlist>
           <listitem>
             <para><parameter>jbosscache-cl-cache.jdbc.fqn.column</parameter>
             and <parameter>jbosscache-cl-cache.jdbc.node.type</parameter> is
-            nothing else as cache.jdbc.fqn.type and cache.jdbc.node.type in
+            the same  as cache.jdbc.fqn.type and cache.jdbc.node.type in
             JBoss-Cache configuration. You can set those data types according
-            to database type (See <link endterm="datatypes.title"
-            linkend="datatypes"></link>) or set it as AUTO (or do not set at
-            all) and data type will by detected automaticaly.</para>
+            to database type (See <link endterm="datatypes.title" linkend="datatypes"/>) or set it as AUTO (or do not set at
+            all) and data type will be detected automatically.</para>
           </listitem>
-
           <listitem>
-            <para>As you see, jgroups-configuration moved to separate config
-            file - udp-mux.xml; In our case udp-mux.xml is common JGroup
-            config for all components (QueryHandler, cache, LockManager). But
-            we can still create own config.</para>
+            <para>As you see, jgroups-configuration is moved to separate the configuration
+            file - udp-mux.xml. In this case, the udp-mux.xml file is a common JGroup
+            configuration  for all components (QueryHandler, Cache, LockManager), but
+            we can still create our own configuration.</para>
           </listitem>
         </itemizedlist></para>
-
       <para><filename>our-udp-mux.xml</filename><programlisting>&lt;protocol_stacks&gt;
-   &lt;stack name="jcr.stack"&gt;
+   &lt;stack name=&quot;jcr.stack&quot;&gt;
       &lt;config&gt;
-         &lt;UDP mcast_addr="228.10.10.10" mcast_port="45588" tos="8" ucast_recv_buf_size="20000000"
-            ucast_send_buf_size="640000" mcast_recv_buf_size="25000000" mcast_send_buf_size="640000" loopback="false"
-            discard_incompatible_packets="true" max_bundle_size="64000" max_bundle_timeout="30"
-            use_incoming_packet_handler="true" ip_ttl="2" enable_bundling="true" enable_diagnostics="true"
-            thread_naming_pattern="cl" use_concurrent_stack="true" thread_pool.enabled="true" thread_pool.min_threads="2"
-            thread_pool.max_threads="8" thread_pool.keep_alive_time="5000" thread_pool.queue_enabled="true"
-            thread_pool.queue_max_size="1000" thread_pool.rejection_policy="discard" oob_thread_pool.enabled="true"
-            oob_thread_pool.min_threads="1" oob_thread_pool.max_threads="8" oob_thread_pool.keep_alive_time="5000"
-            oob_thread_pool.queue_enabled="false" oob_thread_pool.queue_max_size="100" oob_thread_pool.rejection_policy="Run" /&gt;
+         &lt;UDP mcast_addr=&quot;228.10.10.10&quot; mcast_port=&quot;45588&quot; tos=&quot;8&quot; ucast_recv_buf_size=&quot;20000000&quot;
+            ucast_send_buf_size=&quot;640000&quot; mcast_recv_buf_size=&quot;25000000&quot; mcast_send_buf_size=&quot;640000&quot; loopback=&quot;false&quot;
+            discard_incompatible_packets=&quot;true&quot; max_bundle_size=&quot;64000&quot; max_bundle_timeout=&quot;30&quot;
+            use_incoming_packet_handler=&quot;true&quot; ip_ttl=&quot;2&quot; enable_bundling=&quot;true&quot; enable_diagnostics=&quot;true&quot;
+            thread_naming_pattern=&quot;cl&quot; use_concurrent_stack=&quot;true&quot; thread_pool.enabled=&quot;true&quot; thread_pool.min_threads=&quot;2&quot;
+            thread_pool.max_threads=&quot;8&quot; thread_pool.keep_alive_time=&quot;5000&quot; thread_pool.queue_enabled=&quot;true&quot;
+            thread_pool.queue_max_size=&quot;1000&quot; thread_pool.rejection_policy=&quot;discard&quot; oob_thread_pool.enabled=&quot;true&quot;
+            oob_thread_pool.min_threads=&quot;1&quot; oob_thread_pool.max_threads=&quot;8&quot; oob_thread_pool.keep_alive_time=&quot;5000&quot;
+            oob_thread_pool.queue_enabled=&quot;false&quot; oob_thread_pool.queue_max_size=&quot;100&quot; oob_thread_pool.rejection_policy=&quot;Run&quot; /&gt;
 
-         &lt;PING timeout="2000" num_initial_members="3" /&gt;
-         &lt;MERGE2 max_interval="30000" min_interval="10000" /&gt;
+         &lt;PING timeout=&quot;2000&quot; num_initial_members=&quot;3&quot; /&gt;
+         &lt;MERGE2 max_interval=&quot;30000&quot; min_interval=&quot;10000&quot; /&gt;
          &lt;FD_SOCK /&gt;
-         &lt;FD timeout="10000" max_tries="5" shun="true" /&gt;
-         &lt;VERIFY_SUSPECT timeout="1500" /&gt;
+         &lt;FD timeout=&quot;10000&quot; max_tries=&quot;5&quot; shun=&quot;true&quot; /&gt;
+         &lt;VERIFY_SUSPECT timeout=&quot;1500&quot; /&gt;
          &lt;BARRIER /&gt;
-         &lt;pbcast.NAKACK use_stats_for_retransmission="false" exponential_backoff="150" use_mcast_xmit="true"
-            gc_lag="0" retransmit_timeout="50,300,600,1200" discard_delivered_msgs="true" /&gt;
-         &lt;UNICAST timeout="300,600,1200" /&gt;
-         &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000" max_bytes="1000000" /&gt;
-         &lt;VIEW_SYNC avg_send_interval="60000" /&gt;
-         &lt;pbcast.GMS print_local_addr="true" join_timeout="3000" shun="false" view_bundling="true" /&gt;
-         &lt;FC max_credits="500000" min_threshold="0.20" /&gt;
-         &lt;FRAG2 frag_size="60000" /&gt;
+         &lt;pbcast.NAKACK use_stats_for_retransmission=&quot;false&quot; exponential_backoff=&quot;150&quot; use_mcast_xmit=&quot;true&quot;
+            gc_lag=&quot;0&quot; retransmit_timeout=&quot;50,300,600,1200&quot; discard_delivered_msgs=&quot;true&quot; /&gt;
+         &lt;UNICAST timeout=&quot;300,600,1200&quot; /&gt;
+         &lt;pbcast.STABLE stability_delay=&quot;1000&quot; desired_avg_gossip=&quot;50000&quot; max_bytes=&quot;1000000&quot; /&gt;
+         &lt;VIEW_SYNC avg_send_interval=&quot;60000&quot; /&gt;
+         &lt;pbcast.GMS print_local_addr=&quot;true&quot; join_timeout=&quot;3000&quot; shun=&quot;false&quot; view_bundling=&quot;true&quot; /&gt;
+         &lt;FC max_credits=&quot;500000&quot; min_threshold=&quot;0.20&quot; /&gt;
+         &lt;FRAG2 frag_size=&quot;60000&quot; /&gt;
          &lt;!--pbcast.STREAMING_STATE_TRANSFER /--&gt;
          &lt;pbcast.STATE_TRANSFER /&gt;
          &lt;!-- pbcast.FLUSH  /--&gt;
@@ -344,94 +288,62 @@
    &lt;/stack&gt;
 &lt;/protocol_stacks&gt; </programlisting></para>
     </section>
-
     <section id="datatypes">
       <title id="datatypes.title">Data Types in Different Databases</title>
-
       <table>
-        <title>Fqn type and node type in different databases</title>
-
+        <title>FQN type and node type in different databases</title>
         <tgroup cols="3">
           <thead>
             <row>
               <entry>DataBase name</entry>
-
               <entry>Node data type</entry>
-
               <entry>FQN data type</entry>
             </row>
           </thead>
-
           <tbody>
             <row>
               <entry>default</entry>
-
               <entry>BLOB</entry>
-
               <entry>VARCHAR(512)</entry>
             </row>
-
             <row>
               <entry>HSSQL</entry>
-
               <entry>OBJECT</entry>
-
               <entry>VARCHAR(512)</entry>
             </row>
-
             <row>
               <entry>MySQL</entry>
-
               <entry>LONGBLOB</entry>
-
               <entry>VARCHAR(512)</entry>
             </row>
-
             <row>
               <entry>ORACLE</entry>
-
               <entry>BLOB</entry>
-
               <entry>VARCHAR2(512)</entry>
             </row>
-
             <row>
               <entry>PostgreSQL</entry>
-
               <entry>bytea</entry>
-
               <entry>VARCHAR(512)</entry>
             </row>
-
             <row>
               <entry>MSSQL</entry>
-
               <entry>VARBINARY(MAX)</entry>
-
               <entry>VARCHAR(512)</entry>
             </row>
-
             <row>
               <entry>DB2</entry>
-
               <entry>BLOB</entry>
-
               <entry>VARCHAR(512)</entry>
             </row>
-
             <row>
               <entry>Sybase</entry>
-
               <entry>IMAGE</entry>
-
               <entry>VARCHAR(512)</entry>
             </row>
-
             <row>
               <entry>Ingres</entry>
-
               <entry>long byte</entry>
-
               <entry>VARCHAR(512)</entry>
             </row>
           </tbody>
