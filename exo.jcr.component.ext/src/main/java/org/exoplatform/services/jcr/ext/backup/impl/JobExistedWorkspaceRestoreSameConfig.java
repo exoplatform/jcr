@@ -96,7 +96,7 @@ public class JobExistedWorkspaceRestoreSameConfig extends JobWorkspaceRestore
          for (Backupable component : backupable)
          {
             File fullBackupDir = JCRRestor.getFullBackupFile(storageDir);
-            dataRestorer.add(component.getDataRestorer(fullBackupDir, null));
+            dataRestorer.add(component.getDataRestorer(fullBackupDir));
          }
 
          for (DataRestor restorer : dataRestorer)

@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestor;
 import org.exoplatform.services.jcr.impl.backup.JCRRestor;
+import org.exoplatform.services.jcr.impl.backup.JdbcBackupable;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -132,7 +133,14 @@ public class JobExistedRepositoryRestoreSameConfig extends JobRepositoryRestore
 
             for (Backupable component : backupable)
             {
-               dataRestorer.add(component.getDataRestorer(fullBackupDir, jdbcConn));
+               if (component instanceof JdbcBackupable && jdbcConn != null)
+               {
+                  dataRestorer.add(((JdbcBackupable)component).getDataRestorer(fullBackupDir, jdbcConn));
+               }
+               else
+               {
+                  dataRestorer.add(component.getDataRestorer(fullBackupDir));
+               }
             }
          }
 

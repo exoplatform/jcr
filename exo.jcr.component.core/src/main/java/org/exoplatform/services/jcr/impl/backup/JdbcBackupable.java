@@ -19,39 +19,25 @@
 package org.exoplatform.services.jcr.impl.backup;
 
 import java.io.File;
+import java.sql.Connection;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
  * @version $Id: Backupable.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public interface Backupable
+public interface JdbcBackupable extends Backupable
 {
-   /**
-    * Backup data.
-    * 
-    * @param storageDir
-    *          the directory to store backup
-    * @throws BackupException
-    *          if any exception occurred
-    */
-   void backup(File storageDir) throws BackupException;
-
-   /**
-    * Clean data.
-    * 
-    * @throws BackupException
-    *          if any exception occurred
-    */
-   void clean() throws BackupException;
 
    /**
     * Get data restorer to support atomic restore.
     * 
     * @param storageDir
     *          the directory where backup is stored
+    * @param jdbcConn
+    *          the connection to database          
     * @throws RestoreException
     *          if any exception occurred
     */
-   DataRestor getDataRestorer(File storageDir) throws BackupException;
+   DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException;
 
 }

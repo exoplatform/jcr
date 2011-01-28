@@ -76,7 +76,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -1206,7 +1205,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}}
     */
-   public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
+   public DataRestor getDataRestorer(File storageDir) throws BackupException
    {
       try
       {

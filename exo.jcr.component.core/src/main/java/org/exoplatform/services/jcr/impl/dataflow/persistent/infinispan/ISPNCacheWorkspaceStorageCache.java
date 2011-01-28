@@ -54,7 +54,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1155,7 +1154,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    /**
     * {@inheritDoc}
     */
-   public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
+   public DataRestor getDataRestorer(File storageDir) throws BackupException
    {
       return new DataRestor()
       {

@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.backup.rdbms;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
@@ -43,7 +42,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,10 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -126,31 +121,7 @@ public class DBRestor implements DataRestor
       WorkspaceEntry wsConfig, FileCleaner fileCleaner) throws NamingException, SQLException,
       RepositoryConfigurationException
    {
-      String dsName = wsConfig.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-
-      if (jdbcConn == null)
-      {
-         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-         if (ds == null)
-         {
-            throw new NameNotFoundException("Data source " + dsName + " not found");
-         }
-
-         this.jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-         {
-            public Connection run() throws Exception
-            {
-               return ds.getConnection();
-
-            }
-         });
-         this.jdbcConn.setAutoCommit(false);
-      }
-      else
-      {
-         this.jdbcConn = jdbcConn;
-      }
-
+      this.jdbcConn = jdbcConn;
       this.fileCleaner = fileCleaner;
       this.maxBufferSize =
          wsConfig.getContainer().getParameterInteger(JDBCWorkspaceDataContainer.MAXBUFFERSIZE_PROP,

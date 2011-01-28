@@ -29,9 +29,9 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
-import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.ComplexDataRestor;
 import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.JdbcBackupable;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestor;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestor;
@@ -92,7 +92,7 @@ import javax.sql.DataSource;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id:GenericWorkspaceDataContainer.java 13433 2007-03-15 16:07:23Z peterit $
  */
-public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable, Backupable
+public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable, JdbcBackupable
 {
 
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCWorkspaceDataContainer");
@@ -1377,6 +1377,44 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                LOG.error("Can't close object reader", e);
             }
          }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public DataRestor getDataRestorer(File storageDir) throws BackupException
+   {
+      try
+      {
+         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+
+         if (ds != null)
+         {
+            Connection jdbcConn =
+               SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+            {
+               public Connection run() throws Exception
+               {
+                  return ds.getConnection();
+               }
+            });
+            jdbcConn.setAutoCommit(false);
+
+            return getDataRestorer(storageDir, jdbcConn);
+         }
+         else
+         {
+            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (NamingException e)
+      {
+         throw new BackupException(e);
       }
    }
 }

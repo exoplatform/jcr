@@ -135,7 +135,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          // restore all components
          for (Backupable component : backupableComponents)
          {
-            dataRestorers.add(component.getDataRestorer(new File(restorePath), null));
+            dataRestorers.add(component.getDataRestorer(new File(restorePath)));
          }
 
          for (DataRestor restorer : dataRestorers)

@@ -64,7 +64,6 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -855,7 +854,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    /**
     * {@inheritDoc}
     */
-   public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
+   public DataRestor getDataRestorer(File storageDir) throws BackupException
    {
       List<LockData> locks = new ArrayList<LockData>();
 
