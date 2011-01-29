@@ -427,7 +427,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   public void testAutoStopBackupFull() throws Exception
+   public void _testAutoStopBackupFull() throws Exception
    {
       // backup
       File backDir = new File("target/backup/" + workspaceNameToBackup + getUUIndex());
@@ -455,7 +455,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
             fail("The backup with id '" + chain.getBackupId() + "' should not be active");
    }
 
-   public void testAutoStopBackupIncr() throws Exception
+   public void _testAutoStopBackupIncr() throws Exception
    {
       // backup
       File backDir = new File("target/backup/" + workspaceNameToBackup + getUUIndex());
@@ -491,7 +491,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.stopBackup(bch);
    }
 
-   public void testAutoStopBackupIncrRepetion() throws Exception
+   public void _testAutoStopBackupIncrRepetion() throws Exception
    {
       // backup
       File backDir = new File("target/backup/" + workspaceNameToBackup + getUUIndex());
@@ -1102,7 +1102,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   public void testAutoStopRepositoryBackupIncrRepetion() throws Exception
+   public void _testAutoStopRepositoryBackupIncrRepetion() throws Exception
    {
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
