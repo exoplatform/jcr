@@ -1,41 +1,23 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 <chapter id="JCR.Namespacealtering">
-  <?dbhtml filename="ch-jcr-namespace-altering.html"?>
-
-  <title>Namespace altering</title>
-
-  <para>eXo JCR implementation since 1.11 version have support of altering
-  namespaces.</para>
-
+<?dbhtml filename="ch-jcr-namespace-altering.html"?>  <title>Namespace altering</title>
+  <para>Since version 1.11, eXo JCR implementation supports namespaces altering.</para>
   <section>
     <title>Adding new namespace</title>
-
     <programlisting>ExtendedNamespaceRegistry namespaceRegistry = (ExtendedNamespaceRegistry) workspace.getNamespaceRegistry();
-namespaceRegistry.registerNamespace("newMapping", "http://dumb.uri/jcr");</programlisting>
+namespaceRegistry.registerNamespace(&quot;newMapping&quot;, &quot;http://dumb.uri/jcr&quot;);</programlisting>
   </section>
-
   <section>
     <title>Changing existing namespace</title>
-
     <programlisting>ExtendedNamespaceRegistry namespaceRegistry = (ExtendedNamespaceRegistry) workspace.getNamespaceRegistry();
-namespaceRegistry.registerNamespace("newMapping", "http://dumb.uri/jcr");
-namespaceRegistry.registerNamespace("newMapping2", "http://dumb.uri/jcr");
-try {
-    assertNull(namespaceRegistry.getURI("newMapping"));
-    fail("exception should have been thrown");
-} catch (NamespaceException e) {
-}
-assertNotNull(namespaceRegistry.getURI("newMapping2"));
-assertEquals("http://dumb.uri/jcr", namespaceRegistry.getURI("newMapping2"));</programlisting>
+namespaceRegistry.registerNamespace(&quot;newMapping&quot;, &quot;http://dumb.uri/jcr&quot;);
+namespaceRegistry.registerNamespace(&quot;newMapping2&quot;, &quot;http://dumb.uri/jcr&quot;);</programlisting>
   </section>
-
   <section>
     <title>Removing existing namespace</title>
-
     <programlisting>ExtendedNamespaceRegistry namespaceRegistry = (ExtendedNamespaceRegistry) workspace.getNamespaceRegistry();
-namespaceRegistry.registerNamespace("newMapping", "http://dumb.uri/jcr");
-namespaceRegistry.unregisterNamespace("newMapping");</programlisting>
+namespaceRegistry.registerNamespace(&quot;newMapping&quot;, &quot;http://dumb.uri/jcr&quot;);
+namespaceRegistry.unregisterNamespace(&quot;newMapping&quot;);</programlisting>
   </section>
 </chapter>

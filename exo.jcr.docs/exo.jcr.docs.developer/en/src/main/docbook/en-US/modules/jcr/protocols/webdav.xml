@@ -1,77 +1,58 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 <chapter id="JCR.WebDAV">
-  <?dbhtml filename="ch-webdav.html"?>
-
-  <title>WebDAV</title>
-
+<?dbhtml filename="ch-webdav.html"?>  <title>WebDAV</title>
   <section>
     <title>Related documents</title>
-
     <itemizedlist>
       <listitem>
-        <para><link linkend="JCR.LinkProducerService">Link
-        Producer</link></para>
+        <para><link linkend="JCR.LinkProducerService">Link Producer</link></para>
       </listitem>
     </itemizedlist>
   </section>
-
   <section>
     <title>Introduction</title>
-
-    <para>The WebDAV protocol allows you to use third party tools to
+    <para>The WebDAV protocol enables you to use the third party tools to
     communicate with hierarchical content servers via HTTP. It is possible to
     add and remove documents or a set of documents from a path on the server.
-    DeltaV is an extension of the WebDav protocol that allows to manage
+    DeltaV is an extension of the WebDav protocol that allows managing
     document versioning. Locking guarantees protection against multiple access
-    when writing resources. The ordering support allows to change the position
-    of the resource in the list and sort the directory for the convenience of
-    viewing the directory tree. The full-text search makes it easy to find the
+    when writing resources. The ordering support allows changing the position
+    of the resource in the list and sort the directory  to make  the directory tree viewed  conveniently. The full-text search makes it easy to find the
     necessary documents. You can search by using two languages: SQL and
     XPATH.</para>
-
     <para>In eXo JCR, we plug in the WebDAV layer - based on the code taken
     from the extension modules of the reference implementation - on the top of
     our JCR implementation so that it is possible to browse a workspace using
     the third party tools (it can be Windows folders or Mac ones as well as a
-    Java WebDAV client such as DAVExplorer or IE using File-&gt;Open as a Web
+    Java WebDAV client, such as DAVExplorer or IE using File-&gt;Open as a Web
     Folder).</para>
-
     <para>Now WebDav is an extension of the REST service. To get the WebDav
     server ready, you must deploy the REST application. Then, you can access
     any workspaces of your repository by using the following URL:</para>
-
     <para>Standalone mode:</para>
-
     <para><uri>http://host:port/rest/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
-
     <para>Portal mode:</para>
-
     <para><uri>http://host:port/portal/rest/private/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
-
-    <para>When accessing the WebDAV server - here URL is
-    <uri>http://localhost:8080/rest/jcr/repository/production</uri>, you might
-    also use "collaboration" (instead of "production") which is the default
-    workspace in eXo products - the user will be asked to enter his login and
+    <para>When accessing the WebDAV server with the  URL<uri>http://localhost:8080/rest/jcr/repository/production</uri>, you might
+    also use &quot;collaboration&quot; (instead of &quot;production&quot;) which is the default
+    workspace in eXo products. You will be asked to enter your  login and
     password. Those will then be checked by using the organization service
-    (that can be implemented thanks to an Inmemory(dummy) module or DB module
-    or LDAP one) and the JCR user session will be created with the correct JCR
+    that can be implemented thanks to an InMemory (dummy) module or a  DB module
+    or an LDAP one and the JCR user session will be created with the correct JCR
     Credentials.</para>
-
-    <para><emphasis role="bold">NOTE:</emphasis> If you try the "in ECM"
-    option, add "@ecm" to the user's password. Alternatively, you may modify
-    jaas.conf adding the <emphasis role="bold">domain=ecm</emphasis> option
-    like:</para>
-
-    <programlisting>exo-domain {
+    <note>
+      <para>If you try the &quot;in ECM&quot;
+    option, add &quot;@ecm&quot; to the user&apos;s password. Alternatively, you may modify
+    jaas.conf by adding the <emphasis role="bold">domain=ecm</emphasis> option
+    as follows:</para>
+      <programlisting>exo-domain {
      org.exoplatform.services.security.jaas.BasicLoginModule required domain=ecm;
 };</programlisting>
+    </note>
   </section>
-
   <section>
     <title>Configuration</title>
-
     <programlisting>&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/key&gt;
   &lt;type&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/type&gt;
@@ -87,7 +68,7 @@
     &lt;!-- this is the value of WWW-Authenticate header --&gt;
     &lt;value-param&gt;
       &lt;name&gt;auth-header&lt;/name&gt;
-      &lt;value&gt;Basic realm="eXo-Platform Webdav Server 1.6.1"&lt;/value&gt;
+      &lt;value&gt;Basic realm=&quot;eXo-Platform Webdav Server 1.6.1&quot;&lt;/value&gt;
     &lt;/value-param&gt;
 
     &lt;!-- default node type which is used for the creation of collections --&gt;
@@ -102,7 +83,7 @@
       &lt;value&gt;nt:file&lt;/value&gt;
     &lt;/value-param&gt;
 
-    &lt;!-- if MimeTypeResolver can't find the required mime type, 
+    &lt;!-- if MimeTypeResolver can&apos;t find the required mime type, 
          which conforms with the file extension, and the mimeType header is absent
          in the HTTP request header, this parameter is used 
          as the default mime type--&gt;
@@ -112,9 +93,9 @@
     &lt;/value-param&gt;
 
     &lt;!-- This parameter indicates one of the three cases when you update the content of the resource by PUT command.
-         In case of "create-version", PUT command creates the new version of the resource if this resource  exists.
-         In case of "replace" - if the resource  exists, PUT command updates the content of the resource and  its last modification date.
-         In case of "add", the PUT command tries to create the new resource with the same name (if the parent node allows same-name siblings).--&gt;
+         In case of &quot;create-version&quot;, PUT command creates the new version of the resource if this resource exists.
+         In case of &quot;replace&quot; - if the resource exists, PUT command updates the content of the resource and its last modification date.
+         In case of &quot;add&quot;, the PUT command tries to create the new resource with the same name (if the parent node allows same-name siblings).--&gt;
 
     &lt;value-param&gt;
       &lt;name&gt;update-policy&lt;/name&gt;
@@ -125,8 +106,8 @@
 
     &lt;!--
         This parameter determines how service responds to a method that attempts to modify file content.
-        In case of "checkout-checkin" value, when a modification request is applied to a checked-in version-controlled resource, the request is  automatically preceded by a checkout and followed by a checkin operation.
-        In case of "checkout" value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout operation.
+        In case of &quot;checkout-checkin&quot; value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout and followed by a checkin operation.
+        In case of &quot;checkout&quot; value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout operation.
     --&gt;         
     &lt;value-param&gt;
       &lt;name&gt;auto-version&lt;/name&gt;
@@ -136,13 +117,13 @@
 
     &lt;!--
         This parameter is responsible for managing Cache-Control header value which will be returned to the client.
-        You can use patterns like "text/*", "image/*" or wildcard to define the type of content.
+        You can use patterns like &quot;text/*&quot;, &quot;image/*&quot; or wildcard to define the type of content.
     --&gt;  
     &lt;value-param&gt;
       &lt;name&gt;cache-control&lt;/name&gt;
       &lt;value&gt;text/xml,text/html:max-age=3600;image/png,image/jpg:max-age=1800;*/*:no-cache;&lt;/value&gt;
     &lt;/value-param&gt;
-
+    
     &lt;!--
         This parameter determines the absolute path to the folder icon file, which is shown
         during WebDAV view of the contents
@@ -155,248 +136,170 @@
   &lt;/init-params
 &lt;/component&gt;</programlisting>
   </section>
-
   <section>
     <title>Screenshots</title>
-
-    <para>At present, eXo JCR WebDav server was tested by using MS Internet
-    Explorer, <ulink url="http://www.ics.uci.edu/~webdav">Dav
-    Explorer</ulink>, <ulink
-    url="http://www.xythos.com/home/xythos/products/xythos_drive.html">Xythos
-    Drive</ulink>, Microsoft Office 2003 (as client), and Ubuntu Linux.</para>
-
+    <para>At present, eXo JCR WebDav server is  tested by using MS Internet
+    Explorer, <ulink url="http://www.ics.uci.edu/~webdav">Dav Explorer</ulink>, <ulink url="http://www.xythos.com/home/xythos/products/xythos_drive.html">Xythos Drive</ulink>, Microsoft Office 2003 (as client), and Ubuntu Linux.</para>
     <section>
       <title>MS Internet Explorer</title>
-
       <para>(File -&gt; Open as Web Folder)</para>
-
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_explorer.jpg" />
+          <imagedata fileref="images/protocols/webdav_explorer.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
-
     <section>
       <title>Dav Explorer</title>
-
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_davexplorer.jpg" />
+          <imagedata fileref="images/protocols/webdav_davexplorer.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
-
     <section>
       <title>Xythos Drive</title>
-
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_xythosdrive.jpg" />
+          <imagedata fileref="images/protocols/webdav_xythosdrive.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
-
     <section>
       <title>Microsoft Office 2003</title>
-
       <para>(as client) (File-&gt;Open with typing http://... href in the file
       name box)</para>
-
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_msoffice2003.jpg" />
+          <imagedata fileref="images/protocols/webdav_msoffice2003.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
-
     <section>
       <title>Ubuntu Linux</title>
-
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_ubuntulinux.jpg" />
+          <imagedata fileref="images/protocols/webdav_ubuntulinux.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
   </section>
-
   <section>
     <title>Comparison table of WebDav and JCR commands</title>
-
     <table>
-      <title></title>
-
+      <title/>
       <tgroup cols="2">
         <thead>
           <row>
             <entry>WebDav</entry>
-
             <entry>JCR</entry>
           </row>
         </thead>
-
         <tbody>
           <row>
             <entry>COPY</entry>
-
             <entry>Workspace.copy(...)</entry>
           </row>
-
           <row>
             <entry>DELETE</entry>
-
             <entry>Node.remove()</entry>
           </row>
-
           <row>
             <entry>GET</entry>
-
             <entry>Node.getProperty(...); Property.getValue()</entry>
           </row>
-
           <row>
             <entry>HEAD</entry>
-
             <entry>Node.getProperty(...); Property.getLength()</entry>
           </row>
-
           <row>
             <entry>MKCOL</entry>
-
             <entry>Node.addNode(...)</entry>
           </row>
-
           <row>
             <entry>MOVE</entry>
-
             <entry>Session.move(...) or Workspace.move(...)</entry>
           </row>
-
           <row>
             <entry>PROPFIND</entry>
-
-            <entry>Session.getNode(...); Node.getNode(...);
-            Node.getNodes(...); Node.getProperties()</entry>
+            <entry>Session.getNode(...); Node.getNode(...); Node.getNodes(...); Node.getProperties()</entry>
           </row>
-
           <row>
             <entry>PROPPATCH</entry>
-
-            <entry>Node.setProperty(...);
-            Node.getProperty(...).remove()</entry>
+            <entry>Node.setProperty(...); Node.getProperty(...).remove()</entry>
           </row>
-
           <row>
             <entry>PUT</entry>
-
-            <entry>Node.addNode("node","nt:file");
-            Node.setProperty("jcr:data", "data")</entry>
+            <entry>Node.addNode(&quot;node&quot;,&quot;nt:file&quot;); Node.setProperty(&quot;jcr:data&quot;, &quot;data&quot;)</entry>
           </row>
-
           <row>
             <entry>CHECKIN</entry>
-
             <entry>Node.checkin()</entry>
           </row>
-
           <row>
             <entry>CHECKOUT</entry>
-
             <entry>Node.checkout()</entry>
           </row>
-
           <row>
             <entry>REPORT</entry>
-
-            <entry>Node.getVersionHistory(); VersionHistory.getAllVersions();
-            Version.getProperties()</entry>
+            <entry>Node.getVersionHistory(); VersionHistory.getAllVersions(); Version.getProperties()</entry>
           </row>
-
           <row>
             <entry>RESTORE</entry>
-
             <entry>Node.restore(...)</entry>
           </row>
-
           <row>
             <entry>UNCHECKOUT</entry>
-
             <entry>Node.restore(...)</entry>
           </row>
-
           <row>
             <entry>VERSION-CONTROL</entry>
-
-            <entry>Node.addMixin("mix:versionable")</entry>
+            <entry>Node.addMixin(&quot;mix:versionable&quot;)</entry>
           </row>
-
           <row>
             <entry>LOCK</entry>
-
             <entry>Node.lock(...)</entry>
           </row>
-
           <row>
             <entry>UNLOCK</entry>
-
             <entry>Node.unlock()</entry>
           </row>
-
           <row>
             <entry>ORDERPATCH</entry>
-
             <entry>Node.orderBefore(...)</entry>
           </row>
-
           <row>
             <entry>SEARCH</entry>
-
-            <entry>Workspace.getQueryManager(); QueryManager.createQuery();
-            Query.execute()</entry>
-          </row>
-          
-          <row>
-            <entry>ACL</entry>
-
-            <entry>Node.setPermission(...)</entry>
+            <entry>Workspace.getQueryManager(); QueryManager.createQuery(); Query.execute()</entry>
           </row>
         </tbody>
       </tgroup>
     </table>
   </section>
-
   <section>
     <title>Restrictions</title>
-
-    <para>There are some restrictions for webdav in different Operating
+    <para>There are some restrictions for WebDAV in different Operating
     systems.</para>
-
     <section>
       <title>Windows 7</title>
-
-      <para>When you try to setup a web folder by “adding a network location”
+      <para>When you try to set up a web folder by “adding a network location”
       or “map a network drive” through My Computer, you can get an error
-      saying that either “The folder you entered does not appear to be valid.
+      message saying that either “The folder you entered does not appear to be valid.
       Please choose another” or “Windows cannot access… Check the spelling of
-      the name. Otherwise, there might be…”. These errors appear whether I’m
+      the name. Otherwise, there might be…”. These errors may  appear when you are
       using SSL or non-SSL.</para>
-
-      <para>To fix this follow such steps:</para>
-
+      <para>To fix this,   do as follows:</para>
       <orderedlist>
         <listitem>
-          <para>Go to Windows Registry Editor</para>
+          <para>Go to Windows Registry Editor.</para>
         </listitem>
-
         <listitem>
           <para>Find a key:
           \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlset\services\WebClient\Parameters\BasicAuthLevel
-          </para>
+          .</para>
         </listitem>
-
         <listitem>
-          <para>Change the value to 2 </para>
+          <para>Change the value to 2.</para>
         </listitem>
       </orderedlist>
     </section>
