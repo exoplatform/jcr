@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ExtHttpHeaders;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.ItemExistsException;
@@ -46,6 +47,29 @@ public class CopyCommand
    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.CopyCommand");
 
    /**
+     * Provides URI information needed for 'location' header in 'CREATED' response
+     */
+   private static String destination;
+
+   /**
+    * Empty constructor
+    */
+   public CopyCommand()
+   {
+      this.destination = null;
+   }
+
+   /**
+    * Constructor
+    * 
+    * @param destination - provide data used in 'location' header
+    */
+   public CopyCommand(String destination)
+   {
+      this.destination = destination;
+   }
+
+   /**
     * Webdav COPY method implementation for the same workspace.
     * 
     * @param destSession destination session
@@ -58,6 +82,12 @@ public class CopyCommand
       try
       {
          destSession.getWorkspace().copy(sourcePath, destPath);
+         if (destination != null)
+         {
+            return Response.status(HTTPStatus.CREATED).header(ExtHttpHeaders.LOCATION, destination).build();
+         }
+
+         // to save compatibility for deprecated WebDavServiceImpl.put(..), which does not provide uriInfo
          return Response.status(HTTPStatus.CREATED).build();
       }
       catch (ItemExistsException e)
@@ -97,6 +127,12 @@ public class CopyCommand
       try
       {
          destSession.getWorkspace().copy(sourceWorkspace, sourcePath, destPath);
+         if (destination != null)
+         {
+            return Response.status(HTTPStatus.CREATED).header(ExtHttpHeaders.LOCATION, destination).build();
+         }
+
+         // to save compatibility for deprecated WebDavServiceImpl.put(..), which does not provide uriInfo
          return Response.status(HTTPStatus.CREATED).build();
       }
       catch (ItemExistsException e)

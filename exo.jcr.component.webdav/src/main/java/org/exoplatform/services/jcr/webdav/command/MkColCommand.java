@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.net.URI;
 import java.util.List;
 
 import javax.jcr.AccessDeniedException;
@@ -56,6 +57,11 @@ public class MkColCommand
    private final NullResourceLocksHolder nullResourceLocks;
 
    /**
+    * Provides URI information needed for 'location' header in 'CREATED' response
+    */
+   private final URI destinationUri;
+
+   /**
     * Constructor. 
     * 
     * @param nullResourceLocks resource locks. 
@@ -63,6 +69,19 @@ public class MkColCommand
    public MkColCommand(final NullResourceLocksHolder nullResourceLocks)
    {
       this.nullResourceLocks = nullResourceLocks;
+      this.destinationUri = null;
+   }
+
+   /**
+    * Constructor. 
+    * 
+    * @param nullResourceLocks resource locks. 
+    * @param uriInfo - provide data used in 'location' header
+    */
+   public MkColCommand(final NullResourceLocksHolder nullResourceLocks, URI serverUri)
+   {
+      this.nullResourceLocks = nullResourceLocks;
+      this.destinationUri = serverUri;
    }
 
    /**
@@ -77,6 +96,7 @@ public class MkColCommand
     */
    public Response mkCol(Session session, String path, String nodeType, List<String> mixinTypes, List<String> tokens)
    {
+
       Node node;
       try
       {
@@ -89,6 +109,7 @@ public class MkColCommand
             addMixins(node, mixinTypes);
          }
          session.save();
+
       }
 
       catch (ItemExistsException exc)
@@ -117,6 +138,12 @@ public class MkColCommand
          return Response.serverError().entity(exc.getMessage()).build();
       }
 
+      if (destinationUri != null)
+      {
+         return Response.created(destinationUri).build();
+      }
+
+      // to save compatibility for deprecated WebDavServiceImpl.put(..), which does not provide uriInfo
       return Response.status(HTTPStatus.CREATED).build();
    }
 

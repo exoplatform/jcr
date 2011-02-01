@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Calendar;
 import java.util.List;
 
@@ -50,6 +51,11 @@ public class PutCommand
    private final NullResourceLocksHolder nullResourceLocks;
 
    /**
+    * Provides URI information needed for 'location' header in 'CREATED' response
+    */
+   private final URI destinationUri;
+
+   /**
     * Constructor.
     * 
     * @param nullResourceLocks resource locks.
@@ -57,6 +63,19 @@ public class PutCommand
    public PutCommand(final NullResourceLocksHolder nullResourceLocks)
    {
       this.nullResourceLocks = nullResourceLocks;
+      this.destinationUri = null;
+   }
+
+   /**
+     * Constructor.
+     * 
+     * @param nullResourceLocks resource locks.
+     * @param uriInfo - provide data used in 'location' header
+     */
+   public PutCommand(final NullResourceLocksHolder nullResourceLocks, URI destinationUri)
+   {
+      this.nullResourceLocks = nullResourceLocks;
+      this.destinationUri = destinationUri;
    }
 
    /**
@@ -86,6 +105,7 @@ public class PutCommand
          {
             node = (Node)session.getItem(path);
          }
+
          catch (PathNotFoundException pexc)
          {
             nullResourceLocks.checkLock(session, path, tokens);
@@ -151,7 +171,14 @@ public class PutCommand
       {
          return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
+      if (destinationUri != null)
+      {
+         //         String destination = destinationUri + "/" + session.getWorkspace().getName() + path;
+         //         return Response.status(HTTPStatus.CREATED).header(ExtHttpHeaders.LOCATION, destination).build();
+         return Response.created(destinationUri).build();
+      }
 
+      // to save compatibility for deprecated WebDavServiceImpl.put(..), which does not provide uriInfo
       return Response.status(HTTPStatus.CREATED).build();
    }
 

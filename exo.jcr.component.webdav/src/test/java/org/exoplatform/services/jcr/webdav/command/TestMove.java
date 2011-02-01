@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.WebDavServiceImpl;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ExtHttpHeaders;
@@ -83,6 +84,35 @@ public class TestMove extends BaseStandaloneTest
       String getContentDest = TestUtils.stream2string(streamDest, null);
       assertEquals(content, getContentDest);
       assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(filename)));
+   }
+
+   /**
+    * Testing {@link WebDavServiceImpl} MOVE method for correct response 
+    * building. According to 'RFC-2616' it is expected to contain 'location' header.
+    * More info is introduced <a href=http://tools.ietf.org/html/rfc2616#section-14.30>here</a>.
+    * @throws Exception
+    */
+   public void testLocationHeaderInMoveResponse() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      String destFilename = TestUtils.getFileName();
+
+      // prepare headers
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.DESTINATION, getPathWS() + destFilename);
+
+      // execute the query
+      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, "", headers, null);
+      // check if operation completed successfully, we expect a new resource to be created
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+
+      // check if 'CREATED' response contains 'LOCATION' header
+      assertTrue(response.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
+      // check if 'CREATED' response 'LOCATION' header contains correct location path
+      assertTrue(response.getHttpHeaders().get(ExtHttpHeaders.LOCATION).toString().contains(getPathWS() + destFilename));
    }
 
    @Override

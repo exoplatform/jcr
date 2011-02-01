@@ -73,6 +73,7 @@ import org.exoplatform.services.rest.resource.ResourceContainer;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -478,6 +479,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          String serverURI = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).build().toString();
 
+         URI destinationUri = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(repoPath).build();
+
          destinationHeader = TextUtil.unescape(destinationHeader, '%');
 
          if (!destinationHeader.startsWith(serverURI))
@@ -519,11 +522,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             if (srcWorkspace.equals(destWorkspace))
             {
                Session session = session(repoName, destWorkspace, lockTokens);
-               return new CopyCommand().copy(session, srcNodePath, destNodePath);
+               return new CopyCommand(destinationHeader).copy(session, srcNodePath, destNodePath);
             }
 
             Session destSession = session(repoName, destWorkspace, lockTokens);
-            return new CopyCommand().copy(destSession, srcWorkspace, srcNodePath, destNodePath);
+            return new CopyCommand(destinationHeader).copy(destSession, srcWorkspace, srcNodePath, destNodePath);
 
          }
          else if (depth.getIntValue() == 0)
@@ -534,7 +537,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
             Session session = session(repoName, destWorkspace, lockTokens);
 
-            return new MkColCommand(nullResourceLocks).mkCol(session, destNodePath + "/" + nodeName,
+            return new MkColCommand(nullResourceLocks, destinationUri).mkCol(session, destNodePath + "/"
+               + nodeName,
                defaultFolderNodeType, null, lockTokens);
 
          }
@@ -794,13 +798,26 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * {@inheritDoc}
     */
+   @Deprecated
+   public Response mkcol(String repoName, String repoPath, String lockTokenHeader, String ifHeader,
+      String nodeTypeHeader, String mixinTypesHeader)
+   {
+      return mkcol(repoName, repoPath, lockTokenHeader, ifHeader, nodeTypeHeader, mixinTypesHeader, null);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    @MKCOL
    @Path("/{repoName}/{repoPath:.*}/")
    public Response mkcol(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
       @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String nodeTypeHeader,
-      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypesHeader)
+      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypesHeader, @Context UriInfo uriInfo)
    {
+
+
+
       if (log.isDebugEnabled())
       {
          log.debug("MKCOL " + repoName + "/" + repoPath);
@@ -818,8 +835,10 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             nodeType = defaultFolderNodeType;
          }
 
-         return new MkColCommand(nullResourceLocks).mkCol(session, path(repoPath), nodeType, NodeTypeUtil
-            .getMixinTypes(mixinTypesHeader), tokens);
+         URI destinationUri = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(repoPath).build();
+
+         return new MkColCommand(nullResourceLocks, destinationUri).mkCol(session, path(repoPath), nodeType,
+            NodeTypeUtil.getMixinTypes(mixinTypesHeader), tokens);
       }
       catch (NoSuchWorkspaceException exc)
       {
@@ -898,12 +917,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             if (srcWorkspace.equals(destWorkspace))
             {
                Session session = session(repoName, srcWorkspace, lockTokens);
-               return new MoveCommand().move(session, srcNodePath, destNodePath);
+               return new MoveCommand(destinationHeader).move(session, srcNodePath, destNodePath);
             }
 
             Session srcSession = session(repoName, srcWorkspace, lockTokens);
             Session destSession = session(repoName, destWorkspace, lockTokens);
-            return new MoveCommand().move(srcSession, destSession, srcNodePath, destNodePath);
+            return new MoveCommand(destinationHeader).move(srcSession, destSession, srcNodePath, destNodePath);
          }
          else
          {
@@ -1053,6 +1072,18 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * {@inheritDoc}
     */
+   @Deprecated
+   public Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader,
+      String fileNodeTypeHeader, String contentNodeTypeHeader, String mixinTypes, MediaType mediatype,
+      InputStream inputStream)
+   {
+      return put(repoName, repoPath, lockTokenHeader, ifHeader, fileNodeTypeHeader, contentNodeTypeHeader, mixinTypes,
+         mediatype, inputStream, null);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    @PUT
    @Path("/{repoName}/{repoPath:.*}/")
    public Response put(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
@@ -1060,8 +1091,10 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
-      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream)
+      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream, @Context UriInfo uriInfo)
    {
+
+      URI destinationUri = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(repoPath).build();
 
       if (log.isDebugEnabled())
       {
@@ -1101,7 +1134,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          NodeType nodeType = ntm.getNodeType(contentNodeType);
          NodeTypeUtil.checkContentResourceType(nodeType);
 
-         return new PutCommand(nullResourceLocks).put(session, path(repoPath), inputStream, fileNodeType,
+         return new PutCommand(nullResourceLocks, destinationUri).put(session, path(repoPath), inputStream,
+            fileNodeType,
             contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType,
             autoVersionType, tokens);
 

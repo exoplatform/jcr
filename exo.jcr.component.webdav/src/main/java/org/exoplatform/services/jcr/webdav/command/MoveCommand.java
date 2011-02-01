@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ExtHttpHeaders;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -48,10 +49,32 @@ public class MoveCommand
     */
    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.MoveCommand");
 
+   /**
+    * Provides URI information needed for 'location' header in 'CREATED' response
+    */
+   private final String destination;
+
    // Fix problem with moving under Windows Explorer.
    static
    {
       cacheControl.setNoCache(true);
+   }
+
+   /**
+    * Empty constructor
+    */
+   public MoveCommand()
+   {
+      this.destination = null;
+   }
+
+   /**
+    * Constructor to receive URI Info
+    * @param destination - provide data used in 'location' header
+    */
+   public MoveCommand(String destination)
+   {
+      this.destination = destination;
    }
 
    /**
@@ -82,6 +105,12 @@ public class MoveCommand
          }
          else
          {
+            if (destination != null)
+            {
+               return Response.status(HTTPStatus.CREATED).header(ExtHttpHeaders.LOCATION, destination).build();
+            }
+
+            // to save compatibility for deprecated WebDavServiceImpl.move(..), which does not provide uriInfo
             return Response.status(HTTPStatus.CREATED).cacheControl(cacheControl).build();
          }
 

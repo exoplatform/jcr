@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.WebDavServiceImpl;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ExtHttpHeaders;
@@ -99,6 +100,34 @@ public class TestCopy extends BaseStandaloneTest
       String getContentBase = TestUtils.stream2string(streamBase, null);
       assertEquals(content, getContentBase);
 
+   }
+
+   /**
+    * Testing {@link WebDavServiceImpl} COPY method for correct response 
+    * building. According to 'RFC-2616' it is expected to contain 'location' header.
+    * More info is introduced <a href=http://tools.ietf.org/html/rfc2616#section-14.30>here</a>.
+    * @throws Exception
+    */
+   public void testLocationHeaderInCopyResponse() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      String destFilename = TestUtils.getFileName();
+
+      // prepare headers
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.DESTINATION, getPathWS() + destFilename);
+
+      // execute query
+      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, "", headers, null);
+      // check if operation completed successfully, we expect a new resource to be created
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+      // check if response 'CREATED' contains 'LOCATION' header
+      assertTrue(response.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
+      // check if 'CREATED' response 'LOCATION' header contains correct location path
+      assertTrue(response.getHttpHeaders().get(ExtHttpHeaders.LOCATION).toString().contains(getPathWS() + destFilename));
    }
 
    @Override

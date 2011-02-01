@@ -21,8 +21,10 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.WebDavServiceImpl;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
+import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 
 import java.io.ByteArrayInputStream;
@@ -56,6 +58,26 @@ public class TestMkCol extends BaseStandaloneTest
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(folder)));
       Node folderNode = session.getRootNode().getNode(TextUtil.relativizePath(folder));
       assertTrue(folderNode.hasNode(TextUtil.relativizePath(file)));
+   }
+
+   /**
+    * Testing {@link WebDavServiceImpl} MKCOL method for correct response 
+    * building. According to 'RFC-2616' it is expected to contain 'location' header.
+    * More info is introduced <a href=http://tools.ietf.org/html/rfc2616#section-14.30>here</a>.
+    * @throws Exception
+    */
+   public void testLocationHeaderInMkColResponse() throws Exception
+   {
+      String folder = TestUtils.getFolderName();
+
+      // execute query
+      ContainerResponse response = service(WebDAVMethods.MKCOL, getPathWS() + folder, "", null, null);
+      // check if operation completed successfully, we expect a new resource to be created
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+      // here we check if response 'CREATED' contains 'LOCATION' header
+      assertTrue(response.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
+      // here we check if 'CREATED' response 'LOCATION' header contains correct location path
+      assertTrue(response.getHttpHeaders().get(ExtHttpHeaders.LOCATION).toString().contains(getPathWS() + folder));
    }
 
    @Override

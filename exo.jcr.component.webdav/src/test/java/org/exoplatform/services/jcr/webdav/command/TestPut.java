@@ -22,6 +22,7 @@ import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.WebDavServiceImpl;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ExtHttpHeaders;
@@ -142,6 +143,29 @@ public class TestPut extends BaseStandaloneTest
       assertTrue(node2.hasProperty("jcr:mimeType"));
       PropertyImpl property = (PropertyImpl)node2.getProperty("jcr:mimeType");
       assertEquals(headers.getFirst(HttpHeaders.CONTENT_TYPE), property.getString());
+   }
+
+   /**
+    * Testing {@link WebDavServiceImpl} PUT method for correct response 
+    * building. According to 'RFC-2616' it is expected to contain 'location' header.
+    * More info is introduced <a href=http://tools.ietf.org/html/rfc2616#section-14.30>here</a>.
+    * @throws Exception
+    */
+   public void testLocationHeaderInPutResponse() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+
+      // now we execute the query
+      ContainerResponse containerResponse =
+         service(WebDAVMethods.PUT, getPathWS() + filename, "", null, content.getBytes());
+      // check if operation completed successfully, we expect a new resource to be created
+      assertEquals(HTTPStatus.CREATED, containerResponse.getStatus());
+      // check if response 'CREATED' contains 'LOCATION' header
+      assertTrue(containerResponse.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
+      // check if 'CREATED' response 'LOCATION' header contains correct location path
+      assertTrue(containerResponse.getHttpHeaders().get(ExtHttpHeaders.LOCATION).toString()
+         .contains(getPathWS() + filename));
    }
 
    @Override
