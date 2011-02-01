@@ -107,7 +107,8 @@ public class MoveCommand
          {
             if (destination != null)
             {
-               return Response.status(HTTPStatus.CREATED).header(ExtHttpHeaders.LOCATION, destination).build();
+               return Response.status(HTTPStatus.CREATED).header(ExtHttpHeaders.LOCATION, destination)
+                  .cacheControl(cacheControl).build();
             }
 
             // to save compatibility for deprecated WebDavServiceImpl.move(..), which does not provide uriInfo

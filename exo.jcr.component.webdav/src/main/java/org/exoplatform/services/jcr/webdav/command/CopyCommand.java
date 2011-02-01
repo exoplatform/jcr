@@ -49,7 +49,7 @@ public class CopyCommand
    /**
      * Provides URI information needed for 'location' header in 'CREATED' response
      */
-   private static String destination;
+   private final String destination;
 
    /**
     * Empty constructor
