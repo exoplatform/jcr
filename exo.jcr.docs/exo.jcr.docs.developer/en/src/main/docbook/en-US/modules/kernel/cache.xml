@@ -176,7 +176,14 @@ public interface ExoCacheFactory {
     &lt;type&gt;org.exoplatform.tutorial.MyExoCacheFactoryImpl&lt;/type&gt;
     ...
   &lt;/component&gt;   
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;</programlisting><note>
+        <para>Since kernel 2.3.0-CR1, if the configuration is not a sub class
+        of <envar>ExoCacheConfig</envar> and the implementation given in the
+        configuration is the full qualified name of an existing implementation
+        of eXo Cache, we will assume that the user expects to have an instance
+        of this eXo Cache type so we won't use the configured cache
+        factory.</para>
+      </note></para>
   </section>
 
   <section>
