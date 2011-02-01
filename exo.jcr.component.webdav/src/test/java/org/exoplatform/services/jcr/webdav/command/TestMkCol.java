@@ -77,7 +77,8 @@ public class TestMkCol extends BaseStandaloneTest
       // here we check if response 'CREATED' contains 'LOCATION' header
       assertTrue(response.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
       // here we check if 'CREATED' response 'LOCATION' header contains correct location path
-      assertTrue(response.getHttpHeaders().get(ExtHttpHeaders.LOCATION).toString().contains(getPathWS() + folder));
+      assertEquals(getPathWS() + folder, response.getHttpHeaders().getFirst(ExtHttpHeaders.LOCATION).toString());
+
    }
 
    @Override

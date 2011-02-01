@@ -21,15 +21,16 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ExtHttpHeaders;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.ItemExistsException;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Workspace;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -47,26 +48,27 @@ public class CopyCommand
    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.CopyCommand");
 
    /**
-     * Provides URI information needed for 'location' header in 'CREATED' response
-     */
-   private final String destination;
+    * Provides URI information needed for 'location' header in 'CREATED'
+    * response
+    */
+   private final UriBuilder uriBuilder;
 
    /**
     * Empty constructor
     */
    public CopyCommand()
    {
-      this.destination = null;
+      this.uriBuilder = null;
    }
 
    /**
     * Constructor
     * 
-    * @param destination - provide data used in 'location' header
+    * @param uriBuilder - provide data used in 'location' header
     */
-   public CopyCommand(String destination)
+   public CopyCommand(UriBuilder uriBuilder)
    {
-      this.destination = destination;
+      this.uriBuilder = uriBuilder;
    }
 
    /**
@@ -81,13 +83,14 @@ public class CopyCommand
    {
       try
       {
-         destSession.getWorkspace().copy(sourcePath, destPath);
-         if (destination != null)
+         Workspace workspace = destSession.getWorkspace();
+         workspace.copy(sourcePath, destPath);
+         if (uriBuilder != null)
          {
-            return Response.status(HTTPStatus.CREATED).header(ExtHttpHeaders.LOCATION, destination).build();
+            return Response.created(uriBuilder.path(workspace.getName()).path(destPath).build()).build();
          }
 
-         // to save compatibility for deprecated WebDavServiceImpl.put(..), which does not provide uriInfo
+         // to save compatibility if uribuilder is not provided
          return Response.status(HTTPStatus.CREATED).build();
       }
       catch (ItemExistsException e)
@@ -126,13 +129,14 @@ public class CopyCommand
    {
       try
       {
-         destSession.getWorkspace().copy(sourceWorkspace, sourcePath, destPath);
-         if (destination != null)
+         Workspace destWorkspace = destSession.getWorkspace();
+         destWorkspace.copy(sourceWorkspace, sourcePath, destPath);
+         if (uriBuilder != null)
          {
-            return Response.status(HTTPStatus.CREATED).header(ExtHttpHeaders.LOCATION, destination).build();
+            return Response.created(uriBuilder.path(destWorkspace.getName()).path(destPath).build()).build();
          }
 
-         // to save compatibility for deprecated WebDavServiceImpl.put(..), which does not provide uriInfo
+         // to save compatibility if uriBuilder is not provided
          return Response.status(HTTPStatus.CREATED).build();
       }
       catch (ItemExistsException e)

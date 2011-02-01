@@ -112,7 +112,7 @@ public class TestMove extends BaseStandaloneTest
       // check if 'CREATED' response contains 'LOCATION' header
       assertTrue(response.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
       // check if 'CREATED' response 'LOCATION' header contains correct location path
-      assertTrue(response.getHttpHeaders().get(ExtHttpHeaders.LOCATION).toString().contains(getPathWS() + destFilename));
+      assertEquals(getPathWS() + destFilename, response.getHttpHeaders().getFirst(ExtHttpHeaders.LOCATION).toString());
    }
 
    @Override

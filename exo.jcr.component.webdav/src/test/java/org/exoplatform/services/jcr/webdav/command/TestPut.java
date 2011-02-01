@@ -164,8 +164,8 @@ public class TestPut extends BaseStandaloneTest
       // check if response 'CREATED' contains 'LOCATION' header
       assertTrue(containerResponse.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
       // check if 'CREATED' response 'LOCATION' header contains correct location path
-      assertTrue(containerResponse.getHttpHeaders().get(ExtHttpHeaders.LOCATION).toString()
-         .contains(getPathWS() + filename));
+      assertEquals(getPathWS() + filename, containerResponse.getHttpHeaders().getFirst(ExtHttpHeaders.LOCATION)
+         .toString());
    }
 
    @Override

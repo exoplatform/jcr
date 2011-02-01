@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ExtHttpHeaders;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -29,6 +28,7 @@ import javax.jcr.Session;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -52,7 +52,7 @@ public class MoveCommand
    /**
     * Provides URI information needed for 'location' header in 'CREATED' response
     */
-   private final String destination;
+   private final UriBuilder uriBuilder;
 
    // Fix problem with moving under Windows Explorer.
    static
@@ -65,16 +65,17 @@ public class MoveCommand
     */
    public MoveCommand()
    {
-      this.destination = null;
+      this.uriBuilder = null;
    }
 
    /**
     * Constructor to receive URI Info
-    * @param destination - provide data used in 'location' header
+    * 
+    * @param uriBuilder - provide data used in 'location' header
     */
-   public MoveCommand(String destination)
+   public MoveCommand(UriBuilder uriBuilder)
    {
-      this.destination = destination;
+      this.uriBuilder = uriBuilder;
    }
 
    /**
@@ -105,13 +106,13 @@ public class MoveCommand
          }
          else
          {
-            if (destination != null)
+            if (uriBuilder != null)
             {
-               return Response.status(HTTPStatus.CREATED).header(ExtHttpHeaders.LOCATION, destination)
+               return Response.created(uriBuilder.path(session.getWorkspace().getName()).path(destPath).build())
                   .cacheControl(cacheControl).build();
             }
 
-            // to save compatibility for deprecated WebDavServiceImpl.move(..), which does not provide uriInfo
+            // to save compatibility if uriBuilder is not provided
             return Response.status(HTTPStatus.CREATED).cacheControl(cacheControl).build();
          }
 

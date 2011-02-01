@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.net.URI;
 import java.util.List;
 
 import javax.jcr.AccessDeniedException;
@@ -35,6 +34,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -59,7 +59,7 @@ public class MkColCommand
    /**
     * Provides URI information needed for 'location' header in 'CREATED' response
     */
-   private final URI destinationUri;
+   private final UriBuilder uriBuilder;
 
    /**
     * Constructor. 
@@ -69,19 +69,19 @@ public class MkColCommand
    public MkColCommand(final NullResourceLocksHolder nullResourceLocks)
    {
       this.nullResourceLocks = nullResourceLocks;
-      this.destinationUri = null;
+      this.uriBuilder = null;
    }
 
    /**
     * Constructor. 
     * 
     * @param nullResourceLocks resource locks. 
-    * @param uriInfo - provide data used in 'location' header
+    * @param uriBuilder - provide data used in 'location' header
     */
-   public MkColCommand(final NullResourceLocksHolder nullResourceLocks, URI serverUri)
+   public MkColCommand(final NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder)
    {
       this.nullResourceLocks = nullResourceLocks;
-      this.destinationUri = serverUri;
+      this.uriBuilder = uriBuilder;
    }
 
    /**
@@ -138,12 +138,12 @@ public class MkColCommand
          return Response.serverError().entity(exc.getMessage()).build();
       }
 
-      if (destinationUri != null)
+      if (uriBuilder != null)
       {
-         return Response.created(destinationUri).build();
+         return Response.created(uriBuilder.path(session.getWorkspace().getName()).path(path).build()).build();
       }
 
-      // to save compatibility for deprecated WebDavServiceImpl.put(..), which does not provide uriInfo
+      // to save compatibility if uriBuilder is not provided
       return Response.status(HTTPStatus.CREATED).build();
    }
 

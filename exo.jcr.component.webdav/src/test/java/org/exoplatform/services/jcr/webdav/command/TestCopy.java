@@ -127,7 +127,7 @@ public class TestCopy extends BaseStandaloneTest
       // check if response 'CREATED' contains 'LOCATION' header
       assertTrue(response.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
       // check if 'CREATED' response 'LOCATION' header contains correct location path
-      assertTrue(response.getHttpHeaders().get(ExtHttpHeaders.LOCATION).toString().contains(getPathWS() + destFilename));
+      assertEquals(getPathWS() + destFilename, response.getHttpHeaders().getFirst(ExtHttpHeaders.LOCATION).toString());
    }
 
    @Override
