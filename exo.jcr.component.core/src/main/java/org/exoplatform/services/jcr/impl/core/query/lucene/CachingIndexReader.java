@@ -278,7 +278,7 @@ class CachingIndexReader extends FilterIndexReader
     */
    public TermDocs termDocs(Term term) throws IOException
    {
-      if (term.field() == FieldNames.UUID)
+      if (term!=null && term.field() == FieldNames.UUID)
       {
          // check cache if we have one
          if (cache != null)

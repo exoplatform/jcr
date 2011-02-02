@@ -107,7 +107,7 @@ public class JcrIndexSearcher extends IndexSearcher implements EvaluationContext
             {
                if (sort == null)
                {
-                  hits = new LuceneQueryHits(reader, JcrIndexSearcher.this, localQuery);
+                  hits = new LuceneQueryHits(reader, JcrIndexSearcher.this, query);
                }
                else
                {

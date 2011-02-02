@@ -16,72 +16,81 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Weight;
 
+import java.io.IOException;
+
 /**
  * <code>AbstractWeight</code> implements base functionality for custom lucene
  * weights in jackrabbit.
  */
-abstract class AbstractWeight implements Weight {
+abstract class AbstractWeight extends Weight
+{
 
-    /**
-     * The searcher for this weight.
-     */
-    protected final Searcher searcher;
+   /**
+    * The searcher for this weight.
+    */
+   protected final Searcher searcher;
 
-    /**
-     * Creates a new <code>AbstractWeight</code> for the given
-     * <code>searcher</code>.
-     *
-     * @param searcher the searcher instance for this weight.
-     */
-    public AbstractWeight(Searcher searcher) {
-        this.searcher = searcher;
-    }
+   /**
+    * Creates a new <code>AbstractWeight</code> for the given
+    * <code>searcher</code>.
+    *
+    * @param searcher the searcher instance for this weight.
+    */
+   public AbstractWeight(Searcher searcher)
+   {
+      this.searcher = searcher;
+   }
 
-    /**
-     * Abstract factory method for crating a scorer instance for the
-     * specified reader.
-     *
-     * @param reader the index reader the created scorer instance should use
-     * @return the scorer instance
-     * @throws IOException if an error occurs while reading from the index
-     */
-    protected abstract Scorer createScorer(IndexReader reader)
-            throws IOException;
+   /**
+    * Abstract factory method for crating a scorer instance for the
+    * specified reader.
+    *
+    * @param reader the index reader the created scorer instance should use
+    * @return the scorer instance
+    * @throws IOException if an error occurs while reading from the index
+    */
+   protected abstract Scorer createScorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer)
+      throws IOException;
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Returns a {@link MultiScorer} if the passed <code>reader</code> is of
-     * type {@link MultiIndexReader}.
-     */
-    public Scorer scorer(IndexReader reader) throws IOException {
-        if (reader instanceof MultiIndexReader) {
-            MultiIndexReader mir = (MultiIndexReader) reader;
-            IndexReader[] readers = mir.getIndexReaders();
-            int[] starts = new int[readers.length + 1];
-            int maxDoc = 0;
-            for (int i = 0; i < readers.length; i++) {
-                starts[i] = maxDoc;
-                maxDoc += readers[i].maxDoc();
-            }
+   /**
+    * {@inheritDoc}
+    * <p/>
+    * Returns a {@link MultiScorer} if the passed <code>reader</code> is of
+    * type {@link MultiIndexReader}.
+    */
+   @Override
+   public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException
+   {
+      if (reader instanceof MultiIndexReader)
+      {
+         MultiIndexReader mir = (MultiIndexReader)reader;
+         IndexReader[] readers = mir.getIndexReaders();
+         int[] starts = new int[readers.length + 1];
+         int maxDoc = 0;
+         for (int i = 0; i < readers.length; i++)
+         {
+            starts[i] = maxDoc;
+            maxDoc += readers[i].maxDoc();
+         }
 
-            starts[readers.length] = maxDoc;
-            Scorer[] scorers = new Scorer[readers.length];
-            for (int i = 0; i < readers.length; i++) {
-                scorers[i] = scorer(readers[i]);
-            }
+         starts[readers.length] = maxDoc;
+         Scorer[] scorers = new Scorer[readers.length];
+         for (int i = 0; i < readers.length; i++)
+         {
+            scorers[i] = scorer(readers[i], scoreDocsInOrder, topScorer);
+         }
 
-            return new MultiScorer(searcher.getSimilarity(), scorers, starts);
-        } else {
-            return createScorer(reader);
-        }
-    }
+         return new MultiScorer(searcher.getSimilarity(), scorers, starts);
+      }
+      else
+      {
+         return createScorer(reader, scoreDocsInOrder, topScorer);
+      }
+   }
 
 }

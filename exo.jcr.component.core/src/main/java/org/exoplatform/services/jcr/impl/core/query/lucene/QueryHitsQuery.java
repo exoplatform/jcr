@@ -16,13 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
@@ -34,6 +27,13 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.Weight;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * <code>QueryHitsQuery</code> exposes a {@link QueryHits} implementation again
@@ -58,21 +58,24 @@ public class QueryHitsQuery extends Query implements JcrQuery{
     /**
      * {@inheritDoc}
      */
-    protected Weight createWeight(Searcher searcher) throws IOException {
+    @Override
+   public Weight createWeight(Searcher searcher) throws IOException {
         return new QueryHitsQueryWeight(searcher.getSimilarity());
     }
 
     /**
      * {@inheritDoc}
      */
-    public String toString(String field) {
+    @Override
+   public String toString(String field) {
         return "QueryHitsQuery";
     }
 
     /**
      * {@inheritDoc}
      */
-    public void extractTerms(Set terms) {
+    @Override
+   public void extractTerms(Set terms) {
         // no terms
     }
 
@@ -96,7 +99,7 @@ public class QueryHitsQuery extends Query implements JcrQuery{
     /**
      * The Weight implementation for this query.
      */
-    public class QueryHitsQueryWeight implements Weight {
+    public class QueryHitsQueryWeight extends Weight {
 
         /**
          * The similarity.
@@ -115,41 +118,48 @@ public class QueryHitsQuery extends Query implements JcrQuery{
         /**
          * {@inheritDoc}
          */
-        public Query getQuery() {
+        @Override
+      public Query getQuery() {
             return QueryHitsQuery.this;
         }
 
         /**
          * {@inheritDoc}
          */
-        public float getValue() {
+        @Override
+      public float getValue() {
             return 1.0f;
         }
 
         /**
          * {@inheritDoc}
          */
-        public float sumOfSquaredWeights() throws IOException {
+        @Override
+      public float sumOfSquaredWeights() throws IOException {
             return 1.0f;
         }
 
         /**
          * {@inheritDoc}
          */
-        public void normalize(float norm) {
+        @Override
+      public void normalize(float norm) {
         }
 
         /**
          * {@inheritDoc}
          */
-        public Scorer scorer(IndexReader reader) throws IOException {
+        @Override
+      public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
+           // TODO: use arguments!
             return new QueryHitsQueryScorer(reader, similarity);
         }
 
         /**
          * {@inheritDoc}
          */
-        public Explanation explain(IndexReader reader, int doc) throws IOException {
+        @Override
+      public Explanation explain(IndexReader reader, int doc) throws IOException {
             return new Explanation();
         }
     }
@@ -215,7 +225,8 @@ public class QueryHitsQuery extends Query implements JcrQuery{
         /**
          * {@inheritDoc}
          */
-        public boolean next() throws IOException {
+        @Override
+      public boolean next() throws IOException {
             if (docs.hasNext()) {
                 currentDoc = (Integer) docs.next();
                 return true;
@@ -226,21 +237,24 @@ public class QueryHitsQuery extends Query implements JcrQuery{
         /**
          * {@inheritDoc}
          */
-        public int doc() {
+        @Override
+      public int doc() {
             return currentDoc.intValue();
         }
 
         /**
          * {@inheritDoc}
          */
-        public float score() throws IOException {
+        @Override
+      public float score() throws IOException {
             return ((Float) scores.get(currentDoc)).floatValue();
         }
 
         /**
          * {@inheritDoc}
          */
-        public boolean skipTo(int target) throws IOException {
+        @Override
+      public boolean skipTo(int target) throws IOException {
             do {
                 if (!next()) {
                     return false;
@@ -252,7 +266,8 @@ public class QueryHitsQuery extends Query implements JcrQuery{
         /**
          * {@inheritDoc}
          */
-        public Explanation explain(int doc) throws IOException {
+        @Override
+      public Explanation explain(int doc) throws IOException {
             return new Explanation();
         }
     }

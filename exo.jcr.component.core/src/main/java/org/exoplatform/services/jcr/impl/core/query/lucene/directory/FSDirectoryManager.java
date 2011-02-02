@@ -89,7 +89,15 @@ public class FSDirectoryManager implements DirectoryManager
             {
                dir = new File(baseDir, name);
             }
-            return FSDirectory.getDirectory(dir, new NativeFSLockFactory(dir));
+            // FSDirectory itself doesnt create dirs now
+            if (!dir.exists())
+            {
+               if (!dir.mkdirs())
+               {
+                  throw new IOException("Cannot create directory: " + dir);
+               }
+            }
+            return FSDirectory.open(dir, new NativeFSLockFactory(dir));
          }
       });
    }

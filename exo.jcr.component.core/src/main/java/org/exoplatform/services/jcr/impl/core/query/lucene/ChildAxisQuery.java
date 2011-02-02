@@ -192,7 +192,8 @@ class ChildAxisQuery extends Query implements JcrQuery
     * @param searcher the <code>Searcher</code> instance to use.
     * @return a <code>ChildAxisWeight</code>.
     */
-   protected Weight createWeight(Searcher searcher)
+   @Override
+   public Weight createWeight(Searcher searcher)
    {
       return new ChildAxisWeight(searcher);
    }
@@ -200,6 +201,7 @@ class ChildAxisQuery extends Query implements JcrQuery
    /**
     * {@inheritDoc}
     */
+   @Override
    public void extractTerms(Set terms)
    {
       contextQuery.extractTerms(terms);
@@ -208,6 +210,7 @@ class ChildAxisQuery extends Query implements JcrQuery
    /**
     * {@inheritDoc}
     */
+   @Override
    public Query rewrite(IndexReader reader) throws IOException
    {
       Query cQuery = contextQuery.rewrite(reader);
@@ -247,6 +250,7 @@ class ChildAxisQuery extends Query implements JcrQuery
    /**
     * {@inheritDoc}
     */
+   @Override
    public String toString(String field)
    {
       StringBuffer sb = new StringBuffer();
@@ -286,7 +290,7 @@ class ChildAxisQuery extends Query implements JcrQuery
    /**
     * The <code>Weight</code> implementation for this <code>ChildAxisQuery</code>.
     */
-   private class ChildAxisWeight implements Weight
+   private class ChildAxisWeight extends Weight
    {
 
       /**
@@ -310,6 +314,7 @@ class ChildAxisQuery extends Query implements JcrQuery
        *
        * @return this <code>ChildAxisQuery</code>.
        */
+      @Override
       public Query getQuery()
       {
          return ChildAxisQuery.this;
@@ -318,6 +323,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public float getValue()
       {
          return 1.0f;
@@ -326,6 +332,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public float sumOfSquaredWeights() throws IOException
       {
          return 1.0f;
@@ -334,6 +341,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public void normalize(float norm)
       {
       }
@@ -345,12 +353,15 @@ class ChildAxisQuery extends Query implements JcrQuery
        * @return a <code>ChildAxisScorer</code>.
        * @throws IOException if an error occurs while reading from the index.
        */
-      public Scorer scorer(IndexReader reader) throws IOException
+      @Override
+      public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException
       {
-         contextScorer = contextQuery.weight(searcher).scorer(reader);
+         contextScorer = contextQuery.weight(searcher).scorer(reader, scoreDocsInOrder, topScorer);
          if (nameTest != null)
          {
-            nameTestScorer = new NameQuery(nameTest, version, nsMappings).weight(searcher).scorer(reader);
+            nameTestScorer =
+               new NameQuery(nameTest, version, nsMappings).weight(searcher)
+                  .scorer(reader, scoreDocsInOrder, topScorer);
          }
          return new ChildAxisScorer(searcher.getSimilarity(), reader, (HierarchyResolver)reader);
       }
@@ -358,6 +369,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public Explanation explain(IndexReader reader, int doc) throws IOException
       {
          return new Explanation();
@@ -409,6 +421,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public boolean next() throws IOException
       {
          calculateChildren();
@@ -424,6 +437,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public int doc()
       {
          return nextDoc;
@@ -432,6 +446,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public float score() throws IOException
       {
          return 1.0f;
@@ -440,6 +455,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public boolean skipTo(int target) throws IOException
       {
          calculateChildren();
@@ -457,6 +473,7 @@ class ChildAxisQuery extends Query implements JcrQuery
        * @throws UnsupportedOperationException this implementation always
        *                                       throws an <code>UnsupportedOperationException</code>.
        */
+      @Override
       public Explanation explain(int doc) throws IOException
       {
          throw new UnsupportedOperationException();
@@ -474,6 +491,7 @@ class ChildAxisQuery extends Query implements JcrQuery
                calc[0] = new SimpleChildrenCalculator(reader, hResolver);
                contextScorer.score(new HitCollector()
                {
+                  @Override
                   public void collect(int doc, float score)
                   {
                      calc[0].collectContextHit(doc);
@@ -489,6 +507,7 @@ class ChildAxisQuery extends Query implements JcrQuery
 
                   private List docIds = new ArrayList();
 
+                  @Override
                   public void collect(int doc, float score)
                   {
                      calc[0].collectContextHit(doc);
@@ -583,7 +602,9 @@ class ChildAxisQuery extends Query implements JcrQuery
                      else
                      {
                         if (nodeData.getQPath().getIndex() != position)
+                        {
                            return false;
+                        }
                      }
                   }
                }
@@ -667,6 +688,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       protected void collectContextHit(int doc)
       {
          contextHits.set(doc);
@@ -675,6 +697,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public Hits getHits() throws IOException
       {
          // read the uuids of the context nodes
@@ -709,7 +732,9 @@ class ChildAxisQuery extends Query implements JcrQuery
                      for (NodeData nodeData : childs)
                      {
                         if (nameTest.equals(nodeData.getQPath().getName()))
+                        {
                            datas.add(nodeData);
+                        }
                      }
 
                   }
@@ -775,6 +800,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       protected void collectContextHit(int doc)
       {
          docIds.add(new Integer(doc));
@@ -783,6 +809,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public Hits getHits() throws IOException
       {
          long time = System.currentTimeMillis();

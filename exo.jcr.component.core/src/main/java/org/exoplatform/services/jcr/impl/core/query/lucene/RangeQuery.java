@@ -16,15 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
@@ -36,6 +27,15 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Implements a lucene range query.
@@ -121,7 +121,8 @@ public class RangeQuery extends Query implements Transformable {
      * @return the rewritten query or this query if rewriting is not possible.
      * @throws IOException if an error occurs.
      */
-    public Query rewrite(IndexReader reader) throws IOException {
+    @Override
+   public Query rewrite(IndexReader reader) throws IOException {
         if (transform == TRANSFORM_NONE) {
             return new ConstantScoreRangeQuery(lowerTerm.field(),
                     lowerTerm.text(), upperTerm.text(), inclusive,
@@ -139,7 +140,8 @@ public class RangeQuery extends Query implements Transformable {
      * @param searcher the searcher to use for the <code>Weight</code>.
      * @return the <code>Weigth</code> for this query.
      */
-    protected Weight createWeight(Searcher searcher) {
+    @Override
+   public Weight createWeight(Searcher searcher) {
         return new RangeQueryWeight(searcher);
     }
 
@@ -148,7 +150,8 @@ public class RangeQuery extends Query implements Transformable {
      * @param field the field name for which to create a string representation.
      * @return a string representation of this query.
      */
-    public String toString(String field) {
+    @Override
+   public String toString(String field) {
         StringBuffer buffer = new StringBuffer();
         if (!getField().equals(field)) {
             buffer.append(getField());
@@ -169,7 +172,8 @@ public class RangeQuery extends Query implements Transformable {
     /**
      * {@inheritDoc}
      */
-    public void extractTerms(Set terms) {
+    @Override
+   public void extractTerms(Set terms) {
         // cannot extract terms
     }
 
@@ -203,7 +207,8 @@ public class RangeQuery extends Query implements Transformable {
          * @param reader index reader
          * @return a {@link RangeQueryScorer} instance
          */
-        protected Scorer createScorer(IndexReader reader) {
+        @Override
+      protected Scorer createScorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) {
             return new RangeQueryScorer(searcher.getSimilarity(), reader);
         };
 
@@ -212,34 +217,39 @@ public class RangeQuery extends Query implements Transformable {
          *
          * @return this <code>RangeQuery</code>.
          */
-        public Query getQuery() {
+        @Override
+      public Query getQuery() {
             return RangeQuery.this;
         }
 
         /**
          * {@inheritDoc}
          */
-        public float getValue() {
+        @Override
+      public float getValue() {
             return 1.0f;
         }
 
         /**
          * {@inheritDoc}
          */
-        public float sumOfSquaredWeights() throws IOException {
+        @Override
+      public float sumOfSquaredWeights() throws IOException {
             return 1.0f;
         }
 
         /**
          * {@inheritDoc}
          */
-        public void normalize(float norm) {
+        @Override
+      public void normalize(float norm) {
         }
 
         /**
          * {@inheritDoc}
          */
-        public Explanation explain(IndexReader reader, int doc) throws IOException {
+        @Override
+      public Explanation explain(IndexReader reader, int doc) throws IOException {
             return new Explanation();
         }
     }
@@ -321,7 +331,8 @@ public class RangeQuery extends Query implements Transformable {
         /**
          * {@inheritDoc}
          */
-        public boolean next() throws IOException {
+        @Override
+      public boolean next() throws IOException {
             calculateHits();
             nextDoc = hits.nextSetBit(nextDoc + 1);
             return nextDoc > -1;
@@ -330,21 +341,24 @@ public class RangeQuery extends Query implements Transformable {
         /**
          * {@inheritDoc}
          */
-        public int doc() {
+        @Override
+      public int doc() {
             return nextDoc;
         }
 
         /**
          * {@inheritDoc}
          */
-        public float score() {
+        @Override
+      public float score() {
             return 1.0f;
         }
 
         /**
          * {@inheritDoc}
          */
-        public boolean skipTo(int target) throws IOException {
+        @Override
+      public boolean skipTo(int target) throws IOException {
             calculateHits();
             nextDoc = hits.nextSetBit(target);
             return nextDoc > -1;
@@ -354,7 +368,8 @@ public class RangeQuery extends Query implements Transformable {
          * Returns an empty Explanation object.
          * @return an empty Explanation object.
          */
-        public Explanation explain(int doc) {
+        @Override
+      public Explanation explain(int doc) {
             return new Explanation();
         }
 

@@ -16,9 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.Set;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
@@ -27,217 +24,271 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 
+import java.io.IOException;
+import java.util.Set;
+
 /**
  * Implements a query that negates documents of a context query. Documents
  * that matched the context query will not match the <code>NotQuery</code> and
  * Documents that did not match the context query will be selected by this
  * <code>NotQuery</code>.
  */
-class NotQuery extends Query {
+class NotQuery extends Query
+{
 
-    /**
-     * The context query to invert.
-     */
-    private final Query context;
+   /**
+    * The context query to invert.
+    */
+   private final Query context;
 
-    /**
-     * The context scorer to invert.
-     */
-    private Scorer contextScorer;
+   /**
+    * The context scorer to invert.
+    */
+   private Scorer contextScorer;
 
-    /**
-     * Creates a new <code>NotQuery</code>.
-     * @param context the context query.
-     */
-    NotQuery(Query context) {
-        this.context = context;
-    }
+   /**
+    * Creates a new <code>NotQuery</code>.
+    * @param context the context query.
+    */
+   NotQuery(Query context)
+   {
+      this.context = context;
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected Weight createWeight(Searcher searcher) {
-        return new NotQueryWeight(searcher);
-    }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Weight createWeight(Searcher searcher)
+   {
+      return new NotQueryWeight(searcher);
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String toString(String field) {
-        return "NotQuery";
-    }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public String toString(String field)
+   {
+      return "NotQuery";
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void extractTerms(Set terms) {
-        context.extractTerms(terms);
-    }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void extractTerms(Set terms)
+   {
+      context.extractTerms(terms);
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public Query rewrite(IndexReader reader) throws IOException {
-        Query cQuery = context.rewrite(reader);
-        if (cQuery == context) {
-            return this;
-        } else {
-            return new NotQuery(cQuery);
-        }
-    }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Query rewrite(IndexReader reader) throws IOException
+   {
+      Query cQuery = context.rewrite(reader);
+      if (cQuery == context)
+      {
+         return this;
+      }
+      else
+      {
+         return new NotQuery(cQuery);
+      }
+   }
 
-    /**
-     * Implements a weight for this <code>NotQuery</code>.
-     */
-    private class NotQueryWeight implements Weight {
+   /**
+    * Implements a weight for this <code>NotQuery</code>.
+    */
+   private class NotQueryWeight extends Weight
+   {
 
-        /**
-         * The searcher to access the index.
-         */
-        private final Searcher searcher;
+      /**
+       * The searcher to access the index.
+       */
+      private final Searcher searcher;
 
-        /**
-         * Creates a new NotQueryWeight with a searcher.
-         * @param searcher the searcher.
-         */
-        NotQueryWeight(Searcher searcher) {
-            this.searcher = searcher;
-        }
+      /**
+       * Creates a new NotQueryWeight with a searcher.
+       * @param searcher the searcher.
+       */
+      NotQueryWeight(Searcher searcher)
+      {
+         this.searcher = searcher;
+      }
 
-        /**
-         * @inheritDoc
-         */
-        public Query getQuery() {
-            return NotQuery.this;
-        }
+      /**
+       * @inheritDoc
+       */
+      @Override
+      public Query getQuery()
+      {
+         return NotQuery.this;
+      }
 
-        /**
-         * @inheritDoc
-         */
-        public float getValue() {
-            return 1.0f;
-        }
+      /**
+       * @inheritDoc
+       */
+      @Override
+      public float getValue()
+      {
+         return 1.0f;
+      }
 
-        /**
-         * @inheritDoc
-         */
-        public float sumOfSquaredWeights() throws IOException {
-            return 1.0f;
-        }
+      /**
+       * @inheritDoc
+       */
+      @Override
+      public float sumOfSquaredWeights() throws IOException
+      {
+         return 1.0f;
+      }
 
-        /**
-         * @inheritDoc
-         */
-        public void normalize(float norm) {
-        }
+      /**
+       * @inheritDoc
+       */
+      @Override
+      public void normalize(float norm)
+      {
+      }
 
-        /**
-         * @inheritDoc
-         */
-        public Scorer scorer(IndexReader reader) throws IOException {
-            contextScorer = context.weight(searcher).scorer(reader);
-            return new NotQueryScorer(reader);
-        }
+      /**
+       * @inheritDoc
+       */
+      @Override
+      public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException
+      {
+         contextScorer = context.weight(searcher).scorer(reader, scoreDocsInOrder, topScorer);
+         return new NotQueryScorer(reader);
+      }
 
-        /**
-         * @throws UnsupportedOperationException always
-         */
-        public Explanation explain(IndexReader reader, int doc) throws IOException {
-            throw new UnsupportedOperationException();
-        }
-    }
+      /**
+       * @throws UnsupportedOperationException always
+       */
+      @Override
+      public Explanation explain(IndexReader reader, int doc) throws IOException
+      {
+         throw new UnsupportedOperationException();
+      }
+   }
 
-    /**
-     * Implements a scorer that inverts the document matches of the context
-     * scorer.
-     */
-    private class NotQueryScorer extends Scorer {
+   /**
+    * Implements a scorer that inverts the document matches of the context
+    * scorer.
+    */
+   private class NotQueryScorer extends Scorer
+   {
 
-        /**
-         * The index reader.
-         */
-        private final IndexReader reader;
+      /**
+       * The index reader.
+       */
+      private final IndexReader reader;
 
-        /**
-         * Current document number.
-         */
-        private int docNo = -1;
+      /**
+       * Current document number.
+       */
+      private int docNo = -1;
 
-        /**
-         * Current document number of the context scorer;
-         */
-        private int contextNo = -1;
+      /**
+       * Current document number of the context scorer;
+       */
+      private int contextNo = -1;
 
-        /**
-         * Creates a new scorer
-         * @param reader
-         */
-        NotQueryScorer(IndexReader reader) {
-            super(Similarity.getDefault());
-            this.reader = reader;
-        }
+      /**
+       * Creates a new scorer
+       * @param reader
+       */
+      NotQueryScorer(IndexReader reader)
+      {
+         super(Similarity.getDefault());
+         this.reader = reader;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        public boolean next() throws IOException {
-            if (docNo == -1) {
-                // get first doc of context scorer
-                if (contextScorer.next()) {
-                    contextNo = contextScorer.doc();
-                }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public boolean next() throws IOException
+      {
+         if (docNo == -1)
+         {
+            // get first doc of context scorer
+            if (contextScorer.next())
+            {
+               contextNo = contextScorer.doc();
             }
-            // move to next candidate
-            do {
-                docNo++;
-            } while (reader.isDeleted(docNo) && docNo < reader.maxDoc());
+         }
+         // move to next candidate
+         do
+         {
+            docNo++;
+         }
+         while (reader.isDeleted(docNo) && docNo < reader.maxDoc());
 
-            // check with contextScorer
-            while (contextNo != -1 && contextNo == docNo) {
-                docNo++;
-                if (contextScorer.next()) {
-                    contextNo = contextScorer.doc();
-                } else {
-                    contextNo = -1;
-                }
+         // check with contextScorer
+         while (contextNo != -1 && contextNo == docNo)
+         {
+            docNo++;
+            if (contextScorer.next())
+            {
+               contextNo = contextScorer.doc();
             }
-            return docNo < reader.maxDoc();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public int doc() {
-            return docNo;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public float score() throws IOException {
-            return 1.0f;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public boolean skipTo(int target) throws IOException {
-            if (contextNo != -1 && contextNo < target) {
-                if (contextScorer.skipTo(target)) {
-                    contextNo = contextScorer.doc();
-                } else {
-                    contextNo = -1;
-                }
+            else
+            {
+               contextNo = -1;
             }
-            docNo = target - 1;
-            return next();
-        }
+         }
+         return docNo < reader.maxDoc();
+      }
 
-        /**
-         * @throws UnsupportedOperationException always
-         */
-        public Explanation explain(int doc) throws IOException {
-            throw new UnsupportedOperationException();
-        }
-    }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public int doc()
+      {
+         return docNo;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public float score() throws IOException
+      {
+         return 1.0f;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public boolean skipTo(int target) throws IOException
+      {
+         if (contextNo != -1 && contextNo < target)
+         {
+            if (contextScorer.skipTo(target))
+            {
+               contextNo = contextScorer.doc();
+            }
+            else
+            {
+               contextNo = -1;
+            }
+         }
+         docNo = target - 1;
+         return next();
+      }
+
+      /**
+       * @throws UnsupportedOperationException always
+       */
+      @Override
+      public Explanation explain(int doc) throws IOException
+      {
+         throw new UnsupportedOperationException();
+      }
+   }
 }

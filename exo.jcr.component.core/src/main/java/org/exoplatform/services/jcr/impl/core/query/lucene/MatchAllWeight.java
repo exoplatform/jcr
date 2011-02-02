@@ -16,14 +16,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
+
+import java.io.IOException;
 
 /**
  * This class implements the Weight calculation for the MatchAllQuery.
@@ -72,28 +72,32 @@ class MatchAllWeight extends AbstractWeight {
      * @param reader index reader
      * @return a {@link MatchAllScorer} instance
      */
-    protected Scorer createScorer(IndexReader reader) throws IOException {
+    @Override
+   protected Scorer createScorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
         return new MatchAllScorer(reader, field);
     }
 
     /**
      * {@inheritDoc}
      */
-    public Query getQuery() {
+    @Override
+   public Query getQuery() {
         return query;
     }
 
     /**
      * {@inheritDoc}
      */
-    public float getValue() {
+    @Override
+   public float getValue() {
         return value;
     }
 
     /**
      * {@inheritDoc}
      */
-    public float sumOfSquaredWeights() throws IOException {
+    @Override
+   public float sumOfSquaredWeights() throws IOException {
         idf = searcher.getSimilarity().idf(searcher.maxDoc(), searcher.maxDoc()); // compute idf
         queryWeight = idf * 1.0f; // boost         // compute query weight
         return queryWeight * queryWeight;           // square it
@@ -102,7 +106,8 @@ class MatchAllWeight extends AbstractWeight {
     /**
      * {@inheritDoc}
      */
-    public void normalize(float queryNorm) {
+    @Override
+   public void normalize(float queryNorm) {
         queryWeight *= queryNorm;                   // normalize query weight
         value = queryWeight * idf;                  // idf for document
     }
@@ -110,7 +115,8 @@ class MatchAllWeight extends AbstractWeight {
     /**
      * {@inheritDoc}
      */
-    public Explanation explain(IndexReader reader, int doc) throws IOException {
+    @Override
+   public Explanation explain(IndexReader reader, int doc) throws IOException {
         return new Explanation(Similarity.getDefault().idf(reader.maxDoc(), reader.maxDoc()),
                 "matchAll");
     }

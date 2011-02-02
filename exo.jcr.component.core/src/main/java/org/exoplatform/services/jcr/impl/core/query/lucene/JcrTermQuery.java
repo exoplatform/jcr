@@ -16,8 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Explanation;
@@ -27,80 +25,99 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.Weight;
 
+import java.io.IOException;
+
 /**
  * <code>JackrabbitTermQuery</code> implements a {@link TermQuery} where score
  * values are retrieved on a per index segment basis using {@link MultiScorer}.
  */
-public class JcrTermQuery extends TermQuery {
+public class JcrTermQuery extends TermQuery
+{
 
-    private static final long serialVersionUID = 4244799812287335957L;
+   private static final long serialVersionUID = 4244799812287335957L;
 
-    public JcrTermQuery(Term t) {
-        super(t);
-    }
+   public JcrTermQuery(Term t)
+   {
+      super(t);
+   }
 
-    protected Weight createWeight(Searcher searcher) throws IOException {
-        return new JackrabbitTermWeight(searcher, super.createWeight(searcher));
-    }
+   @Override
+   public Weight createWeight(Searcher searcher) throws IOException
+   {
+      return new JackrabbitTermWeight(searcher, super.createWeight(searcher));
+   }
 
-    /**
-     * The weight implementation.
-     */
-    protected class JackrabbitTermWeight extends AbstractWeight {
+   /**
+    * The weight implementation.
+    */
+   protected class JackrabbitTermWeight extends AbstractWeight
+   {
 
-        private static final long serialVersionUID = -2070964510010945854L;
+      private static final long serialVersionUID = -2070964510010945854L;
 
-        /**
-         * The default lucene TermQuery weight.
-         */
-        private final Weight weight;
+      /**
+       * The default lucene TermQuery weight.
+       */
+      private final Weight weight;
 
-        public JackrabbitTermWeight(Searcher searcher, Weight weight) {
-            super(searcher);
-            this.weight = weight;
-        }
+      public JackrabbitTermWeight(Searcher searcher, Weight weight)
+      {
+         super(searcher);
+         this.weight = weight;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        protected Scorer createScorer(IndexReader reader) throws IOException {
-            return weight.scorer(reader);
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected Scorer createScorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException
+      {
+         return weight.scorer(reader, scoreDocsInOrder, topScorer);
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        public Query getQuery() {
-            return JcrTermQuery.this;
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Query getQuery()
+      {
+         return JcrTermQuery.this;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        public float getValue() {
-            return weight.getValue();
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public float getValue()
+      {
+         return weight.getValue();
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        public float sumOfSquaredWeights() throws IOException {
-            return weight.sumOfSquaredWeights();
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public float sumOfSquaredWeights() throws IOException
+      {
+         return weight.sumOfSquaredWeights();
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        public void normalize(float norm) {
-            weight.normalize(norm);
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public void normalize(float norm)
+      {
+         weight.normalize(norm);
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        public Explanation explain(IndexReader reader, int doc) throws
-                IOException {
-            return weight.explain(reader, doc);
-        }
-    }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Explanation explain(IndexReader reader, int doc) throws IOException
+      {
+         return weight.explain(reader, doc);
+      }
+   }
 }

@@ -16,11 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.util.Set;
-
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Weight;
+
+import java.util.Set;
 
 /**
  * Specialized query that returns / scores all pages in the search index.
@@ -50,7 +50,8 @@ class MatchAllQuery extends Query {
      * @param searcher the current searcher.
      * @return the <code>Weight</code> for this Query.
      */
-    protected Weight createWeight(Searcher searcher) {
+    @Override
+   public Weight createWeight(Searcher searcher) {
         return new MatchAllWeight(this, searcher, field);
     }
 
@@ -60,13 +61,15 @@ class MatchAllQuery extends Query {
      * @param field default field for the query.
      * @return the String "%".
      */
-    public String toString(String field) {
+    @Override
+   public String toString(String field) {
         return "%";
     }
 
     /**
      * Does nothing but simply returns. There are no terms to extract.
      */
-    public void extractTerms(Set terms) {
+    @Override
+   public void extractTerms(Set terms) {
     }
 }

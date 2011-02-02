@@ -287,8 +287,7 @@ abstract class AbstractIndex
 
             if (indexReader == null || !indexReader.isCurrent())
             {
-               IndexReader reader = IndexReader.open(getDirectory());
-               reader.setTermInfosIndexDivisor(termInfosIndexDivisor);
+               IndexReader reader = IndexReader.open(getDirectory(), null, false, termInfosIndexDivisor);
                indexReader = new CommittableIndexReader(reader);
             }
             return indexReader;
@@ -357,8 +356,7 @@ abstract class AbstractIndex
             if (sharedReader == null)
             {
                // create new shared reader
-               IndexReader reader = IndexReader.open(getDirectory(), true);
-               reader.setTermInfosIndexDivisor(termInfosIndexDivisor);
+               IndexReader reader = IndexReader.open(getDirectory(), null, true, termInfosIndexDivisor);
                CachingIndexReader cr = new CachingIndexReader(reader, cache, initCache);
                sharedReader = new SharedIndexReader(cr);
             }
