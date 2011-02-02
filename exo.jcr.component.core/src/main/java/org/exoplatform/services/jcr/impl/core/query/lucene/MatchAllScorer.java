@@ -16,19 +16,19 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Similarity;
+
+import java.io.IOException;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The MatchAllScorer implements a Scorer that scores / collects all
@@ -84,9 +84,9 @@ class MatchAllScorer extends Scorer {
     /**
      * {@inheritDoc}
      */
-    public void score(HitCollector hc) throws IOException {
+    public void score(Collector hc) throws IOException {
         while (next()) {
-            hc.collect(doc(), score());
+            hc.collect(doc());
         }
     }
 

@@ -18,7 +18,6 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
@@ -27,6 +26,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.Weight;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AbstractHitCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -588,7 +588,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
          if (!contextHitsCalculated)
          {
             long time = System.currentTimeMillis();
-            contextScorer.score(new HitCollector()
+            contextScorer.score(new AbstractHitCollector()
             {
                @Override
                public void collect(int doc, float score)

@@ -18,13 +18,13 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AbstractHitCollector;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.Hits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.ScorerHits;
 
@@ -350,7 +350,7 @@ class ParentAxisQuery extends Query
             hits = new BitSet(reader.maxDoc());
 
             final IOException[] ex = new IOException[1];
-            contextScorer.score(new HitCollector()
+            contextScorer.score(new AbstractHitCollector()
             {
 
                private int[] docs = new int[1];

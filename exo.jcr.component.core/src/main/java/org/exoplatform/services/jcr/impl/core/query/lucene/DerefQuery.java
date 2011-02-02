@@ -27,6 +27,7 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AbstractHitCollector;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -338,7 +339,7 @@ class DerefQuery extends Query
          if (uuids == null)
          {
             uuids = new ArrayList();
-            contextScorer.score(new HitCollector()
+            contextScorer.score(new AbstractHitCollector()
             {
                @Override
                public void collect(int doc, float score)
@@ -351,7 +352,7 @@ class DerefQuery extends Query
             final BitSet nameTestHits = new BitSet();
             if (nameTestScorer != null)
             {
-               nameTestScorer.score(new HitCollector()
+               nameTestScorer.score(new AbstractHitCollector()
                {
                   @Override
                   public void collect(int doc, float score)

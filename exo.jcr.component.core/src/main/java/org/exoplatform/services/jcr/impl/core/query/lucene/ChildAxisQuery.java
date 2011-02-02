@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.LocationStepQueryNode;
+import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AbstractHitCollector;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AdaptingHits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.Hits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.ScorerHits;
@@ -489,7 +490,7 @@ class ChildAxisQuery extends Query implements JcrQuery
             {
                // always use simple in that case
                calc[0] = new SimpleChildrenCalculator(reader, hResolver);
-               contextScorer.score(new HitCollector()
+               contextScorer.score(new AbstractHitCollector()
                {
                   @Override
                   public void collect(int doc, float score)
@@ -502,7 +503,7 @@ class ChildAxisQuery extends Query implements JcrQuery
             {
                // start simple but switch once threshold is reached
                calc[0] = new SimpleChildrenCalculator(reader, hResolver);
-               contextScorer.score(new HitCollector()
+               contextScorer.score(new AbstractHitCollector()
                {
 
                   private List docIds = new ArrayList();
