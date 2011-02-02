@@ -24,11 +24,14 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.query.Indexable;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
+import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -400,8 +403,19 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             long count = 0;
             // traverse and index workspace
             executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+
             // NodeData rootState = (NodeData) stateMgr.getItemData(rootId);
-            count = createIndex(indexingTree.getIndexingRoot(), stateMgr, count);
+
+            // check if we have deal with JDBC indexing mechanism
+            Indexable indexableComponent = (Indexable)handler.getContext().getContainer().getComponent(Indexable.class);
+            if (indexableComponent == null)
+            {
+               count = createIndex(indexingTree.getIndexingRoot(), stateMgr, count);
+            }
+            else
+            {
+               count = createIndex(indexableComponent, indexingTree.getIndexingRoot(), stateMgr, count);
+            }
             executeAndLog(new Commit(getTransactionId()));
             log.info("Created initial index for {} nodes", new Long(count));
             releaseMultiReader();
@@ -1035,6 +1049,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    Document createDocument(NodeData node) throws RepositoryException
    {
+      return createDocument(new NodeDataIndexing(node));
+   }
+
+   /**
+    * Returns a lucene Document for the <code>node</code>.
+    * 
+    * @param node
+    *            the node to index wrapped into NodeDataIndexing
+    * @return the index document.
+    * @throws RepositoryException
+    *             if an error occurs while reading from the workspace.
+    */
+   Document createDocument(NodeDataIndexing node) throws RepositoryException
+   {
       return handler.createDocument(node, nsMappings, version);
    }
 
@@ -1395,6 +1423,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          return count;
       }
       executeAndLog(new AddNode(getTransactionId(), node.getIdentifier()));
+
       if (++count % 100 == 0)
       {
 
@@ -1420,6 +1449,69 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             count = createIndex(nodeData, stateMgr, count);
          }
+      }
+
+      return count;
+   }
+
+   /**
+    * Recursively creates an index starting with the NodeState
+    * <code>node</code>.
+    * 
+    * @param indexableComponent
+    *          the component which responsible for quick indexing
+    * @param rootNode
+    *            the current NodeState.
+    * @param path
+    *            the path of the current node.
+    * @param stateMgr
+    *            the shared item state manager.
+    * @param count
+    *            the number of nodes already indexed.
+    * @return the number of nodes indexed so far.
+    * @throws IOException
+    *             if an error occurs while writing to the index.
+    * @throws ItemStateException
+    *             if an node state cannot be found.
+    * @throws RepositoryException
+    *             if any other error occurs
+    */
+   private long createIndex(Indexable indexableComponent, NodeData rootNode, ItemDataConsumer stateMgr, long count)
+      throws IOException, RepositoryException
+   {
+      NodeDataIndexingIterator iterator = indexableComponent.getNodeDataIndexingIterator();
+      try
+      {
+         while (iterator.hasNext())
+         {
+            NodeDataIndexing node = iterator.next();
+
+            if (indexingTree.isExcluded(node))
+            {
+               continue;
+            }
+
+            if (!node.getQPath().isDescendantOf(rootNode.getQPath()) && !node.getQPath().equals(rootNode.getQPath()))
+            {
+               continue;
+            }
+
+            executeAndLog(new AddNode(getTransactionId(), node));
+
+            if (++count % 100 == 0)
+            {
+               log.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count));
+            }
+            if (count % 10 == 0)
+            {
+               checkIndexingQueue(true);
+            }
+            checkVolatileCommit();
+         }
+      }
+      finally
+      {
+         iterator.close();
       }
 
       return count;
@@ -1946,6 +2038,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       private Document doc;
 
       /**
+       * The node to add.
+       */
+      private NodeDataIndexing node;
+
+      /**
        * Creates a new AddNode action.
        * 
        * @param transactionId
@@ -1957,6 +2054,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          super(transactionId, Action.TYPE_ADD_NODE);
          this.uuid = uuid;
+      }
+
+      /**
+       * Creates a new AddNode action.
+       * 
+       * @param transactionId
+       *            the id of the transaction that executes this action.
+       * @param uuid
+       *            the uuid of the node to add.
+       */
+      AddNode(long transactionId, NodeDataIndexing node)
+      {
+         this(transactionId, node.getIdentifier());
+         this.node = node;
       }
 
       /**
@@ -2006,7 +2117,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             try
             {
-               doc = index.createDocument(uuid);
+               if (node != null)
+               {
+                  doc = index.createDocument(node);
+               }
+               else
+               {
+                  doc = index.createDocument(uuid);
+               }
             }
             catch (RepositoryException e)
             {

@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.document.DocumentReaderService;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
@@ -73,6 +74,11 @@ public class QueryHandlerContext
    private final LuceneVirtualTableResolver virtualTableResolver;
 
    /**
+    * Workspace container.
+    */
+   private final WorkspaceContainerFacade container;
+
+   /**
     * Creates a new context instance.
     * 
     * @param fs
@@ -95,11 +101,12 @@ public class QueryHandlerContext
     *            id of the node that should be excluded from indexing. Any
     *            descendant of that node is also excluded from indexing.
     */
-   public QueryHandlerContext(ItemDataConsumer stateMgr, IndexingTree indexingTree,
+   public QueryHandlerContext(WorkspaceContainerFacade container, ItemDataConsumer stateMgr, IndexingTree indexingTree,
       NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
       String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
       LuceneVirtualTableResolver virtualTableResolver)
    {
+      this.container = container;
       this.stateMgr = stateMgr;
       this.indexingTree = indexingTree;
       this.nodeTypeDataManager = nodeTypeDataManager;
@@ -111,6 +118,14 @@ public class QueryHandlerContext
       this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
       this.parentHandler = parentHandler;
       ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).addListener(propRegistry);
+   }
+
+   /**
+    * @return the workspace container
+    */
+   public WorkspaceContainerFacade getContainer()
+   {
+      return container;
    }
 
    /**

@@ -18,8 +18,10 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -58,11 +60,12 @@ public class SystemSearchManager extends SearchManager
 
    public static final String INDEX_DIR_SUFFIX = "system";
 
-   public SystemSearchManager(WorkspaceEntry wsConfig, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   public SystemSearchManager(WorkspaceEntry wsConfig, RepositoryEntry rEntry, RepositoryService rService,
+      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
       RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException, RepositoryConfigurationException
    {
-      super(wsConfig, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
+      super(wsConfig, rEntry, rService, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
    }
 
    @Override
@@ -101,16 +104,6 @@ public class SystemSearchManager extends SearchManager
          }
          isStarted = true;
       }
-   }
-
-   @Override
-   protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
-      throws RepositoryConfigurationException
-   {
-      QueryHandlerContext context =
-         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDirectory(),
-            extractor, true, virtualTableResolver);
-      return context;
    }
 
    /**

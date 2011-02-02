@@ -29,7 +29,7 @@ import org.exoplatform.services.jcr.core.value.ExtendedValue;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemType;
-import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
@@ -75,7 +75,7 @@ public class NodeIndexer
    /**
     * The <code>NodeState</code> of the node to index
     */
-   protected final NodeData node;
+   protected final NodeDataIndexing node;
 
    /**
     * The persistent item state provider
@@ -130,7 +130,7 @@ public class NodeIndexer
     * @param mappings      internal namespace mappings.
     * @param extractor     content extractor
     */
-   public NodeIndexer(NodeData node, ItemDataConsumer stateProvider, NamespaceMappings mappings,
+   public NodeIndexer(NodeDataIndexing node, ItemDataConsumer stateProvider, NamespaceMappings mappings,
       DocumentReaderService extractor)
    {
       this.node = node;
@@ -219,7 +219,13 @@ public class NodeIndexer
          // unknown uri<->prefix mappings
       }
 
-      for (final PropertyData prop : stateProvider.listChildPropertiesData(node))
+      List<PropertyData> props = node.getChildPropertiesData();
+      if (props == null)
+      {
+         props = stateProvider.listChildPropertiesData(node);
+      }
+
+      for (final PropertyData prop : props)
       {
 
          // add each property to the _PROPERTIES_SET for searching

@@ -37,6 +37,8 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestor;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestor;
 import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
+import org.exoplatform.services.jcr.impl.core.query.Indexable;
+import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
@@ -45,6 +47,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.OracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.indexing.JdbcNodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
@@ -92,7 +95,8 @@ import javax.sql.DataSource;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id:GenericWorkspaceDataContainer.java 13433 2007-03-15 16:07:23Z peterit $
  */
-public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable, JdbcBackupable
+public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable, JdbcBackupable,
+   Indexable
 {
 
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCWorkspaceDataContainer");
@@ -1415,6 +1419,39 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       catch (NamingException e)
       {
          throw new BackupException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public NodeDataIndexingIterator getNodeDataIndexingIterator() throws IOException
+   {
+      try
+      {
+         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+
+         if (ds != null)
+         {
+            Connection jdbcConn =
+               SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+               {
+                  public Connection run() throws Exception
+                  {
+                     return ds.getConnection();
+                  }
+               });
+            return new JdbcNodeDataIndexingIterator(jdbcConn, multiDb, containerName, swapCleaner, maxBufferSize,
+               swapDirectory, valueStorageProvider);
+         }
+         else
+         {
+            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
+         }
+      }
+      catch (Exception e)
+      {
+         throw new IOException(e);
       }
    }
 }

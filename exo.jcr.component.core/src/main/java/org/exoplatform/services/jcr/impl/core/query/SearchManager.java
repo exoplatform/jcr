@@ -24,10 +24,13 @@ import org.apache.lucene.search.WildcardQuery;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -154,6 +157,18 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected IndexerChangesFilter changesFilter;
 
    /**
+    * The Repository name.
+    */
+   protected final String repositoryName;
+
+   /**
+    * The Repository name.
+    */
+   protected final String workspaceName;
+
+   protected final RepositoryService rService;
+
+   /**
     * The unique name of the related workspace
     */
    protected final String wsId;
@@ -191,6 +206,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Creates a new <code>SearchManager</code>.
     * 
+    * @param rEntry
+    *            repository configuration
+    * @param rService
+    *            repository service            
     * @param config
     *            the search configuration.
     * @param nsReg
@@ -212,17 +231,23 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * @throws RepositoryConfigurationException
     */
 
-   public SearchManager(WorkspaceEntry wsConfig, QueryHandlerEntry config, NamespaceRegistryImpl nsReg,
-      NodeTypeDataManager ntReg, WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
+   public SearchManager(WorkspaceEntry wsConfig, RepositoryEntry rEntry, RepositoryService rService,
+      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+      WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
       throws RepositoryException, RepositoryConfigurationException
    {
-      this(wsConfig, config, nsReg, ntReg, itemMgr, parentSearchManager, extractor, cfm, indexSearcherHolder, null);
+      this(wsConfig, rEntry, rService, config, nsReg, ntReg, itemMgr, parentSearchManager, extractor, cfm,
+         indexSearcherHolder, null);
    }
 
    /**
     * Creates a new <code>SearchManager</code>.
     * 
+    * @param rEntry
+    *            repository configuration
+    * @param rService
+    *            repository service  
     * @param config
     *            the search configuration.
     * @param nsReg
@@ -246,12 +271,16 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * @throws RepositoryConfigurationException
     */
 
-   public SearchManager(WorkspaceEntry wsConfig, QueryHandlerEntry config, NamespaceRegistryImpl nsReg,
-      NodeTypeDataManager ntReg, WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
+   public SearchManager(WorkspaceEntry wsConfig, RepositoryEntry rEntry, RepositoryService rService,
+      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+      WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm,
       final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
       RepositoryConfigurationException
    {
+      this.repositoryName = rEntry.getName();
+      this.workspaceName = wsConfig.getName();
+      this.rService = rService;
       this.rpcService = rpcService;
       this.wsId = wsConfig.getUniqueName();
       this.extractor = extractor;
@@ -660,10 +689,19 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
       throws RepositoryConfigurationException
    {
+      WorkspaceContainerFacade container;
+      try
+      {
+         container = rService.getRepository(repositoryName).getWorkspaceContainer(workspaceName);
+      }
+      catch (RepositoryException e)
+      {
+         throw new RepositoryConfigurationException(e);
+      }
 
       QueryHandlerContext context =
-         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDirectory(),
-            extractor, true, virtualTableResolver);
+         new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
+            getIndexDirectory(), extractor, true, virtualTableResolver);
       return context;
    }
 

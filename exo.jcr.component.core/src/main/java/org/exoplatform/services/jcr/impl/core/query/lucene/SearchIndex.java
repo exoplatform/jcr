@@ -45,6 +45,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -1220,6 +1221,28 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    protected Document createDocument(NodeData node, NamespaceMappings nsMappings, IndexFormatVersion indexFormatVersion)
       throws RepositoryException
+   {
+      return createDocument(new NodeDataIndexing(node), nsMappings, indexFormatVersion);
+   }
+
+   /**
+    * Creates a lucene <code>Document</code> for a node state using the
+    * namespace mappings <code>nsMappings</code>.
+    * 
+    * @param node
+    *            the node state to index.
+    * @param nsMappings
+    *            the namespace mappings of the search index.
+    * @param indexFormatVersion
+    *            the index format version that should be used to index the
+    *            passed node state.
+    * @return a lucene <code>Document</code> that contains all properties of
+    *         <code>node</code>.
+    * @throws RepositoryException
+    *             if an error occurs while indexing the <code>node</code>.
+    */
+   protected Document createDocument(NodeDataIndexing node, NamespaceMappings nsMappings,
+      IndexFormatVersion indexFormatVersion) throws RepositoryException
    {
       NodeIndexer indexer = new NodeIndexer(node, getContext().getItemStateManager(), nsMappings, extractor);
       indexer.setSupportHighlighting(supportHighlighting);
