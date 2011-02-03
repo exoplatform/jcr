@@ -30,5 +30,14 @@ import javax.jcr.RepositoryException;
  */
 public interface Indexable
 {
-   NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException;
+   /**
+    * Returns NodeDataIndexingIterator.
+    * 
+    * @param pageSize 
+    *          the maximum amount of the rows which can be retrieved from database per once
+    * @return NodeDataIndexingIterator
+    * @throws RepositoryException
+    */
+   NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize)
+      throws RepositoryException;
 }

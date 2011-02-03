@@ -60,7 +60,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -1012,20 +1011,29 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    }
 
    /**
-    * {@inheritDoc}
+    * GetNodesAndProperties.
+    * 
+    * @param offset
+    * @param limit
+    * @param result
+    * @return
+    * @throws RepositoryException
+    * @throws IllegalStateException
     */
-   public List<NodeDataIndexing> getNodesAndProperties(int offset, int limit) throws RepositoryException,
+   public int getNodesAndProperties(int offset, int limit, List<NodeDataIndexing> result) throws RepositoryException,
       IllegalStateException
    {
-      List<NodeDataIndexing> result = new ArrayList<NodeDataIndexing>();
+      int read = 0;
 
       checkIfOpened();
       try
       {
          ResultSet resultSet = findNodesAndProperties(offset, limit);
+
          try
          {
             TempNodeData tempNodeData = null;
+
             while (resultSet.next())
             {
                if (tempNodeData == null)
@@ -1034,8 +1042,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                }
                else if (!resultSet.getString(COLUMN_ID).equals(tempNodeData.cid))
                {
-                  result.add(createNodeData(tempNodeData));
-
+                  result.add(createNodeDataIndexing(tempNodeData));
                   tempNodeData = new TempNodeData(resultSet);
                }
 
@@ -1049,11 +1056,13 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                }
 
                values.add(new ExtendedTempPropertyData(resultSet));
+
+               ++read;
             }
 
             if (tempNodeData != null)
             {
-               result.add(createNodeData(tempNodeData));
+               result.add(createNodeDataIndexing(tempNodeData));
             }
          }
          finally
@@ -1081,7 +1090,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          throw new RepositoryException(e);
       }
 
-      return result;
+      return read;
    }
 
    /**
@@ -2540,83 +2549,91 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws SQLException 
     * @throws IllegalNameException 
     */
-   protected NodeDataIndexing createNodeData(TempNodeData tempNode) throws RepositoryException, SQLException,
+   protected NodeDataIndexing createNodeDataIndexing(TempNodeData tempNode) throws RepositoryException, SQLException,
       IOException, IllegalNameException
    {
-      QPath parentPath;
       String parentCid;
+      QPath parentPath;
 
       if (tempNode.cpid.equals(Constants.ROOT_PARENT_UUID))
       {
          // root node
-         parentPath = Constants.ROOT_PATH;
          parentCid = null;
+         parentPath = Constants.ROOT_PATH;
       }
       else
       {
+         parentCid = tempNode.cpid;
          parentPath =
             QPath.makeChildPath(traverseQPath(tempNode.cpid), InternalQName.parse(tempNode.cname), tempNode.cindex);
-         parentCid = tempNode.cpid;
       }
 
-      // primary type
-      SortedSet<TempPropertyData> primaryTypeTempProp =
-         tempNode.properties.get(Constants.JCR_PRIMARYTYPE.getAsString());
-      if (primaryTypeTempProp == null)
+      // primary type if exists in the list of properties
+      InternalQName ptName = null;
+      ValueData ptValue = null;
+
+      SortedSet<TempPropertyData> ptTempProp = tempNode.properties.get(Constants.JCR_PRIMARYTYPE.getAsString());
+      if (ptTempProp != null)
       {
-         throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
-            + parentPath.getAsString() + ", id " + tempNode.cid + ", container " + this.containerName, null);
+         byte[] data = ptTempProp.first().getAsByteArray();
+
+         ptValue = new ByteArrayPersistedValueData(ptTempProp.first().orderNum, data);
+         ptName = InternalQName.parse(new String((data != null ? data : new byte[]{}), Constants.DEFAULT_ENCODING));
       }
 
-      byte[] data = primaryTypeTempProp.first().getAsByteArray();
-      primaryTypeTempProp.first().data = new ByteArrayInputStream(data);
-
-      InternalQName ptName =
-         InternalQName.parse(new String((data != null ? data : new byte[]{}), Constants.DEFAULT_ENCODING));
-
-      // mixins
+      // mixins if exist in the list of properties
+      List<ValueData> mixinsData = new ArrayList<ValueData>();
       List<InternalQName> mixins = new ArrayList<InternalQName>();
+
       Set<TempPropertyData> mixinsTempProps = tempNode.properties.get(Constants.JCR_MIXINTYPES.getAsString());
       if (mixinsTempProps != null)
       {
-
          for (TempPropertyData mxnb : mixinsTempProps)
          {
-            data = mxnb.getAsByteArray();
-            mxnb.data = new ByteArrayInputStream(data);
+            byte[] data = mxnb.getAsByteArray();
 
+            mixinsData.add(new ByteArrayPersistedValueData(mxnb.orderNum, data));
             mixins.add(InternalQName.parse(new String(data, Constants.DEFAULT_ENCODING)));
          }
       }
 
       // build node data
       NodeData nodeData =
-         new PersistedNodeData(getIdentifier(tempNode.cid), parentPath, getIdentifier(parentCid), tempNode.cversion,
-            tempNode.cnordernumb, ptName, mixins.toArray(new InternalQName[mixins.size()]), null);
+         new PersistedNodeData(getIdentifier(tempNode.cid), parentPath, getIdentifier(parentCid),
+            tempNode.cversion, tempNode.cnordernumb, ptName, mixins.toArray(new InternalQName[mixins.size()]), null);
 
       List<PropertyData> childProps = new ArrayList<PropertyData>();
-
       for (String propName : tempNode.properties.keySet())
       {
          ExtendedTempPropertyData prop = (ExtendedTempPropertyData)tempNode.properties.get(propName).first();
+
          String identifier = getIdentifier(prop.id);
-
-         // read values
-         List<ValueData> valueData = new ArrayList<ValueData>();
-         for (TempPropertyData tempProp : tempNode.properties.get(propName))
-         {
-            ExtendedTempPropertyData extTempProp = (ExtendedTempPropertyData)tempProp;
-
-            ValueData vdata =
-               extTempProp.storage_desc == null ? readValueData(extTempProp.id, extTempProp.orderNum,
-                  extTempProp.version, extTempProp.data) : readValueData(identifier, extTempProp.orderNum,
-                  extTempProp.storage_desc);
-
-            valueData.add(vdata);
-         }
-         Collections.sort(valueData, COMPARATOR_VALUE_DATA);
-
          QPath qpath = QPath.makeChildPath(parentPath, InternalQName.parse(prop.name));
+
+         List<ValueData> valueData = new ArrayList<ValueData>();
+
+         if (propName.equals(Constants.JCR_PRIMARYTYPE.getAsString()))
+         {
+            valueData.add(ptValue);
+         }
+         else if (propName.equals(Constants.JCR_MIXINTYPES.getAsString()))
+         {
+            valueData = mixinsData;
+         }
+         else
+         {
+            for (TempPropertyData tempProp : tempNode.properties.get(propName))
+            {
+               ExtendedTempPropertyData extTempProp = (ExtendedTempPropertyData)tempProp;
+
+               ValueData vdata =
+                  extTempProp.storage_desc == null ? readValueData(extTempProp.id, extTempProp.orderNum,
+                     extTempProp.version, extTempProp.data) : readValueData(identifier, extTempProp.orderNum,
+                     extTempProp.storage_desc);
+
+               valueData.add(vdata);
+            }
+         }
 
          // build property data
          PropertyData pdata =

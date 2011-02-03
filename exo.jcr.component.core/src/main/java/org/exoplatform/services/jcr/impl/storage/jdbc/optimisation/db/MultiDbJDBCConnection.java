@@ -184,8 +184,8 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
          "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM,"
             + " P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC"
-            + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V where I.I_CLASS=1 and"
-            + " P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by ID";
+            + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
+            + " where I.I_CLASS=1 and P.I_CLASS=2 and P.PARENT_ID=I.ID and V.PROPERTY_ID=P.ID order by ID LIMIT ? OFFSET ?";
    }
 
    /**
@@ -624,6 +624,9 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       {
          findNodesAndProperties.clearParameters();
       }
+
+      findNodesAndProperties.setInt(1, limit);
+      findNodesAndProperties.setInt(2, offset);
 
       return findNodesAndProperties.executeQuery();
    }

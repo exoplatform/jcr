@@ -1425,37 +1425,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException
+   public NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize)
+      throws RepositoryException
    {
-      try
-      {
-         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-
-         if (ds != null)
-         {
-            Connection jdbcConn =
-               SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-               {
-                  public Connection run() throws Exception
-                  {
-                     return ds.getConnection();
-                  }
-               });
-
-            return new JdbcNodeDataIndexingIterator(connFactory, pageSize);
-         }
-         else
-         {
-            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
-         }
-      }
-      catch (SQLException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (NamingException e)
-      {
-         throw new RepositoryException(e);
-      }
+      return new JdbcNodeDataIndexingIterator(connFactory, pageSize);
    }
 }

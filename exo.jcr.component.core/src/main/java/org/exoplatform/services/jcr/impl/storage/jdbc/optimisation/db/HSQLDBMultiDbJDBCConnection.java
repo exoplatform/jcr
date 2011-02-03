@@ -44,6 +44,66 @@ import javax.jcr.InvalidItemStateException;
  */
 public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
+   /**
+    * HSQLDB Multidatabase JDBC Connection constructor.
+    * 
+    * @param dbConnection
+    *          JDBC connection, shoudl be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
+    * @param containerName
+    *          Workspace Storage Container name (see configuration)
+    * @param valueStorageProvider
+    *          External Value Storages provider
+    * @param maxBufferSize
+    *          Maximum buffer size (see configuration)
+    * @param swapDirectory
+    *          Swap directory File (see configuration)
+    * @param swapCleaner
+    *          Swap cleaner (internal FileCleaner).
+    * @throws SQLException
+    * 
+    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    */
+   public HSQLDBMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
+      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+      throws SQLException
+   {
+      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void prepareQueries() throws SQLException
+   {
+      super.prepareQueries();
+      FIND_PROPERTY_BY_NAME =
+         "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
+            + " where I.PARENT_ID=? and I.I_CLASS=2 and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+      FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
+      FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1";
+      FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
+      FIND_NODES_BY_PARENTID_CQ =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
+            + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
+            + " where I.PARENT_ID=? and I.I_CLASS=1 and (P.PARENT_ID=I.ID and P.I_CLASS=2 and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and V.PROPERTY_ID=P.ID)"
+            + " order by I.N_ORDER_NUM, I.ID";
+      FIND_PROPERTIES_BY_PARENTID_CQ =
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED,"
+            + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from JCR_MITEM I LEFT OUTER JOIN JCR_MVALUE V ON (V.PROPERTY_ID=I.ID)"
+            + " where I.PARENT_ID=? and I.I_CLASS=2 order by I.NAME";
+   }
+
+   /**
+    * Use simple queries since it is much faster
+    */
+   @Override
+   protected QPath traverseQPath(String cpid) throws SQLException, InvalidItemStateException, IllegalNameException
+   {
+      return traverseQPathSQ(cpid);
+   }
 
    @Override
    protected int addNodeRecord(final NodeData data) throws SQLException
@@ -337,64 +397,18 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    }
 
    /**
-      * HSQLDB Multidatabase JDBC Connection constructor.
-      * 
-      * @param dbConnection
-      *          JDBC connection, shoudl be opened before
-      * @param readOnly
-      *          boolean if true the dbConnection was marked as READ-ONLY.
-      * @param containerName
-      *          Workspace Storage Container name (see configuration)
-      * @param valueStorageProvider
-      *          External Value Storages provider
-      * @param maxBufferSize
-      *          Maximum buffer size (see configuration)
-      * @param swapDirectory
-      *          Swap directory File (see configuration)
-      * @param swapCleaner
-      *          Swap cleaner (internal FileCleaner).
-      * @throws SQLException
-      * 
-      * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
-      */
-   public HSQLDBMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
-      throws SQLException
-   {
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-   }
-
-   /**
     * {@inheritDoc}
     */
    @Override
-   protected void prepareQueries() throws SQLException
+   protected ResultSet findNodesAndProperties(final int offset, final int limit) throws SQLException
    {
-
-      super.prepareQueries();
-      FIND_PROPERTY_BY_NAME =
-         "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
-            + " where I.PARENT_ID=? and I.I_CLASS=2 and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
-      FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
-      FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1";
-      FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
-      FIND_NODES_BY_PARENTID_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-            + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
-            + " where I.PARENT_ID=? and I.I_CLASS=1 and (P.PARENT_ID=I.ID and P.I_CLASS=2 and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and V.PROPERTY_ID=P.ID)"
-            + " order by I.N_ORDER_NUM, I.ID";
-      FIND_PROPERTIES_BY_PARENTID_CQ =
-         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED,"
-            + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from JCR_MITEM I LEFT OUTER JOIN JCR_MVALUE V ON (V.PROPERTY_ID=I.ID)"
-            + " where I.PARENT_ID=? and I.I_CLASS=2 order by I.NAME";
-   }
-
-   /**
-    * Use simple queries since it is much faster
-    */
-   @Override
-   protected QPath traverseQPath(String cpid) throws SQLException, InvalidItemStateException, IllegalNameException
-   {
-      return traverseQPathSQ(cpid);
+      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findNodesAndProperties(offset, limit);
+         }
+      };
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 }

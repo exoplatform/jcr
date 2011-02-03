@@ -459,4 +459,20 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       };
       return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesAndProperties(final int offset, final int limit) throws SQLException
+   {
+      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBSingleDbJDBCConnection.super.findNodesAndProperties(offset, limit);
+         }
+      };
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+   }
 }

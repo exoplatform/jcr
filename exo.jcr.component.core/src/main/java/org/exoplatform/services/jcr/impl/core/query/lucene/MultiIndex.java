@@ -1479,7 +1479,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private long createIndex(Indexable indexableComponent, NodeData rootNode, ItemDataConsumer stateMgr, long count)
       throws IOException, RepositoryException
    {
-      NodeDataIndexingIterator iterator = indexableComponent.getNodeDataIndexingIterator(1000);
+      NodeDataIndexingIterator iterator = indexableComponent.getNodeDataIndexingIterator(100000);
+
       while (iterator.hasNext())
       {
          for (NodeDataIndexing node : iterator.next())
