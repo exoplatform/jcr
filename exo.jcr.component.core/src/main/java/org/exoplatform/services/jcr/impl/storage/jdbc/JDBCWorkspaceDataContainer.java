@@ -1425,7 +1425,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public NodeDataIndexingIterator getNodeDataIndexingIterator() throws IOException
+   public NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException
    {
       try
       {
@@ -1441,17 +1441,21 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                      return ds.getConnection();
                   }
                });
-            return new JdbcNodeDataIndexingIterator(jdbcConn, multiDb, containerName, swapCleaner, maxBufferSize,
-               swapDirectory, valueStorageProvider);
+
+            return new JdbcNodeDataIndexingIterator(connFactory, pageSize);
          }
          else
          {
             throw new NameNotFoundException("Data source " + dbSourceName + " not found");
          }
       }
-      catch (Exception e)
+      catch (SQLException e)
       {
-         throw new IOException(e);
+         throw new RepositoryException(e);
+      }
+      catch (NamingException e)
+      {
+         throw new RepositoryException(e);
       }
    }
 }

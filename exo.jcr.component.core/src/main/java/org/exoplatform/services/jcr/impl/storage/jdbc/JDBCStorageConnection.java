@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -59,8 +60,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.PropertyType;
@@ -184,6 +192,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected PreparedStatement deleteValue;
 
    protected PreparedStatement renameNode;
+
+   protected PreparedStatement findNodesAndProperties;
 
    /**
     * Read-only flag, if true the connection is marked as READ-ONLY.
@@ -542,6 +552,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (renameNode != null)
          {
             renameNode.close();
+         }
+
+         if (findNodesAndProperties != null)
+         {
+            findNodesAndProperties.close();
          }
       }
       catch (SQLException e)
@@ -994,6 +1009,79 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          throw new RepositoryException(e);
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<NodeDataIndexing> getNodesAndProperties(int offset, int limit) throws RepositoryException,
+      IllegalStateException
+   {
+      List<NodeDataIndexing> result = new ArrayList<NodeDataIndexing>();
+
+      checkIfOpened();
+      try
+      {
+         ResultSet resultSet = findNodesAndProperties(offset, limit);
+         try
+         {
+            TempNodeData tempNodeData = null;
+            while (resultSet.next())
+            {
+               if (tempNodeData == null)
+               {
+                  tempNodeData = new TempNodeData(resultSet);
+               }
+               else if (!resultSet.getString(COLUMN_ID).equals(tempNodeData.cid))
+               {
+                  result.add(createNodeData(tempNodeData));
+
+                  tempNodeData = new TempNodeData(resultSet);
+               }
+
+               String key = resultSet.getString("P_NAME");
+
+               SortedSet<TempPropertyData> values = tempNodeData.properties.get(key);
+               if (values == null)
+               {
+                  values = new TreeSet<TempPropertyData>();
+                  tempNodeData.properties.put(key, values);
+               }
+
+               values.add(new ExtendedTempPropertyData(resultSet));
+            }
+
+            if (tempNodeData != null)
+            {
+               result.add(createNodeData(tempNodeData));
+            }
+         }
+         finally
+         {
+            try
+            {
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (IllegalNameException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+
+      return result;
    }
 
    /**
@@ -2443,6 +2531,205 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
    }
 
+   /**
+    * Build node data and its properties data from temporary stored info.
+    * 
+    * @return NodeDataIndexing
+    * @throws RepositoryException
+    * @throws IOException 
+    * @throws SQLException 
+    * @throws IllegalNameException 
+    */
+   protected NodeDataIndexing createNodeData(TempNodeData tempNode) throws RepositoryException, SQLException,
+      IOException, IllegalNameException
+   {
+      QPath parentPath;
+      String parentCid;
+
+      if (tempNode.cpid.equals(Constants.ROOT_PARENT_UUID))
+      {
+         // root node
+         parentPath = Constants.ROOT_PATH;
+         parentCid = null;
+      }
+      else
+      {
+         parentPath =
+            QPath.makeChildPath(traverseQPath(tempNode.cpid), InternalQName.parse(tempNode.cname), tempNode.cindex);
+         parentCid = tempNode.cpid;
+      }
+
+      // primary type
+      SortedSet<TempPropertyData> primaryTypeTempProp =
+         tempNode.properties.get(Constants.JCR_PRIMARYTYPE.getAsString());
+      if (primaryTypeTempProp == null)
+      {
+         throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
+            + parentPath.getAsString() + ", id " + tempNode.cid + ", container " + this.containerName, null);
+      }
+
+      byte[] data = primaryTypeTempProp.first().getAsByteArray();
+      primaryTypeTempProp.first().data = new ByteArrayInputStream(data);
+
+      InternalQName ptName =
+         InternalQName.parse(new String((data != null ? data : new byte[]{}), Constants.DEFAULT_ENCODING));
+
+      // mixins
+      List<InternalQName> mixins = new ArrayList<InternalQName>();
+      Set<TempPropertyData> mixinsTempProps = tempNode.properties.get(Constants.JCR_MIXINTYPES.getAsString());
+      if (mixinsTempProps != null)
+      {
+
+         for (TempPropertyData mxnb : mixinsTempProps)
+         {
+            data = mxnb.getAsByteArray();
+            mxnb.data = new ByteArrayInputStream(data);
+
+            mixins.add(InternalQName.parse(new String(data, Constants.DEFAULT_ENCODING)));
+         }
+      }
+
+      // build node data
+      NodeData nodeData =
+         new PersistedNodeData(getIdentifier(tempNode.cid), parentPath, getIdentifier(parentCid), tempNode.cversion,
+            tempNode.cnordernumb, ptName, mixins.toArray(new InternalQName[mixins.size()]), null);
+
+      List<PropertyData> childProps = new ArrayList<PropertyData>();
+
+      for (String propName : tempNode.properties.keySet())
+      {
+         ExtendedTempPropertyData prop = (ExtendedTempPropertyData)tempNode.properties.get(propName).first();
+         String identifier = getIdentifier(prop.id);
+
+         // read values
+         List<ValueData> valueData = new ArrayList<ValueData>();
+         for (TempPropertyData tempProp : tempNode.properties.get(propName))
+         {
+            ExtendedTempPropertyData extTempProp = (ExtendedTempPropertyData)tempProp;
+
+            ValueData vdata =
+               extTempProp.storage_desc == null ? readValueData(extTempProp.id, extTempProp.orderNum,
+                  extTempProp.version, extTempProp.data) : readValueData(identifier, extTempProp.orderNum,
+                  extTempProp.storage_desc);
+
+            valueData.add(vdata);
+         }
+         Collections.sort(valueData, COMPARATOR_VALUE_DATA);
+
+         QPath qpath = QPath.makeChildPath(parentPath, InternalQName.parse(prop.name));
+
+         // build property data
+         PropertyData pdata =
+            new PersistedPropertyData(identifier, qpath, tempNode.cid, prop.version, prop.type, prop.multi,
+               valueData);
+
+         childProps.add(pdata);
+      }
+
+      return new NodeDataIndexing(nodeData, childProps);
+   }
+
+   /**
+    * Class needed temporary to store node data info. 
+    */
+   protected class TempNodeData
+   {
+      public String cid;
+
+      public String cname;
+
+      public int cversion;
+
+      public String cpid;
+
+      public int cindex;
+
+      public int cnordernumb;
+
+      public Map<String, SortedSet<TempPropertyData>> properties = new HashMap<String, SortedSet<TempPropertyData>>();
+
+      public TempNodeData(ResultSet item) throws SQLException
+      {
+         cid = item.getString(COLUMN_ID);
+         cname = item.getString(COLUMN_NAME);
+         cversion = item.getInt(COLUMN_VERSION);
+         cpid = item.getString(COLUMN_PARENTID);
+         cindex = item.getInt(COLUMN_INDEX);
+         cnordernumb = item.getInt(COLUMN_NORDERNUM);
+      }
+   }
+
+   /**
+    * Class needs temporary to store value info.
+    */
+   protected class TempPropertyData implements Comparable<TempPropertyData>
+   {
+      public int orderNum;
+
+      public InputStream data;
+
+      public TempPropertyData(ResultSet item) throws SQLException
+      {
+         orderNum = item.getInt(COLUMN_VORDERNUM);
+         data = item.getBinaryStream(COLUMN_VDATA);
+      }
+
+      public byte[] getAsByteArray() throws IOException
+      {
+         byte[] readBuffer = new byte[data.available()];
+         data.read(readBuffer);
+
+         return readBuffer;
+      }
+
+      public int compareTo(TempPropertyData o)
+      {
+         return orderNum - o.orderNum;
+      }
+   }
+
+   /**
+    * Class needs temporary to store whole property data info.
+    */
+   protected class ExtendedTempPropertyData extends TempPropertyData
+   {
+      public String id;
+
+      public String name;
+
+      public int version;
+
+      public int type;
+
+      boolean multi;
+
+      public String storage_desc;
+
+      public ExtendedTempPropertyData(ResultSet item) throws SQLException
+      {
+         super(item);
+
+         id = item.getString("P_ID");
+         name = item.getString("P_NAME");
+         version = item.getInt("P_VERSION");
+         type = item.getInt("P_TYPE");
+         multi = item.getBoolean("P_MULTIVALUED");
+         storage_desc = item.getString(COLUMN_VSTORAGE_DESC);
+      }
+   }
+
+   /**
+    * The comparator used to sort the value data
+    */
+   protected static Comparator<ValueData> COMPARATOR_VALUE_DATA = new Comparator<ValueData>()
+   {
+
+      public int compare(ValueData vd1, ValueData vd2)
+      {
+         return vd1.getOrderNumber() - vd2.getOrderNumber();
+      }
+   };
+
    protected abstract int addNodeRecord(NodeData data) throws SQLException;
 
    protected abstract int addPropertyRecord(PropertyData prop) throws SQLException;
@@ -2458,6 +2745,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected abstract ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findChildPropertiesByParentIdentifier(String parentIdentifier) throws SQLException;
+
+   protected abstract ResultSet findNodesAndProperties(int offset, int limit) throws SQLException;
 
    protected abstract int addReference(PropertyData data) throws SQLException, IOException;
 

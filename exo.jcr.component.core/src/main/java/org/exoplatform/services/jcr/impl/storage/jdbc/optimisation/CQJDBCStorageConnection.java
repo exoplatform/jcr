@@ -46,7 +46,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,69 +100,6 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected PreparedStatement findItemQPathByIdentifierCQ;
 
    /**
-    * The comparator used to sort the value data
-    */
-   private static Comparator<ValueData> COMPARATOR_VALUE_DATA = new Comparator<ValueData>()
-   {
-
-      public int compare(ValueData vd1, ValueData vd2)
-      {
-         return vd1.getOrderNumber() - vd2.getOrderNumber();
-      }
-   };
-
-   /**
-    * Class needed to store node details (property also) since result set is not sorted in valid way. 
-    */
-   private static class TempNodeData
-   {
-      String cid;
-
-      String cname;
-
-      int cversion;
-
-      String cpid;
-
-      int cindex;
-
-      int cnordernumb;
-
-      Map<String, SortedSet<TempPropertyData>> properties = new HashMap<String, SortedSet<TempPropertyData>>();
-
-      public TempNodeData(ResultSet item) throws SQLException
-      {
-         cid = item.getString(COLUMN_ID);
-         cname = item.getString(COLUMN_NAME);
-         cversion = item.getInt(COLUMN_VERSION);
-         cpid = item.getString(COLUMN_PARENTID);
-         cindex = item.getInt(COLUMN_INDEX);
-         cnordernumb = item.getInt(COLUMN_NORDERNUM);
-      }
-   }
-
-   /**
-    * store temporary property data to allow to sort it manually
-    */
-   private static class TempPropertyData implements Comparable<TempPropertyData>
-   {
-      int orderNum;
-
-      byte[] data;
-
-      public TempPropertyData(ResultSet item) throws SQLException
-      {
-         orderNum = item.getInt(COLUMN_VORDERNUM);
-         data = item.getBytes(COLUMN_VDATA);
-      }
-
-      public int compareTo(TempPropertyData o)
-      {
-         return orderNum - o.orderNum;
-      }
-   }
-
-   /**
      * JDBCStorageConnection constructor.
      * 
      * @param dbConnection
@@ -191,6 +127,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
@@ -257,6 +194,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
@@ -363,9 +301,10 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * @return list ACL
     * @throws SQLException
     * @throws IllegalACLException
+    * @throws IOException 
     */
    protected List<AccessControlEntry> readACLPermisions(String cid, Map<String, SortedSet<TempPropertyData>> properties)
-      throws SQLException, IllegalACLException
+      throws SQLException, IllegalACLException, IOException
    {
       List<AccessControlEntry> naPermissions = new ArrayList<AccessControlEntry>();
       Set<TempPropertyData> permValues = properties.get(Constants.EXO_PERMISSIONS.getAsString());
@@ -374,7 +313,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       {
          for (TempPropertyData value : permValues)
          {
-            StringTokenizer parser = new StringTokenizer(new String(value.data), AccessControlEntry.DELIMITER);
+            StringTokenizer parser =
+               new StringTokenizer(new String(value.getAsByteArray()), AccessControlEntry.DELIMITER);
             naPermissions.add(new AccessControlEntry(parser.nextToken(), parser.nextToken()));
          }
 
@@ -391,13 +331,14 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * @param properties - Property name and property values
     * @return ACL owner
     * @throws IllegalACLException
+    * @throws IOException 
     */
    protected String readACLOwner(String cid, Map<String, SortedSet<TempPropertyData>> properties)
-      throws IllegalACLException
+      throws IllegalACLException, IOException
    {
       SortedSet<TempPropertyData> ownerValues = properties.get(Constants.EXO_OWNER.getAsString());
       if (ownerValues != null)
-         return new String(ownerValues.first().data);
+         return new String(ownerValues.first().getAsByteArray());
       else
          throw new IllegalACLException("Property exo:owner is not found for node with id: " + getIdentifier(cid));
    }
@@ -405,6 +346,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected PersistedNodeData loadNodeRecord(QPath parentPath, String cname, String cid, String cpid, int cindex,
       int cversion, int cnordernumb, AccessControlList parentACL) throws RepositoryException, SQLException
    {
@@ -425,6 +367,10 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          }
 
          return loadNodeRecord(parentPath, cname, cid, cpid, cindex, cversion, cnordernumb, properties, parentACL);
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
       }
       finally
       {
@@ -459,10 +405,11 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
 
    /**
     * Create a new node from the given parameter.
+    * @throws IOException 
     */
    private PersistedNodeData loadNodeRecord(QPath parentPath, String cname, String cid, String cpid, int cindex,
       int cversion, int cnordernumb, Map<String, SortedSet<TempPropertyData>> properties, AccessControlList parentACL)
-      throws RepositoryException, SQLException
+      throws RepositoryException, SQLException, IOException
    {
       try
       {
@@ -500,7 +447,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
          }
 
-         byte[] data = primaryType.first().data;
+         byte[] data = primaryType.first().getAsByteArray();
          InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
 
          // MIXIN
@@ -513,7 +460,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             List<InternalQName> mNames = new ArrayList<InternalQName>();
             for (TempPropertyData mxnb : mixTypes)
             {
-               InternalQName mxn = InternalQName.parse(new String(mxnb.data));
+               InternalQName mxn = InternalQName.parse(new String(mxnb.getAsByteArray()));
                mNames.add(mxn);
 
                if (!privilegeable && Constants.EXO_PRIVILEGEABLE.equals(mxn))

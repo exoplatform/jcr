@@ -1479,13 +1479,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private long createIndex(Indexable indexableComponent, NodeData rootNode, ItemDataConsumer stateMgr, long count)
       throws IOException, RepositoryException
    {
-      NodeDataIndexingIterator iterator = indexableComponent.getNodeDataIndexingIterator();
-      try
+      NodeDataIndexingIterator iterator = indexableComponent.getNodeDataIndexingIterator(1000);
+      while (iterator.hasNext())
       {
-         while (iterator.hasNext())
+         for (NodeDataIndexing node : iterator.next())
          {
-            NodeDataIndexing node = iterator.next();
-
             if (indexingTree.isExcluded(node))
             {
                continue;
@@ -1508,10 +1506,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             checkVolatileCommit();
          }
-      }
-      finally
-      {
-         iterator.close();
       }
 
       return count;

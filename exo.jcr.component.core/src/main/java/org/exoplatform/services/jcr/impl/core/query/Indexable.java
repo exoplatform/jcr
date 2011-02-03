@@ -18,8 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import java.io.IOException;
-
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -31,5 +30,5 @@ import java.io.IOException;
  */
 public interface Indexable
 {
-   NodeDataIndexingIterator getNodeDataIndexingIterator() throws IOException;
+   NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException;
 }

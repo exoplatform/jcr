@@ -189,6 +189,11 @@ public class DBConstants
     */
    protected String DELETE_REF;
 
+   /**
+    * FIND_NODES.
+    */
+   protected String FIND_NODES_AND_PROPERTIES;
+
    // ======================== ITEMS table ======================== 
    /**
     * COLUMN_ID.

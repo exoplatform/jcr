@@ -86,6 +86,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getIdentifier(final String internalId)
    {
       return internalId;
@@ -94,6 +95,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getInternalId(final String identifier)
    {
       return identifier;
@@ -177,6 +179,13 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       DELETE_ITEM = "delete from JCR_MITEM where ID=?";
       DELETE_VALUE = "delete from JCR_MVALUE where PROPERTY_ID=?";
       DELETE_REF = "delete from JCR_MREF where PROPERTY_ID=?";
+
+      FIND_NODES_AND_PROPERTIES =
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM,"
+            + " P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC"
+            + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V where I.I_CLASS=1 and"
+            + " P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by ID";
    }
 
    /**
@@ -320,6 +329,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ResultSet findItemByName(String parentId, String name, int index) throws SQLException
    {
       if (findItemByName == null)
@@ -444,6 +454,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected int addValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc)
       throws SQLException
    {
@@ -473,6 +484,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected int deleteValueData(String cid) throws SQLException
    {
       if (deleteValue == null)
@@ -487,6 +499,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ResultSet findValuesByPropertyId(String cid) throws SQLException
    {
       if (findValuesByPropertyId == null)
@@ -501,6 +514,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException
    {
       if (findValueByPropertyIdOrderNumber == null)
@@ -596,4 +610,21 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       return findItemQPathByIdentifierCQ.executeQuery();
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesAndProperties(int offset, int limit) throws SQLException
+   {
+      if (findNodesAndProperties == null)
+      {
+         findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
+      }
+      else
+      {
+         findNodesAndProperties.clearParameters();
+      }
+
+      return findNodesAndProperties.executeQuery();
+   }
 }

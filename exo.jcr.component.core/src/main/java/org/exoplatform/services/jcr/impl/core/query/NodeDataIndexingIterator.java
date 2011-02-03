@@ -20,8 +20,9 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 
-import java.io.IOException;
-import java.util.NoSuchElementException;
+import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -33,10 +34,9 @@ import java.util.NoSuchElementException;
  */
 public interface NodeDataIndexingIterator
 {
-
    /**
     * Returns <tt>true</tt> if the iteration has more elements. (In other
-    * words, returns <tt>true</tt> if <tt>next</tt> would return an element
+    * words, returns <tt>true</tt> if <tt>next</tt> would return element 
     * rather than throwing an exception.)
     *
     * @return <tt>true</tt> if the iterator has more elements.
@@ -44,15 +44,10 @@ public interface NodeDataIndexingIterator
    boolean hasNext();
 
    /**
-    * Returns the next element in the iteration.
+    * Returns the next list of elements in the iteration.
     *
-    * @return the next element in the iteration.
-    * @exception NoSuchElementException iteration has no more elements.
+    * @return the next list of elements in the iteration
+    * @throws RepositoryException if any exception occurred
     */
-   NodeDataIndexing next() throws IOException;
-
-   /**
-    * Closes the iterator and releases all resources.
-    */
-   void close() throws IOException;
+   List<NodeDataIndexing> next() throws RepositoryException;
 }

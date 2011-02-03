@@ -72,6 +72,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getInternalId(final String identifier)
    {
       return containerName + identifier;
@@ -80,6 +81,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getIdentifier(final String internalId)
    {
 
@@ -158,6 +160,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       DELETE_ITEM = "delete from JCR_SITEM where ID=?";
       DELETE_VALUE = "delete from JCR_SVALUE where PROPERTY_ID=?";
       DELETE_REF = "delete from JCR_SREF where PROPERTY_ID=?";
+
+      FIND_NODES_AND_PROPERTIES =
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM,"
+            + " P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
+            + " V.DATA, V.ORDER_NUM,  V.STORAGE_DESC"
+            + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V where I.I_CLASS=1 and I.CONTAINER_NAME=? and"
+            + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID" + " and V.PROPERTY_ID=P.ID order by ID";
    }
 
    /**
@@ -416,6 +425,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected int addValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc)
       throws SQLException
    {
@@ -445,6 +455,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected int deleteValueData(String cid) throws SQLException
    {
       if (deleteValue == null)
@@ -459,6 +470,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ResultSet findValuesByPropertyId(String cid) throws SQLException
    {
       if (findValuesByPropertyId == null)
@@ -489,6 +501,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException
    {
       if (findValueByPropertyIdOrderNumber == null)
@@ -528,5 +541,26 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       renameNode.setInt(5, data.getOrderNumber());
       renameNode.setString(6, getInternalId(data.getIdentifier()));
       return renameNode.executeUpdate();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesAndProperties(int offset, int limit) throws SQLException
+   {
+      if (findNodesAndProperties == null)
+      {
+         findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
+      }
+      else
+      {
+         findNodesAndProperties.clearParameters();
+      }
+
+      findNodesAndProperties.setString(1, containerName);
+      findNodesAndProperties.setString(2, containerName);
+
+      return findNodesAndProperties.executeQuery();
    }
 }
