@@ -941,7 +941,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
     &lt;properties-param&gt;
       &lt;name&gt;backup-properties&lt;/name&gt;
       &lt;property name="default-incremental-job-period" value="3600" /&gt; &lt;!-- set default incremental period = 60 minutes --&gt;
-      &lt;property name="full-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.fs..rdbms.FullBackupJob" /&gt;
+      &lt;property name="full-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob" /&gt;
       &lt;property name="incremental-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob" /&gt;
       &lt;property name="backup-dir" value="target/backup" /&gt;
     &lt;/properties-param&gt;
