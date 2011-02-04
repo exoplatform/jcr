@@ -142,6 +142,6 @@ public class NodeDataIndexing implements NodeData
     */
    public AccessControlList getACL()
    {
-      throw new UnsupportedOperationException("getACL() method is not supported");
+      return nodeData.getACL();
    }
 }

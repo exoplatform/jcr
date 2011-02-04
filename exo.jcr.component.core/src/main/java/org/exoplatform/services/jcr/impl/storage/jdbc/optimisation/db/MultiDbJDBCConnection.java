@@ -180,12 +180,12 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       DELETE_VALUE = "delete from JCR_MVALUE where PROPERTY_ID=?";
       DELETE_REF = "delete from JCR_MREF where PROPERTY_ID=?";
 
-      FIND_NODES_AND_PROPERTIES =
-         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM,"
-            + " P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC"
-            + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
-            + " where I.I_CLASS=1 and P.I_CLASS=2 and P.PARENT_ID=I.ID and V.PROPERTY_ID=P.ID order by ID LIMIT ? OFFSET ?";
+      FIND_NODES_AND_PROPERTIES = 
+         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED," 
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
+            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I"
+            + " where I.I_CLASS=1 order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
+            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
    }
 
    /**

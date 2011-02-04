@@ -1020,10 +1020,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws RepositoryException
     * @throws IllegalStateException
     */
-   public int getNodesAndProperties(int offset, int limit, List<NodeDataIndexing> result) throws RepositoryException,
+   public List<NodeDataIndexing> getNodesAndProperties(int offset, int limit) throws RepositoryException,
       IllegalStateException
    {
-      int read = 0;
+      List<NodeDataIndexing> result = new ArrayList<NodeDataIndexing>();
 
       checkIfOpened();
       try
@@ -1056,8 +1056,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                }
 
                values.add(new ExtendedTempPropertyData(resultSet));
-
-               ++read;
             }
 
             if (tempNodeData != null)
@@ -1090,7 +1088,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          throw new RepositoryException(e);
       }
 
-      return read;
+      return result;
    }
 
    /**
