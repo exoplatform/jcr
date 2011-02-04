@@ -100,6 +100,7 @@
          &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
          &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
          &lt;property name="max-volatile-time" value="60" /&gt;
+         &lt;property name="reindexing-page-size" value="10000" /&gt;
       &lt;/properties&gt;
    &lt;/query-handler&gt;
 &lt;/workspace&gt;</programlisting> <table>
@@ -153,6 +154,14 @@
                 <entry>max-volatile-time</entry>
 
                 <entry>max time to live for Volatile Index</entry>
+              </row>
+
+              <row>
+                <entry>reindexing-page-size</entry>
+
+                <entry>maximum amount of nodes which can be retrieved from
+                storage for re-indexing purpose, the default value is
+                1000</entry>
               </row>
             </tbody>
           </tgroup>
