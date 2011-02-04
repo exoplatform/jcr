@@ -108,4 +108,6 @@ public interface QueryHandlerParams
    public static final String PARAM_ANALYZER_CLASS = "analyzer";
 
    public static final String PARAM_CHANGES_FILTER_CLASS = "changesfilter-class";
+
+   public static final String PARAM_REINDEXING_PAGE_SIZE = "reindexing-page-size";
 }

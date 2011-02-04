@@ -83,6 +83,12 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1";
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
+      FIND_NODES_AND_PROPERTIES =
+         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
+            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I"
+            + " where I.I_CLASS=1 order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
+            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
    }
 
    @Override

@@ -186,5 +186,9 @@ public class SearchIndexConfigurationHelper
       {
          searchIndex.setSpellCheckerMinDistance(StringNumberParser.parseNumber(value).floatValue());
       }
+      else if (QueryHandlerParams.PARAM_REINDEXING_PAGE_SIZE.equals(name))
+      {
+         searchIndex.setReindexingPageSize(StringNumberParser.parseNumber(value).intValue());
+      }
    }
 }

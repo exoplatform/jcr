@@ -171,6 +171,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public static final int DEFAULT_TERM_INFOS_INDEX_DIVISOR = 1;
 
    /**
+    * The default value for {@link #reindexingPageSize}.
+    */
+   public static final int DEFAULT_REINDEXING_PAGE_SIZE = 1000;
+
+   /**
     * Default name of the error log file
     */
    private static final String ERROR_LOG = "error.log";
@@ -454,6 +459,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private ErrorLog errorLog;
 
    private final ConfigurationManager cfm;
+
+   /**
+    * Maximum amount of nodes which can be retrieved from storage for re-indexing purpose. 
+    */
+   private int reindexingPageSize = DEFAULT_REINDEXING_PAGE_SIZE;
 
    /**
     * Working constructor.
@@ -2650,6 +2660,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
+    * @return the current value for reindexingPageSize
+    */
+   public int getReindexingPageSize()
+   {
+      return reindexingPageSize;
+   }
+
+   /**
     * Sets a new value for termInfosIndexDivisor.
     * 
     * @param termInfosIndexDivisor
@@ -2679,6 +2697,17 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setInitializeHierarchyCache(boolean initializeHierarchyCache)
    {
       this.initializeHierarchyCache = initializeHierarchyCache;
+   }
+
+   /**
+    * Set a new value for reindexingPageSize.
+    * 
+    * @param reindexingPageSize
+    *            the new value
+    */
+   public void setReindexingPageSize(int reindexingPageSize)
+   {
+      this.reindexingPageSize = reindexingPageSize;
    }
 
    // ----------------------------< internal
