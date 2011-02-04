@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rpc.RPCService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,17 @@ public class SystemSearchManager extends SearchManager
       RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException, RepositoryConfigurationException
    {
       super(wsConfig, rEntry, rService, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
+   }
+
+   public SystemSearchManager(WorkspaceEntry wsConfig, RepositoryEntry rEntry, RepositoryService rService,
+      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+      WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
+      DocumentReaderService extractor, ConfigurationManager cfm,
+      final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      super(wsConfig, rEntry, rService, config, nsReg, ntReg, itemMgr, null, extractor, cfm, indexSearcherHolder,
+         rpcService);
    }
 
    @Override
