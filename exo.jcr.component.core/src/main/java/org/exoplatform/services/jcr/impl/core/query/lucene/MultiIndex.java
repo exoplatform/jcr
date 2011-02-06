@@ -1401,6 +1401,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *            the current NodeState.
     * @param path
     *            the path of the current node.
+    * @param stateMgr
+    *            the shared item state manager.            
     * @param count
     *            the number of nodes already indexed.
     * @return the number of nodes indexed so far.
@@ -1411,7 +1413,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws RepositoryException
     *             if any other error occurs
     */
-   private long createIndex(NodeData node, long count) throws IOException,
+   private long createIndex(NodeData node, ItemDataConsumer stateMgr, long count) throws IOException,
       RepositoryException
    {
       // NodeId id = node.getNodeId();
@@ -1462,8 +1464,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *            the current NodeState.
     * @param path
     *            the path of the current node.
-    * @param stateMgr
-    *            the shared item state manager.
     * @param count
     *            the number of nodes already indexed.
     * @return the number of nodes indexed so far.
@@ -1474,7 +1474,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws RepositoryException
     *             if any other error occurs
     */
-   private long createIndex(Indexable indexableComponent, NodeData rootNode, ItemDataConsumer stateMgr, long count)
+   private long createIndex(Indexable indexableComponent, NodeData rootNode, long count)
       throws IOException, RepositoryException
    {
       NodeDataIndexingIterator iterator =
