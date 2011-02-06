@@ -2595,12 +2595,12 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
       }
 
-      // build node data
+      // build node data. No need to load ACL. The node will be pushed directly for reindexing. 
       NodeData nodeData =
          new PersistedNodeData(getIdentifier(tempNode.cid), parentPath, getIdentifier(parentCid),
             tempNode.cversion, tempNode.cnordernumb, ptName, mixins.toArray(new InternalQName[mixins.size()]), null);
 
-      List<PropertyData> childProps = new ArrayList<PropertyData>();
+      Map<String, PropertyData> childProps = new HashMap<String, PropertyData>();
       for (String propName : tempNode.properties.keySet())
       {
          ExtendedTempPropertyData prop = (ExtendedTempPropertyData)tempNode.properties.get(propName).first();
@@ -2638,7 +2638,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             new PersistedPropertyData(identifier, qpath, tempNode.cid, prop.version, prop.type, prop.multi,
                valueData);
 
-         childProps.add(pdata);
+         childProps.put(propName, pdata);
       }
 
       return new NodeDataIndexing(nodeData, childProps);

@@ -21,7 +21,8 @@ package org.exoplatform.services.jcr.datamodel;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 import javax.jcr.RepositoryException;
 
@@ -37,7 +38,7 @@ public class NodeDataIndexing implements NodeData
 {
    private final NodeData nodeData;
 
-   private final List<PropertyData> properties;
+   private final Map<String, PropertyData> properties;
 
    /**
     * Constructor NodeDataIndexing.
@@ -50,19 +51,30 @@ public class NodeDataIndexing implements NodeData
    /**
     * Constructor NodeDataIndexing.
     */
-   public NodeDataIndexing(NodeData nodeData, List<PropertyData> properties)
+   public NodeDataIndexing(NodeData nodeData, Map<String, PropertyData> properties)
    {
       this.nodeData = nodeData;
       this.properties = properties;
    }
 
    /**
+    * List of properties data.
     * 
-    * @return
+    * @return Collection
     */
-   public List<PropertyData> getChildPropertiesData()
+   public Collection<PropertyData> getChildPropertiesData()
    {
-      return properties;
+      return properties == null ? null : properties.values();
+   }
+
+   /**
+    * Property data.
+    * 
+    * @return PropertyData
+    */
+   public PropertyData getProperty(String name)
+   {
+      return properties == null ? null : properties.get(name);
    }
 
    /**

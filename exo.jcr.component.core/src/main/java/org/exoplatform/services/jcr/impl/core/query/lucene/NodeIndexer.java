@@ -48,6 +48,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -219,7 +220,7 @@ public class NodeIndexer
          // unknown uri<->prefix mappings
       }
 
-      List<PropertyData> props = node.getChildPropertiesData();
+      Collection<PropertyData> props = node.getChildPropertiesData();
       if (props == null)
       {
          props = stateProvider.listChildPropertiesData(node);
@@ -327,9 +328,14 @@ public class NodeIndexer
          {
 
             // seems nt:file found, try for nt:resource props
-            PropertyData pmime =
-               (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0),
-                  ItemType.PROPERTY);
+            PropertyData pmime = node.getProperty(Constants.JCR_MIMETYPE.getAsString());
+            if (pmime == null)
+            {
+               pmime =
+                  (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0),
+                     ItemType.PROPERTY);
+            }
+
             if (pmime != null)
             {
                // ok, have a reader
@@ -354,9 +360,13 @@ public class NodeIndexer
                   }
 
                   // check the jcr:encoding property
-                  PropertyData encProp =
+                  PropertyData encProp = node.getProperty(Constants.JCR_ENCODING.getAsString());
+                  if (encProp == null)
+                  {
+                     encProp =
                      (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0),
-                        ItemType.PROPERTY);
+                           ItemType.PROPERTY);
+                  }
 
                   String encoding = null;
                   if (encProp != null)
