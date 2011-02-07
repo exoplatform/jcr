@@ -435,10 +435,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             // NodeData rootState = (NodeData) stateMgr.getItemData(rootId);
             // check if we have deal with JDBC indexing mechanism
             Indexable indexableComponent = (Indexable)handler.getContext().getContainer().getComponent(Indexable.class);
-            long count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
-            //            long count =
-            //               indexableComponent == null ? createIndex(indexingTree.getIndexingRoot(), stateMgr) : createIndex(
-            //                  indexableComponent, indexingTree.getIndexingRoot());
+            long count =
+               indexableComponent == null ? createIndex(indexingTree.getIndexingRoot(), stateMgr) : createIndex(
+                  indexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
+                  indexingTree.getIndexingRoot());
 
             executeAndLog(new Commit(getTransactionId()));
             log.info("Created initial index for {} nodes", new Long(count));
@@ -1533,60 +1533,118 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    }
 
    /**
-    * Creates an index.
-    * <code>node</code>.
+    * Create index.
     * 
-    * @param indexableComponent
-    *          the component which responsible for quick indexing
+    * @param iterator
+    *             the NodeDataIndexing iterator            
     * @param rootNode
-    *            the current NodeState.
-    * @param path
-    *            the path of the current node.
-    * @param count
-    *            the number of nodes already indexed.
-    * @return the number of nodes indexed so far.
+    *            the root node of the index 
+    * @return the total amount of indexed nodes           
     * @throws IOException
     *             if an error occurs while writing to the index.
-    * @throws ItemStateException
-    *             if an node state cannot be found.
     * @throws RepositoryException
     *             if any other error occurs
     */
-   private long createIndex(Indexable indexableComponent, NodeData rootNode, long count) throws IOException,
+   private long createIndex(NodeDataIndexingIterator iterator, NodeData rootNode) throws IOException,
       RepositoryException
    {
-      NodeDataIndexingIterator iterator =
-         indexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize());
+      MultithreadedIndexing indexing = new MultithreadedIndexing(iterator, rootNode);
+      return indexing.launch(false);
+   }
 
-      while (iterator.hasNext())
+   /**
+    * Create index.
+    * 
+    * @param iterator
+    *             the NodeDataIndexing iterator
+    * @param rootNode
+    *            the root node of the index                          
+    * @param count
+    *            the number of nodes already indexed.
+    * @throws IOException
+    *             if an error occurs while writing to the index.
+    * @throws RepositoryException
+    *             if any other error occurs
+    * @throws InterruptedException
+    *             if the task has been interrupted 
+    */
+   private void createIndex(final NodeDataIndexingIterator iterator, NodeData rootNode, final AtomicLong count)
+      throws RepositoryException, InterruptedException, IOException
+   {
+      for (NodeDataIndexing node : iterator.next())
       {
-         for (NodeDataIndexing node : iterator.next())
+         if (stopped)
          {
-            if (indexingTree.isExcluded(node))
-            {
-               continue;
-            }
+            throw new InterruptedException();
+         }
 
-            if (!node.getQPath().isDescendantOf(rootNode.getQPath()) && !node.getQPath().equals(rootNode.getQPath()))
-            {
-               continue;
-            }
+         if (indexingTree.isExcluded(node))
+         {
+            continue;
+         }
 
-            executeAndLog(new AddNode(getTransactionId(), node, true));
+         if (!node.getQPath().isDescendantOf(rootNode.getQPath()) && !node.getQPath().equals(rootNode.getQPath()))
+         {
+            continue;
+         }
 
-            if (++count % 100 == 0)
-            {
-               log.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count));
-            }
-            if (count % 10 == 0)
+         executeAndLog(new AddNode(getTransactionId(), node, true));
+         if (count.incrementAndGet() % 1000 == 0)
+         {
+            log.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count.get()));
+         }
+
+         synchronized (this)
+         {
+            if (count.get() % 10 == 0)
             {
                checkIndexingQueue(true);
             }
             checkVolatileCommit();
          }
       }
+   }
 
-      return count;
+   /**
+    * Creates an index.
+    * 
+    * @param tasks
+    *            the queue of existing indexing tasks 
+    * @param rootNode
+    *            the root node of the index 
+    * @param iterator
+    *             the NodeDataIndexing iterator            
+    * @param count
+    *            the number of nodes already indexed.
+    * @throws IOException
+    *             if an error occurs while writing to the index.
+    * @throws ItemStateException
+    *             if an node state cannot be found.
+    * @throws RepositoryException
+    *             if any other error occurs
+    * @throws InterruptedException 
+    *             if thread was interrupted
+    */
+   private void createIndex(final Queue<Callable<Void>> tasks, final NodeDataIndexingIterator iterator,
+      final NodeData rootNode, final AtomicLong count) throws IOException, RepositoryException, InterruptedException
+   {
+      while (iterator.hasNext())
+      {
+         Callable<Void> task = new Callable<Void>()
+         {
+            public Void call() throws Exception
+            {
+               createIndex(iterator, rootNode, count);
+               return null;
+            }
+         };
+
+         if (!tasks.offer(task))
+         {
+            // All threads have tasks to do so we do it ourself
+            createIndex(iterator, rootNode, count);
+         }
+      }
    }
 
    /**
@@ -3005,7 +3063,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       };
 
       /**
-       * Default constructor
+       * MultithreadedIndexing constructor.
+       * 
        * @param node
        *            the current NodeState.
        * @param stateMgr
@@ -3018,6 +3077,26 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             public Void call() throws Exception
             {
                createIndex(tasks, node, stateMgr, count);
+               return null;
+            }
+         });
+      }
+
+      /**
+       * MultithreadedIndexing constructor.
+       * 
+       * @param node
+       *            the current NodeState.
+       * @param iterator
+       *            NodeDataIndexingIterator
+       */
+      public MultithreadedIndexing(final NodeDataIndexingIterator iterator, final NodeData rootNode)
+      {
+         tasks.offer(new Callable<Void>()
+         {
+            public Void call() throws Exception
+            {
+               createIndex(tasks, iterator, rootNode, count);
                return null;
             }
          });

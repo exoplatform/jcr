@@ -25,7 +25,10 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactor
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.RepositoryException;
 
@@ -55,17 +58,17 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
    /**
     * The current offset in database.
     */
-   private int offset = 0;
+   private AtomicInteger offset = new AtomicInteger(0);
+
+   /**
+    * Indicates if not all records have been read from database.
+    */
+   private AtomicBoolean hasNext = new AtomicBoolean(true);
 
    /**
     * Logger.
     */
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JdbcIndexingDataIterator");
-
-   /**
-    * The list of nodes to return in next() method.
-    */
-   private List<NodeDataIndexing> current;
 
    /**
     * Constructor JdbcIndexingDataIterator.
@@ -75,15 +78,6 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
    {
       this.connFactory = connFactory;
       this.pageSize = pageSize;
-      this.current = readNext();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean hasNext()
-   {
-      return this.current.size() != 0;
    }
 
    /**
@@ -91,25 +85,17 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
     */
    public List<NodeDataIndexing> next() throws RepositoryException
    {
-      List<NodeDataIndexing> next = this.current;
-      this.current = readNext();
+      if (!hasNext())
+      {
+         // avoid unnecessary request to database
+         return new ArrayList<NodeDataIndexing>();
+      }
 
-      return next;
-   }
-
-   /**
-    * Read nodes from database.  
-    * 
-    * @return List<NodeDataIndexing> 
-    * @throws RepositoryException 
-    */
-   private List<NodeDataIndexing> readNext() throws RepositoryException
-   {
       JDBCStorageConnection conn = (JDBCStorageConnection)connFactory.openConnection();
       try
       {
-         List<NodeDataIndexing> result = conn.getNodesAndProperties(offset, pageSize);
-         offset += pageSize;
+         List<NodeDataIndexing> result = conn.getNodesAndProperties(offset.getAndAdd(pageSize), pageSize);
+         hasNext.compareAndSet(true, result.size() == pageSize);
          
          return result;
       }
@@ -117,6 +103,14 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
       {
          conn.close();
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean hasNext()
+   {
+      return hasNext.get();
    }
 }
 
