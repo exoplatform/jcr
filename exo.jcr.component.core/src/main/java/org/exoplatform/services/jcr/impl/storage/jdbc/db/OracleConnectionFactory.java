@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.jcr.RepositoryException;
@@ -211,6 +213,29 @@ public class OracleConnectionFactory extends GenericConnectionFactory
       Connection conn = (Connection)getConnection.invoke(ociDataSource, new Object[]{});
 
       return conn;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
+   {
+      try
+      {
+         if (multiDb)
+         {
+            return new OracleMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
+               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         }
+
+         return new OracleSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
+            valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
    }
 
 }

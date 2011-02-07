@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see&lt;http://www.gnu.org/licenses/&gt;.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
+package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -31,16 +31,6 @@ import java.sql.SQLException;
  */
 public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
-
-   protected static final String FIND_NODES_BY_PARENTID_CQ_QUERY =
-      SingleDbJDBCConnection.FIND_NODES_BY_PARENTID_CQ_QUERY
-         .replaceFirst("select",
-            "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(P JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/");
-
-   protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
-      SingleDbJDBCConnection.FIND_PROPERTIES_BY_PARENTID_CQ_QUERY.replaceFirst("select",
-         "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/");
-
    /**
     * Oracle Singledatabase JDBC Connection constructor.
     * 
@@ -66,7 +56,6 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
       ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
       throws SQLException
    {
-
       super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
    }
 
@@ -76,10 +65,7 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
    @Override
    protected void prepareQueries() throws SQLException
    {
-
       super.prepareQueries();
-      FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
-      FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
       FIND_NODES_AND_PROPERTIES =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"

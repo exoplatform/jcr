@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see&lt;http://www.gnu.org/licenses/&gt;.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
+package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -29,23 +29,13 @@ import java.sql.SQLException;
  *          nicolas.filotto@exoplatform.com
  * 19 mars 2010  
  */
-public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
+public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
-
-   protected static final String FIND_NODES_BY_PARENTID_CQ_QUERY =
-      SingleDbJDBCConnection.FIND_NODES_BY_PARENTID_CQ_QUERY
-         .replaceFirst("select",
-            "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(P JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/");
-
-   protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
-      SingleDbJDBCConnection.FIND_PROPERTIES_BY_PARENTID_CQ_QUERY.replaceFirst("select",
-         "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/");
-
    /**
-    * Oracle Singledatabase JDBC Connection constructor.
+    * Oracle Multidatabase JDBC Connection constructor.
     * 
     * @param dbConnection
-    *          JDBC connection, should be opened before
+    *          JDBC connection, shoudl be opened before
     * @param readOnly
     *          boolean if true the dbConnection was marked as READ-ONLY.
     * @param containerName
@@ -62,11 +52,10 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
     * 
     * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
     */
-   public OracleSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
+   public OracleMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
       ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
       throws SQLException
    {
-
       super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
    }
 
@@ -76,17 +65,14 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
    @Override
    protected void prepareQueries() throws SQLException
    {
-
       super.prepareQueries();
-      FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
-      FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
       FIND_NODES_AND_PROPERTIES =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
             + " join ( select * ( select a.*, ROWNUM r__ from ("
-            + " select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I "
-            + " where I.CONTAINER_NAME=? and I.I_CLASS=1 order by I.ID"
+            + " select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I "
+            + " where I.I_CLASS=1 order by I.ID"
             + " ) a where ROWNUM <= ?)) where r__ > ?) J on P.PARENT_ID = J.ID"
-            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID  order by J.ID";
+            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
    }
 }
