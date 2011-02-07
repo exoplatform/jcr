@@ -173,7 +173,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * The default value for {@link #reindexingPageSize}.
     */
-   public static final int DEFAULT_REINDEXING_PAGE_SIZE = 1000;
+   public static final int DEFAULT_REINDEXING_PAGE_SIZE = 100;
 
    /**
     * Default name of the error log file
