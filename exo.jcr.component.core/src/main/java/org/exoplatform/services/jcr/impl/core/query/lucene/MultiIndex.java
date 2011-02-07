@@ -345,13 +345,21 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          setReadWrite();
       }
       this.indexNames.setMultiIndex(this);
+
       // Add a hook that will stop the threads if they are still running
-      Runtime.getRuntime().addShutdownHook(new Thread()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
       {
-         @Override
-         public void run()
+         public Void run()
          {
-            stopped = true;
+            Runtime.getRuntime().addShutdownHook(new Thread()
+            {
+               @Override
+               public void run()
+               {
+                  stopped = true;
+               }
+            });
+            return null;
          }
       });
    }
@@ -425,14 +433,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
 
             // NodeData rootState = (NodeData) stateMgr.getItemData(rootId);
-
             // check if we have deal with JDBC indexing mechanism
             Indexable indexableComponent = (Indexable)handler.getContext().getContainer().getComponent(Indexable.class);
+            long count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
             //            long count =
             //               indexableComponent == null ? createIndex(indexingTree.getIndexingRoot(), stateMgr) : createIndex(
             //                  indexableComponent, indexingTree.getIndexingRoot());
-
-            long count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
 
             executeAndLog(new Commit(getTransactionId()));
             log.info("Created initial index for {} nodes", new Long(count));
@@ -1527,7 +1533,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    }
 
    /**
-    * Recursively creates an index starting with the NodeState
+    * Creates an index.
     * <code>node</code>.
     * 
     * @param indexableComponent
@@ -1566,7 +1572,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                continue;
             }
 
-            executeAndLog(new AddNode(getTransactionId(), node));
+            executeAndLog(new AddNode(getTransactionId(), node, true));
 
             if (++count % 100 == 0)
             {
@@ -2103,6 +2109,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        */
       private Document doc;
 
+      /**
+       * Indicates if need to execute command in synchronize mode.
+       */
       private boolean synch;
 
       /**
@@ -2127,9 +2136,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * Creates a new AddNode action.
        * 
        * @param transactionId
-       *            the id of the transaction that executes this action.
+       *            the id of the transaction that executes this action
        * @param uuid
-       *            the uuid of the node to add.
+       *            the uuid of the node to add
+       * @param synch
+       *             indicates if need to execute command in synchronize mode            
        */
       AddNode(long transactionId, String uuid, boolean synch)
       {
@@ -2145,10 +2156,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        *            the id of the transaction that executes this action.
        * @param uuid
        *            the uuid of the node to add.
+       * @param synch
+       *             indicates if need to execute command in synchronize mode            
        */
-      AddNode(long transactionId, NodeDataIndexing node)
+      AddNode(long transactionId, NodeDataIndexing node, boolean synch)
       {
-         this(transactionId, node.getIdentifier());
+         this(transactionId, node.getIdentifier(), synch);
          this.node = node;
       }
 
@@ -3014,7 +3027,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * Launches the indexing
        * @param asynchronous indicates whether or not the current thread needs to wait until the 
        * end of the indexing
-       * @return the total amount of nodes that have been indexed. <code>-1</code> in case of an
+      
+      * @return the total amount of nodes that have been indexed. <code>-1</code> in case of an
        * asynchronous indexing
        * @throws IOException
        *             if an error occurs while writing to the index.
