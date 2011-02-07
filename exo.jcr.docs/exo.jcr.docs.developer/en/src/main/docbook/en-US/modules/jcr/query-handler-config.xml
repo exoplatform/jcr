@@ -161,7 +161,7 @@
 
                 <entry>maximum amount of nodes which can be retrieved from
                 storage for re-indexing purpose, the default value is
-                1000</entry>
+                100</entry>
               </row>
             </tbody>
           </tgroup>
