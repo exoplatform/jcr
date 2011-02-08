@@ -45,6 +45,7 @@ import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.DefaultOracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.db.MSSQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.OracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
@@ -749,7 +750,27 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       else if (dbDialect == DBConstants.DB_DIALECT_MSSQL)
       {
-         this.connFactory = defaultConnectionFactory();
+         if (dbSourceName != null)
+         {
+            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+            if (ds != null)
+            {
+               this.connFactory =
+                  new MSSQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
+                     swapDirectory, swapCleaner);
+            }
+            else
+            {
+               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            }
+         }
+         else
+         {
+            this.connFactory =
+               new MSSQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         }
+
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mssql.sql";
          dbInitilizer = defaultDBInitializer(sqlPath);
       }

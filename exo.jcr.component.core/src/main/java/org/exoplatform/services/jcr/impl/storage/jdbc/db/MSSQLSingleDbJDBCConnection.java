@@ -24,18 +24,20 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Created by The eXo Platform SAS
- * Author : Nicolas Filotto 
- *          nicolas.filotto@exoplatform.com
- * 19 mars 2010  
+ * Created by The eXo Platform SAS.
+ *
+ * Date: 8 02 2011
+ * 
+ * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
+ * @version $Id: MSSQLSingleDbJDBCConnection.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
+public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
    /**
-    * Oracle Multidatabase JDBC Connection constructor.
+    * MSSQL Singledatabase JDBC Connection constructor.
     * 
     * @param dbConnection
-    *          JDBC connection, shoudl be opened before
+    *          JDBC connection, should be opened before
     * @param readOnly
     *          boolean if true the dbConnection was marked as READ-ONLY.
     * @param containerName
@@ -52,7 +54,7 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
     * 
     * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
     */
-   public OracleMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
+   public MSSQLSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
       ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
       throws SQLException
    {
@@ -68,10 +70,11 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
       super.prepareQueries();
       FIND_NODES_AND_PROPERTIES =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
-            + " join ( select * from ( select A.*, ROWNUM r__ from ("
-            + " select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I "
-            + " where I.I_CLASS=1 order by I.ID) A where ROWNUM <= ?)) where r__ > ?) J on P.PARENT_ID = J.ID"
-            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
+            + " join (select A.* from"
+            + " (select Row_Number() over (order by I.ID) as r__, I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM"
+            + " from JCR_SITEM I where I.CONTAINER_NAME='?' and I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?"
+            + ") J on P.PARENT_ID = J.ID"
+            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
    }
 }
