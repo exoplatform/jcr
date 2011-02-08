@@ -72,7 +72,7 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " join ( select * from ( select A.*, ROWNUM r__ from ("
             + " select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I "
             + " where I.CONTAINER_NAME=? and I.I_CLASS=1 order by I.ID"
-            + " ) A where ROWNUM <= ?)) where r__ > ?) J on P.PARENT_ID = J.ID"
+            + " ) A where ROWNUM <= ?) where r__ > ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID  order by J.ID";
    }
 }

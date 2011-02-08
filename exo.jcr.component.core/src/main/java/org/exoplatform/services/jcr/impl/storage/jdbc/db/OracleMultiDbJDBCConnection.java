@@ -71,7 +71,7 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
             + " join ( select * from ( select A.*, ROWNUM r__ from ("
             + " select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I "
-            + " where I.I_CLASS=1 order by I.ID) A where ROWNUM <= ?)) where r__ > ?) J on P.PARENT_ID = J.ID"
+            + " where I.I_CLASS=1 order by I.ID) A where ROWNUM <= ?) where r__ > ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
    }
 }
