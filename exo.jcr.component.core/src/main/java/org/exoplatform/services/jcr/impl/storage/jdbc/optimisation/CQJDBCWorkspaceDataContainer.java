@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitialize
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2ConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DefaultOracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.GenericCQConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConnectionFactory;
@@ -220,13 +221,53 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2)
       {
-         this.connFactory = defaultConnectionFactory();
+         if (dbSourceName != null)
+         {
+            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+            if (ds != null)
+            {
+               this.connFactory =
+                  new DB2ConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
+                     swapDirectory, swapCleaner);
+            }
+            else
+            {
+               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            }
+         }
+         else
+         {
+            this.connFactory =
+               new DB2ConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         }
+
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2.sql";
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
-         this.connFactory = defaultConnectionFactory();
+         if (dbSourceName != null)
+         {
+            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+            if (ds != null)
+            {
+               this.connFactory =
+                  new DB2ConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
+                     swapDirectory, swapCleaner);
+            }
+            else
+            {
+               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            }
+         }
+         else
+         {
+            this.connFactory =
+               new DB2ConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         }
+
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2v8.sql";
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
