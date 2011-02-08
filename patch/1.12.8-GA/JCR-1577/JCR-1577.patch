@@ -1,0 +1,13 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/DefaultChangesFilter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/DefaultChangesFilter.java	(revision 3814)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/DefaultChangesFilter.java	(working copy)
+@@ -117,7 +117,7 @@
+          log.error("Error indexing changes " + e, e);
+          try
+          {
+-            parentHandler.logErrorChanges(removedNodes, addedNodes);
++            parentHandler.logErrorChanges(parentRemovedNodes, parentAddedNodes);
+          }
+          catch (IOException ioe)
+          {
