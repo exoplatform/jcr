@@ -35,7 +35,6 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConn
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MSSQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.OracleConnectionFactory;
-import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseConnectionFactory;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -273,27 +272,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       }
       else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
       {
-         if (dbSourceName != null)
-         {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-            {
-               this.connFactory =
-                  new SybaseConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-            }
-         }
-         else
-         {
-            this.connFactory =
-               new SybaseConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-         }
-
+         this.connFactory = defaultConnectionFactory();
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sybase.sql";
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
