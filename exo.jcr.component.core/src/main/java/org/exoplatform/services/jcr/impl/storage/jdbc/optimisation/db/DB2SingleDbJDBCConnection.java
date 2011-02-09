@@ -73,8 +73,8 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
             + " join (select A.* from"
             + " (select Row_Number() over (order by I.ID) as r__, I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM"
-            + " from JCR_SITEM I where I.CONTAINER_NAME='?' and I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?"
+            + " from JCR_SITEM I where I.CONTAINER_NAME=? and I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?"
             + ") J on P.PARENT_ID = J.ID"
-            + " where P.I_CLASS=2 and P.CONTAINER_NAME='?' and V.PROPERTY_ID=P.ID order by J.ID";
+            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
    }
 }
