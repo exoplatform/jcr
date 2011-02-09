@@ -432,13 +432,23 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             // traverse and index workspace
             executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
 
-            // NodeData rootState = (NodeData) stateMgr.getItemData(rootId);
+            long count;
+
             // check if we have deal with JDBC indexing mechanism
             Indexable indexableComponent = (Indexable)handler.getContext().getContainer().getComponent(Indexable.class);
-            long count =
-               indexableComponent == null ? createIndex(indexingTree.getIndexingRoot(), stateMgr) : createIndex(
-                  indexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
-                  indexingTree.getIndexingRoot());
+            if (indexableComponent == null)
+            {
+               count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
+            }
+            else
+            {
+               NodeDataIndexingIterator iterator =
+                  indexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize());
+
+               count =
+                  iterator == null ? createIndex(indexingTree.getIndexingRoot(), stateMgr) : createIndex(iterator,
+                     indexingTree.getIndexingRoot());
+            }
 
             executeAndLog(new Commit(getTransactionId()));
             log.info("Created initial index for {} nodes", new Long(count));
@@ -1630,6 +1640,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       while (iterator.hasNext())
       {
+
          Callable<Void> task = new Callable<Void>()
          {
             public Void call() throws Exception
