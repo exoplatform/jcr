@@ -2573,10 +2573,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       SortedSet<TempPropertyData> ptTempProp = tempNode.properties.get(Constants.JCR_PRIMARYTYPE.getAsString());
       if (ptTempProp != null)
       {
-         byte[] data = ptTempProp.first().getAsByteArray();
-
-         ptValue = new ByteArrayPersistedValueData(ptTempProp.first().orderNum, data);
-         ptName = InternalQName.parse(new String((data != null ? data : new byte[]{}), Constants.DEFAULT_ENCODING));
+         ptValue = ((ExtendedTempPropertyData)ptTempProp.first()).vdata;
+         ptName = InternalQName.parse(new String(ptValue.getAsByteArray(), Constants.DEFAULT_ENCODING));
       }
 
       // mixins if exist in the list of properties
@@ -2588,10 +2586,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          for (TempPropertyData mxnb : mixinsTempProps)
          {
-            byte[] data = mxnb.getAsByteArray();
+            ValueData vdata = ((ExtendedTempPropertyData)mxnb).vdata;
 
-            mixinsData.add(new ByteArrayPersistedValueData(mxnb.orderNum, data));
-            mixins.add(InternalQName.parse(new String(data, Constants.DEFAULT_ENCODING)));
+            mixinsData.add(vdata);
+            mixins.add(InternalQName.parse(new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING)));
          }
       }
 
@@ -2622,14 +2620,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             for (TempPropertyData tempProp : tempNode.properties.get(propName))
             {
-               ExtendedTempPropertyData extTempProp = (ExtendedTempPropertyData)tempProp;
+               ExtendedTempPropertyData exTempProp = (ExtendedTempPropertyData)tempProp;
 
-               ValueData vdata =
-                  extTempProp.storage_desc == null ? readValueData(extTempProp.id, extTempProp.orderNum,
-                     extTempProp.version, extTempProp.data) : readValueData(identifier, extTempProp.orderNum,
-                     extTempProp.storage_desc);
-
-               valueData.add(vdata);
+               valueData.add(exTempProp.vdata);
             }
          }
 
@@ -2681,25 +2674,22 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    {
       public int orderNum;
 
-      public InputStream data;
+      public byte[] data;
 
       public TempPropertyData(ResultSet item) throws SQLException
       {
          orderNum = item.getInt(COLUMN_VORDERNUM);
-         data = item.getBinaryStream(COLUMN_VDATA);
-      }
-
-      public byte[] getAsByteArray() throws IOException
-      {
-         byte[] readBuffer = new byte[data.available()];
-         data.read(readBuffer);
-
-         return readBuffer;
+         readData(item);
       }
 
       public int compareTo(TempPropertyData o)
       {
          return orderNum - o.orderNum;
+      }
+
+      protected void readData(ResultSet item) throws SQLException
+      {
+         data = item.getBytes(COLUMN_VDATA);
       }
    }
 
@@ -2716,11 +2706,13 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
       public int type;
 
-      boolean multi;
+      public boolean multi;
 
       public String storage_desc;
 
-      public ExtendedTempPropertyData(ResultSet item) throws SQLException
+      public ValueData vdata;
+
+      public ExtendedTempPropertyData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
       {
          super(item);
 
@@ -2730,6 +2722,28 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          type = item.getInt("P_TYPE");
          multi = item.getBoolean("P_MULTIVALUED");
          storage_desc = item.getString(COLUMN_VSTORAGE_DESC);
+
+         readData(item);
+      }
+
+      @Override
+      protected void readData(ResultSet item) throws SQLException
+      {
+         InputStream data = item.getBinaryStream(COLUMN_VDATA);
+         try
+         {
+            vdata =
+               storage_desc == null ? readValueData(id, orderNum, version, data) : readValueData(getIdentifier(id),
+                  orderNum, storage_desc);
+         }
+         catch (ValueStorageNotFoundException e)
+         {
+            throw new SQLException(e);
+         }
+         catch (IOException e)
+         {
+            throw new SQLException(e);
+         }
       }
    }
 
