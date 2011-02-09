@@ -1508,10 +1508,16 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize)
-      throws RepositoryException
+   public NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException
    {
-      return dbDialect.equals(DBConstants.DB_DIALECT_SYBASE) ? null : new JdbcNodeDataIndexingIterator(connFactory,
-         pageSize);
+      return new JdbcNodeDataIndexingIterator(connFactory, pageSize);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isPagingSupport()
+   {
+      return !dbDialect.equals(DBConstants.DB_DIALECT_SYBASE);
    }
 }

@@ -31,12 +31,20 @@ import javax.jcr.RepositoryException;
 public interface Indexable
 {
    /**
-    * Returns NodeDataIndexingIterator or null.
+    * Returns NodeDataIndexingIterator.
     * 
     * @param pageSize 
     *          the maximum amount of the rows which can be retrieved from storage per once
-    * @return NodeDataIndexingIterator or null
+    * @return NodeDataIndexingIterator
     * @throws RepositoryException
     */
    NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException;
+
+   /**
+    * Indicates if component support extracting data from storage using paging.
+    * 
+    * @return boolean
+    */
+   boolean isPagingSupport();
+
 }
