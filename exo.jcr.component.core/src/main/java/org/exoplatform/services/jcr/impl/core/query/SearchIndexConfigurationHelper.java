@@ -190,5 +190,9 @@ public class SearchIndexConfigurationHelper
       {
          searchIndex.setReindexingPageSize(StringNumberParser.parseNumber(value).intValue());
       }
+      else if (QueryHandlerParams.PARAM_RDBMS_REINDEXING.equals(name))
+      {
+         searchIndex.setRDBMSReindexing(Boolean.parseBoolean(value));
+      }
    }
 }

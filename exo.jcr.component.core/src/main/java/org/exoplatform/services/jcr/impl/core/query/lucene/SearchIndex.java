@@ -176,6 +176,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public static final int DEFAULT_REINDEXING_PAGE_SIZE = 100;
 
    /**
+    * The default value for {@link #rdbmsReindexing}.
+    */
+   public static final boolean DEFAULT_RDBMS_REINDEXING = true;
+
+   /**
     * Default name of the error log file
     */
    private static final String ERROR_LOG = "error.log";
@@ -464,6 +469,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Maximum amount of nodes which can be retrieved from storage for re-indexing purpose. 
     */
    private int reindexingPageSize = DEFAULT_REINDEXING_PAGE_SIZE;
+
+   /**
+    * Indicates what reindexing mechanism need to use. 
+    */
+   private boolean rdbmsReindexing = DEFAULT_RDBMS_REINDEXING;
 
    /**
     * Working constructor.
@@ -2668,6 +2678,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
+    * @return the current value for rdbmsReindexing
+    */
+   public boolean isRDBMSReindexing()
+   {
+      return rdbmsReindexing;
+   }
+
+   /**
     * Sets a new value for termInfosIndexDivisor.
     * 
     * @param termInfosIndexDivisor
@@ -2708,6 +2726,17 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setReindexingPageSize(int reindexingPageSize)
    {
       this.reindexingPageSize = reindexingPageSize;
+   }
+
+   /**
+    * Set a new value for reindexingPageSize.
+    * 
+    * @param reindexingPageSize
+    *            the new value
+    */
+   public void setRDBMSReindexing(boolean rdbmsReindexing)
+   {
+      this.rdbmsReindexing = rdbmsReindexing;
    }
 
    // ----------------------------< internal

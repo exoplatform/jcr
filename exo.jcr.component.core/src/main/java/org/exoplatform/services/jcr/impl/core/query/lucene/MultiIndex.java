@@ -434,12 +434,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
             long count;
 
-            // check if we have deal with RDBMS reindexing mechanism
-            Indexable indexableComponent = (Indexable)handler.getContext().getContainer().getComponent(Indexable.class);
-            if (indexableComponent != null && indexableComponent.isPagingSupport())
+            // check if we have deal with RDBMS indexing mechanism
+            Indexable rdbmsIndexableComponent = (Indexable)handler.getContext().getContainer().getComponent(Indexable.class);
+            if (handler.isRDBMSReindexing() && rdbmsIndexableComponent != null && rdbmsIndexableComponent.isPagingSupport())
             {
                count =
-                  createIndex(indexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
+                  createIndex(rdbmsIndexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
                      indexingTree.getIndexingRoot());
             }
             else
