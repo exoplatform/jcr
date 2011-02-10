@@ -1028,9 +1028,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
-         long start = System.currentTimeMillis();
          ResultSet resultSet = findNodesAndProperties(offset, limit);
-         System.out.println("end  offset=" + offset + " time=" + (System.currentTimeMillis() - start));
 
          try
          {
