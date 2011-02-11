@@ -118,7 +118,12 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
          long time = System.currentTimeMillis();
          List<NodeDataIndexing> result = conn.getNodesAndProperties(currentLastNodeId, currentOffset, pageSize);
          if (PropertyManager.isDevelopping())
-            LOG.info("Page = " + currentPage + " Offset = " + currentOffset + " LastNodeId = '" + currentLastNodeId + "', query time = " + (System.currentTimeMillis() - time) + " ms, from '" + result.get(0).getIdentifier() + "' to '" + result.get(result.size() - 1).getIdentifier() + "'");
+         {
+            LOG.info("Page = " + currentPage + " Offset = " + currentOffset + " LastNodeId = '" + currentLastNodeId
+               + "', query time = " + (System.currentTimeMillis() - time) + " ms, from '"
+               + (result.isEmpty() ? "unknown" : result.get(0).getIdentifier()) + "' to '"
+               + (result.isEmpty() ? "unknown" : result.get(result.size() - 1).getIdentifier()) + "'");
+         }
          hasNext.compareAndSet(true, result.size() == pageSize);
          if (hasNext())
          {
