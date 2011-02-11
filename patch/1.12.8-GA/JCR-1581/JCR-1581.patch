@@ -1,0 +1,202 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 3961)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
+@@ -122,6 +122,8 @@
+     */
+    public static final int DEFAULT_MAX_FIELD_LENGTH = 10000;
+ 
++   private static final int IOEXCEPTION_RETRY_COUNT = 3;
++
+    /**
+     * The default value for property {@link #extractorPoolSize}.
+     * 
+@@ -708,8 +710,7 @@
+             }
+             catch (RepositoryException e)
+             {
+-               log
+-                  .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString(), e);
++               log.warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString(), e);
+             }
+             return doc;
+          }
+@@ -736,8 +737,7 @@
+                }
+                catch (RepositoryException e)
+                {
+-                  log
+-                     .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString());
++                  log.warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString());
+                }
+                return null;
+             }
+@@ -870,25 +870,45 @@
+ 
+       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
+ 
+-      final IndexReader reader = getIndexReader(queryImpl.needsSystemTree());
+-      JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
+-      searcher.setSimilarity(getSimilarity());
+-      return new FilterMultiColumnQueryHits(searcher.execute(query, sort, resultFetchHint,
+-         QueryImpl.DEFAULT_SELECTOR_NAME))
++      for (int i = 0; i < IOEXCEPTION_RETRY_COUNT; i++)
+       {
+-         public void close() throws IOException
++         final IndexReader reader = getIndexReader(queryImpl.needsSystemTree());
++         try
+          {
++            JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
++            searcher.setSimilarity(getSimilarity());
++            return new FilterMultiColumnQueryHits(searcher.execute(query, sort, resultFetchHint,
++               QueryImpl.DEFAULT_SELECTOR_NAME))
++            {
++               public void close() throws IOException
++               {
++                  try
++                  {
++                     super.close();
++                  }
++                  finally
++                  {
++                     PerQueryCache.getInstance().dispose();
++                     Util.closeOrRelease(reader);
++                  }
++               }
++            };
++         }
++         catch (IOException e)
++         {
+             try
+             {
+-               super.close();
++               Util.closeOrRelease(reader);
+             }
+-            finally
++            catch (Exception releaseException)
+             {
+-               PerQueryCache.getInstance().dispose();
+-               Util.closeOrRelease(reader);
++               log.error("Error occured while closing or releasing a reader" + releaseException);
+             }
+          }
+-      };
++      }
++
++      throw new IOException("IO exception was encountered more than" + IOEXCEPTION_RETRY_COUNT + " times");
++
+    }
+ 
+    /**
+@@ -918,24 +938,43 @@
+ 
+       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
+ 
+-      final IndexReader reader = getIndexReader();
+-      JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
+-      searcher.setSimilarity(getSimilarity());
+-      return new FilterMultiColumnQueryHits(query.execute(searcher, sort, resultFetchHint))
++      for (int i = 0; i < IOEXCEPTION_RETRY_COUNT; i++)
+       {
+-         public void close() throws IOException
++         final IndexReader reader = getIndexReader();
++         try
+          {
++            JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
++            searcher.setSimilarity(getSimilarity());
++            return new FilterMultiColumnQueryHits(query.execute(searcher, sort, resultFetchHint))
++            {
++               public void close() throws IOException
++               {
++                  try
++                  {
++                     super.close();
++                  }
++                  finally
++                  {
++                     PerQueryCache.getInstance().dispose();
++                     Util.closeOrRelease(reader);
++                  }
++               }
++            };
++         }
++         catch (IOException e)
++         {
+             try
+             {
+-               super.close();
++               Util.closeOrRelease(reader);
+             }
+-            finally
++            catch (Exception releaseException)
+             {
+-               PerQueryCache.getInstance().dispose();
+-               Util.closeOrRelease(reader);
++               log.error("Error occured while closing or releasing a reader" + releaseException);
+             }
+          }
+-      };
++      }
++
++      throw new IOException("IO exception was encountered more than" + IOEXCEPTION_RETRY_COUNT + " times");
+    }
+ 
+    /**
+@@ -1330,8 +1369,8 @@
+             {
+                File root = new File(path, synonymProviderConfigPath.substring(0, lastSeparator));
+                fsr =
+-                  new BufferedInputStream(new FileInputStream(new File(root, synonymProviderConfigPath
+-                     .substring(lastSeparator + 1))));
++                  new BufferedInputStream(new FileInputStream(new File(root,
++                     synonymProviderConfigPath.substring(lastSeparator + 1))));
+             }
+             else
+             {
+@@ -1540,8 +1579,7 @@
+          catch (Exception e)
+          {
+             // do not fail if aggregate cannot be created
+-            log
+-               .warn("Exception while building indexing aggregate for" + " node with UUID: " + state.getIdentifier(), e);
++            log.warn("Exception while building indexing aggregate for" + " node with UUID: " + state.getIdentifier(), e);
+          }
+       }
+    }
+@@ -2712,11 +2750,32 @@
+    {
+       checkOpen();
+ 
+-      IndexReader reader = getIndexReader(true);
+-      IndexSearcher searcher = new IndexSearcher(reader);
+-      searcher.setSimilarity(getSimilarity());
++      IndexReader reader;
+ 
+-      return new LuceneQueryHits(reader, searcher, query);
++      for (int i = 0; i < IOEXCEPTION_RETRY_COUNT; i++)
++      {
++         reader = getIndexReader(true);
++         try
++         {
++            IndexSearcher searcher = new IndexSearcher(reader);
++            searcher.setSimilarity(getSimilarity());
++
++            return new LuceneQueryHits(reader, searcher, query);
++         }
++         catch (IOException e)
++         {
++            try
++            {
++               Util.closeOrRelease(reader);
++            }
++            catch (Exception releaseException)
++            {
++               log.error("Error occured while closing or releasing a reader" + releaseException);
++            }
++         }
++      }
++
++      throw new IOException("IO exception was encountered more than" + IOEXCEPTION_RETRY_COUNT + " times");
+    }
+ 
+    /**
