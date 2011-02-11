@@ -37,8 +37,8 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestor;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestor;
 import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
-import org.exoplatform.services.jcr.impl.core.query.Indexable;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
+import org.exoplatform.services.jcr.impl.core.query.Reindexable;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
@@ -100,7 +100,7 @@ import javax.sql.DataSource;
  * @version $Id:GenericWorkspaceDataContainer.java 13433 2007-03-15 16:07:23Z peterit $
  */
 public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable, JdbcBackupable,
-   Indexable
+   Reindexable
 {
 
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCWorkspaceDataContainer");
@@ -1537,8 +1537,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public boolean isPagingSupport()
+   public boolean isReindexingSupport()
    {
-      return !dbDialect.equals(DBConstants.DB_DIALECT_SYBASE);
+      return !dbDialect.equals(DBConstants.DB_DIALECT_SYBASE) && !dbDialect.equals(DBConstants.DB_DIALECT_HSQLDB);
    }
 }

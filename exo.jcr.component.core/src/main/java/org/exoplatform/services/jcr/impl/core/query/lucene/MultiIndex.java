@@ -26,12 +26,12 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.query.Indexable;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
+import org.exoplatform.services.jcr.impl.core.query.Reindexable;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -434,12 +434,15 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
             long count;
 
-            // check if we have deal with RDBMS indexing mechanism
-            Indexable rdbmsIndexableComponent = (Indexable)handler.getContext().getContainer().getComponent(Indexable.class);
-            if (handler.isRDBMSReindexing() && rdbmsIndexableComponent != null && rdbmsIndexableComponent.isPagingSupport())
+            // check if we have deal with RDBMS reindexing mechanism
+            Reindexable rdbmsReindexableComponent =
+               (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
+
+            if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
+               && rdbmsReindexableComponent.isReindexingSupport())
             {
                count =
-                  createIndex(rdbmsIndexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
+                  createIndex(rdbmsReindexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
                      indexingTree.getIndexingRoot());
             }
             else
