@@ -1202,16 +1202,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          else
          {
             scripts.put("JCR_SITEM", "select * from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
-            scripts
-               .put(
-                  "JCR_SVALUE",
-                  "select * from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
-                     + containerName + "')");
-            scripts
-               .put(
-                  "JCR_SREF",
-                  "select * from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
-                     + containerName + "')");
+            scripts.put("JCR_SVALUE",
+               "select V.* from JCR_SVALUE V, JCR_SITEM I where I.ID=V.PROPERTY_ID and I.CONTAINER_NAME='"
+                  + containerName + "'");
+            scripts.put("JCR_SREF",
+               "select R.* from JCR_SREF R, JCR_SITEM I where I.ID=R.PROPERTY_ID and I.CONTAINER_NAME='"
+                  + containerName + "'");
          }
 
          final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
