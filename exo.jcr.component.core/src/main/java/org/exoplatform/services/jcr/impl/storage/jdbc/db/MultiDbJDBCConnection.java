@@ -152,13 +152,6 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       DELETE_ITEM = "delete from JCR_MITEM where ID=?";
       DELETE_VALUE = "delete from JCR_MVALUE where PROPERTY_ID=?";
       DELETE_REF = "delete from JCR_MREF where PROPERTY_ID=?";
-
-      FIND_NODES_AND_PROPERTIES = 
-         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED," 
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
-            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I"
-            + " where I.I_CLASS=1 order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
-            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
    }
 
    /**
