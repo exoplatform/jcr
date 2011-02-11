@@ -72,15 +72,6 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected void prepareQueries() throws SQLException
-   {
-      super.prepareQueries();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    protected int addNodeRecord(NodeData data) throws SQLException
    {
       // check if parent exists

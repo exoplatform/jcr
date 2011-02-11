@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.indexing;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
 
@@ -58,12 +60,22 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
    /**
     * The current offset in database.
     */
-   private AtomicInteger offset = new AtomicInteger(0);
+   private final AtomicInteger offset = new AtomicInteger(0);
 
    /**
     * Indicates if not all records have been read from database.
     */
-   private AtomicBoolean hasNext = new AtomicBoolean(true);
+   private final AtomicBoolean hasNext = new AtomicBoolean(true);
+   
+   /**
+    * The last node Id retrieved from the DB
+    */
+   private final AtomicReference<String> lastNodeId = new AtomicReference<String>("");
+   
+   /**
+    * The current page index
+    */
+   private static final AtomicInteger page = new AtomicInteger();
 
    /**
     * Logger.
@@ -94,8 +106,28 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
       JDBCStorageConnection conn = (JDBCStorageConnection)connFactory.openConnection();
       try
       {
-         List<NodeDataIndexing> result = conn.getNodesAndProperties(offset.getAndAdd(pageSize), pageSize);
+         int currentOffset;
+         String currentLastNodeId;
+         int currentPage;
+         synchronized (this)
+         {
+            currentOffset = offset.getAndAdd(pageSize);
+            currentLastNodeId = lastNodeId.get();
+            currentPage = page.incrementAndGet();            
+         }
+         long time = System.currentTimeMillis();
+         List<NodeDataIndexing> result = conn.getNodesAndProperties(currentLastNodeId, currentOffset, pageSize);
+         if (PropertyManager.isDevelopping())
+            LOG.info("Page = " + currentPage + " Offset = " + currentOffset + " LastNodeId = '" + currentLastNodeId + "', query time = " + (System.currentTimeMillis() - time) + " ms, from '" + result.get(0).getIdentifier() + "' to '" + result.get(result.size() - 1).getIdentifier() + "'");
          hasNext.compareAndSet(true, result.size() == pageSize);
+         if (hasNext())
+         {
+            synchronized (this)
+            {
+               lastNodeId.set(result.get(result.size() - 1).getIdentifier());               
+               offset.set((page.get() - currentPage) * pageSize);            
+            }            
+         }
          
          return result;
       }

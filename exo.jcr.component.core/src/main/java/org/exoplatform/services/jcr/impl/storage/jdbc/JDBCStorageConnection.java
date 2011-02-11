@@ -1013,6 +1013,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * GetNodesAndProperties.
     * 
+    * @param lastNodeId the id if the last doc get from the db
     * @param offset
     * @param limit
     * @param result
@@ -1020,7 +1021,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws RepositoryException
     * @throws IllegalStateException
     */
-   public List<NodeDataIndexing> getNodesAndProperties(int offset, int limit) throws RepositoryException,
+   public List<NodeDataIndexing> getNodesAndProperties(String lastNodeId, int offset, int limit) throws RepositoryException,
       IllegalStateException
    {
       List<NodeDataIndexing> result = new ArrayList<NodeDataIndexing>();
@@ -1028,9 +1029,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
-         long start = System.currentTimeMillis();
-         ResultSet resultSet = findNodesAndProperties(offset, limit);
-         LOG.debug("offset=" + offset + " limit=" + limit + " time=" + (System.currentTimeMillis() - start));
+         ResultSet resultSet = findNodesAndProperties(lastNodeId, offset, limit);
 
          try
          {
@@ -2777,7 +2776,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected abstract ResultSet findChildPropertiesByParentIdentifier(String parentIdentifier) throws SQLException;
 
-   protected abstract ResultSet findNodesAndProperties(int offset, int limit) throws SQLException;
+   protected abstract ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException;
 
    protected abstract int addReference(PropertyData data) throws SQLException, IOException;
 

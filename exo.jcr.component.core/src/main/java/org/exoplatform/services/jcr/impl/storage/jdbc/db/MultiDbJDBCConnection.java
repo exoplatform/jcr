@@ -519,20 +519,8 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findNodesAndProperties(int offset, int limit) throws SQLException
+   protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
    {
-      if (findNodesAndProperties == null)
-      {
-         findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
-      }
-      else
-      {
-         findNodesAndProperties.clearParameters();
-      }
-
-      findNodesAndProperties.setInt(1, limit);
-      findNodesAndProperties.setInt(2, offset);
-
-      return findNodesAndProperties.executeQuery();
+      throw new UnsupportedOperationException("The method findNodesAndProperties is not supported for this type of connection use the complex queries instead");
    }
 }

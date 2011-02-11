@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -76,4 +77,25 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
             + " from JCR_SITEM I where I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
+   {
+      if (findNodesAndProperties == null)
+      {
+         findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
+      }
+      else
+      {
+         findNodesAndProperties.clearParameters();
+      }
+
+      findNodesAndProperties.setInt(1, limit);
+      findNodesAndProperties.setInt(2, offset);
+
+      return findNodesAndProperties.executeQuery();
+   }   
 }

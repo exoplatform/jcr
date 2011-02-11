@@ -395,20 +395,4 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
          }
       });
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findNodesAndProperties(final int offset, final int limit) throws SQLException
-   {
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return HSQLDBMultiDbJDBCConnection.super.findNodesAndProperties(offset, limit);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
 }

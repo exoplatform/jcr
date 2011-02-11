@@ -1423,7 +1423,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException
    {
-      return new JdbcNodeDataIndexingIterator(connFactory, pageSize);
+      if (isReindexingSupport())
+      {
+         return new JdbcNodeDataIndexingIterator(connFactory, pageSize);         
+      }
+      throw new UnsupportedOperationException("The method getNodeDataIndexingIterator is not supported for this type of connection use the complex queries instead");
    }
 
    /**
@@ -1431,6 +1435,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public boolean isReindexingSupport()
    {
-      return false;
+      return connFactory.isReindexingSupport();
    }
 }

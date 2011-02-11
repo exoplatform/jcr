@@ -19,11 +19,9 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
-import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
 import javax.sql.DataSource;
@@ -98,28 +96,13 @@ public class SybaseConnectionFactory extends GenericCQConnectionFactory
    {
       super(dbDataSource, containerName, multiDb, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
    }
-
+      
    /**
     * {@inheritDoc}
     */
    @Override
-   public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
+   public boolean isReindexingSupport()
    {
-      try
-      {
-         if (multiDb)
-         {
-            return new SybaseMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-         }
-
-         return new SybaseSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-            valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-
-      }
-      catch (SQLException e)
-      {
-         throw new RepositoryException(e);
-      }
-   }
+      return false;
+   }    
 }

@@ -261,4 +261,14 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    {
       return getJdbcConnection(false);
    }
+
+   /**
+    * Indicates if component support extracting data from storage using paging.
+    * 
+    * @return boolean
+    */   
+   public boolean isReindexingSupport()
+   {
+      return false;
+   }
 }

@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -89,4 +90,27 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " ) A where ROWNUM <= ?) where r__ > ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID  order by J.ID";
    }
+    
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
+   {
+      if (findNodesAndProperties == null)
+      {
+         findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
+      }
+      else
+      {
+         findNodesAndProperties.clearParameters();
+      }
+
+      findNodesAndProperties.setString(1, containerName);
+      findNodesAndProperties.setInt(2, limit);
+      findNodesAndProperties.setInt(3, offset);
+      findNodesAndProperties.setString(4, containerName);
+
+      return findNodesAndProperties.executeQuery();
+   }   
 }

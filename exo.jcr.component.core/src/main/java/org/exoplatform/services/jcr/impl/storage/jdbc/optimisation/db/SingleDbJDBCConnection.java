@@ -191,7 +191,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED," 
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I"
-            + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
+            + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID  order by J.ID";
    }
 
@@ -635,7 +635,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findNodesAndProperties(int offset, int limit) throws SQLException
+   protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
    {
       if (findNodesAndProperties == null)
       {
@@ -647,9 +647,10 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       }
 
       findNodesAndProperties.setString(1, containerName);
-      findNodesAndProperties.setInt(2, limit);
-      findNodesAndProperties.setInt(3, offset);
-      findNodesAndProperties.setString(4, containerName);
+      findNodesAndProperties.setString(2, getInternalId(lastNodeId));
+      findNodesAndProperties.setInt(3, limit);
+      findNodesAndProperties.setInt(4, offset);
+      findNodesAndProperties.setString(5, containerName);
 
       return findNodesAndProperties.executeQuery();
    }

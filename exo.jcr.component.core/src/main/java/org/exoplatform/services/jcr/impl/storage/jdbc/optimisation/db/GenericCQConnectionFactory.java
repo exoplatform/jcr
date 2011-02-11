@@ -253,5 +253,13 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    {
       return getJdbcConnection(false);
    }
-
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isReindexingSupport()
+   {
+      return true;
+   }
 }

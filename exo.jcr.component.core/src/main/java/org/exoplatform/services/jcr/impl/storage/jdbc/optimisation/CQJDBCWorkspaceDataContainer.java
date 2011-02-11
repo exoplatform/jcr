@@ -368,14 +368,5 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
 
       return new GenericCQConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
          valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean isReindexingSupport()
-   {
-      return !dbDialect.equals(DBConstants.DB_DIALECT_SYBASE) && !dbDialect.equals(DBConstants.DB_DIALECT_HSQLDB);
-   }
+   } 
 }
