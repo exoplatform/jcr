@@ -1,17 +1,76 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchIndexConfigurationHelper.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchIndexConfigurationHelper.java	(revision 3973)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchIndexConfigurationHelper.java	(working copy)
+@@ -186,5 +186,9 @@
+       {
+          searchIndex.setSpellCheckerMinDistance(StringNumberParser.parseNumber(value).floatValue());
+       }
++      else if (QueryHandlerParams.PARAM_IO_EXCEPTION_RETRY_COUNT.equals(name))
++      {
++         searchIndex.setIoExceptionRetryCount(StringNumberParser.parseNumber(value).intValue());
++      }
+    }
+ }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 3961)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 3973)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
-@@ -122,6 +122,8 @@
-     */
-    public static final int DEFAULT_MAX_FIELD_LENGTH = 10000;
+@@ -92,6 +92,13 @@
+ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
+ {
  
-+   private static final int IOEXCEPTION_RETRY_COUNT = 3;
++   /**
++    * Default number of how many retries are going to be
++    * while encountering io exception during query execution
++    * see https://jira.exoplatform.org/browse/JCR-1581 for more details
++    */
++   private static final int DEFAULT_IO_EXCEPTION_RETRY_COUNT = 3;
 +
+    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
+ 
+    /** The logger instance for this class */
+@@ -168,6 +175,13 @@
+    private static final String ERROR_LOG = "error.log";
+ 
     /**
-     * The default value for property {@link #extractorPoolSize}.
-     * 
-@@ -708,8 +710,7 @@
++    * Number of how many retries are going to be
++    * while encountering io exception during query execution
++    * see https://jira.exoplatform.org/browse/JCR-1581 for more details
++    */
++   private int ioExceptionRetryCount = DEFAULT_IO_EXCEPTION_RETRY_COUNT;
++
++   /**
+     * The actual index
+     */
+    private MultiIndex index;
+@@ -611,6 +625,25 @@
+    }
+ 
+    /**
++    * Sets ioExceptionRetryCount 
++    * @param count
++    */
++   public void setIoExceptionRetryCount(int count)
++   {
++      if (count > 0)
++         ioExceptionRetryCount = count;
++   }
++
++   /**
++    * Gets ioExceptionRetryCount
++    * @return ioExceptionRetryCount
++    */
++   public int getIoExceptionRetryCount()
++   {
++      return ioExceptionRetryCount;
++   }
++
++   /**
+     * @return the errorLogfileSize
+     */
+    public int getErrorLogfileSize()
+@@ -708,8 +741,7 @@
              }
              catch (RepositoryException e)
              {
@@ -21,7 +80,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
              }
              return doc;
           }
-@@ -736,8 +737,7 @@
+@@ -736,8 +768,7 @@
                 }
                 catch (RepositoryException e)
                 {
@@ -31,7 +90,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
                 }
                 return null;
              }
-@@ -870,25 +870,45 @@
+@@ -870,25 +901,45 @@
  
        Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
  
@@ -40,7 +99,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 -      searcher.setSimilarity(getSimilarity());
 -      return new FilterMultiColumnQueryHits(searcher.execute(query, sort, resultFetchHint,
 -         QueryImpl.DEFAULT_SELECTOR_NAME))
-+      for (int i = 0; i < IOEXCEPTION_RETRY_COUNT; i++)
++      for (int i = 0; i < ioExceptionRetryCount; i++)
        {
 -         public void close() throws IOException
 +         final IndexReader reader = getIndexReader(queryImpl.needsSystemTree());
@@ -77,18 +136,18 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
              {
 -               PerQueryCache.getInstance().dispose();
 -               Util.closeOrRelease(reader);
-+               log.error("Error occured while closing or releasing a reader" + releaseException);
++               log.warn("Error occured while closing or releasing a reader", releaseException);
              }
           }
 -      };
 +      }
 +
-+      throw new IOException("IO exception was encountered more than" + IOEXCEPTION_RETRY_COUNT + " times");
++      throw new IOException("IO exception was encountered more than " + ioExceptionRetryCount + " times");
 +
     }
  
     /**
-@@ -918,24 +938,43 @@
+@@ -918,24 +969,43 @@
  
        Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
  
@@ -96,7 +155,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 -      JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
 -      searcher.setSimilarity(getSimilarity());
 -      return new FilterMultiColumnQueryHits(query.execute(searcher, sort, resultFetchHint))
-+      for (int i = 0; i < IOEXCEPTION_RETRY_COUNT; i++)
++      for (int i = 0; i < ioExceptionRetryCount; i++)
        {
 -         public void close() throws IOException
 +         final IndexReader reader = getIndexReader();
@@ -132,17 +191,17 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
              {
 -               PerQueryCache.getInstance().dispose();
 -               Util.closeOrRelease(reader);
-+               log.error("Error occured while closing or releasing a reader" + releaseException);
++               log.warn("Error occured while closing or releasing a reader", releaseException);
              }
           }
 -      };
 +      }
 +
-+      throw new IOException("IO exception was encountered more than" + IOEXCEPTION_RETRY_COUNT + " times");
++      throw new IOException("IO exception was encountered more than " + ioExceptionRetryCount + " times");
     }
  
     /**
-@@ -1330,8 +1369,8 @@
+@@ -1330,8 +1400,8 @@
              {
                 File root = new File(path, synonymProviderConfigPath.substring(0, lastSeparator));
                 fsr =
@@ -153,7 +212,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
              }
              else
              {
-@@ -1540,8 +1579,7 @@
+@@ -1540,8 +1610,7 @@
           catch (Exception e)
           {
              // do not fail if aggregate cannot be created
@@ -163,7 +222,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           }
        }
     }
-@@ -2712,11 +2750,32 @@
+@@ -2712,11 +2781,32 @@
     {
        checkOpen();
  
@@ -173,7 +232,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +      IndexReader reader;
  
 -      return new LuceneQueryHits(reader, searcher, query);
-+      for (int i = 0; i < IOEXCEPTION_RETRY_COUNT; i++)
++      for (int i = 0; i < ioExceptionRetryCount; i++)
 +      {
 +         reader = getIndexReader(true);
 +         try
@@ -191,12 +250,24 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +            }
 +            catch (Exception releaseException)
 +            {
-+               log.error("Error occured while closing or releasing a reader" + releaseException);
++               log.warn("Error occured while closing or releasing a reader", releaseException);
 +            }
 +         }
 +      }
 +
-+      throw new IOException("IO exception was encountered more than" + IOEXCEPTION_RETRY_COUNT + " times");
++      throw new IOException("IO exception was encountered more than " + ioExceptionRetryCount + " times");
     }
  
     /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/QueryHandlerParams.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/QueryHandlerParams.java	(revision 3973)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/QueryHandlerParams.java	(working copy)
+@@ -114,4 +114,7 @@
+    public static final String PARAM_JBOSSCACHE_PUSHSTATE = "jbosscache-sscl-push.state.enabled";
+ 
+    public static final String PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT = "jbosscache-sscl-push.state.timeout";
++
++   public static final String PARAM_IO_EXCEPTION_RETRY_COUNT = "io-exception-retry-count";
++
+ }
