@@ -93,7 +93,7 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
          findNodesAndProperties.clearParameters();
       }
 
-      findNodesAndProperties.setInt(1, limit);
+      findNodesAndProperties.setInt(1, offset + limit);
       findNodesAndProperties.setInt(2, offset);
 
       return findNodesAndProperties.executeQuery();

@@ -271,4 +271,13 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    {
       return false;
    }
+   
+   /**
+    * Indicates whether the id of the last item is needed for paging
+    * @return <code>true</code> if the id is needed, <code>false</code> otherwise.
+    */
+   public boolean isIDNeededForPaging()
+   {
+      return true;
+   }
 }

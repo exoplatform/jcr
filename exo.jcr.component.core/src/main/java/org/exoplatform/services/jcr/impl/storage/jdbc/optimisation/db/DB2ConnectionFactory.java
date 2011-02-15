@@ -122,4 +122,13 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
          throw new RepositoryException(e);
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isIDNeededForPaging()
+   {
+      return false;
+   }   
 }

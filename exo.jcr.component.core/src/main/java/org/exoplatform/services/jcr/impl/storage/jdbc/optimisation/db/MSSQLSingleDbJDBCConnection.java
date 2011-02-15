@@ -95,7 +95,7 @@ public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
       }
 
       findNodesAndProperties.setString(1, containerName);
-      findNodesAndProperties.setInt(2, limit);
+      findNodesAndProperties.setInt(2, offset + limit);
       findNodesAndProperties.setInt(3, offset);
       findNodesAndProperties.setString(4, containerName);
 

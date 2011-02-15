@@ -113,7 +113,7 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
          {
             currentOffset = offset.getAndAdd(pageSize);
             currentLastNodeId = lastNodeId.get();
-            currentPage = page.incrementAndGet();            
+            currentPage = page.incrementAndGet();
          }
          long time = System.currentTimeMillis();
          List<NodeDataIndexing> result = conn.getNodesAndProperties(currentLastNodeId, currentOffset, pageSize);
@@ -125,7 +125,7 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
                + (result.isEmpty() ? "unknown" : result.get(result.size() - 1).getIdentifier()) + "'");
          }
          hasNext.compareAndSet(true, result.size() == pageSize);
-         if (hasNext())
+         if (hasNext() && connFactory.isIDNeededForPaging())
          {
             synchronized (this)
             {
