@@ -54,6 +54,7 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableResolver;
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
@@ -600,6 +601,23 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public void updateIndex(final Set<String> removedNodes, final Set<String> addedNodes) throws RepositoryException,
       IOException
    {
+      final ChangesHolder changes = getChanges(removedNodes, addedNodes);
+      apply(changes);
+   }
+   
+   public void apply(ChangesHolder changes) throws RepositoryException, IOException
+   {
+      if (handler != null && changes != null && (!changes.getAdd().isEmpty() || !changes.getRemove().isEmpty()))
+      {
+         handler.apply(changes);
+      }
+   }
+
+   /**
+    * Extracts all the changes and returns them as a {@link ChangesHolder} instance
+    */
+   public ChangesHolder getChanges(final Set<String> removedNodes, final Set<String> addedNodes)
+   {
       if (handler != null)
       {
          Iterator<NodeData> addedStates = new Iterator<NodeData>()
@@ -680,12 +698,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
          if (removedNodes.size() > 0 || addedNodes.size() > 0)
          {
-            handler.updateNodes(removedIds, addedStates);
+            return handler.getChanges(removedIds, addedStates);
          }
       }
-
+      return null;
    }
-
+   
    protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
       throws RepositoryConfigurationException
    {

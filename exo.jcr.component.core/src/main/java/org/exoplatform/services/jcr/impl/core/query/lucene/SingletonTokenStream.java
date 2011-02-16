@@ -16,64 +16,78 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.Payload;
+
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * <code>SingletonTokenStream</code> implements a token stream that wraps a
  * single value with a given property type. The property type is stored as a
  * payload on the single returned token.
  */
-public final class SingletonTokenStream extends TokenStream {
+public final class SingletonTokenStream extends TokenStream implements Serializable
+{
 
-    /**
-     * The string value of the token.
-     */
-    private String value;
+   /**
+    * The string value of the token.
+    */
+   private String value;
 
-    /**
-     * The payload of the token.
-     */
-    private final Payload payload;
+   /**
+    * The payload of the token.
+    */
+   private Payload payload;
 
-    /**
-     * Creates a new SingleTokenStream with the given value and a property
-     * <code>type</code>.
-     *
-     * @param value the string value that will be returned with the token.
-     * @param type the JCR property type.
-     */
-    public SingletonTokenStream(String value, int type) {
-        this.value = value;
-        this.payload = new Payload(new PropertyMetaData(type).toByteArray());
-    }
+   /**
+    * for serialization 
+    */
+   public SingletonTokenStream()
+   {
+      // TODO Auto-generated constructor stub
+   }
 
-    /**
-     * Creates a new SingleTokenStream with the given token.
-     *
-     * @param t the token.
-     */
-    public SingletonTokenStream(Token t) {
-        this.value = t.term();
-        this.payload = t.getPayload();
-    }
+   /**
+    * Creates a new SingleTokenStream with the given value and a property
+    * <code>type</code>.
+    *
+    * @param value the string value that will be returned with the token.
+    * @param type the JCR property type.
+    */
+   public SingletonTokenStream(String value, int type)
+   {
+      this.value = value;
+      this.payload = new Payload(new PropertyMetaData(type).toByteArray());
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public Token next(Token reusableToken) throws IOException {
-        if (value == null) {
-            return null;
-        }
-        reusableToken.clear();
-        reusableToken.setTermBuffer(value);
-        reusableToken.setPayload(payload);
-        reusableToken.setStartOffset(0);
-        reusableToken.setEndOffset(value.length());
-        value = null;
-        return reusableToken;
-    }
+   /**
+    * Creates a new SingleTokenStream with the given token.
+    *
+    * @param t the token.
+    */
+   public SingletonTokenStream(Token t)
+   {
+      this.value = t.term();
+      this.payload = t.getPayload();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Token next(Token reusableToken) throws IOException
+   {
+      if (value == null)
+      {
+         return null;
+      }
+      reusableToken.clear();
+      reusableToken.setTermBuffer(value);
+      reusableToken.setPayload(payload);
+      reusableToken.setStartOffset(0);
+      reusableToken.setEndOffset(value.length());
+      value = null;
+      return reusableToken;
+   }
 }

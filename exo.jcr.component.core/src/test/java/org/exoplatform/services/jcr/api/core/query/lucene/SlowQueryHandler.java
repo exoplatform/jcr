@@ -23,9 +23,11 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.AbstractQueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.ExecutableQuery;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
@@ -88,6 +90,18 @@ public class SlowQueryHandler extends AbstractQueryHandler
     * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#executeQuery(org.apache.lucene.search.Query)
     */
    public QueryHits executeQuery(Query query) throws IOException
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   public void apply(ChangesHolder changes) throws RepositoryException, IOException
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add)
    {
       // TODO Auto-generated method stub
       return null;

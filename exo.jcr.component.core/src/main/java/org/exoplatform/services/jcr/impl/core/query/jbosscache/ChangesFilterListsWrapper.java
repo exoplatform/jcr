@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 
+import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
+
 import java.io.Serializable;
 import java.util.Set;
 
@@ -40,6 +42,10 @@ public class ChangesFilterListsWrapper implements Serializable
 
    private Set<String> parentRemovedNodes;
 
+   private ChangesHolder changes;
+
+   private ChangesHolder parentChanges;
+   
    /**
     * Creates ChangesFilterListsWrapper data class, containing given lists.
     * 
@@ -56,7 +62,31 @@ public class ChangesFilterListsWrapper implements Serializable
       this.parentAddedNodes = parentAddedNodes;
       this.parentRemovedNodes = parentRemovedNodes;
    }
+   
+   /**
+    * Creates ChangesFilterListsWrapper data class, containing given lists.
+    */
+   public ChangesFilterListsWrapper(ChangesHolder changes, ChangesHolder parentChanges)
+   {
+      this.changes = changes;
+      this.parentChanges = parentChanges;
+   }
 
+   public boolean withChanges()
+   {
+      return changes != null || parentChanges != null;
+   }
+   
+   public ChangesHolder getChanges()
+   {
+      return changes;
+   }
+
+   public ChangesHolder getParentChanges()
+   {
+      return parentChanges;
+   }
+   
    public Set<String> getAddedNodes()
    {
       return addedNodes;
@@ -75,16 +105,5 @@ public class ChangesFilterListsWrapper implements Serializable
    public Set<String> getParentRemovedNodes()
    {
       return parentRemovedNodes;
-   }
-
-   public String dump()
-   {
-      StringBuffer buffer = new StringBuffer();
-      buffer.append("\n");
-      buffer.append("Added=").append(addedNodes.toString()).append("\n");
-      buffer.append("Removed=").append(removedNodes.toString()).append("\n");
-      buffer.append("ParentAdded=").append(parentAddedNodes.toString()).append("\n");
-      buffer.append("ParentRemoved=").append(parentRemovedNodes.toString());
-      return buffer.toString();
    }
 }

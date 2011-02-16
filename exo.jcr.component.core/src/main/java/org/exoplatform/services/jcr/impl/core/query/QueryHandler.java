@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.MultiIndex;
@@ -78,6 +79,23 @@ public interface QueryHandler
     */
    void updateNodes(Iterator<String> remove, Iterator<NodeData> add) throws RepositoryException, IOException;
 
+   /**
+    * Extracts all the changes and returns them as a {@link ChangesHolder} instance
+    * @param remove Iterator of <code>NodeIds</code> of nodes to delete
+    * @param add    Iterator of <code>NodeState</code> instance to add to the
+    *               index.
+    * @return a {@link ChangesHolder} instance that contains all the changes
+    */
+   ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add);
+   
+   /**
+    * Applies the given changes to the indes in an atomic operation
+    * @param changes the changes to apply
+    * @throws RepositoryException if an error occurs while indexing a node.
+    * @throws IOException if an error occurs while updating the index.
+    */
+   void apply(ChangesHolder changes) throws RepositoryException, IOException;
+   
    /**
     * Closes this <code>QueryHandler</code> and frees resources attached
     * to this handler.

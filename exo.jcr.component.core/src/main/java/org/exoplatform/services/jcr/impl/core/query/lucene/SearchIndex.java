@@ -738,11 +738,28 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       IOException
    {
       checkOpen();
+      apply(getChanges(remove, add));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void apply(ChangesHolder changes) throws RepositoryException, IOException
+   {
+      checkOpen();
+      index.update(changes.getRemove(), changes.getAdd());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add)
+   {
       final Map<String, NodeData> aggregateRoots = new HashMap<String, NodeData>();
       final Set<String> removedNodeIds = new HashSet<String>();
       final Set<String> addedNodeIds = new HashSet<String>();
 
-      index.update(IteratorUtils.toList(new TransformIterator(remove, new Transformer()
+      Collection<String> docIdsToRemove = IteratorUtils.toList(new TransformIterator(remove, new Transformer()
       {
          public Object transform(Object input)
          {
@@ -750,7 +767,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             removedNodeIds.add(uuid);
             return uuid;
          }
-      })), IteratorUtils.toList(new TransformIterator(add, new Transformer()
+      }));
+      Collection<Document> docsToAdd = IteratorUtils.toList(new TransformIterator(add, new Transformer()
       {
          public Object transform(Object input)
          {
@@ -775,7 +793,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             }
             return doc;
          }
-      })));
+      }));
 
       // remove any aggregateRoot nodes that are new
       // and therefore already up-to-date
@@ -805,8 +823,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             }
          });
          modified.addAll(aggregateRoots.values());
-         index.update(aggregateRoots.keySet(), modified);
+         docIdsToRemove.addAll(aggregateRoots.keySet());
+         docsToAdd.addAll(modified);
       }
+      if (docIdsToRemove.isEmpty() && docsToAdd.isEmpty())
+      {
+         return null;
+      }
+      return new ChangesHolder(docIdsToRemove, docsToAdd);
    }
 
    /**

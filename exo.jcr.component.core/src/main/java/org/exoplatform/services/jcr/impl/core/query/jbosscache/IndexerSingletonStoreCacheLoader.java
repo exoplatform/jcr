@@ -79,28 +79,46 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
                {
                   Fqn<?> fqn = aChildren.getFqn();
                   Object value = cache.get(fqn, JBossCacheIndexChangesFilter.LISTWRAPPER);
-                  if (value != null && value instanceof ChangesFilterListsWrapper)
+                  if (value instanceof ChangesFilterListsWrapper)
                   {
                      // get wrapper object
                      ChangesFilterListsWrapper listsWrapper = (ChangesFilterListsWrapper)value;
-                     // get search manager lists
-                     addedNodes.addAll(listsWrapper.getAddedNodes());
-                     removedNodes.addAll(listsWrapper.getRemovedNodes());
-                     // parent search manager lists
-                     parentAddedNodes.addAll(listsWrapper.getParentAddedNodes());
-                     parentRemovedNodes.addAll(listsWrapper.getParentAddedNodes());
-                  }                  
+                     if (listsWrapper.withChanges())
+                     {
+                        if (listsWrapper.getChanges() != null)
+                        {
+                           // get search manager lists
+                           addedNodes.addAll(listsWrapper.getChanges().getAddIds());
+                           removedNodes.addAll(listsWrapper.getChanges().getRemove());
+                        }
+                        if (listsWrapper.getParentChanges() != null)
+                        {
+                           // parent search manager lists
+                           parentAddedNodes.addAll(listsWrapper.getParentChanges().getAddIds());
+                           parentRemovedNodes.addAll(listsWrapper.getParentChanges().getRemove());
+                        }
+                     }
+                     else
+                     {
+                        // get search manager lists
+                        addedNodes.addAll(listsWrapper.getAddedNodes());
+                        removedNodes.addAll(listsWrapper.getRemovedNodes());
+                        // parent search manager lists
+                        parentAddedNodes.addAll(listsWrapper.getParentAddedNodes());
+                        parentRemovedNodes.addAll(listsWrapper.getParentAddedNodes());
+                     }
+                  }
                }
                String id = IdGenerator.generate();
-               cache.put(Fqn.fromRelativeElements(wsChildren.getFqn(), id), JBossCacheIndexChangesFilter.LISTWRAPPER, new ChangesFilterListsWrapper(addedNodes,
-                  removedNodes, parentAddedNodes, parentRemovedNodes));
+               cache.put(Fqn.fromRelativeElements(wsChildren.getFqn(), id), JBossCacheIndexChangesFilter.LISTWRAPPER,
+                  new ChangesFilterListsWrapper(addedNodes, removedNodes, parentAddedNodes, parentRemovedNodes));
                // Once we put the merged changes into the cache we can remove other changes from the cache 
-               for (NodeSPI aChildren : children) 
-               { 
+               for (NodeSPI aChildren : children)
+               {
                   // Remove the node from the cache and do it asynchronously 
-                  cache.getInvocationContext().getOptionOverrides().setForceAsynchronous(true); 
-                  cache.removeNode(aChildren.getFqn()); 
-               } 
+                  cache.getInvocationContext().getOptionOverrides().setForceAsynchronous(true);
+                  cache.removeNode(aChildren.getFqn());
+               }
             }
             if (debugEnabled)
             {
@@ -109,6 +127,15 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
             return null;
          }
       };
+   }
+
+   @Override
+   public Object put(Fqn name, Object key, Object value) throws Exception
+   {
+      // delegating call to underlying cache loader, skipping SingletonStore cache loader.
+      // this is used to deliver lists to non-coordinator nodes, since the do the indexing into
+      // volatile index
+      return getCacheLoader().put(name, key, value);
    }
 
    /**

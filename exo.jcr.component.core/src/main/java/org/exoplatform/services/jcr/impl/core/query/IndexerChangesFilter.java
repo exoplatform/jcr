@@ -109,9 +109,6 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
     */
    public void onSaveItems(ItemStateChangesLog itemStates)
    {
-
-      long time = System.currentTimeMillis();
-
       // nodes that need to be removed from the index.
       final Set<String> removedNodes = new HashSet<String>();
       // nodes that need to be added to the index.

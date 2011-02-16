@@ -22,7 +22,6 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
-import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
@@ -40,23 +39,28 @@ import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
-import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig.SingletonStoreConfig;
-import org.jboss.cache.config.Configuration.CacheMode;
-import org.jboss.cache.loader.SingletonStoreCacheLoader.PushStateException;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
 
 /**
+ * This type of ChangeFilter offers an ability for each cluster instance to have own
+ * local index (stack of indexes, from persistent to volatile). It uses JBossCache for
+ * Lucene Documents and UUIDs delivery. Each node works in ReadWrite mode, so manages 
+ * it own volatile, merger, local list of persisted indexes and stand-alone 
+ * UpdateInProgressMonitor implementation. 
+ * This implementation is similar to JBossCacheIndexChangesFilter but it doesn't use 
+ * SingletonStoreCacheLoader tier and cluster-aware implementations of IndexInfos
+ * and UpdateInProgressMonitor.
+ * 
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
  *
  */
-public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
+public class LocalIndexChangesFilter extends IndexerChangesFilter
 {
    /**
     * Logger instance for this class
@@ -88,7 +92,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
     * @param indexingTree
     * @throws RepositoryConfigurationException 
     */
-   public JBossCacheIndexChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
+   public LocalIndexChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
       QueryHandlerEntry config, IndexingTree indexingTree, IndexingTree parentIndexingTree, QueryHandler handler,
       QueryHandler parentHandler, ConfigurationManager cfm) throws IOException, RepositoryException,
       RepositoryConfigurationException
@@ -99,25 +103,10 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       Cache<Serializable, Object> initCache = factory.createCache(config);
 
       // initialize IndexerCacheLoader 
-      IndexerCacheLoader indexerCacheLoader = new IndexerCacheLoader();
-      // set SingltonStoreCacheLoader
-      SingletonStoreConfig singletonStoreConfig = new SingletonStoreConfig();
-      singletonStoreConfig.setSingletonStoreClass(IndexerSingletonStoreCacheLoader.class.getName());
-      //singletonStoreConfig.setSingletonStoreClass(SingletonStoreCacheLoader.class.getName());
-      Properties singletonStoreProperties = new Properties();
+      IndexerCacheLoader indexerCacheLoader = new LocalIndexCacheLoader();
 
-      // try to get pushState parameters, since they are set programmatically only
-      Boolean pushState = config.getParameterBoolean(PARAM_JBOSSCACHE_PUSHSTATE, false);
-      Long pushStateTimeOut = config.getParameterTime(PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000L);
-
-      singletonStoreProperties.setProperty("pushStateWhenCoordinator", pushState.toString());
-      singletonStoreProperties.setProperty("pushStateWhenCoordinatorTimeout", pushStateTimeOut.toString());
-      singletonStoreConfig.setProperties(singletonStoreProperties);
-      singletonStoreConfig.setSingletonStoreEnabled(true);
       // create CacheLoaderConfig
       IndividualCacheLoaderConfig individualCacheLoaderConfig = new IndividualCacheLoaderConfig();
-      // set SingletonStoreConfig
-      individualCacheLoaderConfig.setSingletonStoreConfig(singletonStoreConfig);
       // set CacheLoader
       individualCacheLoaderConfig.setCacheLoader(indexerCacheLoader);
       // set parameters
@@ -140,45 +129,20 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       PrivilegedJBossCacheHelper.create(cache);
       PrivilegedJBossCacheHelper.start(cache);
 
-      // start will invoke cache listener which will notify handler that mode is changed
-      IndexerIoMode ioMode =
-         ((CacheSPI)cache).getRPCManager().isCoordinator() ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY;
-
-      // Could have change of cache
-      IndexerSingletonStoreCacheLoader issCacheLoader =
-         (IndexerSingletonStoreCacheLoader)((CacheSPI)cache).getCacheLoaderManager().getCacheLoader();
-
-      // This code make it possible to use the JBossCacheIndexChangesFilter in
-      // a non-cluster environment
-      if (cache.getConfiguration().getCacheMode() == CacheMode.LOCAL)
-      {
-         // Activate the cache loader
-         try
-         {
-            issCacheLoader.activeStatusChanged(true);
-         }
-         catch (PushStateException e)
-         {
-            // ignore me;
-         }
-      }
-      indexerCacheLoader = (IndexerCacheLoader)issCacheLoader.getCacheLoader();
+      indexerCacheLoader = (IndexerCacheLoader)((CacheSPI)cache).getCacheLoaderManager().getCacheLoader();
 
       indexerCacheLoader.register(searchManager, parentSearchManager, handler, parentHandler);
       IndexerIoModeHandler modeHandler = indexerCacheLoader.getModeHandler();
       handler.setIndexerIoModeHandler(modeHandler);
       parentHandler.setIndexerIoModeHandler(modeHandler);
 
+      // using default updateMonitor and default 
       if (!parentHandler.isInitialized())
       {
-         parentHandler.setIndexInfos(new JBossCacheIndexInfos(rootFqn, cache, true, modeHandler));
-         parentHandler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(rootFqn, cache, true, modeHandler));
          parentHandler.init();
       }
       if (!handler.isInitialized())
       {
-         handler.setIndexInfos(new JBossCacheIndexInfos(rootFqn, cache, false, modeHandler));
-         handler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(rootFqn, cache, false, modeHandler));
          handler.init();
       }
    }
@@ -190,6 +154,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
    protected void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes, Set<String> parentRemovedNodes,
       Set<String> parentAddedNodes)
    {
+
       ChangesHolder changes = searchManager.getChanges(removedNodes, addedNodes);
       ChangesHolder parentChanges = parentSearchManager.getChanges(parentRemovedNodes, parentAddedNodes);
 
@@ -221,7 +186,6 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
    {
       try
       {
-
          logHandler.logErrorChanges(addedNodes, removedNodes);
       }
       catch (IOException ioe)
