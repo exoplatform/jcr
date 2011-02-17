@@ -100,8 +100,9 @@
          &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
          &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
          &lt;property name="max-volatile-time" value="60" /&gt;
-         &lt;property name="rdbms-reindexing" value="false" /&gt;
+         &lt;property name="rdbms-reindexing" value="true" /&gt;
          &lt;property name="reindexing-page-size" value="1000" /&gt;
+         &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
       &lt;/properties&gt;
    &lt;/query-handler&gt;
 &lt;/workspace&gt;</programlisting> <table>
@@ -170,6 +171,16 @@
                 <entry>maximum amount of nodes which can be retrieved from
                 storage for re-indexing purpose, the default value is
                 100</entry>
+              </row>
+
+              <row>
+                <entry>index-recovery-mode</entry>
+
+                <entry>If the parameter has been set to
+                <command>from-indexing</command>, so a full indexing will be
+                automatically launched (default behavior), if the parameter
+                has been set to <command>from-coordinator</command>, the index
+                will be retrieved from coordinator</entry>
               </row>
             </tbody>
           </tgroup>
