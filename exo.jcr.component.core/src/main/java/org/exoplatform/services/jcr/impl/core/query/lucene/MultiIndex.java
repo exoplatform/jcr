@@ -21,12 +21,16 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.store.Directory;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
@@ -37,8 +41,11 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryMa
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -430,31 +437,44 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          reindexing = true;
          try
          {
-            // traverse and index workspace
-            executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
-
-            long count;
-
-            // check if we have deal with RDBMS reindexing mechanism
-            Reindexable rdbmsReindexableComponent =
-               (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
-
-            if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
-               && rdbmsReindexableComponent.isReindexingSupport())
+            if (handler.getIndexRecoveryMode().equals(SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR)
+               && handler.getContext().getIndexRetrieve() != null)
             {
-               count =
-                  createIndex(rdbmsReindexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
-                     indexingTree.getIndexingRoot());
+               log.info("Retrieving index from coordinator...");
+               retreiveIndexFromCoordinator();
+
+               indexNames.read();
+               refreshIndexList();
             }
             else
             {
-               count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
-            }
+               // traverse and index workspace
+               executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
 
-            executeAndLog(new Commit(getTransactionId()));
-            log.info("Created initial index for {} nodes", new Long(count));
-            releaseMultiReader();
-            scheduleFlushTask();
+               long count;
+
+               // check if we have deal with RDBMS reindexing mechanism
+               Reindexable rdbmsReindexableComponent =
+                  (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
+
+               if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
+                  && rdbmsReindexableComponent.isReindexingSupport())
+               {
+                  count =
+                     createIndex(
+                        rdbmsReindexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
+                        indexingTree.getIndexingRoot());
+               }
+               else
+               {
+                  count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
+               }
+
+               executeAndLog(new Commit(getTransactionId()));
+               log.info("Created initial index for {} nodes", new Long(count));
+               releaseMultiReader();
+               scheduleFlushTask();
+            }
          }
          catch (Exception e)
          {
@@ -3315,6 +3335,84 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          for (int i = 0; i < nThreads; i++)
          {
             (new Thread(indexingTask, "Indexing Thread #" + (i + 1))).start();
+         }
+      }
+   }
+
+   /** 
+    * Retrieve index from other node. 
+    * 
+    * @throws SuspendException 
+    * @throws IOException. 
+    * @throws RepositoryException. 
+    * @throws FileNotFoundException. 
+    */
+   private void retreiveIndexFromCoordinator() throws FileNotFoundException, RepositoryException, IOException,
+      SuspendException
+   {
+      List<Suspendable> suspendableComponents =
+         handler.getContext().getContainer().getComponentInstancesOfType(Suspendable.class);
+
+      // the list of components to resume 
+      List<Suspendable> resumeComponents = new ArrayList<Suspendable>();
+
+      try
+      {
+         // suspend all components 
+         for (Suspendable component : suspendableComponents)
+         {
+            component.suspend(Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY);
+            resumeComponents.add(component);
+         }
+
+         File indexDirectory = new File(handler.getContext().getIndexDirectory());
+         for (String filePath : handler.getContext().getIndexRetrieve().getIndexList())
+         {
+            File indexFile = new File(indexDirectory, filePath);
+            if (!PrivilegedFileHelper.exists(indexFile.getParentFile()))
+            {
+               PrivilegedFileHelper.mkdirs(indexFile.getParentFile());
+            }
+
+            // transfer file 
+            InputStream in = handler.getContext().getIndexRetrieve().getIndexFile(filePath);
+            OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
+            try
+            {
+               byte[] buf = new byte[2048];
+               int len;
+
+               while ((len = in.read(buf)) > 0)
+               {
+                  out.write(buf, 0, len);
+               }
+            }
+            finally
+            {
+               if (in != null)
+               {
+                  in.close();
+               }
+
+               if (out != null)
+               {
+                  out.close();
+               }
+            }
+         }
+      }
+      finally
+      {
+         for (Suspendable component : resumeComponents)
+         {
+            try
+            {
+               component.resume();
+            }
+            catch (ResumeException e)
+            {
+               log.error("Can't resume component", e);
+            }
          }
       }
    }

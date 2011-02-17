@@ -167,6 +167,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    protected final String workspaceName;
 
+   /**
+    * The repository service.
+    */
    protected final RepositoryService rService;
 
    /**
@@ -175,7 +178,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected final String wsId;
 
    /**
-    * The service for executing commands on all nodes of cluster.
+    * Component responsible for executing commands in cluster nodes.
     */
    protected final RPCService rpcService;
 
@@ -188,6 +191,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * Indicates that node keep responsible for resuming.
     */
    protected Boolean isResponsibleForResuming = false;
+
+   /**
+    * Suspend flag.
+    */
+   protected Integer suspendFlag;
 
    /**
     * Suspend remote command.
@@ -204,41 +212,13 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    private RemoteCommand requestForResponsibleForResuming;
 
-   /**
-    * Creates a new <code>SearchManager</code>.
-    * 
-    * @param rEntry
-    *            repository configuration
-    * @param rService
-    *            repository service            
-    * @param config
-    *            the search configuration.
-    * @param nsReg
-    *            the namespace registry.
-    * @param ntReg
-    *            the node type registry.
-    * @param itemMgr
-    *            the shared item state manager.
-    * @param rootNodeId
-    *            the id of the root node.
-    * @param parentMgr
-    *            the parent search manager or <code>null</code> if there is no
-    *            parent search manager.
-    * @param excludedNodeId
-    *            id of the node that should be excluded from indexing. Any
-    *            descendant of that node will also be excluded from indexing.
-    * @throws RepositoryException
-    *             if the search manager cannot be initialized
-    * @throws RepositoryConfigurationException
-    */
-
-   public SearchManager(WorkspaceEntry wsConfig, RepositoryEntry rEntry, RepositoryService rService,
+   public SearchManager(WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
       QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
       throws RepositoryException, RepositoryConfigurationException
    {
-      this(wsConfig, rEntry, rService, config, nsReg, ntReg, itemMgr, parentSearchManager, extractor, cfm,
+      this(wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, parentSearchManager, extractor, cfm,
          indexSearcherHolder, null);
    }
 
@@ -271,19 +251,18 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     *             if the search manager cannot be initialized
     * @throws RepositoryConfigurationException
     */
-
-   public SearchManager(WorkspaceEntry wsConfig, RepositoryEntry rEntry, RepositoryService rService,
+   public SearchManager(WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
       QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm,
       final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
       RepositoryConfigurationException
    {
-      this.repositoryName = rEntry.getName();
-      this.workspaceName = wsConfig.getName();
-      this.rService = rService;
       this.rpcService = rpcService;
-      this.wsId = wsConfig.getUniqueName();
+      this.repositoryName = rEntry.getName();
+      this.workspaceName = wEntry.getName();
+      this.rService = rService;
+      this.wsId = wEntry.getUniqueName();
       this.extractor = extractor;
       indexSearcherHolder.addIndexSearcher(this);
       this.config = config;
@@ -561,9 +540,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                try
                {
                   indexingRootData = (NodeData)itemMgr.getItemData(Constants.ROOT_UUID);
-                  //               indexingRootData =
-                  //                  new TransientNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, 1, Constants.NT_UNSTRUCTURED,
-                  //                     new InternalQName[0], 0, null, new AccessControlList());
                }
                catch (RepositoryException e)
                {
@@ -604,7 +580,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       final ChangesHolder changes = getChanges(removedNodes, addedNodes);
       apply(changes);
    }
-   
+
    public void apply(ChangesHolder changes) throws RepositoryException, IOException
    {
       if (handler != null && changes != null && (!changes.getAdd().isEmpty() || !changes.getRemove().isEmpty()))
@@ -703,7 +679,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
       return null;
    }
-   
+
    protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
       throws RepositoryConfigurationException
    {
@@ -717,9 +693,15 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new RepositoryConfigurationException(e);
       }
 
+      IndexRetrieve indexRetrieve =
+         rpcService == null ? null : new IndexRetrieveImpl(rpcService, getWsId(), parentHandler == null,
+            getIndexDirectory());
+
       QueryHandlerContext context =
          new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
-            getIndexDirectory(), extractor, true, virtualTableResolver);
+            PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, virtualTableResolver,
+            indexRetrieve);
+
       return context;
    }
 
@@ -753,7 +735,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
    }
 
-   protected String getIndexDir() throws RepositoryConfigurationException
+   /**^
+    * Returns "index-dir" parameter from configuration. 
+    */
+   protected String getIndexDirParam() throws RepositoryConfigurationException
    {
       String dir = config.getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR, null);
       if (dir == null)
@@ -803,8 +788,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          if (parentSearchManager != null)
          {
             newChangesFilter =
-               constuctor.newInstance(this, parentSearchManager, config, indexingTree, parentSearchManager
-                  .getIndexingTree(), handler, parentSearchManager.getHandler(), cfm);
+               constuctor.newInstance(this, parentSearchManager, config, indexingTree,
+                  parentSearchManager.getIndexingTree(), handler, parentSearchManager.getHandler(), cfm);
          }
       }
       catch (SecurityException e)
@@ -1000,9 +985,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}
     */
-   public void suspend() throws SuspendException
+   public void suspend(int flag) throws SuspendException
    {
       isResponsibleForResuming = true;
+      suspendFlag = flag;
 
       if (rpcService != null)
       {
@@ -1051,8 +1037,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
 
       isResponsibleForResuming = false;
+      suspendFlag = null;
    }
-   
+
    /**
     * Register remote commands.
     */
@@ -1064,7 +1051,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
          public String getId()
          {
-            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-suspend-" + wsId;
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-suspend-" + wsId + "-"
+               + (parentSearchManager == null);
          }
 
          public Serializable execute(Serializable[] args) throws Throwable
@@ -1079,7 +1067,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
          public String getId()
          {
-            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-resume-" + wsId;
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-resume-" + wsId + "-"
+               + (parentSearchManager == null);
          }
 
          public Serializable execute(Serializable[] args) throws Throwable
@@ -1095,7 +1084,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          public String getId()
          {
             return "org.exoplatform.services.jcr.impl.core.query.SearchManager-requestForResponsibilityForResuming-"
-               + wsId;
+               + wsId + "-" + (parentSearchManager == null);
          }
 
          public Serializable execute(Serializable[] args) throws Throwable
@@ -1109,35 +1098,33 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    protected void suspendLocally() throws SuspendException
    {
+      if (isResponsibleForResuming && suspendFlag == Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY)
+      {
+         return;
+      }
+
       if (isSuspended)
       {
          throw new SuspendException("Component already suspended.");
       }
 
       isSuspended = true;
-
       stop();
-
-      if (handler instanceof Suspendable)
-      {
-         ((Suspendable)handler).suspend();
-      }
    }
 
    protected void resumeLocally() throws ResumeException
    {
+      if (isResponsibleForResuming && suspendFlag == Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY)
+      {
+         return;
+      }
+
       if (!isSuspended)
       {
          throw new ResumeException("Component is not suspended.");
       }
 
       start();
-      
-      if (handler instanceof Suspendable)
-      {
-         ((Suspendable)handler).resume();
-      }
-
       isSuspended = false;
    }
 
@@ -1195,7 +1182,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
       try
       {
-         DirectoryHelper.removeDirectory(new File(getIndexDirectory()));
+         DirectoryHelper.removeDirectory(getIndexDirectory());
       }
       catch (IOException e)
       {
@@ -1214,7 +1201,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
       try
       {
-         File indexDir = new File(getIndexDirectory());
+         File indexDir = getIndexDirectory();
 
          if (!PrivilegedFileHelper.exists(indexDir))
          {
@@ -1238,14 +1225,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    }
 
    /**
-    * Return index directory.
+    * Returns the index directory.
     * 
-    * @return String
+    * @return File
     * @throws RepositoryConfigurationException
     */
-   protected String getIndexDirectory() throws RepositoryConfigurationException
+   protected File getIndexDirectory() throws RepositoryConfigurationException
    {
-      return getIndexDir();
+      return new File(getIndexDirParam());
    }
 
    /**
@@ -1265,7 +1252,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
       try
       {
-         File indexDir = new File(getIndexDirectory());
          File backupDir = new File(storageDir, getStorageName());
 
          if (!PrivilegedFileHelper.exists(backupDir))
@@ -1275,7 +1261,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          }
          else
          {
-            return new DirectoryRestor(indexDir, backupDir);
+            return new DirectoryRestor(getIndexDirectory(), backupDir);
          }
       }
       catch (RepositoryConfigurationException e)

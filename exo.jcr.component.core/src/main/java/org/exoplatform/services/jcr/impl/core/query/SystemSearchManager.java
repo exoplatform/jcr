@@ -28,12 +28,14 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCService;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,23 +63,22 @@ public class SystemSearchManager extends SearchManager
 
    public static final String INDEX_DIR_SUFFIX = "system";
 
-   public SystemSearchManager(WorkspaceEntry wsConfig, RepositoryEntry rEntry, RepositoryService rService,
+   public SystemSearchManager(WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
+      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+      WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
+      RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      super(wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder,
+         rpcService);
+   }
+
+   public SystemSearchManager(WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
       QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
       RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException, RepositoryConfigurationException
    {
-      super(wsConfig, rEntry, rService, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
-   }
-
-   public SystemSearchManager(WorkspaceEntry wsConfig, RepositoryEntry rEntry, RepositoryService rService,
-      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
-      WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
-      DocumentReaderService extractor, ConfigurationManager cfm,
-      final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
-      RepositoryConfigurationException
-   {
-      super(wsConfig, rEntry, rService, config, nsReg, ntReg, itemMgr, null, extractor, cfm, indexSearcherHolder,
-         rpcService);
+      this(wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, service, cfm, indexSearcherHolder, null);
    }
 
    @Override
@@ -97,9 +98,7 @@ public class SystemSearchManager extends SearchManager
                indexingTree = new IndexingTree(indexingRootNodeData, excludedPaths);
             }
             initializeQueryHandler();
-
          }
-
          catch (RepositoryException e)
          {
             log.error(e.getLocalizedMessage());
@@ -122,9 +121,9 @@ public class SystemSearchManager extends SearchManager
     * {@inheritDoc}
     */
    @Override
-   protected String getIndexDirectory() throws RepositoryConfigurationException
+   protected File getIndexDirectory() throws RepositoryConfigurationException
    {
-      return getIndexDir() + "_" + INDEX_DIR_SUFFIX;
+      return new File(getIndexDirParam() + "_" + INDEX_DIR_SUFFIX);
    }
 
    /**
@@ -139,6 +138,11 @@ public class SystemSearchManager extends SearchManager
    @Override
    protected void suspendLocally() throws SuspendException
    {
+      if (isResponsibleForResuming && suspendFlag == Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY)
+      {
+         return;
+      }
+
       super.suspendLocally();
       isStarted = false;
    }

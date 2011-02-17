@@ -180,6 +180,16 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public static final boolean DEFAULT_RDBMS_REINDEXING = true;
 
+   /** 
+    * The default value for {@link #indexRecoveryMode}. 
+    */
+   public static final String INDEX_RECOVERY_MODE_FROM_INDEXING = "from-indexing";
+
+   /** 
+    * The alternative value for {@link #indexRecoveryMode}. 
+    */
+   public static final String INDEX_RECOVERY_MODE_FROM_COORDINATOR = "from-coordinator";
+
    /**
     * Default name of the error log file
     */
@@ -474,6 +484,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Indicates what reindexing mechanism need to use. 
     */
    private boolean rdbmsReindexing = DEFAULT_RDBMS_REINDEXING;
+
+   /** 
+    * The way to create initial index.. 
+    */
+   private String indexRecoveryMode = INDEX_RECOVERY_MODE_FROM_INDEXING;
 
    /**
     * Working constructor.
@@ -2709,6 +2724,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       return rdbmsReindexing;
    }
 
+   /** 
+    * @return the current value for indexRecoveryMode 
+    */
+   public String getIndexRecoveryMode()
+   {
+      return indexRecoveryMode;
+   }
+
    /**
     * Sets a new value for termInfosIndexDivisor.
     * 
@@ -2761,6 +2784,17 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setRDBMSReindexing(boolean rdbmsReindexing)
    {
       this.rdbmsReindexing = rdbmsReindexing;
+   }
+
+   /**
+    *  Set a new value for indexRecoveryMode. 
+    * 
+    * @param indexRecoveryMode 
+    *          the new value for indexRecoveryMode
+    */
+   public void setIndexRecoveryMode(String indexRecoveryMode)
+   {
+      this.indexRecoveryMode = indexRecoveryMode;
    }
 
    // ----------------------------< internal
@@ -2898,7 +2932,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          if (mode == IndexerIoMode.READ_WRITE)
          {
             // reprocess any notfinished notifies;
-            log.info("Proceessing eroor log ...");
+            log.info("Proceessing error log ...");
             recoverErrorLog(errorLog);
          }
       }

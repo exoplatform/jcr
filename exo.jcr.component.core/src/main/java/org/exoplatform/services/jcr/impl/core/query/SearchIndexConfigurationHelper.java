@@ -194,5 +194,9 @@ public class SearchIndexConfigurationHelper
       {
          searchIndex.setRDBMSReindexing(Boolean.parseBoolean(value));
       }
+      else if (QueryHandlerParams.PARAM_INDEX_RECOVERY_MODE.equals(name))
+      {
+         searchIndex.setIndexRecoveryMode(value);
+      }
    }
 }

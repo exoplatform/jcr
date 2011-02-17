@@ -24,13 +24,16 @@ package org.exoplatform.services.jcr.impl.backup;
  */
 public interface Suspendable
 {
+   public static int SUSPEND_COMPONENT_ON_ALL_NODES = 1;
+
+   public static int SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY = 2;
 
    /**
     *  Suspend component.
     *  
     *  @throws SuspendException of error occurred 
     */
-   void suspend() throws SuspendException;
+   void suspend(int flag) throws SuspendException;
 
    /**
     *  Resume component.

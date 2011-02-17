@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -40,6 +42,36 @@ import java.util.zip.ZipOutputStream;
  */
 public class DirectoryHelper
 {
+
+   /**
+    * Returns the files list of whole directory including its sub directories. 
+    *  
+    * @param srcPath 
+    *          source path 
+    * @return List          
+    * @throws IOException 
+    *          if any exception occurred 
+    */
+   public static List<File> listFiles(File srcPath) throws IOException
+   {
+      List<File> result = new ArrayList<File>();
+
+      if (!PrivilegedFileHelper.isDirectory(srcPath))
+      {
+         throw new IOException(PrivilegedFileHelper.getAbsolutePath(srcPath) + " is a directory");
+      }
+
+      for (File subFile : PrivilegedFileHelper.listFiles(srcPath))
+      {
+         result.add(subFile);
+         if (subFile.isDirectory())
+         {
+            result.addAll(listFiles(subFile));
+         }
+      }
+
+      return result;
+   }
 
    /**
     * Copy directory.

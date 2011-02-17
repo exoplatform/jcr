@@ -112,4 +112,6 @@ public interface QueryHandlerParams
    public static final String PARAM_REINDEXING_PAGE_SIZE = "reindexing-page-size";
 
    public static final String PARAM_RDBMS_REINDEXING = "rdbms-reindexing";
+   
+   public static final String PARAM_INDEX_RECOVERY_MODE = "index-recovery-mode";
 }
