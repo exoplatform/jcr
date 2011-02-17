@@ -129,7 +129,7 @@ public class FullBackupJob extends AbstractFullBackupJob
          // suspend all components
          for (Suspendable component : suspendableComponents)
          {
-            component.suspend();
+            component.suspend(Suspendable.SUSPEND_COMPONENT_ON_ALL_NODES);
             resumeComponents.add(component);
          }
 
