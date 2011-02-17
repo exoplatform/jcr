@@ -1,0 +1,1386 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/Constants.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/Constants.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/Constants.java	(working copy)
+@@ -569,6 +569,11 @@
+    public static final String SV_NODE = "node";
+ 
+    /**
++    * SV_VERSION_HISTORY.
++    */
++   public static final String SV_VERSION_HISTORY = "versionhistory";
++
++   /**
+     * SV_PROPERTY.
+     */
+    public static final String SV_PROPERTY = "property";
+@@ -604,6 +609,11 @@
+    public static final InternalQName SV_NODE_NAME = new InternalQName(NS_SV_URI, SV_NODE);
+ 
+    /**
++    * sv:versionhistory internal name.
++    */
++   public static final InternalQName SV_VERSION_HISTORY_NAME = new InternalQName(NS_SV_URI, SV_VERSION_HISTORY);
++
++   /**
+     * sv:property internal name.
+     */
+    public static final InternalQName SV_PROPERTY_NAME = new InternalQName(NS_SV_URI, SV_PROPERTY);
+@@ -667,7 +677,7 @@
+     * eXo JCR default Strings encoding.
+     */
+    public static final String DEFAULT_ENCODING = "UTF-8";
+-   
++
+    /**
+     * System identifier for remote workspace initializer changes.
+     */
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java	(working copy)
+@@ -403,11 +403,15 @@
+       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+       try
+       {
++         JCRPath srcNodePath = getLocationFactory().parseAbsPath(absPath);
++
++         boolean isVersionHistoryExport =
++            srcNodePath.getInternalPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH);
++
+          BaseXmlExporter exporter =
+             new ExportImportFactory().getExportVisitor(XmlMapping.SYSVIEW, out, skipBinary, noRecurse,
+-               getTransientNodesManager(), repository.getNamespaceRegistry(), valueFactoryImpl);
++               isVersionHistoryExport, getTransientNodesManager(), repository.getNamespaceRegistry(), valueFactoryImpl);
+ 
+-         JCRPath srcNodePath = getLocationFactory().parseAbsPath(absPath);
+          ItemData srcItemData = dataManager.getItemData(srcNodePath.getInternalPath());
+ 
+          if (srcItemData == null)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/ExportImportFactory.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/ExportImportFactory.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/ExportImportFactory.java	(working copy)
+@@ -112,7 +112,33 @@
+       ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory)
+       throws NamespaceException, RepositoryException, IOException
+    {
++      return getExportVisitor(type, stream, skipBinary, noRecurse, false, dataManager, namespaceRegistry,
++         systemValueFactory);
++   }
+ 
++   /**
++    * Create export visitor for given type of view.\
++    * 
++    * @param type - 6.4 XML Mappings
++    * @param stream - output result stream
++    * @param skipBinary- If skipBinary is true then any properties of
++    *          PropertyType.BINARY will be serialized as if they are empty.
++    * @param noRecurse- if noRecurse is false, the whole subtree are serialized
++    * @param exportChildVersionHistory - does versioned child nodes version history must be exported
++    *          (works ONLY with system view).
++    * @param dataManager - ItemDataConsumer
++    * @param namespaceRegistry - NamespaceRegistry
++    * @param systemValueFactory - default value factory
++    * @return - visitor BaseXmlExporter.
++    * @throws NamespaceException
++    * @throws RepositoryException
++    * @throws IOException
++    */
++   public BaseXmlExporter getExportVisitor(XmlMapping type, OutputStream stream, boolean skipBinary, boolean noRecurse,
++      boolean exportChildVersionHistory, ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
++      ValueFactoryImpl systemValueFactory) throws NamespaceException, RepositoryException, IOException
++   {
++
+       XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+       XMLStreamWriter streamWriter;
+       try
+@@ -127,7 +153,7 @@
+       if (type == XmlMapping.SYSVIEW)
+       {
+          return new SystemViewStreamExporter(streamWriter, dataManager, namespaceRegistry, systemValueFactory,
+-            skipBinary, noRecurse);
++            skipBinary, noRecurse, exportChildVersionHistory);
+       }
+       else if (type == XmlMapping.DOCVIEW)
+       {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/exporting/DocumentViewStreamExporter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/exporting/DocumentViewStreamExporter.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/exporting/DocumentViewStreamExporter.java	(working copy)
+@@ -49,7 +49,7 @@
+       NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
+       throws NamespaceException, RepositoryException
+    {
+-      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
++      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, false);
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/exporting/StreamExporter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/exporting/StreamExporter.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/exporting/StreamExporter.java	(working copy)
+@@ -38,14 +38,22 @@
+ 
+    protected final XMLStreamWriter writer;
+ 
++   protected final boolean exportChildVersionHistory;
++
+    public StreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
+       ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse) throws NamespaceException,
+       RepositoryException
+    {
++      this(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, false);
++   }
+ 
++   public StreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
++      ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse, boolean exportChildVersionHistory)
++      throws NamespaceException, RepositoryException
++   {
+       super(dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, noRecurse ? 1 : -1);
+       this.writer = writer;
+-
++      this.exportChildVersionHistory = exportChildVersionHistory;
+    }
+ 
+    @Override
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/exporting/SystemViewStreamExporter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/exporting/SystemViewStreamExporter.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/exporting/SystemViewStreamExporter.java	(working copy)
+@@ -21,14 +21,17 @@
+ import org.apache.ws.commons.util.Base64;
+ import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
++import org.exoplatform.services.jcr.datamodel.ItemType;
+ import org.exoplatform.services.jcr.datamodel.NodeData;
+ import org.exoplatform.services.jcr.datamodel.PropertyData;
++import org.exoplatform.services.jcr.datamodel.QPathEntry;
+ import org.exoplatform.services.jcr.datamodel.ValueData;
+ import org.exoplatform.services.jcr.impl.Constants;
+ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
++import java.util.ArrayList;
+ import java.util.List;
+ 
+ import javax.jcr.NamespaceException;
+@@ -47,6 +50,8 @@
+ 
+    private static final int BUFFER_SIZE = 3 * 1024 * 3;
+ 
++   private static final List<String> exportedVersionHistories = new ArrayList<String>();
++
+    /**
+     * @param writer
+     * @param session
+@@ -59,9 +64,17 @@
+       NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
+       throws NamespaceException, RepositoryException
+    {
+-      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
++      this(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, false);
+    }
+ 
++   public SystemViewStreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager,
++      NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse,
++      boolean exportChildVersionHistory) throws NamespaceException, RepositoryException
++   {
++      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse,
++         exportChildVersionHistory);
++   }
++
+    /*
+     * (non-Javadoc)
+     * @see
+@@ -145,6 +158,40 @@
+    {
+       try
+       {
++         if (exportChildVersionHistory && node.getPrimaryTypeName().equals(Constants.NT_VERSIONEDCHILD))
++         {
++            try
++            {
++               PropertyData childVersionHistory =
++                  ((PropertyData)dataManager.getItemData(node, new QPathEntry(Constants.JCR_CHILDVERSIONHISTORY, 1),
++                     ItemType.PROPERTY));
++               String childVersionHistoryId =
++                  getValueAsStringForExport(childVersionHistory.getValues().get(0), childVersionHistory.getType());
++
++               //check does this child version history was already exported
++               if (!exportedVersionHistories.contains(childVersionHistoryId))
++               {
++
++                  writer.writeStartElement(Constants.NS_SV_PREFIX, Constants.SV_VERSION_HISTORY, getSvNamespaceUri());
++                  writer.writeAttribute(Constants.NS_SV_PREFIX, getSvNamespaceUri(), Constants.SV_NAME,
++                     childVersionHistoryId);
++
++                  NodeData versionStorage = (NodeData)dataManager.getItemData(Constants.VERSIONSTORAGE_UUID);
++                  NodeData childVersionNodeData =
++                     (NodeData)dataManager.getItemData(versionStorage, new QPathEntry("", childVersionHistoryId, 1),
++                        ItemType.NODE);
++                  childVersionNodeData.accept(this);
++
++                  writer.writeEndElement();
++                  exportedVersionHistories.add(childVersionHistoryId);
++               }
++            }
++            catch (IOException e)
++            {
++               throw new RepositoryException("Can't export versioned child version history: " + e.getMessage(), e);
++            }
++         }
++
+          writer.writeEndElement();
+       }
+       catch (XMLStreamException e)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/BaseXmlImporter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/BaseXmlImporter.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/BaseXmlImporter.java	(working copy)
+@@ -383,7 +383,7 @@
+     */
+    protected void checkReferenceable(ImportNodeData currentNodeInfo, String olUuid) throws RepositoryException
+    {
+-      // if node is in version storrage - do not assign new id from jcr:uuid
++      // if node is in version storage - do not assign new id from jcr:uuid
+       // property
+       if (Constants.JCR_VERSION_STORAGE_PATH.getDepth() + 3 <= currentNodeInfo.getQPath().getDepth()
+          && currentNodeInfo.getQPath().getEntries()[Constants.JCR_VERSION_STORAGE_PATH.getDepth() + 3]
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/ContentImporter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/ContentImporter.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/ContentImporter.java	(working copy)
+@@ -35,6 +35,8 @@
+     */
+    public String RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS = "respectPropertyDefinitionsConstraints";
+ 
++   public final String LIST_OF_IMPORTED_VERSION_HISTORIES = "importedSubversions";
++
+    /**
+     * Receive notification of character data.
+     * 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/SystemViewImporter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/SystemViewImporter.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/SystemViewImporter.java	(working copy)
+@@ -27,8 +27,10 @@
+ import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+ import org.exoplatform.services.jcr.datamodel.IllegalPathException;
+ import org.exoplatform.services.jcr.datamodel.InternalQName;
++import org.exoplatform.services.jcr.datamodel.ItemType;
+ import org.exoplatform.services.jcr.datamodel.NodeData;
+ import org.exoplatform.services.jcr.datamodel.QPath;
++import org.exoplatform.services.jcr.datamodel.QPathEntry;
+ import org.exoplatform.services.jcr.datamodel.ValueData;
+ import org.exoplatform.services.jcr.impl.Constants;
+ import org.exoplatform.services.jcr.impl.core.JCRName;
+@@ -36,6 +38,7 @@
+ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+ import org.exoplatform.services.jcr.impl.core.value.BaseValue;
+ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
++import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
+ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+ import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+ import org.exoplatform.services.jcr.impl.xml.DecodedValue;
+@@ -171,6 +174,11 @@
+          DecodedValue curPropValue = propertyInfo.getValues().get(propertyInfo.getValues().size() - 1);
+          curPropValue.setComplete(true);
+       }
++      else if (Constants.SV_VERSION_HISTORY_NAME.equals(elementName))
++      {
++         // remove version history node from tree
++         tree.pop();
++      }
+       else
+       {
+          throw new RepositoryException("invalid element in system view xml document: " + localName);
+@@ -260,6 +268,27 @@
+          propertyInfo.getValues().add(new DecodedValue());
+ 
+       }
++      else if (Constants.SV_VERSION_HISTORY_NAME.equals(elementName))
++      {
++         String svName = getAttribute(atts, Constants.SV_NAME_NAME);
++         if (svName == null)
++         {
++            throw new RepositoryException("Missing mandatory sv:name attribute of element sv:node");
++         }
++
++         NodeData versionStorage = (NodeData)this.dataConsumer.getItemData(Constants.VERSIONSTORAGE_UUID);
++
++         NodeData versionHistory =
++            (NodeData)dataConsumer.getItemData(versionStorage, new QPathEntry("", svName, 1), ItemType.NODE);
++
++         if (versionHistory != null)
++         {
++            RemoveVisitor rv = new RemoveVisitor();
++            rv.visit(versionHistory);
++            changesLog.addAll(rv.getRemovedStates());
++         }
++         tree.push(versionStorage);
++      }
+       else
+       {
+          throw new RepositoryException("Unknown element " + elementName.getAsString());
+@@ -306,9 +335,27 @@
+    private void endNode() throws RepositoryException
+    {
+       ImportNodeData currentNodeInfo = (ImportNodeData)tree.pop();
++      NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
+ 
+-      NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
+-      
++      //check is it child nodes version history
++
++      if (!tree.isEmpty())
++      {
++         NodeData parentNodeData = tree.pop();
++         if (!tree.isEmpty() && parentNodeData.getIdentifier().equals(Constants.VERSIONSTORAGE_UUID)
++            && tree.peek().getPrimaryTypeName().equals(Constants.NT_VERSIONEDCHILD))
++         {
++            List<String> list = (List<String>)context.get(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES);
++            if (list == null)
++            {
++               list = new ArrayList<String>();
++            }
++            list.add(currentNodeInfo.getQName().getName());
++            context.put(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES, list);
++         }
++         tree.push(parentNodeData);
++      }
++
+       if (currentNodePropertiesInfo != null)
+       {
+          checkProperties(currentNodePropertiesInfo);
+@@ -418,9 +465,16 @@
+       {
+          NodeData parentNodeData = getParent();
+          // nodeTypeDataManager.findChildNodeDefinition(primaryTypeName,)
+-         if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName, parentNodeData.getPrimaryTypeName(),
+-            parentNodeData.getMixinTypeNames()))
++
++         // check is node data descendant of frozenNode and primary type is nt:versionedChild
++         if (nodeData.getQPath().getDepth() > 6 && nodeData.getQPath().getEntries()[5].equals(Constants.JCR_FROZENNODE)
++            && primaryTypeName.equals(Constants.NT_VERSIONEDCHILD))
+          {
++            //do nothing
++         }
++         else if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName, parentNodeData
++            .getPrimaryTypeName(), parentNodeData.getMixinTypeNames()))
++         {
+             throw new ConstraintViolationException("Can't add node " + nodeData.getQName().getAsString() + " to "
+                + parentNodeData.getQPath().getAsString() + " node type " + sName
+                + " is not allowed as child's node type for parent node type "
+@@ -555,7 +609,7 @@
+       propertyData =
+          new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()), propertyInfo
+             .getIndentifer(), 0, propertyInfo.getType(), currentNodeInfo.getIdentifier(), false);
+-      
++
+       if (currentNodeInfo.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+       {
+          propertyData.setValue(new TransientValueData(propertyInfo.getValues().get(0).toString()));
+@@ -676,4 +730,26 @@
+       JCRName jname = locationFactory.createJCRName(name);
+       return attributes.get(jname.getAsString());
+    }
++
++   protected class RemoveVisitor extends ItemDataRemoveVisitor
++   {
++      /**
++       * Default constructor.
++       * 
++       * @throws RepositoryException - exception.
++       */
++      RemoveVisitor() throws RepositoryException
++      {
++         super(dataConsumer, null, nodeTypeDataManager, accessManager, userState);
++      }
++
++      /**
++       * {@inheritDoc}
++       */
++      protected void validateReferential(NodeData node) throws RepositoryException
++      {
++         // no REFERENCE validation here
++      }
++   };
++
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/VersionHistoryImporter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/VersionHistoryImporter.java	(revision 3980)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/VersionHistoryImporter.java	(working copy)
+@@ -23,23 +23,31 @@
+ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
+ import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
+ import org.exoplatform.services.jcr.datamodel.Identifier;
++import org.exoplatform.services.jcr.datamodel.ItemType;
+ import org.exoplatform.services.jcr.datamodel.NodeData;
++import org.exoplatform.services.jcr.datamodel.PropertyData;
++import org.exoplatform.services.jcr.datamodel.QPathEntry;
+ import org.exoplatform.services.jcr.datamodel.ValueData;
+ import org.exoplatform.services.jcr.impl.Constants;
+ import org.exoplatform.services.jcr.impl.core.NodeImpl;
+ import org.exoplatform.services.jcr.impl.core.PropertyImpl;
++import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+ import org.exoplatform.services.jcr.impl.core.SessionImpl;
+ import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
+ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
++import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+ import org.exoplatform.services.jcr.impl.xml.ItemDataKeeperAdapter;
++import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.util.ArrayList;
++import java.util.HashMap;
+ import java.util.List;
++import java.util.Map;
+ 
+ import javax.jcr.PropertyType;
+ import javax.jcr.RepositoryException;
+@@ -176,23 +184,34 @@
+          changesLog.add(ItemState.createAddedState(bv));
+          changesLog.add(ItemState.createAddedState(pd));
+          // remove version properties to avoid referential integrety check
+-         PlainChangesLog changesLogDeltete = new PlainChangesLogImpl();
++         PlainChangesLog changesLogDelete = new PlainChangesLogImpl();
+ 
+-         changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
++         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+             .getProperty("jcr:versionHistory")).getData()));
+-         changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
++         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+             .getProperty("jcr:baseVersion")).getData()));
+-         changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
++         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+             .getProperty("jcr:predecessors")).getData()));
+-         dataKeeper.save(changesLogDeltete);
++         dataKeeper.save(changesLogDelete);
+          // remove version history
+          dataKeeper.save(changesLog);
+          userSession.save();
++
+          // import new version history
+-         userSession.getWorkspace().importXML(path, versionHistoryStream, 0);
++         Map<String, Object> context = new HashMap<String, Object>();
++         //context.put("versionablenode", versionableNode);
++         context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, true);
++         userSession.getWorkspace().importXML(path, versionHistoryStream, 0, context);
+          userSession.save();
+ 
+          LOG.info("Completed: Import version history for node wiht path=" + path + " and UUID=" + uuid);
++
++         // fetch list of imported child nodes versions
++         List<String> versionUuids = (List<String>)context.get(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES);
++         if (versionUuids != null && !versionUuids.isEmpty())
++         {
++            updateVersionedChildNodes(versionUuids);
++         }
+       }
+       catch (RepositoryException exception)
+       {
+@@ -209,6 +228,120 @@
+    }
+ 
+    /**
++    * Update child nodes that owns versions from versionUuids list. 
++    * 
++    * @param versionUuids - list of version histories uuids.
++    * @throws RepositoryException
++    * @throws IOException
++    */
++   private void updateVersionedChildNodes(List<String> versionUuids) throws RepositoryException, IOException
++   {
++      SessionDataManager dataManager = userSession.getTransientNodesManager();
++
++      NodeData versionStorage = (NodeData)dataManager.getItemData(Constants.VERSIONSTORAGE_UUID);
++
++      for (String versionUuid : versionUuids)
++      {
++         NodeData versionHistoryData =
++            (NodeData)dataManager.getItemData(versionStorage, new QPathEntry("", versionUuid, 1), ItemType.NODE);
++
++         PropertyData versionableUuidProp =
++            (PropertyData)dataManager.getItemData(versionHistoryData, new QPathEntry(Constants.JCR_VERSIONABLEUUID, 1),
++               ItemType.PROPERTY);
++
++         String versionableUuid = ValueDataConvertor.readString(versionableUuidProp.getValues().get(0));
++
++         // fetch child versionable node
++
++         NodeData versionedChild = (NodeData)dataManager.getItemData(versionableUuid);
++
++         if (versionedChild != null && versionedChild.getQPath().isDescendantOf(versionableNode.getData().getQPath()))
++         {
++            // find latest version
++            String latestVersionUuid = null;
++            for (int versionNumber = 1;; versionNumber++)
++            {
++               NodeData nodeData =
++                  (NodeData)dataManager.getItemData(versionHistoryData, new QPathEntry("", Integer
++                     .toString(versionNumber), 1), ItemType.NODE);
++
++               if (nodeData == null)
++               {
++                  break;
++               }
++               else
++               {
++                  latestVersionUuid = nodeData.getIdentifier();
++               }
++            }
++
++            if (latestVersionUuid == null)
++            {
++               // fetch root version
++               NodeData rootVersion =
++                  (NodeData)dataManager.getItemData(versionHistoryData, new QPathEntry(Constants.JCR_ROOTVERSION, 1),
++                     ItemType.NODE);
++               latestVersionUuid = rootVersion.getIdentifier();
++            }
++
++            PropertyData propVersionHistory =
++               (PropertyData)dataManager.getItemData(versionedChild, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1),
++                  ItemType.PROPERTY);
++            String prevVerHistoryId = ValueDataConvertor.readString(propVersionHistory.getValues().get(0));
++
++            PropertyData propBaseVersion =
++               (PropertyData)dataManager.getItemData(versionedChild, new QPathEntry(Constants.JCR_BASEVERSION, 1),
++                  ItemType.PROPERTY);
++
++            PropertyData propPredecessors =
++               (PropertyData)dataManager.getItemData(versionedChild, new QPathEntry(Constants.JCR_PREDECESSORS, 1),
++                  ItemType.PROPERTY);
++
++            TransientPropertyData newVersionHistoryProp =
++               TransientPropertyData.createPropertyData(versionedChild, Constants.JCR_VERSIONHISTORY,
++                  PropertyType.REFERENCE, false, new TransientValueData(new Identifier(versionUuid)));
++
++            // jcr:baseVersion
++            TransientPropertyData newBaseVersionProp =
++               TransientPropertyData.createPropertyData(versionedChild, Constants.JCR_BASEVERSION,
++                  PropertyType.REFERENCE, false, new TransientValueData(new Identifier(latestVersionUuid)));
++
++            // jcr:predecessors
++            List<ValueData> predecessorValues = new ArrayList<ValueData>();
++            predecessorValues.add(new TransientValueData(new Identifier(latestVersionUuid)));
++            TransientPropertyData newPredecessorsProp =
++               TransientPropertyData.createPropertyData(versionedChild, Constants.JCR_PREDECESSORS,
++                  PropertyType.REFERENCE, true, predecessorValues);
++
++            //remove previous version of childnode nad update properties
++            NodeData prevVersionHistory = (NodeData)dataManager.getItemData(prevVerHistoryId);
++
++            PlainChangesLogImpl changesLog = new PlainChangesLogImpl();
++            if (!prevVerHistoryId.equals(versionUuid))
++            {
++               RemoveVisitor rv = new RemoveVisitor();
++               rv.visit(prevVersionHistory);
++               changesLog.addAll(rv.getRemovedStates());
++            }
++            changesLog.add(ItemState.createAddedState(newVersionHistoryProp));
++            changesLog.add(ItemState.createAddedState(newBaseVersionProp));
++            changesLog.add(ItemState.createAddedState(newPredecessorsProp));
++
++            PlainChangesLogImpl changesLogDelete = new PlainChangesLogImpl();
++            changesLogDelete.add(ItemState.createDeletedState(propVersionHistory));
++            changesLogDelete.add(ItemState.createDeletedState(propBaseVersion));
++            changesLogDelete.add(ItemState.createDeletedState(propPredecessors));
++            dataKeeper.save(changesLogDelete);
++            // remove version history
++            dataKeeper.save(changesLog);
++            userSession.save();
++            LOG.info("Completed: Import version history for node wiht path=" + versionedChild.getQPath().getAsString()
++               + " and UUID=" + versionedChild.getIdentifier());
++         }
++      }
++   }
++
++   /**
+     * Remover helper.
+     * 
+     * @author sj
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/importing/TestImportVersionedChild.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/importing/TestImportVersionedChild.java	(revision 0)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/importing/TestImportVersionedChild.java	(revision 0)
+@@ -0,0 +1,770 @@
++/*
++ * Copyright (C) 2003-2011 eXo Platform SAS.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Affero General Public License
++ * as published by the Free Software Foundation; either version 3
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see<http://www.gnu.org/licenses/>.
++ */
++package org.exoplatform.services.jcr.api.importing;
++
++import org.exoplatform.commons.utils.MimeTypeResolver;
++import org.exoplatform.services.jcr.JcrAPIBaseTest;
++import org.exoplatform.services.jcr.impl.core.NodeImpl;
++import org.exoplatform.services.jcr.impl.core.SessionImpl;
++import org.exoplatform.services.jcr.util.VersionHistoryImporter;
++
++import java.io.ByteArrayInputStream;
++import java.io.File;
++import java.io.FileInputStream;
++import java.io.FileOutputStream;
++import java.io.OutputStream;
++import java.util.Calendar;
++
++import javax.jcr.ImportUUIDBehavior;
++import javax.jcr.Node;
++import javax.jcr.Value;
++
++/**
++ * Created by The eXo Platform SAS.
++ * 
++ * <br/>Date: 
++ *
++ * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
++ * @version $Id: TestImportImage.java 111 2008-11-11 11:11:11Z serg $
++ */
++public class TestImportVersionedChild extends JcrAPIBaseTest
++{
++
++   Node testRoot;
++
++   public void setUp() throws Exception
++   {
++      super.setUp();
++      testRoot = this.root.addNode("parent", "nt:folder");
++      root.save();
++   }
++
++   public void tearDown() throws Exception
++   {
++      testRoot.remove();
++      root.save();
++      super.tearDown();
++   }
++
++   protected void loadTestTree() throws Exception
++   {
++      // wc1/medias/picture
++      Node wc1 = testRoot.addNode("wc1", "nt:folder");
++      wc1.addMixin("mix:versionable");
++      testRoot.save();
++      Node medias = wc1.addNode("medias", "nt:folder");
++
++      Node picture = medias.addNode("picture", "nt:file");
++      picture.addMixin("mix:versionable");
++
++      Node res = picture.addNode("jcr:content", "nt:resource");
++      res.setProperty("jcr:lastModified", Calendar.getInstance());
++      res.setProperty("jcr:data", new ByteArrayInputStream("bla bla".getBytes()));
++      MimeTypeResolver mimres = new MimeTypeResolver();
++      res.setProperty("jcr:mimeType", mimres.getMimeType("screen.txt"));
++      root.save();
++   }
++
++   public void testImportVersionHistory() throws Exception
++   {
++      loadTestTree();
++      Node wc1 = (NodeImpl)session.getItem("/parent/wc1");
++
++      // make checkin/checkout a lot
++      wc1.checkin();
++      wc1.checkout();
++
++      // export import version history and node
++      File export = new File("F:\\temp\\export.xml");
++      File vhexport = new File("F:\\temp\\vhexport.xml");
++
++      OutputStream out = new FileOutputStream(export);
++      session.exportSystemView("/parent/wc1", out, false, false);
++
++      OutputStream vhout = new FileOutputStream(vhexport);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++
++      // prepare data for version import
++      String versionHistory = wc1.getProperty("jcr:versionHistory").getValue().getString();
++      String baseVersion = wc1.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] jcrPredecessors = wc1.getProperty("jcr:predecessors").getValues();
++      StringBuilder jcrPredecessorsBuilder = new StringBuilder();
++      String[] predecessorsHistory;
++      for (Value value : jcrPredecessors)
++      {
++         if (jcrPredecessorsBuilder.length() > 0)
++            jcrPredecessorsBuilder.append(",");
++         jcrPredecessorsBuilder.append(value.getString());
++      }
++      if (jcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         predecessorsHistory = jcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         predecessorsHistory = new String[]{jcrPredecessorsBuilder.toString()};
++      }
++
++      // remember "picture" nodes version history data
++      Node picture = (NodeImpl)session.getItem("/parent/wc1/medias/picture");
++      String chversionHistory = picture.getProperty("jcr:versionHistory").getValue().getString();
++      String chbaseVersion = picture.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] chjcrPredecessors = picture.getProperty("jcr:predecessors").getValues();
++      StringBuilder chjcrPredecessorsBuilder = new StringBuilder();
++      String[] chpredecessorsHistory;
++      for (Value value : chjcrPredecessors)
++      {
++         if (chjcrPredecessorsBuilder.length() > 0)
++            chjcrPredecessorsBuilder.append(",");
++         chjcrPredecessorsBuilder.append(value.getString());
++      }
++      if (chjcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         chpredecessorsHistory = chjcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         chpredecessorsHistory = new String[]{chjcrPredecessorsBuilder.toString()};
++      }
++
++      // remove node
++      wc1.remove();
++      session.save();
++
++      out.close();
++      vhout.close();
++
++      // import
++      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++
++      session.save();
++
++      wc1 = (NodeImpl)session.getItem("/parent/wc1");
++
++      VersionHistoryImporter versionHistoryImporter =
++         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
++            versionHistory);
++      versionHistoryImporter.doImport();
++      session.save();
++
++      picture = wc1.getNode("medias").getNode("picture");
++      assertTrue(picture.isNodeType("mix:versionable"));
++      assertEquals(chversionHistory, picture.getProperty("jcr:versionHistory").getValue().getString());
++      assertEquals(chbaseVersion, picture.getProperty("jcr:baseVersion").getValue().getString());
++      assertEquals(chpredecessorsHistory[0], picture.getProperty("jcr:predecessors").getValues()[0].getString());
++   }
++
++   public void testImportVersionHistoryPreloadChildVersionHistory() throws Exception
++   {
++      loadTestTree();
++      Node wc1 = (NodeImpl)session.getItem("/parent/wc1");
++      Node picture = (NodeImpl)session.getItem("/parent/wc1/medias/picture");
++
++      // make checkin/checkout a lot
++
++      wc1.checkin();
++      wc1.checkout();
++
++      picture.checkin();
++      picture.checkout();
++
++      // export import version history and node
++      File export = new File("F:\\temp\\export.xml");
++      File vhexport = new File("F:\\temp\\vhexport.xml");
++      File childvhexport = new File("F:\\temp\\childvhexport.xml");
++
++      OutputStream out = new FileOutputStream(export);
++      session.exportSystemView("/parent/wc1", out, false, false);
++
++      OutputStream childvhout = new FileOutputStream(childvhexport);
++      session.exportSystemView(picture.getVersionHistory().getPath(), childvhout, false, false);
++
++      OutputStream vhout = new FileOutputStream(vhexport);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++
++      // prepare data for version import
++
++      String versionHistory = wc1.getProperty("jcr:versionHistory").getValue().getString();
++      String baseVersion = wc1.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] jcrPredecessors = wc1.getProperty("jcr:predecessors").getValues();
++      StringBuilder jcrPredecessorsBuilder = new StringBuilder();
++      String[] predecessorsHistory;
++      for (Value value : jcrPredecessors)
++      {
++         if (jcrPredecessorsBuilder.length() > 0)
++            jcrPredecessorsBuilder.append(",");
++         jcrPredecessorsBuilder.append(value.getString());
++      }
++      if (jcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         predecessorsHistory = jcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         predecessorsHistory = new String[]{jcrPredecessorsBuilder.toString()};
++      }
++
++      // prepare data for child version import
++
++      String chversionHistory = picture.getProperty("jcr:versionHistory").getValue().getString();
++      String chbaseVersion = picture.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] chjcrPredecessors = picture.getProperty("jcr:predecessors").getValues();
++      StringBuilder chjcrPredecessorsBuilder = new StringBuilder();
++      String[] chpredecessorsHistory;
++      for (Value value : chjcrPredecessors)
++      {
++         if (chjcrPredecessorsBuilder.length() > 0)
++            chjcrPredecessorsBuilder.append(",");
++         chjcrPredecessorsBuilder.append(value.getString());
++      }
++      if (chjcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         chpredecessorsHistory = chjcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         chpredecessorsHistory = new String[]{chjcrPredecessorsBuilder.toString()};
++      }
++
++      // remove node
++      wc1.remove();
++      session.save();
++
++      out.close();
++      vhout.close();
++
++      // import
++      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++
++      session.save();
++
++      wc1 = (NodeImpl)session.getItem("/parent/wc1");
++      picture = wc1.getNode("medias").getNode("picture");
++
++      VersionHistoryImporter chversionHistoryImporter =
++         new VersionHistoryImporter((NodeImpl)picture, new FileInputStream(childvhexport), chbaseVersion,
++            chpredecessorsHistory, chversionHistory);
++      chversionHistoryImporter.doImport();
++      session.save();
++
++      VersionHistoryImporter versionHistoryImporter =
++         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
++            versionHistory);
++      versionHistoryImporter.doImport();
++      session.save();
++
++      assertTrue(picture.isNodeType("mix:versionable"));
++      assertEquals(chversionHistory, picture.getProperty("jcr:versionHistory").getValue().getString());
++      assertEquals(chbaseVersion, picture.getProperty("jcr:baseVersion").getValue().getString());
++      assertEquals(chpredecessorsHistory[0], picture.getProperty("jcr:predecessors").getValues()[0].getString());
++   }
++
++   /**
++    * Many mix:versionable subnodes. 
++    * @throws Exception
++    */
++   public void testImportVersionHistoryWithManySubversions() throws Exception
++   {
++
++      // wc1/medias/picture
++      Node wc1 = testRoot.addNode("wc1", "nt:folder");
++      wc1.addMixin("mix:versionable");
++      testRoot.save();
++      Node medias = wc1.addNode("medias", "nt:folder");
++
++      Node picture = medias.addNode("picture", "nt:file");
++      picture.addMixin("mix:versionable");
++
++      Node res = picture.addNode("jcr:content", "nt:resource");
++      res.setProperty("jcr:lastModified", Calendar.getInstance());
++      res.setProperty("jcr:data", new ByteArrayInputStream("bla bla".getBytes()));
++      MimeTypeResolver mimres = new MimeTypeResolver();
++      res.setProperty("jcr:mimeType", mimres.getMimeType("screen.txt"));
++      root.save();
++
++      Node subNode1 = medias.addNode("subnode1", "nt:folder");
++      subNode1.addMixin("mix:versionable");
++      root.save();
++
++      Node subNode2 = subNode1.addNode("subnode2", "nt:folder");
++      Node subNode3 = subNode2.addNode("subnode3", "nt:folder");
++      subNode3.addMixin("mix:versionable");
++      root.save();
++
++      Node subNode4 = subNode3.addNode("subnode4", "nt:folder");
++      subNode4.addMixin("mix:versionable");
++      root.save();
++
++      // /medias/subnode1/subnode2/subnode3/subnode4
++      wc1.checkin();
++      wc1.checkout();
++
++      picture.checkin();
++      picture.checkout();
++
++      subNode1.checkin();
++      subNode1.checkout();
++
++      subNode4.checkin();
++      subNode4.checkout();
++
++      subNode3.checkin();
++      subNode3.checkout();
++
++      //TODO file path!!!!!!
++      // export import version history and node
++      File export = new File("F:\\temp\\export.xml");
++      File vhexport = new File("F:\\temp\\vhexport.xml");
++
++      OutputStream out = new FileOutputStream(export);
++      session.exportSystemView("/parent/wc1", out, false, false);
++
++      OutputStream vhout = new FileOutputStream(vhexport);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++
++      // prepare data for version import
++
++      String versionHistory = wc1.getProperty("jcr:versionHistory").getValue().getString();
++      String baseVersion = wc1.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] jcrPredecessors = wc1.getProperty("jcr:predecessors").getValues();
++      StringBuilder jcrPredecessorsBuilder = new StringBuilder();
++      String[] predecessorsHistory;
++      for (Value value : jcrPredecessors)
++      {
++         if (jcrPredecessorsBuilder.length() > 0)
++            jcrPredecessorsBuilder.append(",");
++         jcrPredecessorsBuilder.append(value.getString());
++      }
++      if (jcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         predecessorsHistory = jcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         predecessorsHistory = new String[]{jcrPredecessorsBuilder.toString()};
++      }
++
++      // prepare data for child version import
++
++      String chversionHistory = subNode4.getProperty("jcr:versionHistory").getValue().getString();
++      String chbaseVersion = subNode4.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] chjcrPredecessors = subNode4.getProperty("jcr:predecessors").getValues();
++      StringBuilder chjcrPredecessorsBuilder = new StringBuilder();
++      String[] chpredecessorsHistory;
++      for (Value value : chjcrPredecessors)
++      {
++         if (chjcrPredecessorsBuilder.length() > 0)
++            chjcrPredecessorsBuilder.append(",");
++         chjcrPredecessorsBuilder.append(value.getString());
++      }
++      if (chjcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         chpredecessorsHistory = chjcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         chpredecessorsHistory = new String[]{chjcrPredecessorsBuilder.toString()};
++      }
++
++      // remove node
++      wc1.remove();
++      session.save();
++
++      out.close();
++      vhout.close();
++
++      // import
++      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++
++      session.save();
++
++      wc1 = (NodeImpl)session.getItem("/parent/wc1");
++
++      subNode4 = (NodeImpl)session.getItem("/parent/wc1/medias/subnode1/subnode2/subnode3/subnode4");
++
++      VersionHistoryImporter versionHistoryImporter =
++         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
++            versionHistory);
++      versionHistoryImporter.doImport();
++      session.save();
++
++      assertTrue(subNode4.isNodeType("mix:versionable"));
++      assertEquals(chversionHistory, subNode4.getProperty("jcr:versionHistory").getValue().getString());
++      assertEquals(chbaseVersion, subNode4.getProperty("jcr:baseVersion").getValue().getString());
++      assertEquals(chpredecessorsHistory[0], subNode4.getProperty("jcr:predecessors").getValues()[0].getString());
++   }
++
++   public void testImportVersionHistoryManyVersions() throws Exception
++   {
++      // wc1/medias/picture
++      Node wc1 = testRoot.addNode("wc1", "nt:folder");
++      wc1.addMixin("mix:versionable");
++      testRoot.save();
++      Node medias = wc1.addNode("medias", "nt:folder");
++
++      Node picture = medias.addNode("picture", "nt:file");
++      picture.addMixin("mix:versionable");
++
++      Node res = picture.addNode("jcr:content", "nt:resource");
++      res.setProperty("jcr:lastModified", Calendar.getInstance());
++      res.setProperty("jcr:data", new ByteArrayInputStream("bla bla".getBytes()));
++      MimeTypeResolver mimres = new MimeTypeResolver();
++      res.setProperty("jcr:mimeType", mimres.getMimeType("screen.txt"));
++      root.save();
++
++      // make checkin/checkout a lot
++      wc1.checkin();
++      wc1.checkout();
++
++      picture.checkin();
++      picture.checkout();
++
++      res.setProperty("jcr:data", new ByteArrayInputStream("new data".getBytes()));
++      root.save();
++
++      picture.checkin();
++      picture.checkout();
++
++      // check before import
++
++      picture.restore("1", true);
++      String strvalue = picture.getNode("jcr:content").getProperty("jcr:data").getString();
++      assertEquals("bla bla", strvalue);
++
++      picture.restore("2", true);
++      strvalue = picture.getNode("jcr:content").getProperty("jcr:data").getString();
++      assertEquals("new data", strvalue);
++
++      picture.checkout();
++
++      // make new version
++      assertTrue(picture.getProperty("jcr:isCheckedOut").getValue().getBoolean());
++
++      // export import version history and node
++      File export = new File("F:\\temp\\export.xml");
++      File vhexport = new File("F:\\temp\\vhexport.xml");
++
++      OutputStream out = new FileOutputStream(export);
++      session.exportSystemView("/parent/wc1", out, false, false);
++
++      OutputStream vhout = new FileOutputStream(vhexport);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++
++      // prepare data for version import
++
++      String versionHistory = wc1.getProperty("jcr:versionHistory").getValue().getString();
++      String baseVersion = wc1.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] jcrPredecessors = wc1.getProperty("jcr:predecessors").getValues();
++      StringBuilder jcrPredecessorsBuilder = new StringBuilder();
++      String[] predecessorsHistory;
++      for (Value value : jcrPredecessors)
++      {
++         if (jcrPredecessorsBuilder.length() > 0)
++            jcrPredecessorsBuilder.append(",");
++         jcrPredecessorsBuilder.append(value.getString());
++      }
++      if (jcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         predecessorsHistory = jcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         predecessorsHistory = new String[]{jcrPredecessorsBuilder.toString()};
++      }
++
++      String childVersionHistory = picture.getProperty("jcr:versionHistory").getValue().getString();
++      String childBaseVersion = picture.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] childJcrPredecessors = picture.getProperty("jcr:predecessors").getValues();
++      StringBuilder childJcrPredecessorsBuilder = new StringBuilder();
++      String[] childPredecessorsHistory;
++      for (Value value : childJcrPredecessors)
++      {
++         if (childJcrPredecessorsBuilder.length() > 0)
++            childJcrPredecessorsBuilder.append(",");
++         childJcrPredecessorsBuilder.append(value.getString());
++      }
++      if (childJcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         childPredecessorsHistory = childJcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         childPredecessorsHistory = new String[]{childJcrPredecessorsBuilder.toString()};
++      }
++
++      String chversionHistory = picture.getProperty("jcr:versionHistory").getValue().getString();
++      String chbaseVersion = picture.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] chjcrPredecessors = picture.getProperty("jcr:predecessors").getValues();
++      StringBuilder chjcrPredecessorsBuilder = new StringBuilder();
++      String[] chpredecessorsHistory;
++      for (Value value : chjcrPredecessors)
++      {
++         if (chjcrPredecessorsBuilder.length() > 0)
++            chjcrPredecessorsBuilder.append(",");
++         chjcrPredecessorsBuilder.append(value.getString());
++      }
++      if (chjcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         chpredecessorsHistory = chjcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         chpredecessorsHistory = new String[]{chjcrPredecessorsBuilder.toString()};
++      }
++
++      // remove node
++      wc1.remove();
++      session.save();
++
++      out.close();
++      vhout.close();
++
++      // import
++      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++
++      session.save();
++
++      wc1 = (NodeImpl)session.getItem("/parent/wc1");
++
++      VersionHistoryImporter versionHistoryImporter =
++         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
++            versionHistory);
++      versionHistoryImporter.doImport();
++      session.save();
++
++      picture = wc1.getNode("medias").getNode("picture");
++      assertTrue(picture.isNodeType("mix:versionable"));
++      assertEquals(chversionHistory, picture.getProperty("jcr:versionHistory").getValue().getString());
++      assertEquals(chbaseVersion, picture.getProperty("jcr:baseVersion").getValue().getString());
++      assertEquals(chpredecessorsHistory[0], picture.getProperty("jcr:predecessors").getValues()[0].getString());
++      assertTrue(picture.getProperty("jcr:isCheckedOut").getValue().getBoolean());
++
++      String value = picture.getNode("jcr:content").getProperty("jcr:data").getString();
++      assertEquals("new data", value);
++
++      picture.restore("1", true);
++      value = picture.getNode("jcr:content").getProperty("jcr:data").getString();
++      assertEquals("bla bla", value);
++
++      picture.restore("2", true);
++      value = picture.getNode("jcr:content").getProperty("jcr:data").getString();
++      assertEquals("new data", value);
++
++      picture.checkout();
++
++      // make new version
++      assertTrue(picture.getProperty("jcr:isCheckedOut").getValue().getBoolean());
++      res = picture.getNode("jcr:content");
++      res.setProperty("jcr:data", new ByteArrayInputStream("third".getBytes()));
++      root.save();
++
++      picture.checkin();
++      picture.checkout();
++
++      picture.restore("1", true);
++      value = picture.getNode("jcr:content").getProperty("jcr:data").getString();
++      assertEquals("bla bla", value);
++
++      picture.restore("3", true);
++      value = picture.getNode("jcr:content").getProperty("jcr:data").getString();
++      assertEquals("third", value);
++   }
++
++   /**
++    * Many mix:versionable subnodes. 
++    * @throws Exception
++    */
++   public void testImportVersionHistoryWithManyVersions() throws Exception
++   {
++
++      // wc1/medias/picture
++      Node wc1 = testRoot.addNode("wc1", "nt:folder");
++      wc1.addMixin("mix:versionable");
++      testRoot.save();
++      Node medias = wc1.addNode("medias", "nt:folder");
++
++      Node picture = medias.addNode("picture", "nt:file");
++      picture.addMixin("mix:versionable");
++
++      Node res = picture.addNode("jcr:content", "nt:resource");
++      res.setProperty("jcr:lastModified", Calendar.getInstance());
++      res.setProperty("jcr:data", new ByteArrayInputStream("bla bla".getBytes()));
++      MimeTypeResolver mimres = new MimeTypeResolver();
++      res.setProperty("jcr:mimeType", mimres.getMimeType("screen.txt"));
++      root.save();
++
++      wc1.checkin();
++      wc1.checkout();
++
++      wc1.checkin();
++      wc1.checkout();
++
++      //      picture.checkin();
++      //    picture.checkout();
++
++      //TODO file path!!!!!!
++      // export import version history and node
++      File export = new File("F:\\temp\\export.xml");
++      File vhexport = new File("F:\\temp\\vhexport.xml");
++
++      OutputStream out = new FileOutputStream(export);
++      session.exportSystemView("/parent/wc1", out, false, false);
++
++      OutputStream vhout = new FileOutputStream(vhexport);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++
++      // prepare data for version import
++
++      String versionHistory = wc1.getProperty("jcr:versionHistory").getValue().getString();
++      String baseVersion = wc1.getProperty("jcr:baseVersion").getValue().getString();
++      Value[] jcrPredecessors = wc1.getProperty("jcr:predecessors").getValues();
++      StringBuilder jcrPredecessorsBuilder = new StringBuilder();
++      String[] predecessorsHistory;
++      for (Value value : jcrPredecessors)
++      {
++         if (jcrPredecessorsBuilder.length() > 0)
++            jcrPredecessorsBuilder.append(",");
++         jcrPredecessorsBuilder.append(value.getString());
++      }
++      if (jcrPredecessorsBuilder.toString().indexOf(",") > -1)
++      {
++         predecessorsHistory = jcrPredecessorsBuilder.toString().split(",");
++      }
++      else
++      {
++         predecessorsHistory = new String[]{jcrPredecessorsBuilder.toString()};
++      }
++      // remove node
++      wc1.remove();
++      session.save();
++
++      out.close();
++      vhout.close();
++
++      // import
++      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++
++      session.save();
++
++      wc1 = (NodeImpl)session.getItem("/parent/wc1");
++      picture = wc1.getNode("medias").getNode("picture");
++
++      VersionHistoryImporter versionHistoryImporter =
++         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
++            versionHistory);
++      versionHistoryImporter.doImport();
++      session.save();
++
++      assertTrue(picture.isNodeType("mix:versionable"));
++   }
++
++   public void testImportVersionHistoryNonSysWorkspace() throws Exception
++   {
++
++      SessionImpl session = (SessionImpl)this.repository.login(credentials, "ws1");
++
++      Node root = session.getRootNode();
++      Node testRoot = root.addNode("parent", "nt:folder");
++      root.save();
++
++      try
++      {
++         // wc1/medias/picture
++         Node wc1 = testRoot.addNode("wc1", "nt:folder");
++         wc1.addMixin("mix:versionable");
++         testRoot.save();
++         Node medias = wc1.addNode("medias", "nt:folder");
++
++         Node picture = medias.addNode("picture", "nt:file");
++         picture.addMixin("mix:versionable");
++
++         Node res = picture.addNode("jcr:content", "nt:resource");
++         res.setProperty("jcr:lastModified", Calendar.getInstance());
++         res.setProperty("jcr:data", new ByteArrayInputStream("bla bla".getBytes()));
++         MimeTypeResolver mimres = new MimeTypeResolver();
++         res.setProperty("jcr:mimeType", mimres.getMimeType("screen.txt"));
++         root.save();
++
++         // make checkin/checkout a lot
++
++         wc1.checkin();
++         wc1.checkout();
++
++         // export import version history and node
++         File export = new File("F:\\temp\\export.xml");
++         File vhexport = new File("F:\\temp\\vhexport.xml");
++
++         OutputStream out = new FileOutputStream(export);
++         session.exportSystemView("/parent/wc1", out, false, false);
++
++         OutputStream vhout = new FileOutputStream(vhexport);
++         session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++
++         // prepare data for version import
++
++         String versionHistory = wc1.getProperty("jcr:versionHistory").getValue().getString();
++         String baseVersion = wc1.getProperty("jcr:baseVersion").getValue().getString();
++         Value[] jcrPredecessors = wc1.getProperty("jcr:predecessors").getValues();
++         StringBuilder jcrPredecessorsBuilder = new StringBuilder();
++         String[] predecessorsHistory;
++         for (Value value : jcrPredecessors)
++         {
++            if (jcrPredecessorsBuilder.length() > 0)
++               jcrPredecessorsBuilder.append(",");
++            jcrPredecessorsBuilder.append(value.getString());
++         }
++         if (jcrPredecessorsBuilder.toString().indexOf(",") > -1)
++         {
++            predecessorsHistory = jcrPredecessorsBuilder.toString().split(",");
++         }
++         else
++         {
++            predecessorsHistory = new String[]{jcrPredecessorsBuilder.toString()};
++         }
++
++         // remove node
++         wc1.remove();
++         session.save();
++
++         out.close();
++         vhout.close();
++
++         // import
++         session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++
++         session.save();
++
++         wc1 = (NodeImpl)session.getItem("/parent/wc1");
++
++         VersionHistoryImporter versionHistoryImporter =
++            new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
++               versionHistory);
++         versionHistoryImporter.doImport();
++         session.save();
++
++         picture = wc1.getNode("medias").getNode("picture");
++         assertTrue(picture.isNodeType("mix:versionable"));
++      }
++      finally
++      {
++         testRoot.remove();
++         root.save();
++         session.logout();
++      }
++   }
++
++}
+\ No newline at end of file
