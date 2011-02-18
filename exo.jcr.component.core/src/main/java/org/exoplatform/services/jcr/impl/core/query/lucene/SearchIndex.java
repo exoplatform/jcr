@@ -2932,7 +2932,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          if (mode == IndexerIoMode.READ_WRITE)
          {
             // reprocess any notfinished notifies;
-            log.info("Proceessing error log ...");
+            log.info("Processing error log ...");
             recoverErrorLog(errorLog);
          }
       }

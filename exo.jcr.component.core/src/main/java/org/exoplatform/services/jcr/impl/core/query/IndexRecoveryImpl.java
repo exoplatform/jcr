@@ -38,9 +38,9 @@ import javax.jcr.RepositoryException;
  * Date: 16.02.2011
  * 
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: IndexRetrieveImpl.java 34360 2010-11-11 11:11:11Z tolusha $
+ * @version $Id: IndexRetrievalImpl.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class IndexRetrieveImpl implements IndexRetrieve
+public class IndexRecoveryImpl implements IndexRecovery
 {
 
    /**
@@ -66,7 +66,7 @@ public class IndexRetrieveImpl implements IndexRetrieve
    /**
     * Constructor IndexRetrieveImpl.
     */
-   public IndexRetrieveImpl(RPCService rpcService, final String wsId, final boolean isSystem, final File indexDirectory)
+   public IndexRecoveryImpl(RPCService rpcService, final String wsId, final boolean isSystem, final File indexDirectory)
    {
       this.rpcService = rpcService;
 
@@ -82,16 +82,16 @@ public class IndexRetrieveImpl implements IndexRetrieve
          {
             int indexDirLen = PrivilegedFileHelper.getAbsolutePath(indexDirectory).length();
 
-            StringBuilder result = new StringBuilder();
+            ArrayList<String> result = new ArrayList<String>();
             for (File file : DirectoryHelper.listFiles(indexDirectory))
             {
                if (!file.isDirectory())
                {
-                  result.append(PrivilegedFileHelper.getAbsolutePath(file).substring(indexDirLen)).append('\n');
+                  result.add(PrivilegedFileHelper.getAbsolutePath(file).substring(indexDirLen));
                }
             }
 
-            return result.toString();
+            return result;
          }
       });
 
@@ -136,17 +136,7 @@ public class IndexRetrieveImpl implements IndexRetrieve
    {
       try
       {
-         List<String> result = new ArrayList<String>();
-
-         String data = (String)rpcService.executeCommandOnCoordinator(getIndexList, true);
-         String[] files = data.split("\n");
-
-         for (String file : files)
-         {
-            result.add(file);
-         }
-
-         return result;
+         return (List<String>)rpcService.executeCommandOnCoordinator(getIndexList, true);
       }
       catch (SecurityException e)
       {

@@ -438,10 +438,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          try
          {
             if (handler.getIndexRecoveryMode().equals(SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR)
-               && handler.getContext().getIndexRetrieve() != null)
+               && handler.getContext().getIndexRecovery() != null)
             {
                log.info("Retrieving index from coordinator...");
-               retreiveIndexFromCoordinator();
+               recoveryIndexFromCoordinator();
 
                indexNames.read();
                refreshIndexList();
@@ -3347,7 +3347,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws RepositoryException. 
     * @throws FileNotFoundException. 
     */
-   private void retreiveIndexFromCoordinator() throws FileNotFoundException, RepositoryException, IOException,
+   private void recoveryIndexFromCoordinator() throws FileNotFoundException, RepositoryException, IOException,
       SuspendException
    {
       List<Suspendable> suspendableComponents =
@@ -3366,7 +3366,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
 
          File indexDirectory = new File(handler.getContext().getIndexDirectory());
-         for (String filePath : handler.getContext().getIndexRetrieve().getIndexList())
+         for (String filePath : handler.getContext().getIndexRecovery().getIndexList())
          {
             File indexFile = new File(indexDirectory, filePath);
             if (!PrivilegedFileHelper.exists(indexFile.getParentFile()))
@@ -3375,7 +3375,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
 
             // transfer file 
-            InputStream in = handler.getContext().getIndexRetrieve().getIndexFile(filePath);
+            InputStream in = handler.getContext().getIndexRecovery().getIndexFile(filePath);
             OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
             try
             {

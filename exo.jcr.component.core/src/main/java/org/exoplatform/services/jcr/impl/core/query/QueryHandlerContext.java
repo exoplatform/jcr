@@ -81,7 +81,7 @@ public class QueryHandlerContext
    /** 
     * The class responsible for index retrieving from other place. 
     */
-   private final IndexRetrieve indexRetrieve;
+   private final IndexRecovery indexRecovery;
    
    /**
     * Creates a new context instance.
@@ -105,15 +105,15 @@ public class QueryHandlerContext
     * @param excludedNodeId
     *            id of the node that should be excluded from indexing. Any
     *            descendant of that node is also excluded from indexing.
-    * @param indexRetrieve
+    * @param indexRecovery
     *            the index retriever from other place     
     */
    public QueryHandlerContext(WorkspaceContainerFacade container, ItemDataConsumer stateMgr, IndexingTree indexingTree,
       NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
       String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
-      LuceneVirtualTableResolver virtualTableResolver, IndexRetrieve indexRetrieve)
+      LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery)
    {
-      this.indexRetrieve = indexRetrieve;
+      this.indexRecovery = indexRecovery;
       this.container = container;
       this.stateMgr = stateMgr;
       this.indexingTree = indexingTree;
@@ -232,9 +232,9 @@ public class QueryHandlerContext
       return indexDirectory;
    }
 
-   public IndexRetrieve getIndexRetrieve()
+   public IndexRecovery getIndexRecovery()
    {
-      return indexRetrieve;
+      return indexRecovery;
    }
 
 }

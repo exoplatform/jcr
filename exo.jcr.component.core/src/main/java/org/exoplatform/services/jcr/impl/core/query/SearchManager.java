@@ -693,14 +693,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new RepositoryConfigurationException(e);
       }
 
-      IndexRetrieve indexRetrieve =
-         rpcService == null ? null : new IndexRetrieveImpl(rpcService, getWsId(), parentHandler == null,
+      IndexRecovery indexRecovery =
+         rpcService == null ? null : new IndexRecoveryImpl(rpcService, getWsId(), parentHandler == null,
             getIndexDirectory());
 
       QueryHandlerContext context =
          new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
             PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, virtualTableResolver,
-            indexRetrieve);
+            indexRecovery);
 
       return context;
    }

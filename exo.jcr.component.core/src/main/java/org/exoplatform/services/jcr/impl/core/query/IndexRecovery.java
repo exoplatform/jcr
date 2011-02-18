@@ -27,9 +27,9 @@ import javax.jcr.RepositoryException;
  * Date: 16.02.2011
  * 
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: IndexRetrieve.java 34360 2010-11-11 11:11:11Z tolusha $
+ * @version $Id: IndexRecovery.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public interface IndexRetrieve
+public interface IndexRecovery
 {
    /**
     * Get list of relative paths of all files from index directory.
