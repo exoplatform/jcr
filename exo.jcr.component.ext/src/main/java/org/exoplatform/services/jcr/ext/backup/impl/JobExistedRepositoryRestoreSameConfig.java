@@ -115,7 +115,7 @@ public class JobExistedRepositoryRestoreSameConfig extends JobRepositoryRestore
 
             for (Suspendable component : suspendableComponents)
             {
-               component.suspend(Suspendable.SUSPEND_COMPONENT_ON_ALL_NODES);
+               component.suspend(false);
                resumeComponents.add(component);
             }
          }
@@ -164,7 +164,7 @@ public class JobExistedRepositoryRestoreSameConfig extends JobRepositoryRestore
          {
             try
             {
-               resumeComponents.remove(i).resume();
+               resumeComponents.remove(i).resume(false);
             }
             catch (ResumeException e)
             {
@@ -232,7 +232,7 @@ public class JobExistedRepositoryRestoreSameConfig extends JobRepositoryRestore
          {
             try
             {
-               component.resume();
+               component.resume(false);
             }
             catch (ResumeException e)
             {
