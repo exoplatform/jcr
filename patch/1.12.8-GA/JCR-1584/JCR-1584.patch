@@ -612,7 +612,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 ===================================================================
 --- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/importing/TestImportVersionedChild.java	(revision 0)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/importing/TestImportVersionedChild.java	(revision 0)
-@@ -0,0 +1,770 @@
+@@ -0,0 +1,748 @@
 +/*
 + * Copyright (C) 2003-2011 eXo Platform SAS.
 + *
@@ -638,10 +638,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +import org.exoplatform.services.jcr.util.VersionHistoryImporter;
 +
 +import java.io.ByteArrayInputStream;
-+import java.io.File;
-+import java.io.FileInputStream;
-+import java.io.FileOutputStream;
-+import java.io.OutputStream;
++import java.io.ByteArrayOutputStream;
 +import java.util.Calendar;
 +
 +import javax.jcr.ImportUUIDBehavior;
@@ -704,13 +701,10 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      wc1.checkout();
 +
 +      // export import version history and node
-+      File export = new File("F:\\temp\\export.xml");
-+      File vhexport = new File("F:\\temp\\vhexport.xml");
-+
-+      OutputStream out = new FileOutputStream(export);
++      ByteArrayOutputStream out = new ByteArrayOutputStream();
 +      session.exportSystemView("/parent/wc1", out, false, false);
 +
-+      OutputStream vhout = new FileOutputStream(vhexport);
++      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
 +      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
 +
 +      // prepare data for version import
@@ -764,15 +758,16 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      vhout.close();
 +
 +      // import
-+      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++      session.importXML("/parent", new ByteArrayInputStream(out.toByteArray()),
++         ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
 +
 +      session.save();
 +
 +      wc1 = (NodeImpl)session.getItem("/parent/wc1");
 +
 +      VersionHistoryImporter versionHistoryImporter =
-+         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
-+            versionHistory);
++         new VersionHistoryImporter((NodeImpl)wc1, new ByteArrayInputStream(vhout.toByteArray()), baseVersion,
++            predecessorsHistory, versionHistory);
 +      versionHistoryImporter.doImport();
 +      session.save();
 +
@@ -798,17 +793,13 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      picture.checkout();
 +
 +      // export import version history and node
-+      File export = new File("F:\\temp\\export.xml");
-+      File vhexport = new File("F:\\temp\\vhexport.xml");
-+      File childvhexport = new File("F:\\temp\\childvhexport.xml");
-+
-+      OutputStream out = new FileOutputStream(export);
++      ByteArrayOutputStream out = new ByteArrayOutputStream();
 +      session.exportSystemView("/parent/wc1", out, false, false);
 +
-+      OutputStream childvhout = new FileOutputStream(childvhexport);
++      ByteArrayOutputStream childvhout = new ByteArrayOutputStream();
 +      session.exportSystemView(picture.getVersionHistory().getPath(), childvhout, false, false);
 +
-+      OutputStream vhout = new FileOutputStream(vhexport);
++      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
 +      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
 +
 +      // prepare data for version import
@@ -863,7 +854,8 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      vhout.close();
 +
 +      // import
-+      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++      session.importXML("/parent", new ByteArrayInputStream(out.toByteArray()),
++         ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
 +
 +      session.save();
 +
@@ -871,14 +863,14 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      picture = wc1.getNode("medias").getNode("picture");
 +
 +      VersionHistoryImporter chversionHistoryImporter =
-+         new VersionHistoryImporter((NodeImpl)picture, new FileInputStream(childvhexport), chbaseVersion,
-+            chpredecessorsHistory, chversionHistory);
++         new VersionHistoryImporter((NodeImpl)picture, new ByteArrayInputStream(childvhout.toByteArray()),
++            chbaseVersion, chpredecessorsHistory, chversionHistory);
 +      chversionHistoryImporter.doImport();
 +      session.save();
 +
 +      VersionHistoryImporter versionHistoryImporter =
-+         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
-+            versionHistory);
++         new VersionHistoryImporter((NodeImpl)wc1, new ByteArrayInputStream(vhout.toByteArray()), baseVersion,
++            predecessorsHistory, versionHistory);
 +      versionHistoryImporter.doImport();
 +      session.save();
 +
@@ -940,15 +932,11 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      subNode3.checkin();
 +      subNode3.checkout();
 +
-+      //TODO file path!!!!!!
 +      // export import version history and node
-+      File export = new File("F:\\temp\\export.xml");
-+      File vhexport = new File("F:\\temp\\vhexport.xml");
-+
-+      OutputStream out = new FileOutputStream(export);
++      ByteArrayOutputStream out = new ByteArrayOutputStream();
 +      session.exportSystemView("/parent/wc1", out, false, false);
 +
-+      OutputStream vhout = new FileOutputStream(vhexport);
++      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
 +      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
 +
 +      // prepare data for version import
@@ -1003,7 +991,8 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      vhout.close();
 +
 +      // import
-+      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++      session.importXML("/parent", new ByteArrayInputStream(out.toByteArray()),
++         ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
 +
 +      session.save();
 +
@@ -1012,8 +1001,8 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      subNode4 = (NodeImpl)session.getItem("/parent/wc1/medias/subnode1/subnode2/subnode3/subnode4");
 +
 +      VersionHistoryImporter versionHistoryImporter =
-+         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
-+            versionHistory);
++         new VersionHistoryImporter((NodeImpl)wc1, new ByteArrayInputStream(vhout.toByteArray()), baseVersion,
++            predecessorsHistory, versionHistory);
 +      versionHistoryImporter.doImport();
 +      session.save();
 +
@@ -1070,13 +1059,10 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      assertTrue(picture.getProperty("jcr:isCheckedOut").getValue().getBoolean());
 +
 +      // export import version history and node
-+      File export = new File("F:\\temp\\export.xml");
-+      File vhexport = new File("F:\\temp\\vhexport.xml");
-+
-+      OutputStream out = new FileOutputStream(export);
++      ByteArrayOutputStream out = new ByteArrayOutputStream();
 +      session.exportSystemView("/parent/wc1", out, false, false);
 +
-+      OutputStream vhout = new FileOutputStream(vhexport);
++      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
 +      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
 +
 +      // prepare data for version import
@@ -1149,15 +1135,16 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      vhout.close();
 +
 +      // import
-+      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++      session.importXML("/parent", new ByteArrayInputStream(out.toByteArray()),
++         ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
 +
 +      session.save();
 +
 +      wc1 = (NodeImpl)session.getItem("/parent/wc1");
 +
 +      VersionHistoryImporter versionHistoryImporter =
-+         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
-+            versionHistory);
++         new VersionHistoryImporter((NodeImpl)wc1, new ByteArrayInputStream(vhout.toByteArray()), baseVersion,
++            predecessorsHistory, versionHistory);
 +      versionHistoryImporter.doImport();
 +      session.save();
 +
@@ -1228,22 +1215,14 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      wc1.checkin();
 +      wc1.checkout();
 +
-+      //      picture.checkin();
-+      //    picture.checkout();
-+
-+      //TODO file path!!!!!!
 +      // export import version history and node
-+      File export = new File("F:\\temp\\export.xml");
-+      File vhexport = new File("F:\\temp\\vhexport.xml");
-+
-+      OutputStream out = new FileOutputStream(export);
++      ByteArrayOutputStream out = new ByteArrayOutputStream();
 +      session.exportSystemView("/parent/wc1", out, false, false);
 +
-+      OutputStream vhout = new FileOutputStream(vhexport);
++      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
 +      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
 +
 +      // prepare data for version import
-+
 +      String versionHistory = wc1.getProperty("jcr:versionHistory").getValue().getString();
 +      String baseVersion = wc1.getProperty("jcr:baseVersion").getValue().getString();
 +      Value[] jcrPredecessors = wc1.getProperty("jcr:predecessors").getValues();
@@ -1271,7 +1250,8 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      vhout.close();
 +
 +      // import
-+      session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++      session.importXML("/parent", new ByteArrayInputStream(out.toByteArray()),
++         ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
 +
 +      session.save();
 +
@@ -1279,8 +1259,8 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      picture = wc1.getNode("medias").getNode("picture");
 +
 +      VersionHistoryImporter versionHistoryImporter =
-+         new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
-+            versionHistory);
++         new VersionHistoryImporter((NodeImpl)wc1, new ByteArrayInputStream(vhout.toByteArray()), baseVersion,
++            predecessorsHistory, versionHistory);
 +      versionHistoryImporter.doImport();
 +      session.save();
 +
@@ -1320,13 +1300,10 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +         wc1.checkout();
 +
 +         // export import version history and node
-+         File export = new File("F:\\temp\\export.xml");
-+         File vhexport = new File("F:\\temp\\vhexport.xml");
-+
-+         OutputStream out = new FileOutputStream(export);
++         ByteArrayOutputStream out = new ByteArrayOutputStream();
 +         session.exportSystemView("/parent/wc1", out, false, false);
 +
-+         OutputStream vhout = new FileOutputStream(vhexport);
++         ByteArrayOutputStream vhout = new ByteArrayOutputStream();
 +         session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
 +
 +         // prepare data for version import
@@ -1359,15 +1336,16 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +         vhout.close();
 +
 +         // import
-+         session.importXML("/parent", new FileInputStream(export), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++         session.importXML("/parent", new ByteArrayInputStream(out.toByteArray()),
++            ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
 +
 +         session.save();
 +
 +         wc1 = (NodeImpl)session.getItem("/parent/wc1");
 +
 +         VersionHistoryImporter versionHistoryImporter =
-+            new VersionHistoryImporter((NodeImpl)wc1, new FileInputStream(vhexport), baseVersion, predecessorsHistory,
-+               versionHistory);
++            new VersionHistoryImporter((NodeImpl)wc1, new ByteArrayInputStream(vhout.toByteArray()), baseVersion,
++               predecessorsHistory, versionHistory);
 +         versionHistoryImporter.doImport();
 +         session.save();
 +
