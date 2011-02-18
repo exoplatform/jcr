@@ -203,6 +203,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    private RemoteCommand resume;
 
    /**
+    * Index recovery.
+    */
+   private final IndexRecovery indexRecovery;
+
+   /**
     * Request to all nodes to check if there is someone who responsible for resuming.
     */
    private RemoteCommand requestForResponsibleForResuming;
@@ -272,9 +277,17 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          ((WorkspacePersistentDataManager)this.itemMgr).addItemPersistenceListener(this);
       }
 
-      if (rpcService != null)
+      if (rpcService == null)
+      {
+         this.indexRecovery = null;
+      }
+      else
       {
          doInitRemoteCommands();
+
+         this.indexRecovery = new IndexRecoveryImpl(rpcService, this);
+         rpcService.registerTopologyChangeListener(this);
+         rpcService.registerTopologyChangeListener((TopologyChangeListener)indexRecovery);
       }
    }
 
@@ -688,8 +701,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new RepositoryConfigurationException(e);
       }
 
-      IndexRecovery indexRecovery = rpcService == null ? null : new IndexRecoveryImpl(rpcService, this);
-
       QueryHandlerContext context =
          new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
             PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, virtualTableResolver,
@@ -1083,8 +1094,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             return isResponsibleForResuming;
          }
       });
-
-      rpcService.registerTopologyChangeListener(this);
    }
 
    protected void suspendLocally() throws SuspendException
