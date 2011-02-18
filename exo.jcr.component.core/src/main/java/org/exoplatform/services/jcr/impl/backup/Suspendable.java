@@ -29,13 +29,13 @@ public interface Suspendable
     *  
     *  @throws SuspendException of error occurred 
     */
-   void suspend(boolean isSuspendCoordinatorOnly) throws SuspendException;
+   void suspend() throws SuspendException;
 
    /**
     *  Resume component.
     *  
     *  @throws ResumeException of error occurred 
     */
-   void resume(boolean isResumeCoordinatorOnly) throws ResumeException;
+   void resume() throws ResumeException;
 
 }

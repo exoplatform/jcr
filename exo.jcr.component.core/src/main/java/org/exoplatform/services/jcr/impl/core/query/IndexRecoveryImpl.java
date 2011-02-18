@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RPCService;
@@ -64,18 +65,45 @@ public class IndexRecoveryImpl implements IndexRecovery
    private RemoteCommand getIndexFile;
 
    /**
-    * Constructor IndexRetrieveImpl.
+    * Remote command to switch index between RO/RW state.
     */
-   public IndexRecoveryImpl(RPCService rpcService, final String wsId, final boolean isSystem, final File indexDirectory)
+   private RemoteCommand setReadOnly;
+
+   /**
+    * Constructor IndexRetrieveImpl.
+    * 
+    * @throws RepositoryConfigurationException 
+    */
+   public IndexRecoveryImpl(RPCService rpcService, final SearchManager searchManager)
+      throws RepositoryConfigurationException
    {
       this.rpcService = rpcService;
+
+      final String commandSuffix = searchManager.getWsId() + "-" + (searchManager.parentSearchManager == null);
+      final File indexDirectory = searchManager.getIndexDirectory();
+
+      setReadOnly = rpcService.registerCommand(new RemoteCommand()
+      {
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-setReadOnly-" + commandSuffix;
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            boolean isReadOnly = (Boolean)args[0];
+
+            // TODO searchManager.setReadOnly(isReadOnly);
+
+            return null;
+         }
+      });
 
       getIndexList = rpcService.registerCommand(new RemoteCommand()
       {
          public String getId()
          {
-            return "org.exoplatform.services.jcr.impl.core.query.IndexRetrieveImpl-getIndexList-" + wsId + "-"
-               + isSystem;
+            return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-getIndexList-" + commandSuffix;
          }
 
          public Serializable execute(Serializable[] args) throws Throwable
@@ -99,8 +127,7 @@ public class IndexRecoveryImpl implements IndexRecovery
       {
          public String getId()
          {
-            return "org.exoplatform.services.jcr.impl.core.query.IndexRetrieveImpl-getIndexFile-" + wsId + "-"
-               + isSystem;
+            return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-getIndexFile-" + commandSuffix;
          }
 
          public Serializable execute(Serializable[] args) throws Throwable
@@ -137,6 +164,27 @@ public class IndexRecoveryImpl implements IndexRecovery
       try
       {
          return (List<String>)rpcService.executeCommandOnCoordinator(getIndexList, true);
+      }
+      catch (SecurityException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (RPCException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void setIndexReadOnly(boolean isReadOnly) throws RepositoryException
+   {
+      try
+      {
+         rpcService.executeCommandOnCoordinator(setReadOnly, true, isReadOnly);
+
+         // TODO failover
       }
       catch (SecurityException e)
       {

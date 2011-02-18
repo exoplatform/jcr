@@ -1095,7 +1095,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
-   public void suspend(boolean isSuspendCoordinatorOnly) throws SuspendException
+   public void suspend() throws SuspendException
    {
       isResponsibleForResuming = true;
 
@@ -1103,14 +1103,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          try
          {
-            if (isSuspendCoordinatorOnly)
-            {
-               rpcService.executeCommandOnCoordinator(suspend, true);
-            }
-            else
-            {
-               rpcService.executeCommandOnAllNodes(suspend, true);
-            }
+            rpcService.executeCommandOnAllNodes(suspend, true);
          }
          catch (SecurityException e)
          {
@@ -1130,20 +1123,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
-   public void resume(boolean isResumeCoordinatorOnly) throws ResumeException
+   public void resume() throws ResumeException
    {
       if (rpcService != null)
       {
          try
          {
-            if (isResumeCoordinatorOnly)
-            {
-               rpcService.executeCommandOnCoordinator(resume, true);
-            }
-            else
-            {
-               rpcService.executeCommandOnAllNodes(resume, true);
-            }
+            rpcService.executeCommandOnAllNodes(resume, true);
          }
          catch (SecurityException e)
          {

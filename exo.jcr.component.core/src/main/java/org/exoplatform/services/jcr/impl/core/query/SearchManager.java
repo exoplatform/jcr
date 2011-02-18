@@ -688,9 +688,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new RepositoryConfigurationException(e);
       }
 
-      IndexRecovery indexRecovery =
-         rpcService == null ? null : new IndexRecoveryImpl(rpcService, getWsId(), parentHandler == null,
-            getIndexDirectory());
+      IndexRecovery indexRecovery = rpcService == null ? null : new IndexRecoveryImpl(rpcService, this);
 
       QueryHandlerContext context =
          new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
@@ -980,7 +978,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}
     */
-   public void suspend(boolean isSuspendCoordinatorOnly) throws SuspendException
+   public void suspend() throws SuspendException
    {
       isResponsibleForResuming = true;
 
@@ -988,14 +986,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          try
          {
-            if (isSuspendCoordinatorOnly)
-            {
-               rpcService.executeCommandOnCoordinator(suspend, true);
-            }
-            else
-            {
-               rpcService.executeCommandOnAllNodes(suspend, true);
-            }
+            rpcService.executeCommandOnAllNodes(suspend, true);
          }
          catch (SecurityException e)
          {
@@ -1015,20 +1006,13 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}
     */
-   public void resume(boolean isResumeCoordinatorOnly) throws ResumeException
+   public void resume() throws ResumeException
    {
       if (rpcService != null)
       {
          try
          {
-            if (isResumeCoordinatorOnly)
-            {
-               rpcService.executeCommandOnCoordinator(resume, true);
-            }
-            else
-            {
-               rpcService.executeCommandOnAllNodes(resume, true);
-            }
+            rpcService.executeCommandOnAllNodes(resume, true);
          }
          catch (SecurityException e)
          {

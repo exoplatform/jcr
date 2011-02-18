@@ -28,9 +28,8 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
-import org.exoplatform.services.jcr.impl.backup.Suspendable;
+import org.exoplatform.services.jcr.impl.core.query.IndexRecovery;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
@@ -3350,23 +3349,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private void recoveryIndexFromCoordinator() throws FileNotFoundException, RepositoryException, IOException,
       SuspendException
    {
-      List<Suspendable> suspendableComponents =
-         handler.getContext().getContainer().getComponentInstancesOfType(Suspendable.class);
-
-      // the list of components to resume 
-      List<Suspendable> resumeComponents = new ArrayList<Suspendable>();
-
       try
       {
-         // suspend all components 
-         for (Suspendable component : suspendableComponents)
-         {
-            component.suspend(true);
-            resumeComponents.add(component);
-         }
+         IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
+         indexRecovery.setIndexReadOnly(true);
 
          File indexDirectory = new File(handler.getContext().getIndexDirectory());
-         for (String filePath : handler.getContext().getIndexRecovery().getIndexList())
+         for (String filePath : indexRecovery.getIndexList())
          {
             File indexFile = new File(indexDirectory, filePath);
             if (!PrivilegedFileHelper.exists(indexFile.getParentFile()))
@@ -3375,7 +3364,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
 
             // transfer file 
-            InputStream in = handler.getContext().getIndexRecovery().getIndexFile(filePath);
+            InputStream in = indexRecovery.getIndexFile(filePath);
             OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
             try
             {
@@ -3399,21 +3388,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   out.close();
                }
             }
+
+            indexRecovery.setIndexReadOnly(false);
          }
       }
       finally
       {
-         for (Suspendable component : resumeComponents)
-         {
-            try
-            {
-               component.resume(true);
-            }
-            catch (ResumeException e)
-            {
-               log.error("Can't resume component", e);
-            }
-         }
       }
    }
 }

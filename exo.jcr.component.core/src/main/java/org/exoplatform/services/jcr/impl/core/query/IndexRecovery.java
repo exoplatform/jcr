@@ -31,6 +31,17 @@ import javax.jcr.RepositoryException;
  */
 public interface IndexRecovery
 {
+
+   /**
+    * Switch index between RO/RW states.
+    *
+    * @param isReadOnly
+    *             boolean, indicates if need to switch index to RO or RW mode
+    * @throws RepositoryException
+    *          if any exception occurred
+    */
+   public void setIndexReadOnly(boolean isReadOnly) throws RepositoryException;
+
    /**
     * Get list of relative paths of all files from index directory.
     * 
