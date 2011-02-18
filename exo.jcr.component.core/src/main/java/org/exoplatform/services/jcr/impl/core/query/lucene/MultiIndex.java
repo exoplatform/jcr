@@ -3361,7 +3361,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // suspend all components 
          for (Suspendable component : suspendableComponents)
          {
-            component.suspend(Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY);
+            component.suspend(true);
             resumeComponents.add(component);
          }
 
@@ -3407,7 +3407,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             try
             {
-               component.resume();
+               component.resume(true);
             }
             catch (ResumeException e)
             {

@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
-import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
@@ -138,11 +137,6 @@ public class SystemSearchManager extends SearchManager
    @Override
    protected void suspendLocally() throws SuspendException
    {
-      if (isResponsibleForResuming && suspendFlag == Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY)
-      {
-         return;
-      }
-
       super.suspendLocally();
       isStarted = false;
    }

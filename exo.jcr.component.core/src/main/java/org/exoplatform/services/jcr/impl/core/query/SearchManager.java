@@ -193,11 +193,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected Boolean isResponsibleForResuming = false;
 
    /**
-    * Suspend flag.
-    */
-   protected Integer suspendFlag;
-
-   /**
     * Suspend remote command.
     */
    private RemoteCommand suspend;
@@ -985,16 +980,22 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}
     */
-   public void suspend(int flag) throws SuspendException
+   public void suspend(boolean isSuspendCoordinatorOnly) throws SuspendException
    {
       isResponsibleForResuming = true;
-      suspendFlag = flag;
 
       if (rpcService != null)
       {
          try
          {
-            rpcService.executeCommandOnAllNodes(suspend, true);
+            if (isSuspendCoordinatorOnly)
+            {
+               rpcService.executeCommandOnCoordinator(suspend, true);
+            }
+            else
+            {
+               rpcService.executeCommandOnAllNodes(suspend, true);
+            }
          }
          catch (SecurityException e)
          {
@@ -1014,13 +1015,20 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}
     */
-   public void resume() throws ResumeException
+   public void resume(boolean isResumeCoordinatorOnly) throws ResumeException
    {
       if (rpcService != null)
       {
          try
          {
-            rpcService.executeCommandOnAllNodes(resume, true);
+            if (isResumeCoordinatorOnly)
+            {
+               rpcService.executeCommandOnCoordinator(resume, true);
+            }
+            else
+            {
+               rpcService.executeCommandOnAllNodes(resume, true);
+            }
          }
          catch (SecurityException e)
          {
@@ -1037,7 +1045,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
 
       isResponsibleForResuming = false;
-      suspendFlag = null;
    }
 
    /**
@@ -1098,11 +1105,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    protected void suspendLocally() throws SuspendException
    {
-      if (isResponsibleForResuming && suspendFlag == Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY)
-      {
-         return;
-      }
-
       if (isSuspended)
       {
          throw new SuspendException("Component already suspended.");
@@ -1114,11 +1116,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    protected void resumeLocally() throws ResumeException
    {
-      if (isResponsibleForResuming && suspendFlag == Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY)
-      {
-         return;
-      }
-
       if (!isSuspended)
       {
          throw new ResumeException("Component is not suspended.");

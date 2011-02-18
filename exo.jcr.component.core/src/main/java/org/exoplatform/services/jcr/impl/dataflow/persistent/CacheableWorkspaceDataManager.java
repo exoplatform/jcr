@@ -122,11 +122,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    private RemoteCommand resume;
 
    /**
-    * Suspend flag.
-    */
-   private Integer suspendFlag;
-
-   /**
     * ItemData request, used on get operations.
     * 
     */
@@ -1100,16 +1095,22 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
-   public void suspend(int flag) throws SuspendException
+   public void suspend(boolean isSuspendCoordinatorOnly) throws SuspendException
    {
       isResponsibleForResuming = true;
-      suspendFlag = flag;
 
       if (rpcService != null)
       {
          try
          {
-            rpcService.executeCommandOnAllNodes(suspend, true, null);
+            if (isSuspendCoordinatorOnly)
+            {
+               rpcService.executeCommandOnCoordinator(suspend, true);
+            }
+            else
+            {
+               rpcService.executeCommandOnAllNodes(suspend, true);
+            }
          }
          catch (SecurityException e)
          {
@@ -1129,13 +1130,20 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
-   public void resume() throws ResumeException
+   public void resume(boolean isResumeCoordinatorOnly) throws ResumeException
    {
       if (rpcService != null)
       {
          try
          {
-            rpcService.executeCommandOnAllNodes(resume, true, null);
+            if (isResumeCoordinatorOnly)
+            {
+               rpcService.executeCommandOnCoordinator(resume, true);
+            }
+            else
+            {
+               rpcService.executeCommandOnAllNodes(resume, true);
+            }
          }
          catch (SecurityException e)
          {
@@ -1152,16 +1160,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
 
       isResponsibleForResuming = false;
-      suspendFlag = null;
    }
 
    private void suspendLocally() throws SuspendException
    {
-      if (isResponsibleForResuming && suspendFlag == Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY)
-      {
-         return;
-      }
-
       if (isSuspended)
       {
          throw new SuspendException("Component already suspended.");
@@ -1185,11 +1187,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private void resumeLocally() throws ResumeException
    {
-      if (isResponsibleForResuming && suspendFlag == Suspendable.SUSPEND_COMPONENT_ON_OTHERS_NODES_ONLY)
-      {
-         return;
-      }
-
       if (!isSuspended)
       {
          throw new ResumeException("Component is not suspended.");
