@@ -82,7 +82,7 @@ public class JobExistedWorkspaceRestoreSameConfig extends JobWorkspaceRestore
 
          for (Suspendable component : suspendableComponents)
          {
-            component.suspend(false);
+            component.suspend();
             resumeComponents.add(component);
          }
 
@@ -115,11 +115,11 @@ public class JobExistedWorkspaceRestoreSameConfig extends JobWorkspaceRestore
          }
 
          // resume components
-         for (int i = 0; i < resumeComponents.size() - 1; i++)
+         for (int i = 0; i < resumeComponents.size(); i++)
          {
             try
             {
-               resumeComponents.remove(i).resume(false);
+               resumeComponents.remove(i).resume();
             }
             catch (ResumeException e)
             {
@@ -178,7 +178,7 @@ public class JobExistedWorkspaceRestoreSameConfig extends JobWorkspaceRestore
          {
             try
             {
-               component.resume(false);
+               component.resume();
             }
             catch (ResumeException e)
             {
