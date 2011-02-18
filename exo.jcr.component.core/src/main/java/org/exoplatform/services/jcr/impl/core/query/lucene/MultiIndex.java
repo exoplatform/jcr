@@ -3352,7 +3352,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       try
       {
          IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
-         indexRecovery.setIndexReadOnly(true);
+         indexRecovery.setIndexOffline();
 
          File indexDirectory = new File(handler.getContext().getIndexDirectory());
          for (String filePath : indexRecovery.getIndexList())
@@ -3389,7 +3389,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                }
             }
 
-            indexRecovery.setIndexReadOnly(false);
+            indexRecovery.setIndexOnline();
          }
       }
       finally

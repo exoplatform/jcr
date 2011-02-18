@@ -19,9 +19,13 @@ package org.exoplatform.services.jcr.impl.core.query;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
+import org.exoplatform.services.rpc.TopologyChangeEvent;
+import org.exoplatform.services.rpc.TopologyChangeListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,8 +45,13 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: IndexRetrievalImpl.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class IndexRecoveryImpl implements IndexRecovery
+public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
 {
+
+   /**
+    * Logger instance for this class.
+    */
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexRecoveryImpl");
 
    /**
     * Buffer size.
@@ -67,7 +76,17 @@ public class IndexRecoveryImpl implements IndexRecovery
    /**
     * Remote command to switch index between RO/RW state.
     */
-   private RemoteCommand setReadOnly;
+   private RemoteCommand changeIndexMode;
+
+   /**
+    * Remote command to check if node responsible for set index online leave the cluster. 
+    */
+   private RemoteCommand requestForResponsibleToSetIndexOnline;
+
+   /**
+    * Indicates that node keep responsible to set index online.
+    */
+   protected Boolean isResponsibleToSetIndexOnline = false;
 
    /**
     * Constructor IndexRetrieveImpl.
@@ -82,16 +101,16 @@ public class IndexRecoveryImpl implements IndexRecovery
       final String commandSuffix = searchManager.getWsId() + "-" + (searchManager.parentSearchManager == null);
       final File indexDirectory = searchManager.getIndexDirectory();
 
-      setReadOnly = rpcService.registerCommand(new RemoteCommand()
+      changeIndexMode = rpcService.registerCommand(new RemoteCommand()
       {
          public String getId()
          {
-            return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-setReadOnly-" + commandSuffix;
+            return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-changeIndexMode-" + commandSuffix;
          }
 
          public Serializable execute(Serializable[] args) throws Throwable
          {
-            boolean isReadOnly = (Boolean)args[0];
+            boolean isOnline = (Boolean)args[0];
 
             // TODO searchManager.setReadOnly(isReadOnly);
 
@@ -154,6 +173,23 @@ public class IndexRecoveryImpl implements IndexRecovery
             }
          }
       });
+
+      requestForResponsibleToSetIndexOnline = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-requestForResponsibleToSetIndexOnline-"
+               + commandSuffix;
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            return isResponsibleToSetIndexOnline;
+         }
+      });
+
+      rpcService.registerTopologyChangeListener(this);
    }
 
    /**
@@ -178,13 +214,32 @@ public class IndexRecoveryImpl implements IndexRecovery
    /**
     * {@inheritDoc}
     */
-   public void setIndexReadOnly(boolean isReadOnly) throws RepositoryException
+   public void setIndexOffline() throws RepositoryException
    {
       try
       {
-         rpcService.executeCommandOnCoordinator(setReadOnly, true, isReadOnly);
+         isResponsibleToSetIndexOnline = true;
+         rpcService.executeCommandOnCoordinator(changeIndexMode, true, false);
+      }
+      catch (SecurityException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (RPCException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
 
-         // TODO failover
+   /**
+    * {@inheritDoc}
+    */
+   public void setIndexOnline() throws RepositoryException
+   {
+      try
+      {
+         rpcService.executeCommandOnCoordinator(changeIndexMode, true, true);
+         isResponsibleToSetIndexOnline = false;
       }
       catch (SecurityException e)
       {
@@ -240,8 +295,7 @@ public class IndexRecoveryImpl implements IndexRecovery
       @Override
       public int read() throws IOException
       {
-         throw new UnsupportedOperationException(
-            "RemoteStream.read(byte b[], int off, int len) method is not supported");
+         throw new UnsupportedOperationException("RemoteStream.read() method is not supported");
       }
 
       /**
@@ -311,4 +365,53 @@ public class IndexRecoveryImpl implements IndexRecovery
          }
       }
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void onChange(TopologyChangeEvent event)
+   {
+      try
+      {
+         if (rpcService.isCoordinator())
+         {
+            new Thread()
+            {
+               @Override
+               public synchronized void run()
+               {
+                  try
+                  {
+                     List<Object> results =
+                        rpcService.executeCommandOnAllNodes(requestForResponsibleToSetIndexOnline, true);
+
+                     for (Object result : results)
+                     {
+                        if ((Boolean)result)
+                        {
+                           return;
+                        }
+                     }
+
+                     // node which was responsible for resuming leave the cluster, so resume component
+                     // TODO searchManager.setOnline();
+                  }
+                  catch (SecurityException e1)
+                  {
+                     log.error("You haven't privileges to execute remote command", e1);
+                  }
+                  catch (RPCException e1)
+                  {
+                     log.error("Exception during command execution", e1);
+                  }
+               }
+            }.start();
+         }
+      }
+      catch (RPCException e)
+      {
+         log.error("Can't check if node coordinator or not.");
+      }
+   }
+
 }
