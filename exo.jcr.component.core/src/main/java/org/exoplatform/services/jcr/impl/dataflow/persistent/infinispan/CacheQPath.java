@@ -35,28 +35,15 @@ import org.exoplatform.services.jcr.impl.Constants;
  */
 class CacheQPath extends CacheKey
 {
-
-   private final String parentId;
-
-   private final QPath path;
-
    CacheQPath(String parentId, QPath path, ItemType itemType)
    {
-      super(new StringBuilder().append(parentId != null ? parentId : Constants.ROOT_PARENT_UUID)
-         .append(path.getEntries()[path.getEntries().length - 1].getAsString(true)).append(itemType.toString())
-         .toString());
-
-      this.parentId = parentId;
-      this.path = path;
+      this(parentId, path.getEntries()[path.getEntries().length - 1], itemType);
    }
 
    CacheQPath(String parentId, QPathEntry name, ItemType itemType)
    {
       super(new StringBuilder().append(parentId != null ? parentId : Constants.ROOT_PARENT_UUID)
-         .append(name.getAsString(true)).append(itemType.toString()).toString());
-
-      this.parentId = parentId;
-      this.path = null;
+         .append(name.getAsString(true)).append(itemType.toString()).toString(), parentId.hashCode());
    }
 
    @Override
@@ -65,23 +52,11 @@ class CacheQPath extends CacheKey
       if (obj instanceof CacheQPath)
       {
          CacheQPath cacheQPath = (CacheQPath)obj;
-         return (cacheQPath.hashCode() == hash && cacheQPath.id.equals(id));
+         return (cacheQPath.hash == hash && cacheQPath.id.equals(id));
       }
       else
       {
          return false;
       }
    }
-
-   @Override
-   public String toString()
-   {
-      final StringBuilder s = new StringBuilder();
-      s.append((this.parentId != null ? this.parentId : Constants.ROOT_PARENT_UUID));
-      s.append((path != null ? path.getEntries()[path.getEntries().length - 1] : "null"));
-      s.append(", ");
-      s.append(id);
-      return s.toString();
-   }
-
 }

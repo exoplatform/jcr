@@ -31,11 +31,9 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 public class CacheNodesId extends CacheKey
 {
 
-   public static final String PREFIX = "N";
-
    CacheNodesId(String id)
    {
-      super(PREFIX + id);
+      super(id);
    }
 
    @Override
