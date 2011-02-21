@@ -612,7 +612,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 ===================================================================
 --- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/importing/TestImportVersionedChild.java	(revision 0)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/importing/TestImportVersionedChild.java	(revision 0)
-@@ -0,0 +1,748 @@
+@@ -0,0 +1,856 @@
 +/*
 + * Copyright (C) 2003-2011 eXo Platform SAS.
 + *
@@ -633,16 +633,23 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +
 +import org.exoplatform.commons.utils.MimeTypeResolver;
 +import org.exoplatform.services.jcr.JcrAPIBaseTest;
++import org.exoplatform.services.jcr.dataflow.ItemState;
++import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
++import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 +import org.exoplatform.services.jcr.impl.core.NodeImpl;
++import org.exoplatform.services.jcr.impl.core.PropertyImpl;
++import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 +import org.exoplatform.services.jcr.impl.core.SessionImpl;
 +import org.exoplatform.services.jcr.util.VersionHistoryImporter;
 +
 +import java.io.ByteArrayInputStream;
 +import java.io.ByteArrayOutputStream;
++import java.io.InputStream;
 +import java.util.Calendar;
 +
 +import javax.jcr.ImportUUIDBehavior;
 +import javax.jcr.Node;
++import javax.jcr.RepositoryException;
 +import javax.jcr.Value;
 +
 +/**
@@ -1360,5 +1367,268 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      }
 +   }
 +
++   public void testImportVersionHistoryFromFileWithChildVH() throws Exception
++   {
++
++      String baseVersion = "397dad17c0a8004201c7b45ea76d4b1b";
++      String[] predecessorsHistory = new String[]{"397dad17c0a8004201c7b45ea76d4b1b"};
++      String versionHistory = "397dac8bc0a8004201729d052a305832";
++
++      String chbaseVersion = "397dac9ac0a8004201cde5722fec978e";
++      String[] chpredecessorsHistory = new String[]{"397dac9ac0a8004201cde5722fec978e"};
++      String chversionHistory = "397dac9ac0a8004200f37de3ace7b0ad";
++
++      InputStream is =
++         TestImportVersionedChild.class.getResourceAsStream("/import-export/data_with_versioned_child.xml");
++      InputStream vhis =
++         TestImportVersionedChild.class.getResourceAsStream("/import-export/vh_with_versioned_child.xml");
++
++      // import
++      session.importXML("/parent", is, ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++
++      session.save();
++
++      Node wc1 = (NodeImpl)session.getItem("/parent/wc1");
++
++      VersionHistoryImporter versionHistoryImporter =
++         new VersionHistoryImporter((NodeImpl)wc1, vhis, baseVersion, predecessorsHistory, versionHistory);
++      versionHistoryImporter.doImport();
++      session.save();
++
++      Node picture = wc1.getNode("medias").getNode("picture");
++      assertTrue(picture.isNodeType("mix:versionable"));
++      assertEquals(chversionHistory, picture.getProperty("jcr:versionHistory").getValue().getString());
++      assertEquals(chbaseVersion, picture.getProperty("jcr:baseVersion").getValue().getString());
++      assertEquals(chpredecessorsHistory[0], picture.getProperty("jcr:predecessors").getValues()[0].getString());
++
++   }
++
++   public void testImportVersionHistoryFromFile() throws Exception
++   {
++
++      String baseVersion = "0019980ec0a80042014313ff82e97096";
++      String[] predecessorsHistory = new String[]{"0019980ec0a80042014313ff82e97096"};
++      String versionHistory = "001997a1c0a80042007d98739b97e1bc";
++
++      String chbaseVersion = "001997b1c0a8004200d65c82779a2e13";
++      String[] chpredecessorsHistory = new String[]{"001997b1c0a8004200d65c82779a2e13"};
++      String chversionHistory = "001997b1c0a8004201d35a6fa36ef4e7";
++
++      InputStream is = TestImportVersionedChild.class.getResourceAsStream("/import-export/data.xml");
++      InputStream vhis = TestImportVersionedChild.class.getResourceAsStream("/import-export/vh.xml");
++
++      // import
++      session.importXML("/parent", is, ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
++
++      session.save();
++
++      Node wc1 = (NodeImpl)session.getItem("/parent/wc1");
++
++      VersionHistoryImporter versionHistoryImporter =
++         new VersionHistoryImporter((NodeImpl)wc1, vhis, baseVersion, predecessorsHistory, versionHistory);
++      versionHistoryImporter.doImport();
++      session.save();
++
++      Node picture = wc1.getNode("medias").getNode("picture");
++      assertTrue(picture.isNodeType("mix:versionable"));
++      assertFalse(chversionHistory.equals(picture.getProperty("jcr:versionHistory").getValue().getString()));
++      assertFalse(chbaseVersion.equals(picture.getProperty("jcr:baseVersion").getValue().getString()));
++      assertFalse(chpredecessorsHistory[0].equals(picture.getProperty("jcr:predecessors").getValues()[0].getString()));
++
++      // try to remove picture, there must be RepositoryException
++      try
++      {
++         wc1.remove();
++         session.save();
++         fail();
++      }
++      catch (RepositoryException e)
++      {
++         // OK - wc1  Version History contain nt:versionedChild with link to non exist Version history
++
++         // remove bugy version history
++         SessionDataManager dataManager = session.getTransientNodesManager();
++         NodeImpl vhPicture =
++            (NodeImpl)session.getItem("/jcr:system/jcr:versionStorage/" + versionHistory
++               + "/1/jcr:frozenNode/medias/picture");
++
++         assertTrue(vhPicture.isNodeType("nt:versionedChild"));
++
++         PlainChangesLog changesLogDelete = new PlainChangesLogImpl();
++         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture.getProperty("jcr:primaryType"))
++            .getData()));
++         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture
++            .getProperty("jcr:childVersionHistory")).getData()));
++
++         for (ItemState itemState : changesLogDelete.getAllStates())
++         {
++            dataManager.delete(itemState.getData(), itemState.getAncestorToSave());
++         }
++
++         session.save();
++      }
++   }
 +}
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/import-export/data.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/import-export/data.xml	(revision 0)
++++ exo.jcr.component.core/src/test/resources/import-export/data.xml	(revision 0)
+@@ -0,0 +1 @@
++<?xml version="1.0" encoding="UTF-8"?><sv:node xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:test="http://www.apache.org/jackrabbit/test" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exojcrtest="http://www.exoplatform.org/jcr/test/1.0" xmlns:fn_old="http://www.w3.org/2004/10/xpath-functions" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:publication="http://www.exoplatform.com/jcr/publication/1.1/" xmlns:exo="http://www.exoplatform.com/jcr/exo/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:rma="http://www.rma.com/jcr/" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:metadata="http://www.exoplatform.com/jcr/metadata/1.1/" xmlns:rep="internal" sv:name="wc1"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:folder</sv:value></sv:property><sv:property sv:name="jcr:mixinTypes" sv:type="Name"><sv:value>mix:versionable</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>00199791c0a800420106a227837ca02a</sv:value></sv:property><sv:property sv:name="jcr:baseVersion" sv:type="Reference"><sv:value>0019980ec0a80042014313ff82e97096</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-07T14:30:00.593+02:00</sv:value></sv:property><sv:property sv:name="jcr:isCheckedOut" sv:type="Boolean"><sv:value>true</sv:value></sv:property><sv:property sv:name="jcr:predecessors" sv:type="Reference"><sv:value>0019980ec0a80042014313ff82e97096</sv:value></sv:property><sv:property sv:name="jcr:versionHistory" sv:type="Reference"><sv:value>001997a1c0a80042007d98739b97e1bc</sv:value></sv:property><sv:node sv:name="medias"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:folder</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-07T14:30:00.625+02:00</sv:value></sv:property><sv:node sv:name="picture"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:file</sv:value></sv:property><sv:property sv:name="jcr:mixinTypes" sv:type="Name"><sv:value>mix:versionable</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>001997b1c0a8004201ab6f6dfdaf70f9</sv:value></sv:property><sv:property sv:name="jcr:baseVersion" sv:type="Reference"><sv:value>001997b1c0a8004200d65c82779a2e13</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-07T14:30:00.625+02:00</sv:value></sv:property><sv:property sv:name="jcr:isCheckedOut" sv:type="Boolean"><sv:value>true</sv:value></sv:property><sv:property sv:name="jcr:predecessors" sv:type="Reference"><sv:value>001997b1c0a8004200d65c82779a2e13</sv:value></sv:property><sv:property sv:name="jcr:versionHistory" sv:type="Reference"><sv:value>001997b1c0a8004201d35a6fa36ef4e7</sv:value></sv:property><sv:node sv:name="jcr:content"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:resource</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>001997b1c0a800420058c90fbc883ce3</sv:value></sv:property><sv:property sv:name="jcr:data" sv:type="Binary"><sv:value>YmxhIGJsYQ==</sv:value></sv:property><sv:property sv:name="jcr:lastModified" sv:type="Date"><sv:value>2011-02-07T14:30:00.625+02:00</sv:value></sv:property><sv:property sv:name="jcr:mimeType" sv:type="String"><sv:value>text/plain</sv:value></sv:property></sv:node></sv:node></sv:node></sv:node>
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/import-export/data_with_versioned_child.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/import-export/data_with_versioned_child.xml	(revision 0)
++++ exo.jcr.component.core/src/test/resources/import-export/data_with_versioned_child.xml	(revision 0)
+@@ -0,0 +1 @@
++<?xml version="1.0" encoding="UTF-8"?><sv:node xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:test="http://www.apache.org/jackrabbit/test" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exojcrtest="http://www.exoplatform.org/jcr/test/1.0" xmlns:fn_old="http://www.w3.org/2004/10/xpath-functions" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:publication="http://www.exoplatform.com/jcr/publication/1.1/" xmlns:exo="http://www.exoplatform.com/jcr/exo/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:rma="http://www.rma.com/jcr/" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:metadata="http://www.exoplatform.com/jcr/metadata/1.1/" xmlns:rep="internal" sv:name="wc1"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:folder</sv:value></sv:property><sv:property sv:name="jcr:mixinTypes" sv:type="Name"><sv:value>mix:versionable</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>397dac7bc0a80042019e86f907ef0339</sv:value></sv:property><sv:property sv:name="jcr:baseVersion" sv:type="Reference"><sv:value>397dad17c0a8004201c7b45ea76d4b1b</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-18T17:57:40.859+02:00</sv:value></sv:property><sv:property sv:name="jcr:isCheckedOut" sv:type="Boolean"><sv:value>true</sv:value></sv:property><sv:property sv:name="jcr:predecessors" sv:type="Reference"><sv:value>397dad17c0a8004201c7b45ea76d4b1b</sv:value></sv:property><sv:property sv:name="jcr:versionHistory" sv:type="Reference"><sv:value>397dac8bc0a8004201729d052a305832</sv:value></sv:property><sv:node sv:name="medias"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:folder</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-18T17:57:40.890+02:00</sv:value></sv:property><sv:node sv:name="picture"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:file</sv:value></sv:property><sv:property sv:name="jcr:mixinTypes" sv:type="Name"><sv:value>mix:versionable</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>397dac9ac0a800420182f12f406ca1a3</sv:value></sv:property><sv:property sv:name="jcr:baseVersion" sv:type="Reference"><sv:value>397dac9ac0a8004201cde5722fec978e</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-18T17:57:40.890+02:00</sv:value></sv:property><sv:property sv:name="jcr:isCheckedOut" sv:type="Boolean"><sv:value>true</sv:value></sv:property><sv:property sv:name="jcr:predecessors" sv:type="Reference"><sv:value>397dac9ac0a8004201cde5722fec978e</sv:value></sv:property><sv:property sv:name="jcr:versionHistory" sv:type="Reference"><sv:value>397dac9ac0a8004200f37de3ace7b0ad</sv:value></sv:property><sv:node sv:name="jcr:content"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:resource</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>397dac9ac0a8004201e6a413bc33907f</sv:value></sv:property><sv:property sv:name="jcr:data" sv:type="Binary"><sv:value>YmxhIGJsYQ==</sv:value></sv:property><sv:property sv:name="jcr:lastModified" sv:type="Date"><sv:value>2011-02-18T17:57:40.890+02:00</sv:value></sv:property><sv:property sv:name="jcr:mimeType" sv:type="String"><sv:value>text/plain</sv:value></sv:property></sv:node></sv:node></sv:node></sv:node>
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/import-export/vh.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/import-export/vh.xml	(revision 0)
++++ exo.jcr.component.core/src/test/resources/import-export/vh.xml	(revision 0)
+@@ -0,0 +1,136 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<sv:node sv:name="001997a1c0a80042007d98739b97e1bc"
++         xmlns:xs="http://www.w3.org/2001/XMLSchema"
++         xmlns:test="http://www.apache.org/jackrabbit/test"
++         xmlns:sv="http://www.jcp.org/jcr/sv/1.0"
++         xmlns:rma="http://www.rma.com/jcr/" xmlns:rep="internal"
++         xmlns:publication="http://www.exoplatform.com/jcr/publication/1.1/"
++         xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
++         xmlns:mix="http://www.jcp.org/jcr/mix/1.0"
++         xmlns:metadata="http://www.exoplatform.com/jcr/metadata/1.1/"
++         xmlns:jcr="http://www.jcp.org/jcr/1.0"
++         xmlns:fn_old="http://www.w3.org/2004/10/xpath-functions"
++         xmlns:fn="http://www.w3.org/2005/xpath-functions"
++         xmlns:exojcrtest="http://www.exoplatform.org/jcr/test/1.0"
++         xmlns:exo="http://www.exoplatform.com/jcr/exo/1.0"
++         xmlns:dc="http://purl.org/dc/elements/1.1/">
++  <sv:property sv:name="jcr:primaryType" sv:type="Name">
++    <sv:value>nt:versionHistory</sv:value>
++  </sv:property>
++
++  <sv:property sv:name="jcr:uuid" sv:type="String">
++    <sv:value>001997a1c0a80042007d98739b97e1bc</sv:value>
++  </sv:property>
++
++  <sv:property sv:name="jcr:versionableUuid" sv:type="String">
++    <sv:value>00199791c0a800420106a227837ca02a</sv:value>
++  </sv:property>
++
++  <sv:node sv:name="jcr:rootVersion">
++    <sv:property sv:name="jcr:primaryType" sv:type="Name">
++      <sv:value>nt:version</sv:value>
++    </sv:property>
++
++    <sv:property sv:name="jcr:mixinTypes" sv:type="Name">
++      <sv:value>mix:referenceable</sv:value>
++    </sv:property>
++
++    <sv:property sv:name="jcr:uuid" sv:type="String">
++      <sv:value>001997a1c0a8004201a3af806d45ed9b</sv:value>
++    </sv:property>
++
++    <sv:property sv:name="jcr:created" sv:type="Date">
++      <sv:value>2011-02-07T14:30:00.609+02:00</sv:value>
++    </sv:property>
++
++    <sv:property sv:name="jcr:successors" sv:type="Reference">
++      <sv:value>0019980ec0a80042014313ff82e97096</sv:value>
++    </sv:property>
++  </sv:node>
++
++  <sv:node sv:name="1">
++    <sv:property sv:name="jcr:primaryType" sv:type="Name">
++      <sv:value>nt:version</sv:value>
++    </sv:property>
++
++    <sv:property sv:name="jcr:mixinTypes" sv:type="Name">
++      <sv:value>mix:referenceable</sv:value>
++    </sv:property>
++
++    <sv:property sv:name="jcr:uuid" sv:type="String">
++      <sv:value>0019980ec0a80042014313ff82e97096</sv:value>
++    </sv:property>
++
++    <sv:property sv:name="jcr:created" sv:type="Date">
++      <sv:value>2011-02-07T14:30:00.718+02:00</sv:value>
++    </sv:property>
++
++    <sv:property sv:name="jcr:predecessors" sv:type="Reference">
++      <sv:value>001997a1c0a8004201a3af806d45ed9b</sv:value>
++    </sv:property>
++
++    <sv:node sv:name="jcr:frozenNode">
++      <sv:property sv:name="jcr:primaryType" sv:type="Name">
++        <sv:value>nt:frozenNode</sv:value>
++      </sv:property>
++
++      <sv:property sv:name="jcr:mixinTypes" sv:type="Name">
++        <sv:value>mix:referenceable</sv:value>
++      </sv:property>
++
++      <sv:property sv:name="jcr:uuid" sv:type="String">
++        <sv:value>0019980ec0a8004200d64e422bf86f49</sv:value>
++      </sv:property>
++
++      <sv:property sv:name="jcr:created" sv:type="Date">
++        <sv:value>2011-02-07T14:30:00.734+02:00</sv:value>
++      </sv:property>
++
++      <sv:property sv:name="jcr:frozenMixinTypes" sv:type="Name">
++        <sv:value>mix:versionable</sv:value>
++      </sv:property>
++
++      <sv:property sv:name="jcr:frozenPrimaryType" sv:type="Name">
++        <sv:value>nt:folder</sv:value>
++      </sv:property>
++
++      <sv:property sv:name="jcr:frozenUuid" sv:type="String">
++        <sv:value>00199791c0a800420106a227837ca02a</sv:value>
++      </sv:property>
++
++      <sv:property sv:name="jcr:predecessors" sv:type="Reference">
++        <sv:value>001997a1c0a8004201a3af806d45ed9b</sv:value>
++      </sv:property>
++
++      <sv:property sv:name="jcr:versionHistory" sv:type="Reference">
++        <sv:value>001997a1c0a80042007d98739b97e1bc</sv:value>
++      </sv:property>
++
++      <sv:node sv:name="medias">
++        <sv:property sv:name="jcr:primaryType" sv:type="Name">
++          <sv:value>nt:folder</sv:value>
++        </sv:property>
++
++        <sv:property sv:name="jcr:created" sv:type="Date">
++          <sv:value>2011-02-07T14:30:00.734+02:00</sv:value>
++        </sv:property>
++
++        <sv:node sv:name="picture">
++          <sv:property sv:name="jcr:primaryType" sv:type="Name">
++            <sv:value>nt:versionedChild</sv:value>
++          </sv:property>
++
++          <sv:property sv:name="jcr:childVersionHistory" sv:type="Reference">
++            <sv:value>001997b1c0a8004201d35a6fa36ef4e7</sv:value>
++          </sv:property>
++        </sv:node>
++      </sv:node>
++    </sv:node>
++  </sv:node>
++
++  <sv:node sv:name="jcr:versionLabels">
++    <sv:property sv:name="jcr:primaryType" sv:type="Name">
++      <sv:value>nt:versionLabels</sv:value>
++    </sv:property>
++  </sv:node>
++</sv:node>
+Index: exo.jcr.component.core/src/test/resources/import-export/vh_with_versioned_child.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/import-export/vh_with_versioned_child.xml	(revision 0)
++++ exo.jcr.component.core/src/test/resources/import-export/vh_with_versioned_child.xml	(revision 0)
+@@ -0,0 +1 @@
++<?xml version="1.0" encoding="UTF-8"?><sv:node xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:test="http://www.apache.org/jackrabbit/test" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exojcrtest="http://www.exoplatform.org/jcr/test/1.0" xmlns:fn_old="http://www.w3.org/2004/10/xpath-functions" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:publication="http://www.exoplatform.com/jcr/publication/1.1/" xmlns:exo="http://www.exoplatform.com/jcr/exo/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:rma="http://www.rma.com/jcr/" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:metadata="http://www.exoplatform.com/jcr/metadata/1.1/" xmlns:rep="internal" sv:name="397dac8bc0a8004201729d052a305832"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:versionHistory</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>397dac8bc0a8004201729d052a305832</sv:value></sv:property><sv:property sv:name="jcr:versionableUuid" sv:type="String"><sv:value>397dac7bc0a80042019e86f907ef0339</sv:value></sv:property><sv:node sv:name="jcr:rootVersion"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:version</sv:value></sv:property><sv:property sv:name="jcr:mixinTypes" sv:type="Name"><sv:value>mix:referenceable</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>397dac8bc0a8004201a2e53eb73949bd</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-18T17:57:40.875+02:00</sv:value></sv:property><sv:property sv:name="jcr:successors" sv:type="Reference"><sv:value>397dad17c0a8004201c7b45ea76d4b1b</sv:value></sv:property></sv:node><sv:node sv:name="1"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:version</sv:value></sv:property><sv:property sv:name="jcr:mixinTypes" sv:type="Name"><sv:value>mix:referenceable</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>397dad17c0a8004201c7b45ea76d4b1b</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-18T17:57:41.031+02:00</sv:value></sv:property><sv:property sv:name="jcr:predecessors" sv:type="Reference"><sv:value>397dac8bc0a8004201a2e53eb73949bd</sv:value></sv:property><sv:node sv:name="jcr:frozenNode"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:frozenNode</sv:value></sv:property><sv:property sv:name="jcr:mixinTypes" sv:type="Name"><sv:value>mix:referenceable</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>397dad27c0a800420029031c7e421afa</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-18T17:57:41.031+02:00</sv:value></sv:property><sv:property sv:name="jcr:frozenMixinTypes" sv:type="Name"><sv:value>mix:versionable</sv:value></sv:property><sv:property sv:name="jcr:frozenPrimaryType" sv:type="Name"><sv:value>nt:folder</sv:value></sv:property><sv:property sv:name="jcr:frozenUuid" sv:type="String"><sv:value>397dac7bc0a80042019e86f907ef0339</sv:value></sv:property><sv:property sv:name="jcr:predecessors" sv:type="Reference"><sv:value>397dac8bc0a8004201a2e53eb73949bd</sv:value></sv:property><sv:property sv:name="jcr:versionHistory" sv:type="Reference"><sv:value>397dac8bc0a8004201729d052a305832</sv:value></sv:property><sv:node sv:name="medias"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:folder</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-18T17:57:41.031+02:00</sv:value></sv:property><sv:node sv:name="picture"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:versionedChild</sv:value></sv:property><sv:property sv:name="jcr:childVersionHistory" sv:type="Reference"><sv:value>397dac9ac0a8004200f37de3ace7b0ad</sv:value></sv:property><sv:versionhistory sv:name="397dac9ac0a8004200f37de3ace7b0ad"><sv:node sv:name="397dac9ac0a8004200f37de3ace7b0ad"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:versionHistory</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>397dac9ac0a8004200f37de3ace7b0ad</sv:value></sv:property><sv:property sv:name="jcr:versionableUuid" sv:type="String"><sv:value>397dac9ac0a800420182f12f406ca1a3</sv:value></sv:property><sv:node sv:name="jcr:rootVersion"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:version</sv:value></sv:property><sv:property sv:name="jcr:mixinTypes" sv:type="Name"><sv:value>mix:referenceable</sv:value></sv:property><sv:property sv:name="jcr:uuid" sv:type="String"><sv:value>397dac9ac0a8004201cde5722fec978e</sv:value></sv:property><sv:property sv:name="jcr:created" sv:type="Date"><sv:value>2011-02-18T17:57:40.890+02:00</sv:value></sv:property></sv:node><sv:node sv:name="jcr:versionLabels"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:versionLabels</sv:value></sv:property></sv:node></sv:node></sv:versionhistory></sv:node></sv:node></sv:node></sv:node><sv:node sv:name="jcr:versionLabels"><sv:property sv:name="jcr:primaryType" sv:type="Name"><sv:value>nt:versionLabels</sv:value></sv:property></sv:node></sv:node>
 \ No newline at end of file
