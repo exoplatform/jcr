@@ -176,7 +176,47 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         <note>
           <para><emphasis>$AS_HOME</emphasis> - application server home
           directory, or <emphasis>user.dir</emphasis> JVM system property
-          value in case of Java Standalone application.</para>
+          value in case of Java Standalone application. The application server
+          home is:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>For <envar>Jonas</envar>, the value of the variable
+              <emphasis>${jonas.base}.</emphasis></para>
+            </listitem>
+
+            <listitem>
+              <para>For <envar>Jetty</envar>, the value of the variable
+              <emphasis>${jetty.home}.</emphasis></para>
+            </listitem>
+
+            <listitem>
+              <para>For <envar>Websphere</envar>, the value of the variable
+              <emphasis>${was.install.root}.</emphasis></para>
+            </listitem>
+
+            <listitem>
+              <para>For <envar>Weblogic</envar>, the value of the variable
+              <emphasis>${wls.home}</emphasis>.</para>
+            </listitem>
+
+            <listitem>
+              <para>For <envar>Glassfish</envar>, the value of the variable
+              <emphasis>${com.sun.aas.instanceRoot}</emphasis>.</para>
+            </listitem>
+
+            <listitem>
+              <para>For <envar>Tomcat</envar>, the value of the variable
+              <emphasis>${catalina.home}</emphasis>.</para>
+            </listitem>
+
+            <listitem>
+              <para>For <envar>JBoss AS</envar>, the value of the variable
+              <emphasis>${jboss.server.config.url}</emphasis> if the exo-conf
+              directory can be found there otherwise it will be the value of
+              the variable <emphasis>${jboss.home.dir}</emphasis>.</para>
+            </listitem>
+          </itemizedlist>
         </note>
 
         <note>
@@ -205,14 +245,6 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
           <para>The name of the configuration folder that is by default
           <emphasis>"exo-conf"</emphasis>, can be changed thanks to the System
           property <emphasis>exo.conf.dir.name</emphasis>.</para>
-        </note>
-
-        <note>
-          <para>Under JBoss application server <emphasis>exo-conf</emphasis>
-          will be looked up in directory described by JBoss System property
-          <emphasis>jboss.server.config.url</emphasis>. If the property is not
-          found or empty <emphasis>$AS_HOME/exo-conf</emphasis> will be
-          asked.</para>
         </note>
 
         <note>
