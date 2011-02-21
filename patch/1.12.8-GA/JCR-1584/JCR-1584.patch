@@ -39,24 +39,45 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java	(revision 3980)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java	(working copy)
-@@ -403,11 +403,15 @@
+@@ -393,6 +393,12 @@
+    public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse)
+       throws IOException, PathNotFoundException, RepositoryException
+    {
++      exportSystemView(absPath, out, skipBinary, noRecurse, false);
++   }
++
++   public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse,
++      boolean exportChildVersionHisotry) throws IOException, PathNotFoundException, RepositoryException
++   {
+       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
+ 
+       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
+@@ -403,11 +409,12 @@
        ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
        try
        {
 +         JCRPath srcNodePath = getLocationFactory().parseAbsPath(absPath);
-+
-+         boolean isVersionHistoryExport =
-+            srcNodePath.getInternalPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH);
-+
           BaseXmlExporter exporter =
              new ExportImportFactory().getExportVisitor(XmlMapping.SYSVIEW, out, skipBinary, noRecurse,
 -               getTransientNodesManager(), repository.getNamespaceRegistry(), valueFactoryImpl);
-+               isVersionHistoryExport, getTransientNodesManager(), repository.getNamespaceRegistry(), valueFactoryImpl);
++               exportChildVersionHisotry, getTransientNodesManager(), repository.getNamespaceRegistry(),
++               valueFactoryImpl);
  
 -         JCRPath srcNodePath = getLocationFactory().parseAbsPath(absPath);
           ItemData srcItemData = dataManager.getItemData(srcNodePath.getInternalPath());
  
           if (srcItemData == null)
+@@ -872,8 +879,8 @@
+             + destAbsPath);
+       }
+ 
+-      destParentNode.validateChildNode(destNodePath.getName().getInternalName(),
+-         ((NodeTypeImpl)srcNode.getPrimaryNodeType()).getQName());
++      destParentNode.validateChildNode(destNodePath.getName().getInternalName(), ((NodeTypeImpl)srcNode
++         .getPrimaryNodeType()).getQName());
+ 
+       // Check for node with destAbsPath name in session
+       NodeImpl destNode =
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/ExportImportFactory.java
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/ExportImportFactory.java	(revision 3980)
@@ -285,6 +306,33 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xm
  import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
  import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
  import org.exoplatform.services.jcr.impl.xml.DecodedValue;
+@@ -76,7 +79,7 @@
+    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SystemViewImporter");
+ 
+    protected PropertyInfo propertyInfo = new PropertyInfo();
+-   
++
+    protected Map<String, NodePropertiesInfo> mapNodePropertiesInfo = new HashMap<String, NodePropertiesInfo>();
+ 
+    /**
+@@ -156,13 +159,13 @@
+          if (propertyData != null)
+          {
+             changesLog.add(new ItemState(propertyData, ItemState.ADDED, true, getAncestorToSave()));
+-            
++
+             ImportNodeData currentNodeInfo = (ImportNodeData)getParent();
+-            
++
+             NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
+-            
++
+             currentNodePropertiesInfo.addProperty(propertyData);
+-         }   
++         }
+       }
+       else if (Constants.SV_VALUE_NAME.equals(elementName))
+       {
 @@ -171,6 +174,11 @@
           DecodedValue curPropValue = propertyInfo.getValues().get(propertyInfo.getValues().size() - 1);
           curPropValue.setComplete(true);
@@ -297,7 +345,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xm
        else
        {
           throw new RepositoryException("invalid element in system view xml document: " + localName);
-@@ -260,6 +268,27 @@
+@@ -218,7 +226,7 @@
+          newNodeData.setIdentifier(IdGenerator.generate());
+ 
+          changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, getAncestorToSave()));
+-         
++
+          mapNodePropertiesInfo.put(newNodeData.getIdentifier(), new NodePropertiesInfo(newNodeData));
+ 
+          tree.push(newNodeData);
+@@ -260,6 +268,36 @@
           propertyInfo.getValues().add(new DecodedValue());
  
        }
@@ -321,11 +378,20 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xm
 +            changesLog.addAll(rv.getRemovedStates());
 +         }
 +         tree.push(versionStorage);
++
++         List<String> list = (List<String>)context.get(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES);
++         if (list == null)
++         {
++            list = new ArrayList<String>();
++         }
++         list.add(svName);
++         context.put(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES, list);
++
 +      }
        else
        {
           throw new RepositoryException("Unknown element " + elementName.getAsString());
-@@ -306,9 +335,27 @@
+@@ -306,16 +344,15 @@
     private void endNode() throws RepositoryException
     {
        ImportNodeData currentNodeInfo = (ImportNodeData)tree.pop();
@@ -333,29 +399,86 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xm
  
 -      NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
 -      
-+      //check is it child nodes version history
-+
-+      if (!tree.isEmpty())
-+      {
-+         NodeData parentNodeData = tree.pop();
-+         if (!tree.isEmpty() && parentNodeData.getIdentifier().equals(Constants.VERSIONSTORAGE_UUID)
-+            && tree.peek().getPrimaryTypeName().equals(Constants.NT_VERSIONEDCHILD))
-+         {
-+            List<String> list = (List<String>)context.get(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES);
-+            if (list == null)
-+            {
-+               list = new ArrayList<String>();
-+            }
-+            list.add(currentNodeInfo.getQName().getName());
-+            context.put(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES, list);
-+         }
-+         tree.push(parentNodeData);
-+      }
-+
        if (currentNodePropertiesInfo != null)
        {
           checkProperties(currentNodePropertiesInfo);
-@@ -418,9 +465,16 @@
+       }
+-      
++
+       mapNodePropertiesInfo.remove(currentNodeInfo.getIdentifier());
+-      
++
+       currentNodeInfo.setMixinTypeNames(currentNodeInfo.getMixinTypeNames());
+ 
+       if (currentNodeInfo.isMixVersionable())
+@@ -326,7 +363,7 @@
+       currentNodeInfo.setACL(initAcl(currentNodeInfo.getACL(), currentNodeInfo.isExoOwneable(), currentNodeInfo
+          .isExoPrivilegeable(), currentNodeInfo.getExoOwner(), currentNodeInfo.getExoPrivileges()));
+    }
+-   
++
+    /**
+     * Checking priopertis if nodetype is nt:frozennode
+     * 
+@@ -339,7 +376,7 @@
+    private void checkProperties(NodePropertiesInfo currentNodePropertiesInfo) throws RepositoryException
+    {
+       if (currentNodePropertiesInfo.getNode().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH)
+-               && currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
++         && currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
+       {
+          InternalQName fptName = null;
+          List<InternalQName> fmtNames = new ArrayList<InternalQName>();
+@@ -351,13 +388,16 @@
+             {
+                if (propertyData.getQName().equals(Constants.JCR_FROZENPRIMARYTYPE))
+                {
+-                  fptName = InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING));
++                  fptName =
++                     InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray(),
++                        Constants.DEFAULT_ENCODING));
+                }
+                else if (propertyData.getQName().equals(Constants.JCR_FROZENMIXINTYPES))
+                {
+                   for (ValueData valueData : propertyData.getValues())
+                   {
+-                     fmtNames.add(InternalQName.parse(new String(valueData.getAsByteArray(), Constants.DEFAULT_ENCODING)));
++                     fmtNames.add(InternalQName
++                        .parse(new String(valueData.getAsByteArray(), Constants.DEFAULT_ENCODING)));
+                   }
+                }
+             }
+@@ -374,20 +414,22 @@
+          {
+             throw new RepositoryException(e.getMessage(), e);
+          }
+-         
++
+          InternalQName nodePrimaryTypeName = currentNodePropertiesInfo.getNode().getPrimaryTypeName();
+          InternalQName[] nodeMixinTypeName = currentNodePropertiesInfo.getNode().getMixinTypeNames();
+ 
+          for (ImportPropertyData propertyData : currentNodePropertiesInfo.getProperties())
+          {
+-            PropertyDefinitionDatas defs = nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), nodePrimaryTypeName, nodeMixinTypeName);
+-            
+-            if (defs == null  || (defs != null && defs.getAnyDefinition().isResidualSet()))
++            PropertyDefinitionDatas defs =
++               nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), nodePrimaryTypeName,
++                  nodeMixinTypeName);
++
++            if (defs == null || (defs != null && defs.getAnyDefinition().isResidualSet()))
+             {
+                PropertyDefinitionDatas vhdefs =
+-                        nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), fptName, fmtNames
+-                                 .toArray(new InternalQName[fmtNames.size()]));
+-   
++                  nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), fptName, fmtNames
++                     .toArray(new InternalQName[fmtNames.size()]));
++
+                if (vhdefs != null)
+                {
+                   boolean isMultivalue = (vhdefs.getDefinition(true) != null ? true : false);
+@@ -418,9 +460,16 @@
        {
           NodeData parentNodeData = getParent();
           // nodeTypeDataManager.findChildNodeDefinition(primaryTypeName,)
@@ -374,7 +497,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xm
              throw new ConstraintViolationException("Can't add node " + nodeData.getQName().getAsString() + " to "
                 + parentNodeData.getQPath().getAsString() + " node type " + sName
                 + " is not allowed as child's node type for parent node type "
-@@ -555,7 +609,7 @@
+@@ -555,7 +604,7 @@
        propertyData =
           new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()), propertyInfo
              .getIndentifer(), 0, propertyInfo.getType(), currentNodeInfo.getIdentifier(), false);
@@ -383,7 +506,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xm
        if (currentNodeInfo.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
        {
           propertyData.setValue(new TransientValueData(propertyInfo.getValues().get(0).toString()));
-@@ -676,4 +730,26 @@
+@@ -566,7 +615,7 @@
+       }
+ 
+       tree.push(currentNodeInfo);
+-      
++
+       mapNodePropertiesInfo.put(currentNodeInfo.getIdentifier(), new NodePropertiesInfo(currentNodeInfo));
+ 
+       return propertyData;
+@@ -676,4 +725,26 @@
        JCRName jname = locationFactory.createJCRName(name);
        return attributes.get(jname.getAsString());
     }
@@ -446,7 +578,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/Ve
  
  import javax.jcr.PropertyType;
  import javax.jcr.RepositoryException;
-@@ -176,23 +184,34 @@
+@@ -144,7 +152,7 @@
+       {
+          uuid = versionableNode.getUUID();
+          path = versionableNode.getVersionHistory().getParent().getPath();
+-         LOG.info("Started: Import version history for node wiht path=" + path + " and UUID=" + uuid);
++         LOG.info("Started: Import version history for node with path=" + path + " and UUID=" + uuid);
+ 
+          NodeData versionable = (NodeData)versionableNode.getData();
+          // ----- VERSIONABLE properties -----
+@@ -176,32 +184,43 @@
           changesLog.add(ItemState.createAddedState(bv));
           changesLog.add(ItemState.createAddedState(pd));
           // remove version properties to avoid referential integrety check
@@ -476,7 +617,8 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/Ve
 +         userSession.getWorkspace().importXML(path, versionHistoryStream, 0, context);
           userSession.save();
  
-          LOG.info("Completed: Import version history for node wiht path=" + path + " and UUID=" + uuid);
+-         LOG.info("Completed: Import version history for node wiht path=" + path + " and UUID=" + uuid);
++         LOG.info("Completed: Import version history for node with path=" + path + " and UUID=" + uuid);
 +
 +         // fetch list of imported child nodes versions
 +         List<String> versionUuids = (List<String>)context.get(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES);
@@ -487,6 +629,17 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/Ve
        }
        catch (RepositoryException exception)
        {
+-         LOG.error("Failed: Import version history for node wiht path=" + path + " and UUID=" + uuid, exception);
++         LOG.error("Failed: Import version history for node with path=" + path + " and UUID=" + uuid, exception);
+          throw new RepositoryException(exception);
+       }
+       catch (IOException exception)
+       {
+-         LOG.error("Failed: Import version history for node wiht path=" + path + " and UUID=" + uuid, exception);
++         LOG.error("Failed: Import version history for node with path=" + path + " and UUID=" + uuid, exception);
+          IOException newException = new IOException();
+          newException.initCause(exception);
+          throw newException;
 @@ -209,6 +228,120 @@
     }
  
@@ -598,7 +751,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/Ve
 +            // remove version history
 +            dataKeeper.save(changesLog);
 +            userSession.save();
-+            LOG.info("Completed: Import version history for node wiht path=" + versionedChild.getQPath().getAsString()
++            LOG.info("Completed: Import version history for node with path=" + versionedChild.getQPath().getAsString()
 +               + " and UUID=" + versionedChild.getIdentifier());
 +         }
 +      }
@@ -709,10 +862,10 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +
 +      // export import version history and node
 +      ByteArrayOutputStream out = new ByteArrayOutputStream();
-+      session.exportSystemView("/parent/wc1", out, false, false);
++      session.exportSystemView("/parent/wc1", out, false, false, true);
 +
 +      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
-+      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false, true);
 +
 +      // prepare data for version import
 +      String versionHistory = wc1.getProperty("jcr:versionHistory").getValue().getString();
@@ -804,10 +957,10 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +      session.exportSystemView("/parent/wc1", out, false, false);
 +
 +      ByteArrayOutputStream childvhout = new ByteArrayOutputStream();
-+      session.exportSystemView(picture.getVersionHistory().getPath(), childvhout, false, false);
++      session.exportSystemView(picture.getVersionHistory().getPath(), childvhout, false, false, true);
 +
 +      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
-+      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false, true);
 +
 +      // prepare data for version import
 +
@@ -941,10 +1094,10 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +
 +      // export import version history and node
 +      ByteArrayOutputStream out = new ByteArrayOutputStream();
-+      session.exportSystemView("/parent/wc1", out, false, false);
++      session.exportSystemView("/parent/wc1", out, false, false, true);
 +
 +      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
-+      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false, true);
 +
 +      // prepare data for version import
 +
@@ -1067,10 +1220,10 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +
 +      // export import version history and node
 +      ByteArrayOutputStream out = new ByteArrayOutputStream();
-+      session.exportSystemView("/parent/wc1", out, false, false);
++      session.exportSystemView("/parent/wc1", out, false, false, true);
 +
 +      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
-+      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false, true);
 +
 +      // prepare data for version import
 +
@@ -1224,10 +1377,10 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +
 +      // export import version history and node
 +      ByteArrayOutputStream out = new ByteArrayOutputStream();
-+      session.exportSystemView("/parent/wc1", out, false, false);
++      session.exportSystemView("/parent/wc1", out, false, false, true);
 +
 +      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
-+      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++      session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false, true);
 +
 +      // prepare data for version import
 +      String versionHistory = wc1.getProperty("jcr:versionHistory").getValue().getString();
@@ -1308,10 +1461,10 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/imp
 +
 +         // export import version history and node
 +         ByteArrayOutputStream out = new ByteArrayOutputStream();
-+         session.exportSystemView("/parent/wc1", out, false, false);
++         session.exportSystemView("/parent/wc1", out, false, false, true);
 +
 +         ByteArrayOutputStream vhout = new ByteArrayOutputStream();
-+         session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false);
++         session.exportSystemView(wc1.getVersionHistory().getPath(), vhout, false, false, true);
 +
 +         // prepare data for version import
 +
