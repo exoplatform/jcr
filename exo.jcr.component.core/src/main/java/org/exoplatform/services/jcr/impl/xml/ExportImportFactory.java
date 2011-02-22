@@ -112,6 +112,32 @@ public class ExportImportFactory
       ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory)
       throws NamespaceException, RepositoryException, IOException
    {
+      return getExportVisitor(type, stream, skipBinary, noRecurse, false, dataManager, namespaceRegistry,
+         systemValueFactory);
+   }
+
+   /**
+    * Create export visitor for given type of view.\
+    * 
+    * @param type - 6.4 XML Mappings
+    * @param stream - output result stream
+    * @param skipBinary- If skipBinary is true then any properties of
+    *          PropertyType.BINARY will be serialized as if they are empty.
+    * @param noRecurse- if noRecurse is false, the whole subtree are serialized
+    * @param exportChildVersionHistory - does versioned child nodes version history must be exported
+    *          (works ONLY with system view).
+    * @param dataManager - ItemDataConsumer
+    * @param namespaceRegistry - NamespaceRegistry
+    * @param systemValueFactory - default value factory
+    * @return - visitor BaseXmlExporter.
+    * @throws NamespaceException
+    * @throws RepositoryException
+    * @throws IOException
+    */
+   public BaseXmlExporter getExportVisitor(XmlMapping type, OutputStream stream, boolean skipBinary, boolean noRecurse,
+      boolean exportChildVersionHistory, ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
+      ValueFactoryImpl systemValueFactory) throws NamespaceException, RepositoryException, IOException
+   {
 
       XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
       XMLStreamWriter streamWriter;
@@ -127,7 +153,7 @@ public class ExportImportFactory
       if (type == XmlMapping.SYSVIEW)
       {
          return new SystemViewStreamExporter(streamWriter, dataManager, namespaceRegistry, systemValueFactory,
-            skipBinary, noRecurse);
+            skipBinary, noRecurse, exportChildVersionHistory);
       }
       else if (type == XmlMapping.DOCVIEW)
       {

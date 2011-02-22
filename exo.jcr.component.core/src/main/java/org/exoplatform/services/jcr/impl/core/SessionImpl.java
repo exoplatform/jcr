@@ -409,8 +409,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    /**
     * {@inheritDoc}
     */
-   public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse)
-      throws IOException, PathNotFoundException, RepositoryException
+   public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse,
+      boolean exportChildVersionHisotry) throws IOException, PathNotFoundException, RepositoryException
    {
       checkLive();
 
@@ -426,7 +426,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       {
          BaseXmlExporter exporter =
             new ExportImportFactory().getExportVisitor(XmlMapping.SYSVIEW, out, skipBinary, noRecurse,
-               getTransientNodesManager(), repository.getNamespaceRegistry(), valueFactoryImpl);
+               exportChildVersionHisotry, getTransientNodesManager(), repository.getNamespaceRegistry(),
+               valueFactoryImpl);
 
          JCRPath srcNodePath = getLocationFactory().parseAbsPath(absPath);
          ItemData srcItemData = dataManager.getItemData(srcNodePath.getInternalPath());
@@ -446,6 +447,16 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       {
          throw new IOException(e.getLocalizedMessage());
       }
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse)
+      throws IOException, PathNotFoundException, RepositoryException
+   {
+      exportSystemView(absPath, out, skipBinary, noRecurse, false);
    }
 
    /**

@@ -38,14 +38,22 @@ public abstract class StreamExporter extends BaseXmlExporter
 
    protected final XMLStreamWriter writer;
 
+   protected final boolean exportChildVersionHistory;
+
    public StreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
       ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse) throws NamespaceException,
       RepositoryException
    {
+      this(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, false);
+   }
 
+   public StreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
+      ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse, boolean exportChildVersionHistory)
+      throws NamespaceException, RepositoryException
+   {
       super(dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, noRecurse ? 1 : -1);
       this.writer = writer;
-
+      this.exportChildVersionHistory = exportChildVersionHistory;
    }
 
    @Override

@@ -579,6 +579,11 @@ public class Constants
    public static final String SV_NODE = "node";
 
    /**
+    * SV_VERSION_HISTORY.
+    */
+   public static final String SV_VERSION_HISTORY = "versionhistory";
+
+   /**
     * SV_PROPERTY.
     */
    public static final String SV_PROPERTY = "property";
@@ -612,6 +617,11 @@ public class Constants
     * sv:node internal name.
     */
    public static final InternalQName SV_NODE_NAME = new InternalQName(NS_SV_URI, SV_NODE);
+
+   /**
+    * sv:versionhistory internal name.
+    */
+   public static final InternalQName SV_VERSION_HISTORY_NAME = new InternalQName(NS_SV_URI, SV_VERSION_HISTORY);
 
    /**
     * sv:property internal name.
@@ -677,7 +687,7 @@ public class Constants
     * eXo JCR default Strings encoding.
     */
    public static final String DEFAULT_ENCODING = "UTF-8";
-   
+
    /**
     * System identifier for remote workspace initializer changes.
     */

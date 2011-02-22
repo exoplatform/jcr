@@ -23,23 +23,31 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.Identifier;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.impl.xml.ItemDataKeeperAdapter;
+import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -144,7 +152,7 @@ public class VersionHistoryImporter
       {
          uuid = versionableNode.getUUID();
          path = versionableNode.getVersionHistory().getParent().getPath();
-         LOG.info("Started: Import version history for node wiht path=" + path + " and UUID=" + uuid);
+         LOG.info("Started: Import version history for node with path=" + path + " and UUID=" + uuid);
 
          NodeData versionable = (NodeData)versionableNode.getData();
          // ----- VERSIONABLE properties -----
@@ -176,35 +184,160 @@ public class VersionHistoryImporter
          changesLog.add(ItemState.createAddedState(bv));
          changesLog.add(ItemState.createAddedState(pd));
          // remove version properties to avoid referential integrety check
-         PlainChangesLog changesLogDeltete = new PlainChangesLogImpl();
+         PlainChangesLog changesLogDelete = new PlainChangesLogImpl();
 
-         changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
             .getProperty("jcr:versionHistory")).getData()));
-         changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
             .getProperty("jcr:baseVersion")).getData()));
-         changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
             .getProperty("jcr:predecessors")).getData()));
-         dataKeeper.save(changesLogDeltete);
+         dataKeeper.save(changesLogDelete);
          // remove version history
          dataKeeper.save(changesLog);
          userSession.save();
+
          // import new version history
-         userSession.getWorkspace().importXML(path, versionHistoryStream, 0);
+         Map<String, Object> context = new HashMap<String, Object>();
+         //context.put("versionablenode", versionableNode);
+         context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, true);
+         userSession.getWorkspace().importXML(path, versionHistoryStream, 0, context);
          userSession.save();
 
-         LOG.info("Completed: Import version history for node wiht path=" + path + " and UUID=" + uuid);
+         LOG.info("Completed: Import version history for node with path=" + path + " and UUID=" + uuid);
+
+         // fetch list of imported child nodes versions
+         List<String> versionUuids = (List<String>)context.get(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES);
+         if (versionUuids != null && !versionUuids.isEmpty())
+         {
+            updateVersionedChildNodes(versionUuids);
+         }
       }
       catch (RepositoryException exception)
       {
-         LOG.error("Failed: Import version history for node wiht path=" + path + " and UUID=" + uuid, exception);
+         LOG.error("Failed: Import version history for node with path=" + path + " and UUID=" + uuid, exception);
          throw new RepositoryException(exception);
       }
       catch (IOException exception)
       {
-         LOG.error("Failed: Import version history for node wiht path=" + path + " and UUID=" + uuid, exception);
+         LOG.error("Failed: Import version history for node with path=" + path + " and UUID=" + uuid, exception);
          IOException newException = new IOException();
          newException.initCause(exception);
          throw newException;
+      }
+   }
+
+   /**
+    * Update child nodes that owns versions from versionUuids list. 
+    * 
+    * @param versionUuids - list of version histories uuids.
+    * @throws RepositoryException
+    * @throws IOException
+    */
+   private void updateVersionedChildNodes(List<String> versionUuids) throws RepositoryException, IOException
+   {
+      SessionDataManager dataManager = userSession.getTransientNodesManager();
+
+      NodeData versionStorage = (NodeData)dataManager.getItemData(Constants.VERSIONSTORAGE_UUID);
+
+      for (String versionUuid : versionUuids)
+      {
+         NodeData versionHistoryData =
+            (NodeData)dataManager.getItemData(versionStorage, new QPathEntry("", versionUuid, 1), ItemType.NODE);
+
+         PropertyData versionableUuidProp =
+            (PropertyData)dataManager.getItemData(versionHistoryData, new QPathEntry(Constants.JCR_VERSIONABLEUUID, 1),
+               ItemType.PROPERTY);
+
+         String versionableUuid = ValueDataConvertor.readString(versionableUuidProp.getValues().get(0));
+
+         // fetch child versionable node
+
+         NodeData versionedChild = (NodeData)dataManager.getItemData(versionableUuid);
+
+         if (versionedChild != null && versionedChild.getQPath().isDescendantOf(versionableNode.getData().getQPath()))
+         {
+            // find latest version
+            String latestVersionUuid = null;
+            for (int versionNumber = 1;; versionNumber++)
+            {
+               NodeData nodeData =
+                  (NodeData)dataManager.getItemData(versionHistoryData, new QPathEntry("", Integer
+                     .toString(versionNumber), 1), ItemType.NODE);
+
+               if (nodeData == null)
+               {
+                  break;
+               }
+               else
+               {
+                  latestVersionUuid = nodeData.getIdentifier();
+               }
+            }
+
+            if (latestVersionUuid == null)
+            {
+               // fetch root version
+               NodeData rootVersion =
+                  (NodeData)dataManager.getItemData(versionHistoryData, new QPathEntry(Constants.JCR_ROOTVERSION, 1),
+                     ItemType.NODE);
+               latestVersionUuid = rootVersion.getIdentifier();
+            }
+
+            PropertyData propVersionHistory =
+               (PropertyData)dataManager.getItemData(versionedChild, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1),
+                  ItemType.PROPERTY);
+            String prevVerHistoryId = ValueDataConvertor.readString(propVersionHistory.getValues().get(0));
+
+            PropertyData propBaseVersion =
+               (PropertyData)dataManager.getItemData(versionedChild, new QPathEntry(Constants.JCR_BASEVERSION, 1),
+                  ItemType.PROPERTY);
+
+            PropertyData propPredecessors =
+               (PropertyData)dataManager.getItemData(versionedChild, new QPathEntry(Constants.JCR_PREDECESSORS, 1),
+                  ItemType.PROPERTY);
+
+            TransientPropertyData newVersionHistoryProp =
+               TransientPropertyData.createPropertyData(versionedChild, Constants.JCR_VERSIONHISTORY,
+                  PropertyType.REFERENCE, false, new TransientValueData(new Identifier(versionUuid)));
+
+            // jcr:baseVersion
+            TransientPropertyData newBaseVersionProp =
+               TransientPropertyData.createPropertyData(versionedChild, Constants.JCR_BASEVERSION,
+                  PropertyType.REFERENCE, false, new TransientValueData(new Identifier(latestVersionUuid)));
+
+            // jcr:predecessors
+            List<ValueData> predecessorValues = new ArrayList<ValueData>();
+            predecessorValues.add(new TransientValueData(new Identifier(latestVersionUuid)));
+            TransientPropertyData newPredecessorsProp =
+               TransientPropertyData.createPropertyData(versionedChild, Constants.JCR_PREDECESSORS,
+                  PropertyType.REFERENCE, true, predecessorValues);
+
+            //remove previous version of childnode nad update properties
+            NodeData prevVersionHistory = (NodeData)dataManager.getItemData(prevVerHistoryId);
+
+            PlainChangesLogImpl changesLog = new PlainChangesLogImpl();
+            if (!prevVerHistoryId.equals(versionUuid))
+            {
+               RemoveVisitor rv = new RemoveVisitor();
+               rv.visit(prevVersionHistory);
+               changesLog.addAll(rv.getRemovedStates());
+            }
+            changesLog.add(ItemState.createAddedState(newVersionHistoryProp));
+            changesLog.add(ItemState.createAddedState(newBaseVersionProp));
+            changesLog.add(ItemState.createAddedState(newPredecessorsProp));
+
+            PlainChangesLogImpl changesLogDelete = new PlainChangesLogImpl();
+            changesLogDelete.add(ItemState.createDeletedState(propVersionHistory));
+            changesLogDelete.add(ItemState.createDeletedState(propBaseVersion));
+            changesLogDelete.add(ItemState.createDeletedState(propPredecessors));
+            dataKeeper.save(changesLogDelete);
+            // remove version history
+            dataKeeper.save(changesLog);
+            userSession.save();
+            LOG.info("Completed: Import version history for node with path=" + versionedChild.getQPath().getAsString()
+               + " and UUID=" + versionedChild.getIdentifier());
+         }
       }
    }
 

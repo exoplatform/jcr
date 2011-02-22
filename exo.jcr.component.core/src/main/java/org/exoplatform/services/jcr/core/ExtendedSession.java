@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 
 import javax.jcr.InvalidSerializedDataException;
@@ -62,7 +63,7 @@ public interface ExtendedSession extends Session
     * @throws RepositoryException if any repository errors occurs
     */
    Node getNodeByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException;
-   
+
    /**
     * Deserialize an XML document and adds the resulting item subtree as a child of the node at
     * parentAbsPath.
@@ -84,6 +85,60 @@ public interface ExtendedSession extends Session
    void importXML(String parentAbsPath, InputStream in, int uuidBehavior, Map<String, Object> context)
       throws IOException, PathNotFoundException, ItemExistsException, ConstraintViolationException,
       InvalidSerializedDataException, RepositoryException;
+
+   /**
+    * Serializes the node (and if <code>noRecurse</code> is <code>false</code>,
+    * the whole subtree) at <code>absPath</code> into a series of SAX events by
+    * calling the methods of the supplied <code>org.xml.sax.ContentHandler</code>.
+    * The resulting XML is in the document view form. Note that <code>absPath</code>
+    * must be the path of a node, not a property.
+    * <p>
+    * If <code>skipBinary</code> is true then any properties of <code>PropertyType.BINARY</code> will be
+    * serialized as if they are empty. That is, the existence of the property
+    * will be serialized, but its content will not appear in the serialized
+    * output (the value of the attribute will be empty). If <code>skipBinary</code> is false
+    * then the actual value(s) of each <code>BINARY</code> property is recorded using Base64
+    * encoding.
+    * <p>
+    * If <code>noRecurse</code> is true then only the node at
+    * <code>absPath</code> and its properties, but not its child nodes, are
+    * serialized. If <code>noRecurse</code> is <code>false</code> then the entire subtree
+    * rooted at <code>absPath</code> is serialized.
+    * <p>
+    * If the user lacks read access to some subsection of the specified tree,
+    * that section simply does not get serialized, since, from the user's
+    * point of view, it is not there.
+    * <p>
+    * The serialized output will reflect the state of the current workspace as
+    * modified by the state of this <code>Session</code>. This means that
+    * pending changes (regardless of whether they are valid according to
+    * node type constraints) and the current session-mapping of namespaces
+    * are reflected in the output.
+    * <p>
+    * A <code>PathNotFoundException</code> is thrown if no node exists at <code>absPath</code>.
+    * <p>
+    * A <code>SAXException</code> is thrown if an error occurs while feeding events to the
+    * <code>ContentHandler</code>.
+    *
+    * @param absPath The path of the root of the subtree to be serialized.
+    * This must be the path to a node, not a property
+    * @param contentHandler The  <code>org.xml.sax.ContentHandler</code> to
+    * which the SAX events representing the XML serialization of the subtree
+    * will be output.
+    * @param skipBinary A <code>boolean</code> governing whether binary
+    * properties are to be serialized.
+    * @param noRecurse A <code>boolean</code> governing whether the subtree at
+    * absPath is to be recursed.
+    * @param exportChildVersionHisotry A <code>boolean</code> governing whether child nodes 
+    * version histories must be included into resulting xml. 
+    * 
+    * @throws PathNotFoundException if no node exists at <code>absPath</code>.
+    * @throws org.xml.sax.SAXException if an error occurs while feeding events to the
+    * <code>org.xml.sax.ContentHandler</code>.
+    * @throws RepositoryException if another error occurs.
+    */
+   void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse,
+      boolean exportChildVersionHisotry) throws IOException, PathNotFoundException, RepositoryException;
 
    /**
     * Registers session listener.

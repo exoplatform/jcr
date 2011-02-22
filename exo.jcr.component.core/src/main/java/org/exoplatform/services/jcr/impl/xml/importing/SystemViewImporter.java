@@ -18,6 +18,38 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
+import org.exoplatform.services.jcr.access.AccessManager;
+import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.JCRName;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.value.BaseValue;
+import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.xml.DecodedValue;
+import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
+import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportPropertyData;
+import org.exoplatform.services.jcr.impl.xml.importing.dataflow.PropertyInfo;
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.ConversationState;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -32,35 +64,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
-
-import org.exoplatform.services.jcr.access.AccessManager;
-import org.exoplatform.services.jcr.core.ExtendedPropertyType;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.datamodel.IllegalNameException;
-import org.exoplatform.services.jcr.datamodel.IllegalPathException;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.JCRName;
-import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.value.BaseValue;
-import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
-import org.exoplatform.services.jcr.impl.xml.DecodedValue;
-import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
-import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportPropertyData;
-import org.exoplatform.services.jcr.impl.xml.importing.dataflow.PropertyInfo;
-import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.security.ConversationState;
 
 /**
  * Created by The eXo Platform SAS.
@@ -171,6 +174,11 @@ public class SystemViewImporter extends BaseXmlImporter
          DecodedValue curPropValue = propertyInfo.getValues().get(propertyInfo.getValues().size() - 1);
          curPropValue.setComplete(true);
       }
+      else if (Constants.SV_VERSION_HISTORY_NAME.equals(elementName))
+      {
+         // remove version storage node from tree
+         tree.pop();
+      }
       else
       {
          throw new RepositoryException("invalid element in system view xml document: " + localName);
@@ -258,6 +266,36 @@ public class SystemViewImporter extends BaseXmlImporter
          // sv:value element
 
          propertyInfo.getValues().add(new DecodedValue());
+
+      }
+      else if (Constants.SV_VERSION_HISTORY_NAME.equals(elementName))
+      {
+         String svName = getAttribute(atts, Constants.SV_NAME_NAME);
+         if (svName == null)
+         {
+            throw new RepositoryException("Missing mandatory sv:name attribute of element sv:versionhistory");
+         }
+
+         NodeData versionStorage = (NodeData)this.dataConsumer.getItemData(Constants.VERSIONSTORAGE_UUID);
+
+         NodeData versionHistory =
+            (NodeData)dataConsumer.getItemData(versionStorage, new QPathEntry("", svName, 1), ItemType.NODE);
+
+         if (versionHistory != null)
+         {
+            RemoveVisitor rv = new RemoveVisitor();
+            rv.visit(versionHistory);
+            changesLog.addAll(rv.getRemovedStates());
+         }
+         tree.push(versionStorage);
+
+         List<String> list = (List<String>)context.get(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES);
+         if (list == null)
+         {
+            list = new ArrayList<String>();
+         }
+         list.add(svName);
+         context.put(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES, list);
 
       }
       else
@@ -687,4 +725,25 @@ public class SystemViewImporter extends BaseXmlImporter
       JCRName jname = locationFactory.createJCRName(name);
       return attributes.get(jname.getAsString());
    }
+
+   protected class RemoveVisitor extends ItemDataRemoveVisitor
+   {
+      /**
+       * Default constructor.
+       * 
+       * @throws RepositoryException - exception.
+       */
+      RemoveVisitor() throws RepositoryException
+      {
+         super(dataConsumer, null, nodeTypeDataManager, accessManager, userState);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      protected void validateReferential(NodeData node) throws RepositoryException
+      {
+         // no REFERENCE validation here
+      }
+   };
 }

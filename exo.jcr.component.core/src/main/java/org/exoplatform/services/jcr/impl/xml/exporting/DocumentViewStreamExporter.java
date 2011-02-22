@@ -49,7 +49,7 @@ public class DocumentViewStreamExporter extends StreamExporter
       NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
       throws NamespaceException, RepositoryException
    {
-      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
+      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, false);
    }
 
    /**
