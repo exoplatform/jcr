@@ -419,8 +419,15 @@ public class SystemViewImporter extends BaseXmlImporter
       {
          NodeData parentNodeData = getParent();
          // nodeTypeDataManager.findChildNodeDefinition(primaryTypeName,)
-         if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName, parentNodeData.getPrimaryTypeName(),
-            parentNodeData.getMixinTypeNames()))
+
+         // check is nt:versionedChild subnode of frozenNode
+         if (nodeData.getQPath().getDepth() > 6 && primaryTypeName.equals(Constants.NT_VERSIONEDCHILD)
+            && nodeData.getQPath().getEntries()[5].equals(Constants.JCR_FROZENNODE))
+         {
+            //do nothing
+         }
+         else if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName, parentNodeData
+            .getPrimaryTypeName(), parentNodeData.getMixinTypeNames()))
          {
             throw new ConstraintViolationException("Can't add node " + nodeData.getQName().getAsString() + " to "
                + parentNodeData.getQPath().getAsString() + " node type " + sName
