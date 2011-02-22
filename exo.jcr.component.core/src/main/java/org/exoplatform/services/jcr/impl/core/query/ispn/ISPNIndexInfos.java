@@ -77,7 +77,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
    /**
     * Cache key for storing index names.
     */
-   private final IndexNamesKey namesKey;
+   private final IndexInfosKey namesKey;
 
    /**
     * ISPNIndexInfos constructor.
@@ -118,7 +118,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
       this.cache = cache;
       this.modeHandler = modeHandler;
       this.modeHandler.addIndexerIoModeListener(this);
-      this.namesKey = new IndexNamesKey(wsId + (system ? SYSINDEX_NAMES : INDEX_NAMES));
+      this.namesKey = new IndexInfosKey(wsId + (system ? SYSINDEX_NAMES : INDEX_NAMES));
 
       if (modeHandler.getMode() == IndexerIoMode.READ_ONLY)
       {
@@ -172,7 +172,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
    }
 
    /**
-    * Cache listener method will be invoked when a cache entry has been modified only in READ_ONLY mode.
+    * Method will be invoked when a cache entry has been modified only in READ_ONLY mode.
     * 
     * @param event
     *          CacheEntryModifiedEvent

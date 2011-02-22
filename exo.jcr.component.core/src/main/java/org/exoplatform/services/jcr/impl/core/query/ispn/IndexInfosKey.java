@@ -28,10 +28,10 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: IndexNamesKey.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class IndexNamesKey extends CacheKey
+public class IndexInfosKey extends CacheKey
 {
 
-   IndexNamesKey(String id)
+   IndexInfosKey(String id)
    {
       super(id);
    }
@@ -42,9 +42,9 @@ public class IndexNamesKey extends CacheKey
    @Override
    public boolean equals(Object obj)
    {
-      if (obj instanceof IndexNamesKey)
+      if (obj instanceof IndexInfosKey)
       {
-         IndexNamesKey key = (IndexNamesKey)obj;
+         IndexInfosKey key = (IndexInfosKey)obj;
          return (key.hash == hash && key.id.equals(id));
       }
       else
