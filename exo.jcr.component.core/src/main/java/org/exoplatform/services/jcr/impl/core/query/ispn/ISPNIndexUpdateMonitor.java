@@ -76,11 +76,16 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
    private final IndexUpdateKey updateKey;
 
    /**
+    * ISPNIndexUpdateMonitor constructor.
     * 
     * @param wsId
+    *          unique workspace identifier
     * @param cache
+    *          ISPN cache
     * @param system
+    *           notifies if this IndexInfos is from system search manager or not
     * @param modeHandler
+    *          used to retrieve the current mode
     */
    public ISPNIndexUpdateMonitor(String wsId, Cache<Serializable, Object> cache, boolean system,
       IndexerIoModeHandler modeHandler)
