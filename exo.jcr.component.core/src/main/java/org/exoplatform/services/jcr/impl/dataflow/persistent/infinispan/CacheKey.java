@@ -37,13 +37,13 @@ public abstract class CacheKey implements Serializable, Comparable<CacheKey>
 
    protected final int hash;
 
-   CacheKey(String id)
+   public CacheKey(String id)
    {
       this.id = id;
       this.hash = id.hashCode();
    }
 
-   CacheKey(String id, int hash)
+   public CacheKey(String id, int hash)
    {
       this.id = id;
       this.hash = hash;
@@ -74,4 +74,10 @@ public abstract class CacheKey implements Serializable, Comparable<CacheKey>
    {
       return id.compareTo(o.id);
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public abstract boolean equals(Object obj);
 }

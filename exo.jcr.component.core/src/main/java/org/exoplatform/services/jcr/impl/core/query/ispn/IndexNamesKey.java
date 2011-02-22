@@ -16,33 +16,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
+package org.exoplatform.services.jcr.impl.core.query.ispn;
+
+import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey;
 
 /**
- * Created by The eXo Platform SAS
+ * Created by The eXo Platform SAS.
+ *
+ * Date: 22.02.011
  * 
- * Date: 10.06.2008
- * 
- * Cache record used to store item Id key.
- * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: CacheNodesId.java 2845 2010-07-30 13:29:37Z tolusha $
+ * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
+ * @version $Id: IndexNamesKey.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class CacheNodesId extends CacheKey
+public class IndexNamesKey extends CacheKey
 {
 
-   CacheNodesId(String id)
+   IndexNamesKey(String id)
    {
       super(id);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    @Override
    public boolean equals(Object obj)
    {
-      if (obj instanceof CacheNodesId)
+      if (obj instanceof IndexNamesKey)
       {
-         CacheNodesId cacheNodesId = (CacheNodesId)obj;
-         return (cacheNodesId.hash == hash && cacheNodesId.id.equals(id));
+         IndexNamesKey key = (IndexNamesKey)obj;
+         return (key.hash == hash && key.id.equals(id));
       }
       else
       {
