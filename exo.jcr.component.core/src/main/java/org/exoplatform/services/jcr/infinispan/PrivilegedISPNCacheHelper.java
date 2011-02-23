@@ -23,6 +23,7 @@ import org.infinispan.Cache;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
@@ -37,7 +38,7 @@ public class PrivilegedISPNCacheHelper
     * 
     * @param cache
     */
-   public static void start(final org.infinispan.Cache<Serializable, Object> cache)
+   public static void start(final Cache<Serializable, Object> cache)
    {
       PrivilegedAction<Object> action = new PrivilegedAction<Object>()
       {
@@ -102,4 +103,21 @@ public class PrivilegedISPNCacheHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Put in Infinispan cache in privileged mode.
+    * 
+    * @param cache
+    */
+   public static Object put(final Cache<Serializable, Object> cache, final Serializable key, final Object value,
+      final long lifespan, final TimeUnit unit)
+   {
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            return cache.put(key, value, lifespan, unit);
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
 }

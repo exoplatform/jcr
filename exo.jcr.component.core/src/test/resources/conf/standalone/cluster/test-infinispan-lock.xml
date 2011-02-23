@@ -35,6 +35,11 @@
     </global>
 
     <default>
+      <clustering mode="replication">
+        <stateRetrieval timeout="20000" fetchInMemoryState="false" />
+        <sync />
+      </clustering>
+
       <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500"/>
       <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" syncRollbackPhase="false" syncCommitPhase="false"/>
       <jmxStatistics enabled="true"/>
