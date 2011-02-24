@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.jbosscache.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
+import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -85,8 +86,8 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
       //      //      Long pushStateTimeOut = config.getParameterTime(PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000L);
       //
       //      // insert CacheLoaderConfig
-      //      ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
-      //      this.cache = factory.createCache("Indexer-" + searchManager.getWsId(), config);
+      ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
+      this.cache = factory.createCache("Indexer-" + searchManager.getWsId(), config);
       //
       //      // Could have change of cache
       //      CacheLoaderManager cacheLoaderManager =
