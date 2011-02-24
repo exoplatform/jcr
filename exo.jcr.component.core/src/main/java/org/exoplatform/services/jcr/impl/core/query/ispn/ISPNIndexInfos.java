@@ -34,7 +34,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by The eXo Platform SAS.
@@ -168,7 +167,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
          super.write();
 
          // write to cache
-         PrivilegedISPNCacheHelper.put(cache, namesKey, getNames(), -1, TimeUnit.SECONDS);
+         PrivilegedISPNCacheHelper.put(cache, namesKey, getNames());
       }
    }
 

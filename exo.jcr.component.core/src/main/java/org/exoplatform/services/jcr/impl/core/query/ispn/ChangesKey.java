@@ -30,10 +30,20 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey
  */
 public class ChangesKey extends CacheKey
 {
+   private final int wsId;
 
-   ChangesKey(String id)
+   ChangesKey(int wsId, String id)
    {
       super(id);
+      this.wsId = wsId;
+   }
+
+   /**
+    * @return unique workspace identifier 
+    */
+   public int getWsId()
+   {
+      return wsId;
    }
 
    /**

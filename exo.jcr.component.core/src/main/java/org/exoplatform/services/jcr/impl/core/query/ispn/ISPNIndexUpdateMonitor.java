@@ -35,7 +35,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by The eXo Platform SAS.
@@ -153,7 +152,7 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
          localUpdateInProgress = updateInProgress;
          if (persitentUpdate)
          {
-            PrivilegedISPNCacheHelper.put(cache, updateKey, new Boolean(updateInProgress), -1, TimeUnit.SECONDS);
+            PrivilegedISPNCacheHelper.put(cache, updateKey, new Boolean(updateInProgress));
          }
          for (IndexUpdateMonitorListener listener : listeners)
          {

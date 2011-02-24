@@ -22,7 +22,6 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
-import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
@@ -35,11 +34,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.CacheException;
-import org.infinispan.config.CacheLoaderManagerConfig;
-import org.infinispan.config.Configuration.CacheMode;
-import org.infinispan.loaders.AbstractCacheStoreConfig;
-import org.infinispan.loaders.decorators.AsyncStoreConfig;
-import org.infinispan.loaders.decorators.SingletonStoreConfig;
+import org.infinispan.loaders.CacheLoaderManager;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -58,22 +53,19 @@ import javax.jcr.RepositoryException;
 public class ISPNIndexChangesFilter extends IndexerChangesFilter
 {
    /**
-    * Logger instance for this class
+    * Logger instance for this class.
     */
    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ISPNIndexChangesFilter");
-
-   public static final String PARAM_INFINISPAN_CONFIGURATION = "infinispan-configuration";
-
-   public static final String PARAM_INFINISPAN_PUSHSTATE = "infinispan-sscl-push.state.enabled";
-
-   public static final String PARAM_INFINISPAN_PUSHSTATE_TIMEOUT = "infinispan-sscl-push.state.timeout";
-
-   // TODO eviction
 
    /**
     * ISPN cache.
     */
    private final Cache<Serializable, Object> cache;
+
+   /**
+    * Unique workspace identifier.
+    */
+   private final int wsId;
 
    /**
     * ISPNIndexChangesFilter constructor.
@@ -85,84 +77,57 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    {
       super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
 
-      // create cache using custom factory
-      ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
-      cache = factory.createCache("Indexer-" + searchManager.getWsId(), config);
-
-      //      singletonStoreConfig.setSingletonStoreClass(IndexerSingletonStoreCacheLoader.class.getName());
-      // create SingletonStoreConfig
-      SingletonStoreConfig singletonStoreConfig = new SingletonStoreConfig();
-
-      Boolean pushState = config.getParameterBoolean(PARAM_INFINISPAN_PUSHSTATE, false);
-      Long pushStateTimeOut = config.getParameterTime(PARAM_INFINISPAN_PUSHSTATE_TIMEOUT, 10000L);
-
-      singletonStoreConfig.setPushStateWhenCoordinator(pushState);
-      singletonStoreConfig.setPushStateTimeout(pushStateTimeOut);
-      singletonStoreConfig.setSingletonStoreEnabled(true);
+      this.wsId = searchManager.getWsId().hashCode();
 
       // initialize IndexerCacheLoader 
       IndexerCacheStore indexerCacheStore = new IndexerCacheStore();
 
-      // create CacheLoaderConfig
-      AbstractCacheStoreConfig individualCacheStoreConfig = new AbstractCacheStoreConfig();
-      individualCacheStoreConfig.setSingletonStoreConfig(singletonStoreConfig);
-      individualCacheStoreConfig.setCacheLoaderClassName(IndexerCacheStore.class.getName());
-      individualCacheStoreConfig.setFetchPersistentState(false);
-      individualCacheStoreConfig.setIgnoreModifications(false);
-      individualCacheStoreConfig.setPurgeOnStartup(false);
-      
-      AsyncStoreConfig asyncStoreConfig = new AsyncStoreConfig();
-      asyncStoreConfig.setEnabled(false);
-      individualCacheStoreConfig.setAsyncStoreConfig(asyncStoreConfig);
+      // try to get pushState parameters, since they are set programmatically only
+      //      Boolean pushState = config.getParameterBoolean(PARAM_JBOSSCACHE_PUSHSTATE, false);
+      //      Long pushStateTimeOut = config.getParameterTime(PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000L);
 
-      // create CacheLoaderManagerConfig
-      CacheLoaderManagerConfig cacheLoaderManagerConfig = new CacheLoaderManagerConfig();
-      cacheLoaderManagerConfig.setShared(false);
-      cacheLoaderManagerConfig.setPassivation(false);
-      cacheLoaderManagerConfig.addCacheLoaderConfig(individualCacheStoreConfig);
-
-      // insert CacheLoaderManagerConfig
-      cache.getConfiguration().setCacheLoaderManagerConfig(cacheLoaderManagerConfig);
+      // insert CacheLoaderConfig
+      ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
+      this.cache = factory.createCache("Indexer-" + searchManager.getWsId(), config);
 
       // Could have change of cache
-      //  IndexerSingletonStoreCacheLoader
-      //      IndexerCacheStore issCacheLoader =
-      //         (IndexerCacheStore)cache.getConfiguration().getCacheLoaderManagerConfig().getFirstCacheLoaderConfig().g;
+      CacheLoaderManager cacheLoaderManager =
+         cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
+      IndexerCacheStore cacheStore = (IndexerCacheStore)cacheLoaderManager.getCacheLoader();
 
       // This code make it possible to use the JBossCacheIndexChangesFilter in
       // a non-cluster environment
-      if (cache.getConfiguration().getCacheMode() == CacheMode.LOCAL)
-      {
-         // Activate the cache loader
-         //         try
-         //         {
-         //            //            issCacheLoader.activeStatusChanged(true);
-         //         }
-         //         catch (PushStateException e)
-         //         {
-         //            // ignore me;
-         //         }
-      }
-      //      indexerCacheStore = (IndexerCacheStore)issCacheLoader.getCacheLoader();
-
-      indexerCacheStore.register(searchManager, parentSearchManager, handler, parentHandler);
-      IndexerIoModeHandler modeHandler = indexerCacheStore.getModeHandler();
-      handler.setIndexerIoModeHandler(modeHandler);
-      parentHandler.setIndexerIoModeHandler(modeHandler);
-
-      if (!parentHandler.isInitialized())
-      {
-         parentHandler.setIndexInfos(new ISPNIndexInfos(searchManager.getWsId(), cache, true, modeHandler));
-         parentHandler.setIndexUpdateMonitor(new ISPNIndexUpdateMonitor(searchManager.getWsId(), cache, true,
-            modeHandler));
-         parentHandler.init();
-      }
-      if (!handler.isInitialized())
-      {
-         handler.setIndexInfos(new ISPNIndexInfos(searchManager.getWsId(), cache, false, modeHandler));
-         handler.setIndexUpdateMonitor(new ISPNIndexUpdateMonitor(searchManager.getWsId(), cache, false, modeHandler));
-         handler.init();
-      }
+      //      if (cache.getConfiguration().getCacheMode() == CacheMode.LOCAL)
+      //      {
+      //         // Activate the cache loader
+      //         try
+      //         {
+      //            cacheStore.activeStatusChanged(true);
+      //         }
+      //         catch (PushStateException e)
+      //         {
+      //            // ignore me;
+      //         }
+      //      }
+      //      indexerCacheLoader = (IndexerCacheLoader)issCacheLoader.getCacheLoader();
+      //
+      //      indexerCacheLoader.register(searchManager, parentSearchManager, handler, parentHandler);
+      //      IndexerIoModeHandler modeHandler = indexerCacheLoader.getModeHandler();
+      //      handler.setIndexerIoModeHandler(modeHandler);
+      //      parentHandler.setIndexerIoModeHandler(modeHandler);
+      //
+      //      if (!parentHandler.isInitialized())
+      //      {
+      //         parentHandler.setIndexInfos(new ISPNIndexInfos(searchManager.getWsId(), cache, true, modeHandler));
+      //         parentHandler.setIndexUpdateMonitor(new ISPNIndexUpdateMonitor(searchManager.getWsId(), cache, true, modeHandler));
+      //         parentHandler.init();
+      //      }
+      //      if (!handler.isInitialized())
+      //      {
+      //         handler.setIndexInfos(new ISPNIndexInfos(searchManager.getWsId(), cache, false, modeHandler));
+      //         handler.setIndexUpdateMonitor(new ISPNIndexUpdateMonitor(searchManager.getWsId(), cache, false, modeHandler));
+      //         handler.init();
+      //      }
    }
 
    /**
@@ -180,7 +145,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
          return;
       }
 
-      ChangesKey changesKey = new ChangesKey(searchManager.getWsId() + IdGenerator.generate());
+      ChangesKey changesKey = new ChangesKey(wsId, IdGenerator.generate());
       try
       {
          PrivilegedISPNCacheHelper.put(cache, changesKey, new ChangesFilterListsWrapper(changes, parentChanges));

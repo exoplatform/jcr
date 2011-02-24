@@ -50,6 +50,11 @@
       <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" syncRollbackPhase="false" syncCommitPhase="false"/>
       <jmxStatistics enabled="true"/>
       <deadlockDetection enabled="true" spinDuration="100"/>
-      <eviction strategy="LRU" wakeUpInterval="5000" threadPolicy="DEFAULT" maxEntries="10000"/>
+
+      <loaders passivation="false" shared="false" preload="false">
+        <loader class="org.exoplatform.services.jcr.impl.core.query.ispn.IndexerCacheStore" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
+          <async enabled="false"/>
+        </loader>
+      </loaders>
    </default>
 </infinispan>
