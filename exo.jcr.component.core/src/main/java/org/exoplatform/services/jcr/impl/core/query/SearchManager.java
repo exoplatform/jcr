@@ -382,7 +382,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             try
             {
                if (reader != null)
+               {
                   reader.close();
+               }
             }
             catch (IOException e)
             {
@@ -495,7 +497,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
 
       if (log.isDebugEnabled())
+      {
          log.debug("start");
+      }
       try
       {
          if (indexingTree == null)
@@ -517,7 +521,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                   {
                      ItemData excludeData = itemMgr.getItemData(stringTokenizer.nextToken());
                      if (excludeData != null)
+                     {
                         excludedPath.add(excludeData.getQPath());
+                     }
                   }
                   catch (RepositoryException e)
                   {
@@ -534,7 +540,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                {
                   ItemData indexingRootDataItem = itemMgr.getItemData(rootNodeIdentifer);
                   if (indexingRootDataItem != null && indexingRootDataItem.isNode())
+                  {
                      indexingRootData = (NodeData)indexingRootDataItem;
+                  }
                }
                catch (RepositoryException e)
                {
@@ -628,14 +636,20 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                         if (item.isNode())
                         {
                            if (!indexingTree.isExcluded(item))
+                           {
                               return (NodeData)item;
+                           }
                         }
                         else
+                        {
                            log.warn("Node not found, but property " + id + ", " + item.getQPath().getAsString()
                               + " found. ");
+                        }
                      }
                      else
+                     {
                         log.warn("Unable to index node with id " + id + ", node does not exist.");
+                     }
 
                   }
                   catch (RepositoryException e)
@@ -704,7 +718,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       QueryHandlerContext context =
          new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
             PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, virtualTableResolver,
-            indexRecovery);
+            indexRecovery, rpcService);
 
       return context;
    }
@@ -792,8 +806,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          if (parentSearchManager != null)
          {
             newChangesFilter =
-               constuctor.newInstance(this, parentSearchManager, config, indexingTree,
-                  parentSearchManager.getIndexingTree(), handler, parentSearchManager.getHandler(), cfm);
+               constuctor.newInstance(this, parentSearchManager, config, indexingTree, parentSearchManager
+                  .getIndexingTree(), handler, parentSearchManager.getHandler(), cfm);
          }
       }
       catch (SecurityException e)
@@ -840,7 +854,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       // initialize query handler
       String className = config.getType();
       if (className == null)
+      {
          throw new RepositoryConfigurationException("Content hanler       configuration fail");
+      }
 
       try
       {
@@ -1012,6 +1028,17 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          suspendLocally();
       }
+   }
+
+   /**
+    * Switches index into online or offline modes.
+    * 
+    * @param isOnline
+    * @throws IOException
+    */
+   public void setOnline(boolean isOnline) throws IOException
+   {
+      handler.setOnline(isOnline);
    }
 
    /**

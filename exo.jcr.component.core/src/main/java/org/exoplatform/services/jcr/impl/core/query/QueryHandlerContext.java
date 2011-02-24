@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableResolver;
+import org.exoplatform.services.rpc.RPCService;
 
 /**
  * Acts as an argument for the {@link QueryHandler} to keep the interface
@@ -82,7 +83,12 @@ public class QueryHandlerContext
     * The class responsible for index retrieving from other place. 
     */
    private final IndexRecovery indexRecovery;
-   
+
+   /**
+    * Field containing RPCService, if any configured in container  
+    */
+   private final RPCService rpcService;
+
    /**
     * Creates a new context instance.
     * 
@@ -107,11 +113,13 @@ public class QueryHandlerContext
     *            descendant of that node is also excluded from indexing.
     * @param indexRecovery
     *            the index retriever from other place     
+    * @param rpcService
+    *            RPCService intance if any
     */
    public QueryHandlerContext(WorkspaceContainerFacade container, ItemDataConsumer stateMgr, IndexingTree indexingTree,
       NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
       String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
-      LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery)
+      LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery, RPCService rpcService)
    {
       this.indexRecovery = indexRecovery;
       this.container = container;
@@ -124,6 +132,7 @@ public class QueryHandlerContext
       this.createInitialIndex = createInitialIndex;
       this.virtualTableResolver = virtualTableResolver;
       this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
+      this.rpcService = rpcService;
       this.parentHandler = parentHandler;
       ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).addListener(propRegistry);
    }
@@ -235,6 +244,14 @@ public class QueryHandlerContext
    public IndexRecovery getIndexRecovery()
    {
       return indexRecovery;
+   }
+
+   /**
+    * @return RPCService if any present in a container.
+    */
+   public RPCService getRPCService()
+   {
+      return rpcService;
    }
 
 }

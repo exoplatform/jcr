@@ -196,4 +196,12 @@ public interface QueryHandler
     */
    void setIndexUpdateMonitor(IndexUpdateMonitor indexUpdateMonitor);
 
+   /**
+    * Switches index into corresponding ONLINE or OFFLINE mode. Offline mode means that new indexing data is
+    * collected but index is guaranteed to be unmodified during offline state.
+    * 
+    * @param isOnline
+    */
+   void setOnline(boolean isOnline) throws IOException;
+
 }

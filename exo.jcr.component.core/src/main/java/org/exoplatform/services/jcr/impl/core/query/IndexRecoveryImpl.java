@@ -18,6 +18,7 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.impl.core.query.lucene.OfflinePersistentIndex;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -89,6 +90,13 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
    protected Boolean isResponsibleToSetIndexOnline = false;
 
    /**
+    * Indicates whether current node is in online or offline mode
+    */
+   protected Boolean isOnline = true;
+
+   protected final SearchManager searchManager;
+
+   /**
     * Constructor IndexRetrieveImpl.
     * 
     * @throws RepositoryConfigurationException 
@@ -97,6 +105,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
       throws RepositoryConfigurationException
    {
       this.rpcService = rpcService;
+      this.searchManager = searchManager;
 
       final String commandSuffix = searchManager.getWsId() + "-" + (searchManager.parentSearchManager == null);
       final File indexDirectory = searchManager.getIndexDirectory();
@@ -111,9 +120,8 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
          public Serializable execute(Serializable[] args) throws Throwable
          {
             boolean isOnline = (Boolean)args[0];
-
-            // TODO searchManager.setReadOnly(isReadOnly);
-
+            searchManager.setOnline(isOnline);
+            IndexRecoveryImpl.this.isOnline = isOnline;
             return null;
          }
       });
@@ -134,10 +142,14 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
             {
                if (!file.isDirectory())
                {
-                  result.add(PrivilegedFileHelper.getAbsolutePath(file).substring(indexDirLen));
+                  // if parent directory is not "offline" then add this file. Otherwise skip it.
+                  // TODO implement list retrieval via index state manager
+                  if (!file.getParent().endsWith(OfflinePersistentIndex.NAME))
+                  {
+                     result.add(PrivilegedFileHelper.getAbsolutePath(file).substring(indexDirLen));
+                  }
                }
             }
-
             return result;
          }
       });
@@ -156,10 +168,10 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
 
             RandomAccessFile file = new RandomAccessFile(new File(indexDirectory, filePath), "r");
             file.seek(offset);
-            
+
             byte[] buffer = new byte[BUFFER_SIZE];
             int len = file.read(buffer);
-            
+
             if (len == -1)
             {
                return null;
@@ -373,7 +385,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
    {
       try
       {
-         if (rpcService.isCoordinator())
+         if (rpcService.isCoordinator() && !isOnline)
          {
             new Thread()
             {
@@ -387,14 +399,22 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
 
                      for (Object result : results)
                      {
-                        if ((Boolean)result)
+                        if (result instanceof Boolean)
                         {
-                           return;
+                           if ((Boolean)result)
+                           {
+                              return;
+                           }
+                        }
+                        else
+                        {
+                           log.error("Result is not an instance of Boolean" + result);
                         }
                      }
-
                      // node which was responsible for resuming leave the cluster, so resume component
-                     // TODO searchManager.setOnline();
+                     log
+                        .error("Node responsible for setting index back online seems to leave the cluster. Setting back online.");
+                     searchManager.setOnline(true);
                   }
                   catch (SecurityException e1)
                   {
@@ -403,6 +423,10 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
                   catch (RPCException e1)
                   {
                      log.error("Exception during command execution", e1);
+                  }
+                  catch (IOException e2)
+                  {
+                     log.error("Exception during setting index back online", e2);
                   }
                }
             }.start();

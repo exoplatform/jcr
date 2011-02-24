@@ -148,6 +148,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private VolatileIndex volatileIndex;
 
+   private OfflinePersistentIndex offlineIndex;
+
    /**
     * Flag indicating whether an update operation is in progress.
     */
@@ -230,8 +232,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
    /**
     * Flag indicating whether re-indexing is running.
+    * Or for any other reason it should be switched
+    * to offline mode.
     */
-   private boolean reindexing = false;
+   private boolean online = true;
 
    /**
     * Flag indicating whether the index is stopped.
@@ -318,6 +322,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          indexes.add(index);
          merger.indexAdded(index.getName(), index.getNumDocuments());
       }
+
+      offlineIndex =
+         new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+            directoryManager);
 
       // this method is run in privileged mode internally
       IndexingQueueStore store = new IndexingQueueStore(indexDir);
@@ -433,11 +441,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // only do an initial index if there are no indexes at all
       if (indexNames.size() == 0)
       {
-         reindexing = true;
+         setOnline(false);
+
          try
          {
+            // if "from-coordinator" used along with RPC Service present and 
             if (handler.getIndexRecoveryMode().equals(SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR)
-               && handler.getContext().getIndexRecovery() != null)
+               && handler.getContext().getIndexRecovery() != null && handler.getContext().getRPCService() != null
+               && handler.getContext().getRPCService().isCoordinator() == false)
             {
                log.info("Retrieving index from coordinator...");
                recoveryIndexFromCoordinator();
@@ -447,6 +458,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             else
             {
+               if (handler.getIndexRecoveryMode().equals(SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR))
+               {
+                  if (handler.getContext().getRPCService() == null)
+                  {
+                     log
+                        .error("RPC Service is not configured but required for copying the index from coordinator node. Index will be created by re-indexing.");
+                  }
+                  else if (handler.getContext().getRPCService().isCoordinator() == true)
+                  {
+                     log
+                        .info("Copying the index from coordinator configured, but this node is the only one in a cluster. Index will be created by re-indexing.");
+                  }
+               }
+
                // traverse and index workspace
                executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
 
@@ -484,7 +509,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          finally
          {
-            reindexing = false;
+            setOnline(true);
          }
       }
       else
@@ -509,7 +534,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    synchronized void update(final Collection remove, final Collection add) throws IOException
    {
-      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      if (!online)
+      {
+         doUpdateOffline(remove, add);
+      }
+      else if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
          doUpdateRW(remove, add);
       }
@@ -520,7 +549,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    }
 
    /**
-    * For investigation purposes only
+    * Performs indexing into volatile index in case of Read_Only mode. This ensures that node
+    * was not present in latest persistent index in case of coordinator has just committed the index
     * 
     * @param remove
     * @param add
@@ -709,6 +739,71 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   indexUpdateMonitor.setUpdateInProgress(false, flush);
                   updateMonitor.notifyAll();
                   releaseMultiReader();
+               }
+            }
+            return null;
+         }
+      });
+   }
+
+   private void invokeOfflineIndex() throws IOException
+   {
+      List<String> processedIDs = offlineIndex.getProcessedIDs();
+      // remove all nodes placed in offline index
+      update(processedIDs, Collections.EMPTY_LIST);
+
+      executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+
+      // create index
+      CreateIndex create = new CreateIndex(getTransactionId(), null);
+      executeAndLog(create);
+
+      // invoke offline (copy offline into working index)
+      executeAndLog(new OfflineInvoke(getTransactionId(), create.getIndexName()));
+
+      // add new index
+      AddIndex add = new AddIndex(getTransactionId(), create.getIndexName());
+      executeAndLog(add);
+
+      executeAndLog(new Commit(getTransactionId()));
+
+      indexNames.write();
+
+      offlineIndex.close();
+      deleteIndex(offlineIndex);
+      offlineIndex = null;
+   }
+
+   /**
+    * Performs indexing while re-indexing is in progress
+    * 
+    * @param remove
+    * @param add
+    * @throws IOException
+    */
+   private void doUpdateOffline(final Collection remove, final Collection add) throws IOException
+   {
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            for (Iterator it = remove.iterator(); it.hasNext();)
+            {
+               Term idTerm = new Term(FieldNames.UUID, (String)it.next());
+               offlineIndex.removeDocument(idTerm);
+            }
+
+            for (Iterator it = add.iterator(); it.hasNext();)
+            {
+               Document doc = (Document)it.next();
+               if (doc != null)
+               {
+                  offlineIndex.addDocuments(new Document[]{doc});
+                  // reset volatile index if needed
+                  if (offlineIndex.getRamSizeInBytes() >= handler.getMaxVolatileIndexSize())
+                  {
+                     offlineIndex.commit();
+                  }
                }
             }
             return null;
@@ -994,7 +1089,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          try
          {
             // if we are reindexing there is already an active transaction
-            if (!reindexing)
+            if (online)
             {
                executeAndLog(new Start(Action.INTERNAL_TRANS_REPL_INDEXES));
             }
@@ -1025,7 +1120,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             index.commit();
 
-            if (!reindexing)
+            if (online)
             {
                // only commit if we are not reindexing
                // when reindexing the final commit is done at the very end
@@ -1050,7 +1145,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
          }
       }
-      if (reindexing)
+      if (!online)
       {
          // do some cleanup right away when reindexing
          attemptDelete();
@@ -1152,6 +1247,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    VolatileIndex getVolatileIndex()
    {
       return volatileIndex;
+   }
+
+   OfflinePersistentIndex getOfflinePersistentIndex()
+   {
+      return offlineIndex;
    }
 
    /**
@@ -2040,9 +2140,19 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       static final String VOLATILE_COMMIT = "VOL_COM";
 
       /**
+       * Action identifier in redo log for offline index invocation action.
+       */
+      static final String OFFLINE_INVOKE = "OFF_INV";
+
+      /**
        * Action type for volatile index commit action.
        */
       public static final int TYPE_VOLATILE_COMMIT = 4;
+
+      /**
+       * Action type for volatile index commit action.
+       */
+      public static final int TYPE_OFFLINE_INVOKE = 8;
 
       /**
        * Action identifier in redo log for index create action.
@@ -2233,6 +2343,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             a = VolatileCommit.fromString(transactionId, arguments);
          }
+         else if (actionLabel.equals(Action.OFFLINE_INVOKE))
+         {
+            a = OfflineInvoke.fromString(transactionId, arguments);
+         }
          else
          {
             throw new IllegalArgumentException(line);
@@ -2326,8 +2440,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a AddNode String.
        */
-      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length()
-         + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH =
+         Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to add.
@@ -2728,8 +2842,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a DeleteNode String.
        */
-      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length()
-         + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH =
+         Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to remove.
@@ -2944,6 +3058,69 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
    }
 
+   private static class OfflineInvoke extends Action
+   {
+
+      /**
+       * The name of the target index to commit to.
+       */
+      private final String targetIndex;
+
+      /**
+       * Creates a new VolatileCommit action.
+       * 
+       * @param transactionId
+       *            the id of the transaction that executes this action.
+       */
+      OfflineInvoke(long transactionId, String targetIndex)
+      {
+         super(transactionId, Action.TYPE_OFFLINE_INVOKE);
+         this.targetIndex = targetIndex;
+      }
+
+      /**
+       * Creates a new VolatileCommit action.
+       * 
+       * @param transactionId
+       *            the id of the transaction that executes this action.
+       * @param arguments
+       *            ignored by this implementation.
+       * @return the VolatileCommit action.
+       */
+      static OfflineInvoke fromString(long transactionId, String arguments)
+      {
+         return new OfflineInvoke(transactionId, arguments);
+      }
+
+      /**
+       * Commits the volatile index to disk.
+       * 
+       * @inheritDoc
+       */
+      @Override
+      public void execute(MultiIndex index) throws IOException
+      {
+         OfflinePersistentIndex offlineIndex = index.getOfflinePersistentIndex();
+         PersistentIndex persistentIndex = index.getOrCreateIndex(targetIndex);
+         persistentIndex.copyIndex(offlineIndex);
+      }
+
+      /**
+       * @inheritDoc
+       */
+      @Override
+      public String toString()
+      {
+         StringBuffer logLine = new StringBuffer();
+         logLine.append(Long.toString(getTransactionId()));
+         logLine.append(' ');
+         logLine.append(Action.OFFLINE_INVOKE);
+         logLine.append(' ');
+         logLine.append(targetIndex);
+         return logLine.toString();
+      }
+   }
+
    /**
     * @see org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener#onChangeMode(org.exoplatform.services.jcr.impl.core.query.IndexerIoMode)
     */
@@ -3111,8 +3288,35 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             catch (IOException e)
             {
-               log.error("An erro occurs while trying to wake up the sleeping threads", e);
+               log.error("An error occurred while trying to wake up the sleeping threads", e);
             }
+         }
+      }
+   }
+
+   public synchronized void setOnline(boolean isOnline) throws IOException
+   {
+      // if mode really changed
+      if (online != isOnline)
+      {
+         // switching to ONLINE
+         if (isOnline)
+         {
+            log.info("Setting index back online");
+            offlineIndex.commit(true);
+            //invoking offline index
+            invokeOfflineIndex();
+            online = true;
+         }
+         // switching to OFFLINE
+         else
+         {
+            log.info("Setting index offline");
+            offlineIndex =
+               new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+                  directoryManager);
+            online = false;
+            flush();
          }
       }
    }

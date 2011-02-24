@@ -762,7 +762,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void apply(ChangesHolder changes) throws RepositoryException, IOException
    {
       checkOpen();
-      index.update(changes.getRemove(), changes.getAdd());
+      // index may not be initialized, but some operation can be performed in cluster environment
+      if (index != null)
+      {
+         index.update(changes.getRemove(), changes.getAdd());
+      }
    }
 
    /**
@@ -2944,5 +2948,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          log.error("Can not recover error log.", e);
       }
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean)
+    */
+   public void setOnline(boolean isOnline) throws IOException
+   {
+      checkOpen();
+      index.setOnline(isOnline);
    }
 }
