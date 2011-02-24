@@ -911,7 +911,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
 
       final private List<LockData> backupLocks = new ArrayList<LockData>();
 
-      private List<LockData> actualLocks;
+      private List<LockData> actualLocks = new ArrayList<LockData>();
 
       CacheLocksRestor(final List<LockData> backupLocks)
       {
