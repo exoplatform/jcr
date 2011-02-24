@@ -27,14 +27,12 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.jbosscache.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
-import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.CacheException;
-import org.infinispan.loaders.CacheLoaderManager;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -80,20 +78,20 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
       this.wsId = searchManager.getWsId().hashCode();
 
       // initialize IndexerCacheLoader 
-      IndexerCacheStore indexerCacheStore = new IndexerCacheStore();
-
-      // try to get pushState parameters, since they are set programmatically only
-      //      Boolean pushState = config.getParameterBoolean(PARAM_JBOSSCACHE_PUSHSTATE, false);
-      //      Long pushStateTimeOut = config.getParameterTime(PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000L);
-
-      // insert CacheLoaderConfig
-      ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
-      this.cache = factory.createCache("Indexer-" + searchManager.getWsId(), config);
-
-      // Could have change of cache
-      CacheLoaderManager cacheLoaderManager =
-         cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
-      IndexerCacheStore cacheStore = (IndexerCacheStore)cacheLoaderManager.getCacheLoader();
+      //      IndexerCacheStore indexerCacheStore = new IndexerCacheStore();
+      //
+      //      // try to get pushState parameters, since they are set programmatically only
+      //      //      Boolean pushState = config.getParameterBoolean(PARAM_JBOSSCACHE_PUSHSTATE, false);
+      //      //      Long pushStateTimeOut = config.getParameterTime(PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000L);
+      //
+      //      // insert CacheLoaderConfig
+      //      ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
+      //      this.cache = factory.createCache("Indexer-" + searchManager.getWsId(), config);
+      //
+      //      // Could have change of cache
+      //      CacheLoaderManager cacheLoaderManager =
+      //         cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
+      //      IndexerCacheStore cacheStore = (IndexerCacheStore)cacheLoaderManager.getCacheLoader();
 
       // This code make it possible to use the JBossCacheIndexChangesFilter in
       // a non-cluster environment
