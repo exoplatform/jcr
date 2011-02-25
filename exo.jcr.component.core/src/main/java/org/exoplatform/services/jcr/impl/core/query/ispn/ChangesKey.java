@@ -30,6 +30,8 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey
  */
 public class ChangesKey extends CacheKey
 {
+   private static final long serialVersionUID = 8597037282459379392L;
+
    private final int wsId;
 
    ChangesKey(int wsId, String id)

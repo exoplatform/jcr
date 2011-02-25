@@ -35,7 +35,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.CacheException;
-import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.loaders.CacheLoaderManager;
 
 import java.io.IOException;
@@ -45,34 +44,32 @@ import java.util.Set;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.
+ * This type of ChangeFilter offers an ability for each cluster instance to have own
+ * local index (stack of indexes, from persistent to volatile). It uses ISPN cache for
+ * Lucene Documents and UUIDs delivery. Each node works in ReadWrite mode, so manages 
+ * it own volatile, merger, local list of persisted indexes and stand-alone 
+ * UpdateInProgressMonitor implementation. 
+ * This implementation is similar to ISPNIndexChangesFilter but does not use
+ * ISPNIndexInfoss and ISPNIndexUpdateMonitor classes.
  *
- * Date: 23.02.2011
- * 
- * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: ISPNIndexChangesFilter.java 34360 2010-11-11 11:11:11Z tolusha $
+ * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
+ * @version $Id: LocalIndexChangesFilter.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class ISPNIndexChangesFilter extends IndexerChangesFilter
+public class LocalIndexChangesFilter extends IndexerChangesFilter
 {
    /**
-    * Logger instance for this class.
+    * Logger instance for this class
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ISPNIndexChangesFilter");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.LocalIndexChangesFilter");
 
-   /**
-    * ISPN cache.
-    */
    private final Cache<Serializable, Object> cache;
 
-   /**
-    * Unique workspace identifier.
-    */
    private final int wsId;
 
    /**
-    * ISPNIndexChangesFilter constructor.
+    * LocalIndexChangesFilter constructor.
     */
-   public ISPNIndexChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
+   public LocalIndexChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
       QueryHandlerEntry config, IndexingTree indexingTree, IndexingTree parentIndexingTree, QueryHandler handler,
       QueryHandler parentHandler, ConfigurationManager cfm) throws IOException, RepositoryException,
       RepositoryConfigurationException
@@ -88,28 +85,18 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
          cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
       IndexerCacheStore cacheStore = (IndexerCacheStore)cacheLoaderManager.getCacheLoader();
 
-      // This code make it possible to use the ISPNIndexChangesFilter in a non-cluster environment
-      if (cache.getConfiguration().getCacheMode() == CacheMode.LOCAL)
-      {
-         cacheStore.activeStatusChanged(true);
-      }
-
       cacheStore.register(searchManager, parentSearchManager, handler, parentHandler);
       IndexerIoModeHandler modeHandler = cacheStore.getModeHandler();
       handler.setIndexerIoModeHandler(modeHandler);
       parentHandler.setIndexerIoModeHandler(modeHandler);
 
+      // using default updateMonitor and default 
       if (!parentHandler.isInitialized())
       {
-         parentHandler.setIndexInfos(new ISPNIndexInfos(searchManager.getWsId(), cache, true, modeHandler));
-         parentHandler.setIndexUpdateMonitor(new ISPNIndexUpdateMonitor(searchManager.getWsId(), cache, true,
-            modeHandler));
          parentHandler.init();
       }
       if (!handler.isInitialized())
       {
-         handler.setIndexInfos(new ISPNIndexInfos(searchManager.getWsId(), cache, false, modeHandler));
-         handler.setIndexUpdateMonitor(new ISPNIndexUpdateMonitor(searchManager.getWsId(), cache, false, modeHandler));
          handler.init();
       }
    }
@@ -121,6 +108,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    protected void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes, Set<String> parentRemovedNodes,
       Set<String> parentAddedNodes)
    {
+
       ChangesHolder changes = searchManager.getChanges(removedNodes, addedNodes);
       ChangesHolder parentChanges = parentSearchManager.getChanges(parentRemovedNodes, parentAddedNodes);
 
