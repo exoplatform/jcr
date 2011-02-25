@@ -79,7 +79,7 @@ public class WorkerService
     */
    public WorkerService(int threadCount)
    {
-      executor = new ScheduledThreadPoolExecutor(threadCount);
+      this(threadCount, "pool");
    }
 
    /**
@@ -90,7 +90,7 @@ public class WorkerService
     */
    public WorkerService(int threadCount, String threadNamePrefix)
    {
-      executor = new ScheduledThreadPoolExecutor(threadCount, new WorkerThreadFactory(threadNamePrefix));
+      this(threadCount, threadNamePrefix, true);
    }
 
    /**

@@ -219,6 +219,7 @@ public class FtpServerImpl implements FtpServer
       {
          this.ftpServer = ftpServer;
          this.serverSocket = serverSocket;
+         setDaemon(true);
       }
 
       public void disable()
