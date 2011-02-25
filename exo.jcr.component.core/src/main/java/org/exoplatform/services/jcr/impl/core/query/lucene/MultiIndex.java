@@ -784,6 +784,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                // when reindexing the final commit is done at the very end
                executeAndLog(new Commit(getTransactionId()));
             }
+            // force IndexInfos (IndexNames) to be written on FS and both be replicated over cluster
+            // for non-coordinator cluster nodes be notified of new index list ASAP. This may avoid race 
+            // conditions when coordinator invokes flush() which performs indexNames.write()
+            // and deletes obsolete index just after. Making this list be written now, will notify non-
+            // coordinator node about new merged index and obsolete indexes long time before they will
+            // be deleted.
+            indexNames.write();
          }
          finally
          {
