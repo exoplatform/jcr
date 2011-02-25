@@ -25,9 +25,11 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.jbosscache.ChangesFilterListsWrapper;
+import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
+import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.loaders.CacheLoaderConfig;
@@ -41,9 +43,13 @@ import org.infinispan.notifications.cachemanagerlistener.event.Event;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author <a href="mailto:nikolazius@gmail.com">Nikolay Zamosenchuk</a>
@@ -228,72 +234,72 @@ public class IndexerCacheStore extends AbstractInputCacheStore
 
    protected void doPushState()
    {
-      //      final boolean debugEnabled = log.isDebugEnabled();
-      //
-      //      if (debugEnabled)
-      //      {
-      //         log.debug("start pushing in-memory state to cache cacheLoader collection");
-      //      }
-      //
-      //      // merging all lists stored in memory
-      //      Collection<NodeSPI> children = cache.getRoot().getChildren();
-      //      for (NodeSPI wsChildren : children)
-      //      {
-      //         final Set<String> removedNodes = new HashSet<String>();
-      //         final Set<String> addedNodes = new HashSet<String>();
-      //         final Set<String> parentRemovedNodes = new HashSet<String>();
-      //         final Set<String> parentAddedNodes = new HashSet<String>();
-      //         Collection<NodeSPI> changes = wsChildren.getChildren();
-      //         for (NodeSPI aChildren : changes)
-      //         {
-      //            Fqn<?> fqn = aChildren.getFqn();
-      //            Object value = cache.get(fqn, JBossCacheIndexChangesFilter.LISTWRAPPER);
-      //            if (value instanceof ChangesFilterListsWrapper)
-      //            {
-      //               // get wrapper object
-      //               ChangesFilterListsWrapper listsWrapper = (ChangesFilterListsWrapper)value;
-      //               if (listsWrapper.withChanges())
-      //               {
-      //                  if (listsWrapper.getChanges() != null)
-      //                  {
-      //                     // get search manager lists
-      //                     addedNodes.addAll(listsWrapper.getChanges().getAddIds());
-      //                     removedNodes.addAll(listsWrapper.getChanges().getRemove());
-      //                  }
-      //                  if (listsWrapper.getParentChanges() != null)
-      //                  {
-      //                     // parent search manager lists
-      //                     parentAddedNodes.addAll(listsWrapper.getParentChanges().getAddIds());
-      //                     parentRemovedNodes.addAll(listsWrapper.getParentChanges().getRemove());
-      //                  }
-      //               }
-      //               else
-      //               {
-      //                  // get search manager lists
-      //                  addedNodes.addAll(listsWrapper.getAddedNodes());
-      //                  removedNodes.addAll(listsWrapper.getRemovedNodes());
-      //                  // parent search manager lists
-      //                  parentAddedNodes.addAll(listsWrapper.getParentAddedNodes());
-      //                  parentRemovedNodes.addAll(listsWrapper.getParentAddedNodes());
-      //               }
-      //            }
-      //         }
-      //         String id = IdGenerator.generate();
-      //         cache.put(Fqn.fromRelativeElements(wsChildren.getFqn(), id), JBossCacheIndexChangesFilter.LISTWRAPPER,
-      //            new ChangesFilterListsWrapper(addedNodes, removedNodes, parentAddedNodes, parentRemovedNodes));
-      //         // Once we put the merged changes into the cache we can remove other changes from the cache 
-      //         for (NodeSPI aChildren : children)
-      //         {
-      //            // Remove the node from the cache and do it asynchronously 
-      //            cache.getInvocationContext().getOptionOverrides().setForceAsynchronous(true);
-      //            cache.removeNode(aChildren.getFqn());
-      //         }
-      //      }
-      //      if (debugEnabled)
-      //      {
-      //         log.debug("in-memory state passed to cache cacheLoader successfully");
-      //      }
-      //      return null;
+      final boolean debugEnabled = log.isDebugEnabled();
+
+      if (debugEnabled)
+      {
+         log.debug("start pushing in-memory state to cache cacheLoader collection");
+      }
+
+      Map<Integer, ChangesFilterListsWrapper> changesMap = new HashMap<Integer, ChangesFilterListsWrapper>();
+      List<ChangesKey> processedItemKeys = new ArrayList<ChangesKey>();
+
+      DataContainer dc = cache.getAdvancedCache().getDataContainer();
+      Set keys = dc.keySet();
+      InternalCacheEntry entry;
+      // collect all cache entries into the following map:
+      // <WS ID> : <Concated lists of added/removed nodes>
+      for (Object k : keys)
+      {
+         if ((entry = dc.get(k)) != null)
+         {
+            if (entry.getValue() instanceof ChangesFilterListsWrapper && entry.getKey() instanceof ChangesKey)
+            {
+               if (log.isDebugEnabled())
+               {
+                  log.info("Received list wrapper, start indexing...");
+               }
+               // get stale List that was not processed
+               ChangesFilterListsWrapper staleListIncache = (ChangesFilterListsWrapper)entry.getValue();
+               ChangesKey key = (ChangesKey)entry.getKey();
+               // get newly created wrapper instance
+               ChangesFilterListsWrapper listToPush = changesMap.get(key.getWsId());
+               if (listToPush == null)
+               {
+                  listToPush =
+                     new ChangesFilterListsWrapper(new HashSet<String>(), new HashSet<String>(), new HashSet<String>(),
+                        new HashSet<String>());
+                  changesMap.put(key.getWsId(), listToPush);
+               }
+               // copying lists into the new wrapper
+               listToPush.getParentAddedNodes().addAll(staleListIncache.getParentAddedNodes());
+               listToPush.getParentRemovedNodes().addAll(staleListIncache.getParentRemovedNodes());
+
+               listToPush.getAddedNodes().addAll(staleListIncache.getAddedNodes());
+               listToPush.getRemovedNodes().addAll(staleListIncache.getRemovedNodes());
+               processedItemKeys.add(key);
+            }
+         }
+
+      }
+
+      // process all lists for each workspace
+      for (Entry<Integer, ChangesFilterListsWrapper> changesEntry : changesMap.entrySet())
+      {
+         // create key based on wsId and generated id
+         ChangesKey changesKey = new ChangesKey(changesEntry.getKey(), IdGenerator.generate());
+         cache.putAsync(changesKey, changesEntry.getValue());
+      }
+
+      for (ChangesKey key : processedItemKeys)
+      {
+         cache.removeAsync(key);
+      }
+
+      if (debugEnabled)
+      {
+         log.debug("in-memory state passed to cache cacheStore successfully");
+      }
    }
 
    @Listener
