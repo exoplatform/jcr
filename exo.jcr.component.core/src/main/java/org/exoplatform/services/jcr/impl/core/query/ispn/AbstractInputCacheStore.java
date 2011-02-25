@@ -74,7 +74,7 @@ public abstract class AbstractInputCacheStore extends AbstractCacheStore
    @Override
    protected void purgeInternal() throws CacheLoaderException
    {
-      throw new UnsupportedOperationException("This operation is not supported by this component.");
+      // This cacheStore only accepts data
    }
 
    /**
