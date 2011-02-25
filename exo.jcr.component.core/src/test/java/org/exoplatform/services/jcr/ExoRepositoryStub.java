@@ -145,16 +145,6 @@ public class ExoRepositoryStub extends RepositoryStub
 
             if (!shoutDown)
             {
-               Runtime.getRuntime().addShutdownHook(new Thread()
-               {
-                  public void run()
-                  {
-                     // database.close();
-                     servicesManager.stop();
-
-                     System.out.println("The container is stopped");
-                  }
-               });
                shoutDown = true;
             }
 

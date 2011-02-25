@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.access.AuthenticationPolicy;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -45,6 +46,7 @@ import org.picocontainer.ComponentAdapter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -217,16 +219,30 @@ public class RepositoryImpl implements ManageableRepository
       }
       catch (RepositoryConfigurationException e)
       {
-         WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(wsConfig.getName());
-         repositoryContainer.unregisterComponentByInstance(workspaceContainer);
-         repositoryContainer.unregisterComponent(wsConfig.getName());
+         final WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(wsConfig.getName());
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               repositoryContainer.unregisterComponentByInstance(workspaceContainer);
+               repositoryContainer.unregisterComponent(wsConfig.getName());
+               return null;
+            }
+         });
          throw new RepositoryConfigurationException(e);
       }
       catch (RepositoryException e)
       {
-         WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(wsConfig.getName());
-         repositoryContainer.unregisterComponentByInstance(workspaceContainer);
-         repositoryContainer.unregisterComponent(wsConfig.getName());
+         final WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(wsConfig.getName());
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               repositoryContainer.unregisterComponentByInstance(workspaceContainer);
+               repositoryContainer.unregisterComponent(wsConfig.getName());
+               return null;
+            }
+         });
          throw new RepositoryException(e);
       }
    }
@@ -269,9 +285,14 @@ public class RepositoryImpl implements ManageableRepository
             + " is not configured. Use RepositoryImpl.configWorkspace() method");
 
       repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer().initWorkspace();
-
-      wsContainer.start();
-
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            wsContainer.start();
+            return null;
+         }
+      });
       LOG.info("Workspace " + workspaceName + "@" + this.name + " is initialized");
    }
 
@@ -447,7 +468,7 @@ public class RepositoryImpl implements ManageableRepository
     * @param workspaceName workspace name
     * @throws RepositoryException error of remove
     */
-   public void internalRemoveWorkspace(String workspaceName) throws RepositoryException
+   public void internalRemoveWorkspace(final String workspaceName) throws RepositoryException
    {
       // Need privileges to manage repository.
       SecurityManager security = System.getSecurityManager();
@@ -456,17 +477,31 @@ public class RepositoryImpl implements ManageableRepository
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
+      final WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
       try
       {
-         workspaceContainer.stop();
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               workspaceContainer.stop();
+               return null;
+            }
+         });
       }
       catch (Exception e)
       {
          throw new RepositoryException(e);
       }
-      repositoryContainer.unregisterComponentByInstance(workspaceContainer);
-      repositoryContainer.unregisterComponent(workspaceName);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            repositoryContainer.unregisterComponentByInstance(workspaceContainer);
+            repositoryContainer.unregisterComponent(workspaceName);
+            return null;
+         }
+      });
    }
 
    /**

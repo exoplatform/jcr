@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -39,6 +40,7 @@ import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
 import java.io.InputStream;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -144,16 +146,22 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
       }
 
-      RepositoryContainer repositoryContainer = new RepositoryContainer(parentContainer, rEntry, addNamespacesPlugins);
+      final RepositoryContainer repositoryContainer = new RepositoryContainer(parentContainer, rEntry, addNamespacesPlugins);
 
       // Storing and starting the repository container under
       // key=repository_name
       try
       {
          repositoryContainers.put(rEntry.getName(), repositoryContainer);
-         managerStartChanges.registerListeners(repositoryContainer);
-
-         repositoryContainer.start();
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               managerStartChanges.registerListeners(repositoryContainer);
+               repositoryContainer.start();
+               return null;
+            }
+         });
       }
       catch (Throwable t)
       {
@@ -418,11 +426,25 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
             repo.internalRemoveWorkspace(wsEntry.getName());
          }
          repconfig.getWorkspaceEntries().clear();
-         RepositoryContainer repositoryContainer = repositoryContainers.get(name);
-         repositoryContainer.stop();
+         final RepositoryContainer repositoryContainer = repositoryContainers.get(name);
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               repositoryContainer.stop();
+               return null;
+            }
+         });         
          repositoryContainers.remove(name);
          config.getRepositoryConfigurations().remove(repconfig);
-         parentContainer.unregisterComponent(repositoryContainer.getName());
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               parentContainer.unregisterComponent(repositoryContainer.getName());
+               return null;
+            }
+         });
       }
       catch (RepositoryConfigurationException e)
       {
