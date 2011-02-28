@@ -59,6 +59,8 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
     */
    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ISPNIndexChangesFilter");
 
+   public static final String PARAM_INFINISPAN_CACHESTORE_CLASS = "infinispan-cachestore-classname";
+
    /**
     * ISPN cache.
     */
@@ -82,6 +84,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
       this.wsId = searchManager.getWsId().hashCode();
 
       ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
+      config.putParameterValue(PARAM_INFINISPAN_CACHESTORE_CLASS, IndexerCacheStore.class.getName());
       this.cache = factory.createCache("Indexer-" + searchManager.getWsId(), config);
 
       CacheLoaderManager cacheLoaderManager =

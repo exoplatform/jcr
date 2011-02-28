@@ -52,7 +52,7 @@
       <deadlockDetection enabled="true" spinDuration="100"/>
 
       <loaders passivation="false" shared="false" preload="false">
-        <loader class="org.exoplatform.services.jcr.impl.core.query.ispn.IndexerCacheStore" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
+        <loader class="${infinispan-cachestore-classname}" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
           <async enabled="false"/>
         </loader>
       </loaders>

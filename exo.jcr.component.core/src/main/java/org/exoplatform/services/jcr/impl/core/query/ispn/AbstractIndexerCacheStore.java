@@ -18,6 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.ispn;
 
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.impl.core.query.Indexer;
+import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
+import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
+import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
+import org.exoplatform.services.jcr.impl.core.query.SearchManager;
+import org.exoplatform.services.jcr.impl.core.query.jbosscache.ChangesFilterListsWrapper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.loaders.AbstractCacheStore;
 import org.infinispan.loaders.AbstractCacheStoreConfig;
@@ -26,23 +35,99 @@ import org.infinispan.loaders.CacheLoaderException;
 
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
+ * Abstract Indexer Cache Loader defines default implementation of data processing received via cache.
+ * 
  * @author <a href="mailto:nikolazius@gmail.com">Nikolay Zamosenchuk</a>
  * @version $Id: AbstractInputCacheStore.java 34360 2009-07-22 23:58:59Z nzamosenchuk $
  *
  */
-public abstract class AbstractInputCacheStore extends AbstractCacheStore
+public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
 {
 
    /**
-    * 
+    * A map of all the indexers that has been registered
     */
-   public AbstractInputCacheStore()
+   protected final Map<Integer, Indexer> indexers = new HashMap<Integer, Indexer>();
+
+   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");
+
+   /**
+    * This method will register a new Indexer according to the given parameters. 
+    * 
+    * @param searchManager
+    * @param parentSearchManager
+    * @param handler
+    * @param parentHandler
+    * @throws RepositoryConfigurationException
+    */
+   public void register(SearchManager searchManager, SearchManager parentSearchManager, QueryHandler handler,
+      QueryHandler parentHandler) throws RepositoryConfigurationException
    {
-      super();
+      indexers.put(searchManager.getWsId().hashCode(), new Indexer(searchManager, parentSearchManager, handler,
+         parentHandler));
+      if (log.isDebugEnabled())
+      {
+         log.debug("Register " + searchManager.getWsId() + " " + this + " in " + indexers);
+      }
    }
+
+   /**
+    * @see org.infinispan.loaders.CacheStore#store(org.infinispan.container.entries.InternalCacheEntry)
+    */
+   public void store(InternalCacheEntry entry) throws CacheLoaderException
+   {
+      if (entry.getValue() instanceof ChangesFilterListsWrapper && entry.getKey() instanceof ChangesKey)
+      {
+         if (log.isDebugEnabled())
+         {
+            log.info("Received list wrapper, start indexing...");
+         }
+         // updating index
+         ChangesFilterListsWrapper wrapper = (ChangesFilterListsWrapper)entry.getValue();
+         ChangesKey key = (ChangesKey)entry.getKey();
+         try
+         {
+            Indexer indexer = indexers.get(key.getWsId());
+            if (indexer == null)
+            {
+               log.warn("No indexer could be found for the cache entry " + key.toString());
+               if (log.isDebugEnabled())
+               {
+                  log.debug("The current content of the map of indexers is " + indexers);
+               }
+            }
+            else if (wrapper.withChanges())
+            {
+               indexer.updateIndex(wrapper.getChanges(), wrapper.getParentChanges());
+            }
+            else
+            {
+               indexer.updateIndex(wrapper.getAddedNodes(), wrapper.getRemovedNodes(), wrapper.getParentAddedNodes(),
+                  wrapper.getParentRemovedNodes());
+            }
+         }
+         finally
+         {
+            if (getModeHandler().getMode() == IndexerIoMode.READ_WRITE)
+            {
+               // remove the data from the cache
+               cache.remove(key);
+            }
+         }
+      }
+   }
+
+   /**
+    * @return IndexerIoModeHandler instance
+    */
+   public abstract IndexerIoModeHandler getModeHandler();
+
+   // ===================================================
 
    /**
     * @see org.infinispan.loaders.CacheLoader#getConfigurationClass()
@@ -91,7 +176,7 @@ public abstract class AbstractInputCacheStore extends AbstractCacheStore
    public boolean remove(Object key) throws CacheLoaderException
    {
       // This cacheStore only accepts data
-      return false;
+      return true;
    }
 
    /**

@@ -62,6 +62,8 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
     */
    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.LocalIndexChangesFilter");
 
+   public static final String PARAM_INFINISPAN_CACHESTORE_CLASS = "infinispan-cachestore-classname";
+   
    private final Cache<Serializable, Object> cache;
 
    private final int wsId;
@@ -77,13 +79,13 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
       super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
 
       this.wsId = searchManager.getWsId().hashCode();
-
       ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
+      config.putParameterValue(PARAM_INFINISPAN_CACHESTORE_CLASS, LocalIndexCacheStore.class.getName());
       this.cache = factory.createCache("Indexer-" + searchManager.getWsId(), config);
 
       CacheLoaderManager cacheLoaderManager =
          cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
-      IndexerCacheStore cacheStore = (IndexerCacheStore)cacheLoaderManager.getCacheLoader();
+      AbstractIndexerCacheStore cacheStore = (AbstractIndexerCacheStore)cacheLoaderManager.getCacheLoader();
 
       cacheStore.register(searchManager, parentSearchManager, handler, parentHandler);
       IndexerIoModeHandler modeHandler = cacheStore.getModeHandler();
