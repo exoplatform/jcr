@@ -175,7 +175,7 @@
       <value-param>
         <name>conf-path</name>
         <description>JCR configuration file</description>
-        <value>jar:/conf/standalone/cluster/test-jcr-config-ispn.xml</value>
+        <value>jar:/conf/standalone/cluster/test-jcr-config-jbc.xml</value>
       </value-param>
       <properties-param>
         <name>working-conf</name>
