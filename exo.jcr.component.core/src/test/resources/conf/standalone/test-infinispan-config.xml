@@ -39,6 +39,6 @@
       <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" syncRollbackPhase="false" syncCommitPhase="false"/>
       <jmxStatistics enabled="true"/>
       <deadlockDetection enabled="true" spinDuration="100"/>
-      <eviction strategy="LRU" wakeUpInterval="5000" threadPolicy="DEFAULT" maxEntries="5000"/>
+      <eviction strategy="LRU" wakeUpInterval="5000" threadPolicy="DEFAULT" maxEntries="1000000"/>
    </default>
 </infinispan>
