@@ -132,10 +132,6 @@
          <scope>compile</scope>
       </dependency>
       <dependency>
-         <groupId>stax</groupId>
-         <artifactId>stax-api</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.jibx</groupId>
          <artifactId>jibx-run</artifactId>
       </dependency>
@@ -170,10 +166,6 @@
       <dependency>
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>javax.xml.stream</groupId>
-        <artifactId>stax-api</artifactId>
       </dependency>
       <dependency>
         <groupId>xpp3</groupId>
@@ -240,14 +232,14 @@
       <dependency>
          <groupId>mysql</groupId>
          <artifactId>mysql-connector-java</artifactId>
-         <version>5.1.8</version>
+         <version>5.1.14</version>
          <scope>test</scope>
       </dependency>
       <!-- For PostgresSQL support -->
       <dependency>
          <groupId>postgresql</groupId>
          <artifactId>postgresql</artifactId>
-         <version>8.3-603.jdbc3</version>
+         <version>8.3-606.jdbc3</version>
          <scope>test</scope>
       </dependency>
       <!-- For Oracle 10g support (local-jcr repository) -->
@@ -267,13 +259,13 @@
       <!-- dependency>
          <groupId>com.ibm.db2</groupId>
          <artifactId>db2jcc</artifactId>
-         <version>9.1</version>
+         <version>9.7</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>com.ibm.db2</groupId>
          <artifactId>db2jcc_license_cu</artifactId>
-         <version>9.1</version>
+         <version>9.7</version>
          <scope>test</scope>
       </dependency -->
       <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
@@ -293,7 +285,7 @@
       <!-- dependency>
          <groupId>com.microsoft</groupId>
          <artifactId>sqljdbc</artifactId>
-         <version>2.0</version>
+         <version>3.0.1301.101</version>
          <scope>test</scope>
       </dependency -->
       <!-- For Apache Derby support (aka JavaDB) -->
