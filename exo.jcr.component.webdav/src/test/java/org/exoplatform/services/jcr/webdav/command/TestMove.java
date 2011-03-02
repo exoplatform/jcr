@@ -75,7 +75,7 @@ public class TestMove extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.DESTINATION, host + getPathDestWS() + destFilename);
       ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
-      assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
       assertTrue(destSession.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
       Node nodeDest = destSession.getRootNode().getNode(TextUtil.relativizePath(destFilename));
       assertTrue(nodeDest.hasNode("jcr:content"));
