@@ -87,22 +87,22 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    private Cache<Serializable, Object> cache;
 
    public ISPNCacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
-      throws RepositoryConfigurationException, RepositoryException
+      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
       this(dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
    }
 
    public ISPNCacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException,
-      RepositoryException
+      InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
+      throws RepositoryConfigurationException, RepositoryException
    {
       this(dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
    }
 
    public ISPNCacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
-      throws RepositoryConfigurationException, RepositoryException
+      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
       super(dataManager, config, transactionManager, lockRemoverHolder);
 
@@ -115,7 +115,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          // configure cache loader parameters with correct DB data-types
          configureJDBCCacheLoader(config.getLockManager());
 
-         cache = factory.createCache("Lock-" + config.getUniqueName(), config.getLockManager());
+         cache = factory.createCache("Lock_" + config.getUniqueName(), config.getLockManager());
 
          // Context recall is a workaround of JDBCCacheLoader starting. 
          context.recall();

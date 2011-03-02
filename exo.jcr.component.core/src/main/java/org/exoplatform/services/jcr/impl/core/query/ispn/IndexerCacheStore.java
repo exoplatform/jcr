@@ -79,7 +79,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
       super.init(config, cache, m);
       this.cacheManager = cache == null ? null : (EmbeddedCacheManager)cache.getCacheManager();
       listener = new CacheListener();
-      cache.addListener(listener);
+      cacheManager.addListener(listener);
    }
 
    /**

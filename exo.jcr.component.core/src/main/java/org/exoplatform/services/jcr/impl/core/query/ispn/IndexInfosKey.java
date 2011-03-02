@@ -33,7 +33,7 @@ public class IndexInfosKey extends CacheKey
 
    IndexInfosKey(String id)
    {
-      super(id);
+      super("IndexInfos" + id);
    }
 
    /**

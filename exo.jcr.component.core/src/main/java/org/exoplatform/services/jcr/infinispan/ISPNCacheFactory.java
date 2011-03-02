@@ -95,7 +95,8 @@ public class ISPNCacheFactory<K, V>
       // get Infinispan configuration file path
       final String configurationPath = parameterEntry.getParameterValue(INFINISPAN_CONFIG);
       log.info("Infinispan Cache configuration used: " + configurationPath);
-
+      // avoid dashes in cache name. Some SQL servers doesn't allow dashes in table names
+      final String regionIdEscaped = regionId.replace("-", "_");
       // prepare configuration
       final InputStream configStream;
       try
@@ -118,7 +119,7 @@ public class ISPNCacheFactory<K, V>
          {
             public EmbeddedCacheManager run() throws IOException
             {
-               return getUniqueInstance(regionId, new DefaultCacheManager(configStream));
+               return getUniqueInstance(regionIdEscaped, new DefaultCacheManager(configStream));
             }
          });
 
@@ -132,7 +133,7 @@ public class ISPNCacheFactory<K, V>
       {
          public Cache<K, V> run()
          {
-            return manager.getCache(regionId);
+            return manager.getCache(regionIdEscaped);
          }
       };
       Cache<K, V> cache = AccessController.doPrivileged(action);
@@ -155,7 +156,7 @@ public class ISPNCacheFactory<K, V>
       GlobalConfiguration gc = manager.getGlobalConfiguration();
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       // Ensure that the cluster name won't be used between 2 ExoContainers
-      gc.setClusterName(gc.getClusterName() + "-" + container.getContext().getName());
+      gc.setClusterName(gc.getClusterName() + "_" + container.getContext().getName());
       Configuration conf = manager.getDefaultConfiguration();
       if (CACHE_MANAGERS.containsKey(gc))
       {

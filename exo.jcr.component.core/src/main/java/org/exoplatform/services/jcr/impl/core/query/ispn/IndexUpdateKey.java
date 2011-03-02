@@ -33,7 +33,7 @@ public class IndexUpdateKey extends CacheKey
 
    IndexUpdateKey(String id)
    {
-      super(id);
+      super("UpdateMonitor" + id);
    }
 
    /**

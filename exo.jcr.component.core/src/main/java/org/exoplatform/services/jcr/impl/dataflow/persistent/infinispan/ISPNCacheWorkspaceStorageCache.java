@@ -223,7 +223,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
       // create parent Infinispan instance
       CacheEntry cacheEntry = wsConfig.getCache();
-      Cache<Serializable, Object> parentCache = factory.createCache("Data-" + wsConfig.getUniqueName(), cacheEntry);
+      Cache<Serializable, Object> parentCache = factory.createCache("Data_" + wsConfig.getUniqueName(), cacheEntry);
 
       Boolean allowLocalChanges = null;
       try
