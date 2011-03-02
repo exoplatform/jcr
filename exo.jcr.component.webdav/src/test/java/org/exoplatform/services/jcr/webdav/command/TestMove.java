@@ -40,7 +40,7 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 public class TestMove extends BaseStandaloneTest
 {
-   final static String host = "http://localhost:8080";
+   final static private String host = "http://localhost:8080";
 
    public void testMoveForNonCollectionSingleWorkspace() throws Exception
    {

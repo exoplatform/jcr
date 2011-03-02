@@ -41,7 +41,7 @@ import javax.ws.rs.core.MultivaluedMap;
 public class TestCopy extends BaseStandaloneTest
 {
 
-   static final String host = "http://localhost:8080";
+   final static private String host = "http://localhost:8080";
 
    public void testeCopyForNonCollectionSingleWorkSpace() throws Exception
    {

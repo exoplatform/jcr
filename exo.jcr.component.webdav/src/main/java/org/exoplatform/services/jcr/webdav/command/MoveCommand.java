@@ -162,7 +162,25 @@ public class MoveCommand
          sourceSession.getItem(srcPath).remove();
          sourceSession.save();
 
-         return Response.status(HTTPStatus.NO_CONTENT).cacheControl(cacheControl).build();
+         // If the source resource was successfully moved
+         // to a pre-existing destination resource.
+         if (itemExisted)
+         {
+            return Response.status(HTTPStatus.NO_CONTENT).cacheControl(cacheControl).build();
+         }
+         // If the source resource was successfully moved,
+         // and a new resource was created at the destination.
+         else
+         {
+            if (uriBuilder != null)
+            {
+               return Response.created(uriBuilder.path(destSession.getWorkspace().getName()).path(destPath).build())
+                  .cacheControl(cacheControl).build();
+            }
+
+            // to save compatibility if uriBuilder is not provided
+            return Response.status(HTTPStatus.CREATED).cacheControl(cacheControl).build();
+         }
 
       }
       catch (LockException exc)

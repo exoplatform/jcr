@@ -522,7 +522,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
             if (session.getRootNode().hasNode(TextUtil.relativizePath(repoPath)))
             {
-               return Response.status(HTTPStatus.PRECON_FAILED).entity("Not Found").build();
+               return Response.status(HTTPStatus.PRECON_FAILED)
+                  .entity("Item exists on destination path, while overwriting is forbidden").build();
             }
 
          }
@@ -932,7 +933,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             Response prpfind = new PropFindCommand().propfind(session, destNodePath, body, depth.getIntValue(), uri);
             if (prpfind.getStatus() != HTTPStatus.NOT_FOUND)
             {
-               return Response.status(HTTPStatus.PRECON_FAILED).entity("Preconditions Failed").build();
+               return Response.status(HTTPStatus.PRECON_FAILED)
+                  .entity("Item exists on destination path, while overwriting is forbidden").build();
             }
          }
 
