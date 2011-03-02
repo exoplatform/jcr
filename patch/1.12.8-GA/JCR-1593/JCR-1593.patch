@@ -22,17 +22,19 @@ Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webda
        assertEquals(HTTPStatus.CREATED, response.getStatus());
        assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
        Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));
-@@ -71,8 +73,8 @@
+@@ -71,9 +73,9 @@
        TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
        String destFilename = TestUtils.getFileName();
        MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
 -      headers.add(ExtHttpHeaders.DESTINATION, getPathDestWS() + destFilename);
 -      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, "", headers, null);
+-      assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
 +      headers.add(ExtHttpHeaders.DESTINATION, host + getPathDestWS() + destFilename);
 +      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
-       assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
++      assertEquals(HTTPStatus.CREATED, response.getStatus());
        assertTrue(destSession.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
        Node nodeDest = destSession.getRootNode().getNode(TextUtil.relativizePath(destFilename));
+       assertTrue(nodeDest.hasNode("jcr:content"));
 @@ -85,6 +87,101 @@
        assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(filename)));
     }
