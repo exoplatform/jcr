@@ -154,21 +154,18 @@ public class RepositoryCreationSynchronizer
             @Override
             public void startContainer(ExoContainer container) throws Exception
             {
-               if (needToInitWorkspace)
+               needToInitWorkspace = false;
+               try
                {
-                  needToInitWorkspace = false;
-                  try
+                  if (LOG.isDebugEnabled())
                   {
-                     if (LOG.isDebugEnabled())
-                     {
-                        LOG.debug("Release the other cluster nodes if needed.");
-                     }
-                     rpcService.executeCommandOnAllNodes(releaseCommand, false);
+                     LOG.debug("Release the other cluster nodes.");
                   }
-                  catch (Exception e)
-                  {
-                     LOG.error("Could not release all the nodes", e);
-                  }
+                  rpcService.executeCommandOnAllNodes(releaseCommand, false);
+               }
+               catch (Exception e)
+               {
+                  LOG.error("Could not release all the nodes", e);
                }
             }
          });

@@ -77,7 +77,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    /**
     * The logger.
     */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RepositoryCreationSynchronizer");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RepositoryCreationService");
 
    private final RepositoryService repositoryService;
 
