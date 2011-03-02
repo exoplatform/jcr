@@ -54,21 +54,34 @@ public class CopyCommand
    private final UriBuilder uriBuilder;
 
    /**
+    * To trace if an item on destination path existed. 
+    */
+   private final boolean itemExisted;
+
+   /**
     * Empty constructor
     */
    public CopyCommand()
    {
       this.uriBuilder = null;
+      this.itemExisted = false;
    }
 
    /**
-    * Constructor
+    * Here we pass URI builder and info about pre-existence of item on the move
+    * destination path If an item existed, we must respond with NO_CONTENT (204)
+    * HTTP status.
+    * If an item did not exist, we must respond with CREATED (201) HTTP status
+    * More info can be found <a
+    * href=http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE>here</a>.
     * 
     * @param uriBuilder - provide data used in 'location' header
+    * @param itemExisted - indicates if an item existed on copy destination
     */
-   public CopyCommand(UriBuilder uriBuilder)
+   public CopyCommand(UriBuilder uriBuilder, boolean itemExisted)
    {
       this.uriBuilder = uriBuilder;
+      this.itemExisted = itemExisted;
    }
 
    /**
@@ -85,13 +98,26 @@ public class CopyCommand
       {
          Workspace workspace = destSession.getWorkspace();
          workspace.copy(sourcePath, destPath);
-         if (uriBuilder != null)
+
+         // If the source resource was successfully moved
+         // to a pre-existing destination resource.
+         if (itemExisted)
          {
-            return Response.created(uriBuilder.path(workspace.getName()).path(destPath).build()).build();
+            return Response.noContent().build();
+         }
+         // If the source resource was successfully moved,
+         // and a new resource was created at the destination.
+         else
+         {
+            if (uriBuilder != null)
+            {
+               return Response.created(uriBuilder.path(workspace.getName()).path(destPath).build()).build();
+            }
+
+            // to save compatibility if uribuilder is not provided
+            return Response.status(HTTPStatus.CREATED).build();
          }
 
-         // to save compatibility if uribuilder is not provided
-         return Response.status(HTTPStatus.CREATED).build();
       }
       catch (ItemExistsException e)
       {
@@ -131,13 +157,26 @@ public class CopyCommand
       {
          Workspace destWorkspace = destSession.getWorkspace();
          destWorkspace.copy(sourceWorkspace, sourcePath, destPath);
-         if (uriBuilder != null)
+
+         // If the source resource was successfully moved
+         // to a pre-existing destination resource.
+         if (itemExisted)
          {
-            return Response.created(uriBuilder.path(destWorkspace.getName()).path(destPath).build()).build();
+            return Response.noContent().build();
+         }
+         // If the source resource was successfully moved,
+         // and a new resource was created at the destination.
+         else
+         {
+            if (uriBuilder != null)
+            {
+               return Response.created(uriBuilder.path(destWorkspace.getName()).path(destPath).build()).build();
+            }
+
+            // to save compatibility if uriBuilder is not provided
+            return Response.status(HTTPStatus.CREATED).build();
          }
 
-         // to save compatibility if uriBuilder is not provided
-         return Response.status(HTTPStatus.CREATED).build();
       }
       catch (ItemExistsException e)
       {

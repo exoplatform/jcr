@@ -41,6 +41,8 @@ import javax.ws.rs.core.MultivaluedMap;
 public class TestCopy extends BaseStandaloneTest
 {
 
+   static final String host = "http://localhost:8080";
+
    public void testeCopyForNonCollectionSingleWorkSpace() throws Exception
    {
       String content = TestUtils.getFileContent();
@@ -49,8 +51,8 @@ public class TestCopy extends BaseStandaloneTest
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
       String destFilename = TestUtils.getFileName();
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      headers.add(ExtHttpHeaders.DESTINATION, getPathWS() + destFilename);
-      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, "", headers, null);
+      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
+      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
       assertEquals(HTTPStatus.CREATED, response.getStatus());
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
       Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));
@@ -79,8 +81,8 @@ public class TestCopy extends BaseStandaloneTest
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
       String destFilename = TestUtils.getFileName();
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      headers.add(ExtHttpHeaders.DESTINATION, getPathDestWS() + destFilename);
-      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, "", headers, null);
+      headers.add(ExtHttpHeaders.DESTINATION, host + getPathDestWS() + destFilename);
+      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
       assertEquals(HTTPStatus.CREATED, response.getStatus());
 
       assertTrue(destSession.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
@@ -118,16 +120,112 @@ public class TestCopy extends BaseStandaloneTest
 
       // prepare headers
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      headers.add(ExtHttpHeaders.DESTINATION, getPathWS() + destFilename);
+      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
 
       // execute query
-      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, "", headers, null);
+      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
       // check if operation completed successfully, we expect a new resource to be created
       assertEquals(HTTPStatus.CREATED, response.getStatus());
       // check if response 'CREATED' contains 'LOCATION' header
       assertTrue(response.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
       // check if 'CREATED' response 'LOCATION' header contains correct location path
-      assertEquals(getPathWS() + destFilename, response.getHttpHeaders().getFirst(ExtHttpHeaders.LOCATION).toString());
+      assertEquals(host + getPathWS() + destFilename, response.getHttpHeaders().getFirst(ExtHttpHeaders.LOCATION)
+         .toString());
+   }
+
+   /**
+    * Testing for correct destination header parsing in COPY method.
+    * We pass a path which contains escaped space - "%20" 
+    * and escaped space with quote symbol "%20'"
+    * @throws Exception
+    */
+   public void testDestinationHeaderParsing() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+
+      String destFilename = TestUtils.getFileName() + "%20test";
+
+      // prepare headers
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
+
+      // execute the query
+      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
+      // check if operation completed successfully, we expect a new resource to be created
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+
+      filename = destFilename;
+
+      destFilename = TestUtils.getFileName() + "%20'test";
+
+      // prepare headers
+      headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
+
+      // execute the query
+      response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
+      // check if operation completed successfully, we expect a new resource to be created
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+
+   }
+
+   /**
+    * Testing for correct response after COPY a resource to the destination,
+    * where another resource already existed
+    * For more info see <a href=http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE>this</a>.
+    * @throws Exception
+    */
+   public void testNoContentResponses() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+
+      String destFilename = TestUtils.getFileName();
+      inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, destFilename, inputStream, defaultFileNodeType, "");
+
+      // prepare headers
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
+      headers.add(ExtHttpHeaders.OVERWRITE, "T");
+
+      // execute the query
+      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
+      // check if operation completed successfully, we expect a new resource to be created
+      assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
+
+   }
+
+   /**
+    * Testing for correct destination header parsing using "https" 
+    * instead of usual "http" scheme.
+    * @throws Exception
+    */
+   public void testHttpsSchemeInDestinationHeaderParsing() throws Exception
+   {
+      String httpsHost = "https://localhost:8080";
+
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+
+      String destFilename = TestUtils.getFileName();
+
+      // prepare headers
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.DESTINATION, httpsHost + getPathWS() + destFilename);
+
+      // execute the query
+      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
+      // check if operation completed successfully, we expect a new resource to be created
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+
    }
 
    @Override

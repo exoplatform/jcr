@@ -73,6 +73,7 @@ import org.exoplatform.services.rest.resource.ResourceContainer;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -466,6 +467,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.DEPTH) String depthHeader,
       @HeaderParam(ExtHttpHeaders.OVERWRITE) String overwriteHeader, @Context UriInfo uriInfo, HierarchicalProperty body)
    {
+      // to trace if an item on destination path exists
+      boolean itemExisted = false;
 
       if (log.isDebugEnabled())
       {
@@ -478,17 +481,27 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          String serverURI = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).build().toString();
 
-         destinationHeader = TextUtil.unescape(destinationHeader, '%');
+         URI dest = new URI(destinationHeader);
+         URI base = new URI(serverURI);
 
-         if (!destinationHeader.startsWith(serverURI))
+         String destPath = dest.getPath();
+         int repoIndex = destPath.indexOf(repoName);
+
+         // check if destination corresponds to base uri
+         // if the destination is on another server
+         // or destination header is malformed
+         // we return BAD_GATEWAY(502) HTTP status
+         // more info here http://www.webdav.org/specs/rfc2518.html#METHOD_COPY
+         if (!base.getHost().equals(dest.getHost()) || repoIndex == -1)
          {
             return Response.status(HTTPStatus.BAD_GATEWAY).entity("Bad Gateway").build();
          }
 
+         destPath = normalizePath(dest.getPath().substring(repoIndex + repoName.length() + 1));
+
          String srcWorkspace = workspaceName(repoPath);
          String srcNodePath = path(repoPath);
 
-         String destPath = destinationHeader.substring(serverURI.length() + 1);
          String destWorkspace = workspaceName(destPath);
          String destNodePath = path(destPath);
 
@@ -500,7 +513,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          if (overwrite)
          {
-            delete(repoName, destPath, lockTokenHeader, ifHeader);
+            Response delResponse = delete(repoName, destPath, lockTokenHeader, ifHeader);
+            itemExisted = (delResponse.getStatus() == HTTPStatus.NO_CONTENT);
          }
          else
          {
@@ -519,12 +533,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             if (srcWorkspace.equals(destWorkspace))
             {
                Session session = session(repoName, destWorkspace, lockTokens);
-               return new CopyCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).copy(session,
+               return new CopyCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).copy(
+                  session,
                   srcNodePath, destNodePath);
             }
 
             Session destSession = session(repoName, destWorkspace, lockTokens);
-            return new CopyCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).copy(destSession,
+            return new CopyCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).copy(
+               destSession,
                srcWorkspace, srcNodePath, destNodePath);
 
          }
@@ -857,7 +873,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.DEPTH) String depthHeader,
       @HeaderParam(ExtHttpHeaders.OVERWRITE) String overwriteHeader, @Context UriInfo uriInfo, HierarchicalProperty body)
    {
-
+      // to trace if an item on destination path exists
+      boolean itemExisted = false;
+      
       if (log.isDebugEnabled())
       {
          log.debug("MOVE " + repoName + "/" + repoPath);
@@ -869,14 +887,25 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          String serverURI = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).build().toString();
 
-         destinationHeader = TextUtil.unescape(destinationHeader, '%');
+         URI dest = new URI(destinationHeader);
+         URI base = new URI(serverURI);
+         
 
-         if (!destinationHeader.startsWith(serverURI))
+         String destPath = dest.getPath();
+         int repoIndex = destPath.indexOf(repoName);
+
+         // check if destination corresponds to base uri
+         // if the destination is on another server
+         // or destination header is malformed
+         // we return BAD_GATEWAY(502) HTTP status
+         // more info here http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE
+         if (!base.getHost().equals(dest.getHost()) || repoIndex == -1)
          {
             return Response.status(HTTPStatus.BAD_GATEWAY).entity("Bad Gateway").build();
          }
+         
+         destPath = normalizePath(dest.getPath().substring(repoIndex + repoName.length() + 1));
 
-         String destPath = destinationHeader.substring(serverURI.length() + 1);
          String destWorkspace = workspaceName(destPath);
          String destNodePath = path(destPath);
 
@@ -891,7 +920,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          if (overwrite)
          {
-            delete(repoName, destPath, lockTokenHeader, ifHeader);
+            Response delResponse = delete(repoName, destPath, lockTokenHeader, ifHeader);
+            itemExisted = (delResponse.getStatus() == HTTPStatus.NO_CONTENT);
          }
          else
          {
@@ -911,13 +941,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             if (srcWorkspace.equals(destWorkspace))
             {
                Session session = session(repoName, srcWorkspace, lockTokens);
-               return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).move(session,
+               return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).move(session,
                   srcNodePath, destNodePath);
             }
 
             Session srcSession = session(repoName, srcWorkspace, lockTokens);
             Session destSession = session(repoName, destWorkspace, lockTokens);
-            return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).move(srcSession,
+            return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).move(srcSession,
                destSession, srcNodePath, destNodePath);
          }
          else
