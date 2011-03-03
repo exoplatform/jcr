@@ -358,8 +358,6 @@ public class DBRestor implements DataRestor
             names += columnName.get(i) + (i == targetColumnCount - 1 ? "" : ",");
             parameters += "?" + (i == targetColumnCount - 1 ? "" : ",");
          }
-         insertNode =
-            jdbcConn.prepareStatement("INSERT INTO " + tableName + " (" + names + ") VALUES(" + parameters + ")");
 
          // set data
          outer : while (true)
@@ -399,6 +397,13 @@ public class DBRestor implements DataRestor
                      throw new IOException("Content length file is empty but content still present", e);
                   }
                   stream = len == -1 ? null : spoolInputStream(contentReader, len);
+               }
+
+               if (insertNode == null)
+               {
+                  insertNode =
+                     jdbcConn.prepareStatement("INSERT INTO " + tableName + " (" + names + ") VALUES(" + parameters
+                        + ")");
                }
 
                if (restoreRule.getSkipColumnIndex() != null && restoreRule.getSkipColumnIndex() == i)
@@ -517,10 +522,16 @@ public class DBRestor implements DataRestor
                   insertNode.setNull(targetIndex + 1, columnType.get(i));
                }
             }
-            insertNode.addBatch();
+            if (insertNode != null)
+            {
+               insertNode.addBatch();
+            }
          }
 
-         insertNode.executeBatch();
+         if (insertNode != null)
+         {
+            insertNode.executeBatch();
+         }
       }
       finally
       {

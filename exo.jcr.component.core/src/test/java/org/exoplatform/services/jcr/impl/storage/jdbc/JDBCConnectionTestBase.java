@@ -21,7 +21,6 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 
 import java.io.ByteArrayInputStream;
 import java.sql.Connection;
@@ -47,6 +46,7 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
 
    private Connection connect = null;
 
+   @Override
    protected void tearDown() throws Exception
    {
 
@@ -95,7 +95,7 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
 
       byte data[] = {5};
       ByteArrayInputStream bas = new ByteArrayInputStream(data);
-      jdbcConn.addValueData("C", 2, bas, 2, "J");
+      jdbcConn.addValueData("C", 2, bas, bas.available(), "J");
       ResultSet rs =
          connect.createStatement().executeQuery(
             "select * from " + "JCR_" + tableType + "VALUE" + " where PROPERTY_ID='C'");

@@ -224,7 +224,7 @@
       </dependency>
       <!-- ===== Databases JDBC support for tests ===== -->
       <dependency>
-         <groupId>hsqldb</groupId>
+         <groupId>org.hsqldb</groupId>
          <artifactId>hsqldb</artifactId>
          <scope>test</scope>
       </dependency>
