@@ -28,6 +28,7 @@ import org.exoplatform.services.log.Log;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Modification;
+import org.jboss.cache.config.Configuration.CacheMode;
 
 import java.util.HashMap;
 import java.util.List;
@@ -156,10 +157,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
     */
    void setMode(IndexerIoMode ioMode)
    {
-      if (modeHandler != null)
-      {
-         modeHandler.setMode(ioMode);
-      }
+      getModeHandler().setMode(ioMode);
    }
 
    /**
@@ -179,7 +177,8 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
             if (modeHandler == null)
             {
                this.modeHandler =
-                  new IndexerIoModeHandler(cache.getRPCManager().isCoordinator() ? IndexerIoMode.READ_WRITE
+                  new IndexerIoModeHandler(cache.getRPCManager().isCoordinator()
+                     || cache.getConfiguration().getCacheMode() == CacheMode.LOCAL ? IndexerIoMode.READ_WRITE
                      : IndexerIoMode.READ_ONLY);
             }
          }

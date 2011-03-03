@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.jbosscache.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.infinispan.Cache;
+import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -100,7 +101,8 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
             if (modeHandler == null)
             {
                this.modeHandler =
-                  new IndexerIoModeHandler(cacheManager.isCoordinator() ? IndexerIoMode.READ_WRITE
+                  new IndexerIoModeHandler(cacheManager.isCoordinator()
+                     || cache.getConfiguration().getCacheMode() == CacheMode.LOCAL ? IndexerIoMode.READ_WRITE
                      : IndexerIoMode.READ_ONLY);
             }
          }
@@ -143,11 +145,8 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
    {
       coordinator = newActiveState;
 
-      if (modeHandler != null)
-      {
-         modeHandler.setMode(coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY);
-         log.info("Set indexer io mode to:" + (coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY));
-      }
+      getModeHandler().setMode(coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY);
+      log.info("Set indexer io mode to:" + (coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY));
 
       if (coordinator)
       {

@@ -91,12 +91,6 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
          cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
       IndexerCacheStore cacheStore = (IndexerCacheStore)cacheLoaderManager.getCacheLoader();
 
-      // This code make it possible to use the ISPNIndexChangesFilter in a non-cluster environment
-      if (cache.getConfiguration().getCacheMode() == CacheMode.LOCAL)
-      {
-         cacheStore.activeStatusChanged(true);
-      }
-
       cacheStore.register(searchManager, parentSearchManager, handler, parentHandler);
       IndexerIoModeHandler modeHandler = cacheStore.getModeHandler();
       handler.setIndexerIoModeHandler(modeHandler);

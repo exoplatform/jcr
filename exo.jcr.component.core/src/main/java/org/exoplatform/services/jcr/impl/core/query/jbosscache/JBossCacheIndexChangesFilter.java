@@ -148,20 +148,6 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       IndexerSingletonStoreCacheLoader issCacheLoader =
          (IndexerSingletonStoreCacheLoader)((CacheSPI)cache).getCacheLoaderManager().getCacheLoader();
 
-      // This code make it possible to use the JBossCacheIndexChangesFilter in
-      // a non-cluster environment
-      if (cache.getConfiguration().getCacheMode() == CacheMode.LOCAL)
-      {
-         // Activate the cache loader
-         try
-         {
-            issCacheLoader.activeStatusChanged(true);
-         }
-         catch (PushStateException e)
-         {
-            // ignore me;
-         }
-      }
       indexerCacheLoader = (IndexerCacheLoader)issCacheLoader.getCacheLoader();
 
       indexerCacheLoader.register(searchManager, parentSearchManager, handler, parentHandler);
