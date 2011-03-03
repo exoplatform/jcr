@@ -30,19 +30,37 @@
     <title>Kernel configuration namespace</title>
 
     <para>To be effective, the namespace URI
-    <uri>http://www.exoplaform.org/xml/ns/kernel_1_1.xsd</uri> must be target
+    <uri>http://www.exoplaform.org/xml/ns/kernel_1_2.xsd</uri> must be target
     namespace of the XML configuration file.</para>
 
-    <programlisting>&lt;xsd:schema
-     targetNamespace="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
-     xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
-     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-     elementFormDefault="qualified"
-     attributeFormDefault="unqualified"
-     version="1.0"&gt;
+    <programlisting>&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+               xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
+               xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"&gt;
+
 
    ...
-&lt;/xsd:schema&gt;</programlisting>
+&lt;/configuration&gt;</programlisting>
+
+    <note>
+      <para>Any values in the configuration files can be created thanks to
+      variables since the eXo kernel resolves them, for example the following
+      configuration will be well interpreted:</para>
+
+      <programlisting>&lt;configuration
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
+   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"&gt;
+
+  &lt;import&gt;${db.configuration.path}/db.xml&lt;/import&gt;
+  &lt;import&gt;${java.io.tmpdir}/bindfile.xml&lt;/import&gt;
+  &lt;import&gt;simple.xml&lt;/import&gt;
+
+&lt;/configuration&gt;</programlisting>
+
+      <para>The variables that are supported, are System properties and
+      variables that are specific to your portal container, see next chapters
+      for more details.</para>
+    </note>
   </section>
 
   <section>
