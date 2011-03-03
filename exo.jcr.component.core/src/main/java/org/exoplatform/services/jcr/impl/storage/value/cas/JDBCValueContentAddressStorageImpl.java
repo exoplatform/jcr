@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.cas;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
@@ -155,38 +156,46 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
 
       try
       {
-         dataSource = (DataSource)new InitialContext().lookup(sn);
+         PrivilegedExceptionAction<DataSource> action = new PrivilegedExceptionAction<DataSource>()
+         {
+            public DataSource run() throws Exception
+            {
+               return (DataSource)new InitialContext().lookup(sn);
+            }
+         };
+         try
+         {
+            dataSource = AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof NamingException)
+            {
+               throw (NamingException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+         
+
          Connection conn = null;
          Statement st = null;
          try
          {
-            PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+            conn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
             {
-               public Object run() throws Exception
+               public Connection run() throws Exception
                {
                   return dataSource.getConnection();
                }
-            };
-            try
-            {
-               conn = (Connection)AccessController.doPrivileged(action);
-            }
-            catch (PrivilegedActionException pae)
-            {
-               Throwable cause = pae.getCause();
-               if (cause instanceof SQLException)
-               {
-                  throw (SQLException)cause;
-               }
-               else if (cause instanceof RuntimeException)
-               {
-                  throw (RuntimeException)cause;
-               }
-               else
-               {
-                  throw new RuntimeException(cause);
-               }
-            }
+            });
 
             DatabaseMetaData dbMetaData = conn.getMetaData();
 
