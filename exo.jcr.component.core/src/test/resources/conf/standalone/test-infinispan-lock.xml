@@ -25,6 +25,12 @@
       xmlns="urn:infinispan:config:4.0">
 
     <global>
+      <evictionScheduledExecutor factory="org.infinispan.executors.DefaultScheduledExecutorFactory">
+        <properties>
+          <property name="threadNamePrefix" value="EvictionThread"/>
+        </properties>
+      </evictionScheduledExecutor>
+
       <globalJmxStatistics jmxDomain="infinispan" enabled="true" allowDuplicateDomains="true"/>
     </global>
 

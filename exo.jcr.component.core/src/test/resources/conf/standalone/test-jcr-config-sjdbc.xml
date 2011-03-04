@@ -66,13 +66,15 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
+                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1/ws" />
                    </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
@@ -113,6 +115,8 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
+                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1/ws1" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
                      <property name="synonymprovider-config-path" value="../../synonyms.properties" />
@@ -125,7 +129,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws1" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
@@ -166,6 +170,8 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
+                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1/ws2" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
                      <property name="synonymprovider-config-path" value="../../synonyms.properties" />
@@ -178,7 +184,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws2" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
@@ -241,6 +247,8 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
+                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1/ws3" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
                      <property name="synonymprovider-config-path" value="../../synonyms.properties" />
@@ -253,7 +261,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
@@ -316,7 +324,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db2_ws" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
@@ -369,7 +377,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db2_ws1" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
@@ -427,6 +435,8 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
+                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1tck/ws" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
                      <property name="synonymprovider-config-path" value="../../synonyms.properties" />
@@ -440,7 +450,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
@@ -487,6 +497,8 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
+                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1tck/ws1" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
                      <property name="synonymprovider-config-path" value="../../synonyms.properties" />
@@ -499,7 +511,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws1" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
@@ -546,6 +558,8 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
+                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1tck/ws2" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
                      <property name="synonymprovider-config-path" value="../../synonyms.properties" />
@@ -561,7 +575,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws2" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />

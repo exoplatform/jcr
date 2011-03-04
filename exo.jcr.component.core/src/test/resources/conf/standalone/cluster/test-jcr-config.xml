@@ -72,7 +72,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="flush-udp.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws" />
@@ -138,7 +138,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="flush-udp.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws1" />
@@ -204,7 +204,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="flush-udp.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws2" />
@@ -293,7 +293,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="flush-udp.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
@@ -368,7 +368,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="flush-udp.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db2_ws" />
@@ -432,7 +432,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="flush-udp.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db2_ws1" />
@@ -516,7 +516,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="flush-udp.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws" />
@@ -589,7 +589,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="flush-udp.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws1" />
@@ -665,7 +665,7 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
+                     <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="flush-udp.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws2" />

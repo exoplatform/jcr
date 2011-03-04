@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableSessionLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -62,6 +63,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -114,6 +116,20 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    private final Fqn<String> lockRoot;
 
    private final boolean shareable;
+
+   private final LockActionNonTxAware<Integer, Object> getNumLocks;
+
+   private final LockActionNonTxAware<Boolean, Object> hasLocks;
+
+   private final LockActionNonTxAware<Boolean, String> isLockLive;
+
+   private final LockActionNonTxAware<Object, LockData> refresh;
+
+   private final LockActionNonTxAware<Boolean, String> lockExist;
+
+   private final LockActionNonTxAware<LockData, String> getLockDataById;
+
+   private final LockActionNonTxAware<List<LockData>, Object> getLockList;
 
    /**
     * Constructor.
@@ -279,6 +295,117 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
             return locksData;
          }
       };
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int getNumLocks()
+   {
+      try
+      {
+         return executeLockActionNonTxAware(getNumLocks, null);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return -1;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected boolean hasLocks()
+   {
+      try
+      {
+         return executeLockActionNonTxAware(hasLocks, null);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isLockLive(String nodeId) throws LockException
+   {
+      try
+      {
+         return executeLockActionNonTxAware(isLockLive, nodeId);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void refreshLockData(LockData newLockData) throws LockException
+   {
+      executeLockActionNonTxAware(refresh, newLockData);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean lockExist(String nodeId)
+   {
+      try
+      {
+         return executeLockActionNonTxAware(lockExist, nodeId);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected LockData getLockDataById(String nodeId)
+   {
+      try
+      {
+         return executeLockActionNonTxAware(getLockDataById, nodeId);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return null;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected synchronized List<LockData> getLockList()
+   {
+      try
+      {
+         return executeLockActionNonTxAware(getLockList, null);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return null;
    }
 
    /**
@@ -569,6 +696,59 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          node = AccessController.doPrivileged(action);
       }
       node.setResident(true);
+   }
+
+   /**
+    * Execute the given action outside a transaction. This is needed since the {@link Cache} used by implementation of {@link CacheableLockManager}
+    * to manage the persistence of its locks thanks to a {@link CacheLoader} and a {@link CacheLoader} lock the cache {@link Node}
+    * even for read operations which cause deadlock issue when a XA {@link Transaction} is already opened
+    * @throws LockException when a exception occurs
+    */
+   private <R, A> R executeLockActionNonTxAware(LockActionNonTxAware<R, A> action, A arg) throws LockException
+   {
+      Transaction tx = null;
+      try
+      {
+         if (tm != null)
+         {
+            try
+            {
+               tx = tm.suspend();
+            }
+            catch (Exception e)
+            {
+               LOG.warn("Cannot suspend the current transaction", e);
+            }
+         }
+         return action.execute(arg);
+      }
+      finally
+      {
+         if (tx != null)
+         {
+            try
+            {
+               tm.resume(tx);
+            }
+            catch (Exception e)
+            {
+               LOG.warn("Cannot resume the current transaction", e);
+            }
+         }
+      }
+   }
+
+   /**
+    * Actions that are not supposed to be called within a transaction
+    * 
+    * Created by The eXo Platform SAS
+    * Author : Nicolas Filotto 
+    *          nicolas.filotto@exoplatform.com
+    * 21 janv. 2010
+    */
+   protected static interface LockActionNonTxAware<R, A>
+   {
+      R execute(A arg) throws LockException;
    }
 
    /**
