@@ -39,6 +39,7 @@
       <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" syncRollbackPhase="false" syncCommitPhase="false"/>
       <jmxStatistics enabled="true"/>
       <deadlockDetection enabled="true" spinDuration="100"/>
+      <eviction strategy="NONE"/>
 
       <loaders passivation="false" shared="true" preload="true">
         <loader class="org.infinispan.loaders.jdbc.stringbased.JdbcStringBasedCacheStore" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">

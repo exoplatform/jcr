@@ -488,7 +488,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          // HSSQL
          if (dialect.equals(DBConstants.DB_DIALECT_HSQLDB))
          {
-            blobType = "OBJECT";
+            blobType = "VARBINARY(65535)";
          }
          // MYSQL
          else if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8))
