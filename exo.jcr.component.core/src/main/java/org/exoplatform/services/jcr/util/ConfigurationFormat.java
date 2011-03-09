@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.util;
 
+import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -40,6 +41,7 @@ public class ConfigurationFormat
    {
       try
       {
+         text = Deserializer.resolveNClean(text);
          return StringNumberParser.parseInt(text);
       }
       catch (Throwable e)
@@ -53,6 +55,7 @@ public class ConfigurationFormat
    {
       try
       {
+         text = Deserializer.resolveNClean(text);
          return StringNumberParser.parseLong(text);
       }
       catch (Throwable e)
@@ -66,6 +69,7 @@ public class ConfigurationFormat
    {
       try
       {
+         text = Deserializer.resolveNClean(text);
          return StringNumberParser.parseTime(text);
       }
       catch (Throwable e)
