@@ -145,6 +145,7 @@ public class RepositoryContainer extends ExoContainer
       {
          public Void run()
          {
+            context.setName(parent.getContext().getName() + "-" + name);
             parent.registerComponentInstance(name, RepositoryContainer.this);
             return null;
          }
@@ -180,6 +181,7 @@ public class RepositoryContainer extends ExoContainer
       {
          public Void run()
          {
+            context.setName(parent.getContext().getName() + "-" + name);
             parent.registerComponentInstance(name, RepositoryContainer.this);
             return null;
          }

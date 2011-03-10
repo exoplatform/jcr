@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.management.annotations.Managed;
@@ -31,6 +32,8 @@ import org.exoplatform.services.jcr.impl.core.SessionFactory;
 import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.security.PrivilegedAction;
 
 import javax.jcr.RepositoryException;
 
@@ -61,6 +64,14 @@ public class WorkspaceContainer extends ExoContainer
 
       repositoryContainer = parent;
       this.name = config.getName();
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            context.setName(repositoryContainer.getName() + "-" + name);
+            return null;
+         }
+      });
    }
 
    // Components access methods -------
