@@ -421,7 +421,6 @@
                   <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionDataManager.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestLockPerstistentDataManager.java</exclude>
                </excludes>
             </configuration>
          </plugin>
@@ -725,7 +724,6 @@
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestLinkedWorkspaceStorageCacheMetrics.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestCleanableFileStreamValueData.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/**/impl/**/TestLockPerstistentDataManager.java</exclude>
                         <!-- From TCK -->
                         <exclude>org/apache/jackrabbit/test/api/TestAll.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>

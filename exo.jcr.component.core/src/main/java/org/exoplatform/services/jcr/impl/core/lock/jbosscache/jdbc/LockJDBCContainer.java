@@ -18,12 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -67,7 +69,14 @@ public class LockJDBCContainer
             try
             {
                log.info("Creating LockManager DB tables.");
-               jdbcConn = dataSource.getConnection();
+
+               jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+               {
+                  public Connection run() throws Exception
+                  {
+                     return dataSource.getConnection();
+                  }
+               });
                // if table not exists, create it  
                // connection is closed by DB initializer
                initDatabase(dataSourceName, jdbcConn);
