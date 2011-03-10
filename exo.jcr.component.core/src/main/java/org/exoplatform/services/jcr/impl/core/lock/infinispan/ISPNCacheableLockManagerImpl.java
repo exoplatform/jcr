@@ -115,7 +115,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          // configure cache loader parameters with correct DB data-types
          configureJDBCCacheLoader(config.getLockManager());
 
-         cache = factory.createCache("Lock_" + config.getUniqueName(), config.getLockManager());
+         // ISPN adds regionId to table name and therefore for some db table name is too long
+         cache = factory.createCache("Lock_" + config.getUniqueName().hashCode(), config.getLockManager());
 
          // Context recall is a workaround of JDBCCacheLoader starting. 
          context.recall();

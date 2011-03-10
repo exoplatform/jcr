@@ -25,8 +25,6 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -156,34 +154,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
 
       try
       {
-         PrivilegedExceptionAction<DataSource> action = new PrivilegedExceptionAction<DataSource>()
-         {
-            public DataSource run() throws Exception
-            {
-               return (DataSource)new InitialContext().lookup(sn);
-            }
-         };
-         try
-         {
-            dataSource = AccessController.doPrivileged(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof NamingException)
-            {
-               throw (NamingException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
-         
+         dataSource = (DataSource)new InitialContext().lookup(sn);
 
          Connection conn = null;
          Statement st = null;
