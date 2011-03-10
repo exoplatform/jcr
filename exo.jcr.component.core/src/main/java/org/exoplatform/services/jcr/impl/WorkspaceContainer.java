@@ -60,7 +60,7 @@ public class WorkspaceContainer extends ExoContainer
       super(new MX4JComponentAdapterFactory(), parent);
 
       repositoryContainer = parent;
-      this.name = repositoryContainer.getName() + "-" + config.getName();
+      this.name = config.getName();
    }
 
    // Components access methods -------

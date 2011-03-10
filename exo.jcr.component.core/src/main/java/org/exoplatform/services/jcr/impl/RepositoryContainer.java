@@ -139,7 +139,7 @@ public class RepositoryContainer extends ExoContainer
 
       this.config = config;
       this.addNamespacePlugins = addNamespacePlugins;
-      this.name = parent.getContext().getName() + "-" + config.getName();
+      this.name = config.getName();
       
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
@@ -175,7 +175,7 @@ public class RepositoryContainer extends ExoContainer
          config.setAccessControl(AccessControlPolicy.OPTIONAL);
 
       this.config = config;
-      this.name = parent.getContext().getName() + "-" + config.getName();
+      this.name = config.getName();
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()
