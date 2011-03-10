@@ -68,7 +68,7 @@ public class WorkspaceContainer extends ExoContainer
       {
          public Void run()
          {
-            context.setName(repositoryContainer.getName() + "-" + name);
+            context.setName(repositoryContainer.getContext().getName() + "-" + name);
             return null;
          }
       });
