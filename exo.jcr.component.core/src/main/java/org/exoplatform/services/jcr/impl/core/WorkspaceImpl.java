@@ -51,7 +51,6 @@ import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -571,18 +570,39 @@ public class WorkspaceImpl implements ExtendedWorkspace
       // for restore operation
       List<String> existedIdentifiers = new ArrayList<String>(); // InWorkspace
       List<VersionImpl> notExistedVersions = new ArrayList<VersionImpl>();
-      LinkedHashMap<VersionImpl, NodeData> existedVersions = new LinkedHashMap<VersionImpl, NodeData>();
 
       TransactionableDataManager dataManager = session.getTransientNodesManager().getTransactManager();
-
+      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
       for (Version v : versions)
       {
          String versionableIdentifier = v.getContainingHistory().getVersionableUUID();
          NodeData node = (NodeData)dataManager.getItemData(versionableIdentifier);
          if (node != null)
          {
-            existedVersions.put((VersionImpl)v, node);
             existedIdentifiers.add(versionableIdentifier);
+
+            // restore version at existed parent
+            try
+            {
+
+               NodeData destParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
+               NodeData vh = (NodeData)dataManager.getItemData(((VersionImpl)v).getParentIdentifier()); // version parent
+               // it's a VH
+               VersionHistoryDataHelper historyHelper = new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
+
+               changesLog.addAll(((VersionImpl)v).restoreLog(destParent, node.getQPath().getName(), historyHelper,
+                  session, removeExisting, changesLog).getAllStates());
+            }
+            catch (ItemExistsException e)
+            {
+               throw new ItemExistsException("Workspace restore. Can't restore a node. "
+                  + v.getContainingHistory().getVersionableUUID() + ". " + e.getMessage(), e);
+            }
+            catch (RepositoryException e)
+            {
+               throw new RepositoryException("Workspace restore. Can't restore a node. "
+                  + v.getContainingHistory().getVersionableUUID() + ". Repository error: " + e.getMessage(), e);
+            }
          }
          else
          {
@@ -614,40 +634,23 @@ public class WorkspaceImpl implements ExtendedWorkspace
                notExistedVersions.add((VersionImpl)v);
                continue;
             }
+
+            if (versionableParentIdentifier == null)
+            {
+               //check in changes log
+               ItemState itemState = changesLog.getItemState(versionableIdentifier);
+               if (itemState != null && !itemState.isDeleted())
+               {
+                  notExistedVersions.add((VersionImpl)v);
+                  continue;
+               }
+            }
+
             throw new VersionException(
                "No such node (for version, from the array of versions, "
                   + "that corresponds to a missing node in the workspace, there must also be a parent in the array). UUID: "
                   + versionableIdentifier);
 
-         }
-      }
-
-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
-
-      for (VersionImpl v : existedVersions.keySet())
-      {
-         try
-         {
-            NodeData node = existedVersions.get(v);
-
-            NodeData destParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
-            NodeData vh = (NodeData)dataManager.getItemData(v.getParentIdentifier()); // version
-            // parent
-            // it's a VH
-            VersionHistoryDataHelper historyHelper = new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
-
-            changesLog.addAll(v.restoreLog(destParent, node.getQPath().getName(), historyHelper, session,
-               removeExisting, changesLog).getAllStates());
-         }
-         catch (ItemExistsException e)
-         {
-            throw new ItemExistsException("Workspace restore. Can't restore a node. "
-               + v.getContainingHistory().getVersionableUUID() + ". " + e.getMessage(), e);
-         }
-         catch (RepositoryException e)
-         {
-            throw new RepositoryException("Workspace restore. Can't restore a node. "
-               + v.getContainingHistory().getVersionableUUID() + ". Repository error: " + e.getMessage(), e);
          }
       }
 
