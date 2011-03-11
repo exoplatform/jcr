@@ -83,20 +83,6 @@ public class TestSessionDataManager extends JcrImplBaseTest
       // modificationManager.getTransactManager().saveItem(testRoot);
    }
 
-   @Override
-   public void tearDown() throws Exception
-   {
-      if (log.isDebugEnabled())
-         log.debug(" >before delete> " + modificationManager.dump());
-      modificationManager.delete(testRoot.nodeData());
-      if (log.isDebugEnabled())
-         log.debug(" >after delete> " + modificationManager.dump());
-      modificationManager.commit(testRoot.nodeData().getQPath());
-
-      // testRoot.remove();
-      // testRoot.save();
-   }
-
    public void testItemReferencePool() throws Exception
    {
 
