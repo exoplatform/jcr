@@ -167,7 +167,7 @@ public class ISPNCacheFactory<K, V>
          CACHE_MANAGERS.put(gc, manager);
          if (log.isInfoEnabled())
          {
-            log.info("A new JBoss Cache instance has been registered for the region " + regionId
+            log.info("A new ISPN Cache Manager instance has been registered for the region " + regionId
                + " and the container " + container.getContext().getName());
          }
       }
