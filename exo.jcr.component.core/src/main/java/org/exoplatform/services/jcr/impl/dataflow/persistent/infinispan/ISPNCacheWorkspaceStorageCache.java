@@ -94,6 +94,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ISPNCacheWorkspaceStorageCache");
 
+   private final boolean enabled;
+   
    protected final BufferedISPNCache cache;
 
    /**
@@ -217,7 +219,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
-
+      this.enabled = wsConfig.getCache().isEnabled();
+      
       // create cache using custom factory
       ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
 
@@ -612,7 +615,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public boolean isEnabled()
    {
-      return true;
+      return enabled;
    }
 
    /**
