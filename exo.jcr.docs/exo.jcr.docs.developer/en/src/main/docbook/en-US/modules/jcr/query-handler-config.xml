@@ -7,87 +7,90 @@
   <title>QueryHandler configuration</title>
 
   <section>
-    <title>How does it work?</title>
+    <title>Indexing in clustered environment</title>
 
-    <para>Let's talk about indexing content in cluster.</para>
+    <para>JCR offers multiple indexing strategies. They include both for
+    standalone and clustered environments using the advantages of running in a
+    single JVM or doing the best to use all resources available in cluster.
+    JCR uses Lucene library as underlying search and indexing engine, but it
+    has several limitations that greatly reduce possibilities and limits the
+    usage of cluster advantages. That's why eXo JCR offers three strategies
+    that are suitable for it's own usecases. They are standalone, clustered
+    with shared index and clustered with local indexes. Each one has it's pros
+    and cons. </para>
 
-    <para>For couple of reasons, we can't replicate index. It means that some
-    data added and indexed on one cluster node will be replicated to another
-    cluster node, but will not be indexed on that node.</para>
+    <para>Stanadlone strategy provides a stack of indexes to achieve greater
+    performance within single JVM. </para>
 
-    <para><citetitle>So, how do the indexing works in cluster
-    environment?</citetitle></para>
+    <mediaobject>
+      <imageobject>
+        <imagedata align="center"
+                   fileref="images/diagram-standalone-index.png" />
+      </imageobject>
+    </mediaobject>
 
-    <para>As, we can not index the same data on all nodes of cluster, we must
-    index it on one node. Node, that can index data and do changes on lucene
-    index, is called "coordinator". Coordinator-node is choosen automaticaly,
-    so we do not need special configuration for coordinator.</para>
+    <para>It combines in-memory buffer index directory with delayed
+    file-system flushing. This index is called "Volatile" and it is invoked in
+    searches also. Within some conditions volatile index is flushed to the
+    persistent storage (file system) as new index directory. This allows to
+    achieve great results for write operations. </para>
 
-    <para>But, how can another nodes save their changes to lucene
-    index?</para>
+    <para>Clustered implementation with local indexes is built upon same
+    strategy with volatile in-memory index buffer along with delayed flushing
+    on persistent storage. </para>
 
-    <para>First of all, data is already saved and replicated to another
-    cluster-nodes, so we need only deliver message like "we need to index this
-    data" to coordinator. Thats why Jboss-cache is used.</para>
+    <mediaobject>
+      <imageobject>
+        <imagedata align="center" fileref="images/diagram-local-index.png" />
+      </imageobject>
+    </mediaobject>
 
-    <para>All nodes of cluster writes messages into JBoss-cache but only
-    coordinator takes those messages and makes changes Lucene index.</para>
+    <para>As this implementation designed for clustered environment it has
+    additional mechanisms for data delivery within cluster. Actual text
+    extraction jobs done on the same node that does content operations (i.e.
+    write operation). Prepared "documents" (Lucene term that means block of
+    data ready for indexing) are replicated withing cluster nodes and
+    processed by local indexes. So each cluster instance has the same index
+    content. When new node joins the cluster it has no initial index, so it
+    must be created. There are some supported ways of doing this operation.
+    The simplest is to simply copy the index manually but this is not intended
+    for use. If no initial index found JCR uses automated sceneries. They are
+    controlled via configuration (see "index-recovery-mode" parameter)
+    offering full re-indexing from database or copying from another cluster
+    node. </para>
 
-    <para><citetitle>How do the search works in cluster
-    environment?</citetitle></para>
+    <para>For some reasons having a multiple index copies on each instance can
+    be costly. So shared index can be used instead (see diagram below).
+    </para>
 
-    <para>Search engine do not works with indexer, coordinator, etc. Search
-    needs only lucene index. But only one cluster node can change lucene index
-    - asking you. Yes - lucene index is shared. So, all cluster nodes must be
-    configured to use lucene index from shared directory.</para>
+    <mediaobject>
+      <imageobject>
+        <imagedata align="center" fileref="images/diagram-shared-index.png" />
+      </imageobject>
+    </mediaobject>
 
-    <para>A little bit about indexing process (no matter, cluster or not):
-    Indexer does not write changes to FS lucene index immediately. At first,
-    Indexer write the changes to Volatile index. If Volatile index size become
-    1Mb or more, it is flushed to FS. Also, there is timer, that flushes
-    volatile index by timeout. Volatile index timeout is configured by
-    "max-volatile-time" paremeter.</para>
+    <para>This indexing strategy combines advantages of in-memory index along
+    with shared persistent index offering "near" real time search
+    capabilities. This means that newly added content is accessible via search
+    practically immediately. This strategy allows nodes to index data in their
+    own volatile (in-memory) indexes, but persistent indexes are managed by
+    single "coordinator" node only. Each cluster instance has a read access
+    for shared index to perform queries combining search results found in own
+    in-memory index also. Take in account that shared folder must be
+    configured in your system environment (i.e. mounted NFS folder). But this
+    strategy in some extremely rare cases can have a bit different volatile
+    indexes within cluster instances for a while. In a few seconds they will
+    be up2date.</para>
 
     <para>See more about <link linkend="JCR.SearchConfiguration">Search
     Configuration</link>.</para>
-
-    <para>Common scheme of Shared Index<mediaobject>
-        <imageobject>
-          <imagedata fileref="images/diagram-shared-index.png" />
-        </imageobject>
-      </mediaobject></para>
   </section>
 
   <section>
     <title>Configuration</title>
 
     <section>
-      <title>Common requirements</title>
-
-      <para>Now, let's see what we need to run Search engine in cluster
-      environment.<itemizedlist>
-          <listitem>
-            <para>Shared directory for storing Lucene index (i.e. NFS);</para>
-          </listitem>
-
-          <listitem>
-            <para>Changes filter configured as
-            org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter;</para>
-
-            <note>
-              <para>This filter ignore changes on non-coordinator nodes, and
-              index changes on coordinator node.</para>
-            </note>
-          </listitem>
-
-          <listitem>
-            <para>configure JBoss-cache, course;</para>
-          </listitem>
-        </itemizedlist></para>
-    </section>
-
-    <section>
-      <title>Query-handler configuration</title>
+      <title>Query-handler configuration overview</title>
 
       <para>Configuration example:<programlisting>&lt;workspace name="ws"&gt;
    &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
@@ -122,6 +125,13 @@
                 <entry>index-dir</entry>
 
                 <entry>path to index</entry>
+              </row>
+
+              <row>
+                <entry>changesfilter-class</entry>
+
+                <entry>template of JBoss-cache configuration for all
+                query-handlers in repository</entry>
               </row>
 
               <row>
@@ -188,9 +198,80 @@
     </section>
 
     <section>
+      <title>Standalone strategy</title>
+
+      <para>When running JCR in standalone usually standalone indexing is used
+      also. Such parameters as "changesfilter-class", "jgroups-configuration"
+      and all the "jbosscache-*" must be skipped and not defined. Like the
+      configuration below.<programlisting>&lt;workspace name="ws"&gt;
+   &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+      &lt;properties&gt;
+         &lt;property name="index-dir" value="shareddir/index/db1/ws" /&gt;
+         &lt;property name="max-volatile-time" value="60" /&gt;
+         &lt;property name="rdbms-reindexing" value="true" /&gt;
+         &lt;property name="reindexing-page-size" value="1000" /&gt;
+         &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
+      &lt;/properties&gt;
+   &lt;/query-handler&gt;
+&lt;/workspace&gt;</programlisting> </para>
+    </section>
+
+    <section>
+      <title>Cluster-ready indexing strategies</title>
+
+      <para>For both cluster-ready implementations JBoss Cache, JGroups and
+      Changes Filter values must be defined. Shared index requires some kind
+      of remote or shared file system to be attached in a system (i.e. NFS,
+      SMB or etc). Indexing directory ("indexDir" value) must point to it.
+      Setting "changesfilter-class" to
+      "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"
+      will enable shared index implementation.<programlisting>&lt;workspace name="ws"&gt;
+   &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+      &lt;properties&gt;
+         &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
+         &lt;property name="changesfilter-class"
+            value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
+         &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
+         &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
+         &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
+         &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
+         &lt;property name="max-volatile-time" value="60" /&gt;
+         &lt;property name="rdbms-reindexing" value="true" /&gt;
+         &lt;property name="reindexing-page-size" value="1000" /&gt;
+         &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
+      &lt;/properties&gt;
+   &lt;/query-handler&gt;
+&lt;/workspace&gt;</programlisting> In order to use cluster-ready strategy
+      based on local indexes, when each node has own copy of index on local
+      file system, the following configuration must be applied. Indexing
+      directory must point to any folder on local file system and
+      "changesfilter-class" must be set to
+      "org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter".</para>
+
+      <para><programlisting>&lt;workspace name="ws"&gt;
+   &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+      &lt;properties&gt;
+         &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
+         &lt;property name="changesfilter-class"
+            value="org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter" /&gt;
+         &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
+         &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
+         &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
+         &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
+         &lt;property name="max-volatile-time" value="60" /&gt;
+         &lt;property name="rdbms-reindexing" value="true" /&gt;
+         &lt;property name="reindexing-page-size" value="1000" /&gt;
+         &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
+      &lt;/properties&gt;
+   &lt;/query-handler&gt;
+&lt;/workspace&gt;</programlisting></para>
+    </section>
+
+    <section>
       <title>JBoss-Cache template configuration</title>
 
-      <para>JBoss-Cache template configuration for query handler.</para>
+      <para>JBoss-Cache template configuration for query handler is about the
+      same for both clustered strategies.</para>
 
       <para>jbosscache-indexer.xml<programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;

@@ -14,11 +14,13 @@
    height="1180"
    id="svg2"
    version="1.1"
-   inkscape:version="0.47pre4 r22446"
-   sodipodi:docname="cluster.svg"
+   inkscape:version="0.48.0 r9654"
+   sodipodi:docname="diagram-source.svg"
    inkscape:export-filename="/home/nikolaz/Desktop/cluster.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
+  <title
+     id="title3567">eXO JCR Diagram sources</title>
   <defs
      id="defs4">
     <inkscape:perspective
@@ -903,6 +905,442 @@
        fx="172.86125"
        fy="30.079779"
        r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="radialGradient3486"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-2.3220185e-7,6.539924e-8,0.30700819,48.830151,138.07367)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="radialGradient3490"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-2.3220185e-7,6.539924e-8,0.30700819,48.830151,138.07367)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3492"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="369.29129"
+       x2="167.36424"
+       y2="369.29129" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3494"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="394.31128"
+       x2="130.18889"
+       y2="394.31128" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3679"
+       id="linearGradient3496"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="130.10934"
+       y1="378.4386"
+       x2="167.42206"
+       y2="378.4386" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3498"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.49287173,-1.4585165e-7,2.4715537e-8,0.08114378,-1050.957,435.79549)"
+       cx="172.86125"
+       cy="30.079779"
+       fx="172.86125"
+       fy="30.079779"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3555"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,71.6568,1292.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4019"
+       id="radialGradient3568"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,71.6568,1292.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3624"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="369.29129"
+       x2="167.36424"
+       y2="369.29129" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3626"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="394.31128"
+       x2="130.18889"
+       y2="394.31128" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3679"
+       id="linearGradient3628"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="130.10934"
+       y1="378.4386"
+       x2="167.42206"
+       y2="378.4386" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3630"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.49287173,-1.4585165e-7,2.4715537e-8,0.08114378,-1050.957,435.79549)"
+       cx="172.86125"
+       cy="30.079779"
+       fx="172.86125"
+       fy="30.079779"
+       r="114.28571" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3687"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="369.29129"
+       x2="167.36424"
+       y2="369.29129" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3689"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="394.31128"
+       x2="130.18889"
+       y2="394.31128" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3679"
+       id="linearGradient3691"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="130.10934"
+       y1="378.4386"
+       x2="167.42206"
+       y2="378.4386" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3693"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.49287173,-1.4585165e-7,2.4715537e-8,0.08114378,-1050.957,435.79549)"
+       cx="172.86125"
+       cy="30.079779"
+       fx="172.86125"
+       fy="30.079779"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4019"
+       id="radialGradient4601"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,-128.3432,1292.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient4603"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,-128.3432,1292.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient4605"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.49287173,-1.4585165e-7,2.4715537e-8,0.08114378,-1050.957,435.79549)"
+       cx="172.86125"
+       cy="30.079779"
+       fx="172.86125"
+       fy="30.079779"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4019"
+       id="radialGradient4625"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,351.6568,1292.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient4627"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,351.6568,1292.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient4629"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.49287173,-1.4585165e-7,2.4715537e-8,0.08114378,-1050.957,435.79549)"
+       cx="172.86125"
+       cy="30.079779"
+       fx="172.86125"
+       fy="30.079779"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="radialGradient3615"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-2.3220185e-7,6.539924e-8,0.30700819,48.830151,138.07367)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3617"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="369.29129"
+       x2="167.36424"
+       y2="369.29129" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3619"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="394.31128"
+       x2="130.18889"
+       y2="394.31128" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3679"
+       id="linearGradient3621"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="130.10934"
+       y1="378.4386"
+       x2="167.42206"
+       y2="378.4386" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3623"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.49287173,-1.4585165e-7,2.4715537e-8,0.08114378,-1050.957,435.79549)"
+       cx="172.86125"
+       cy="30.079779"
+       fx="172.86125"
+       fy="30.079779"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4019"
+       id="radialGradient3679"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,71.6568,1652.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4019"
+       id="radialGradient3692"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,71.6568,1652.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4019"
+       id="radialGradient3712"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,-128.3432,1652.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3714"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,-128.3432,1652.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3716"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.49287173,-1.4585165e-7,2.4715537e-8,0.08114378,-1050.957,435.79549)"
+       cx="172.86125"
+       cy="30.079779"
+       fx="172.86125"
+       fy="30.079779"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4019"
+       id="radialGradient3736"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,351.6568,1652.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3738"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,351.6568,1652.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3740"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.49287173,-1.4585165e-7,2.4715537e-8,0.08114378,-1050.957,435.79549)"
+       cx="172.86125"
+       cy="30.079779"
+       fx="172.86125"
+       fy="30.079779"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590-0"
+       id="radialGradient3719"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.49287173,-1.4585165e-7,2.4715537e-8,0.08114378,-1050.957,435.79549)"
+       cx="172.86125"
+       cy="30.079779"
+       fx="172.86125"
+       fy="30.079779"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4019"
+       id="radialGradient3775"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,-28.3432,1912.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4019"
+       id="radialGradient3788"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3012875,-4.386106e-7,1.8785129e-7,0.48024927,-28.3432,1912.6379)"
+       cx="192.30554"
+       cy="128.54347"
+       fx="192.30554"
+       fy="128.54347"
+       r="114.28571" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3790"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="369.29129"
+       x2="167.36424"
+       y2="369.29129" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3590"
+       id="linearGradient3792"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="71.50563"
+       y1="394.31128"
+       x2="130.18889"
+       y2="394.31128" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3679"
+       id="linearGradient3794"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1052.2075,-146.87721)"
+       x1="130.10934"
+       y1="378.4386"
+       x2="167.42206"
+       y2="378.4386" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -911,14 +1349,14 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.3535534"
-     inkscape:cx="232.14363"
-     inkscape:cy="647.86293"
+     inkscape:zoom="0.7071068"
+     inkscape:cx="443.18636"
+     inkscape:cy="-987.03691"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1600"
-     inkscape:window-height="850"
+     inkscape:window-width="1680"
+     inkscape:window-height="1000"
      inkscape:window-x="0"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
@@ -933,7 +1371,17 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title>eXO JCR Diagram sources</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Nikolay Zamosenchuk / eXo Platform SAS.</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Copyright (C) 2009-2011 eXo Platform SAS.</dc:title>
+          </cc:Agent>
+        </dc:rights>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -2426,6 +2874,1413 @@
                sodipodi:role="line">indexer</tspan></text>
         </g>
       </g>
+    </g>
+    <g
+       id="g3892">
+      <rect
+         style="fill:url(#radialGradient3568);fill-opacity:1;stroke:#000000;stroke-opacity:1;filter:url(#filter5884)"
+         ry="7"
+         rx="7"
+         y="1299.4851"
+         x="239.94072"
+         height="89.972282"
+         width="163.92166"
+         id="rect3353"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <g
+         style="opacity:0.26200873"
+         transform="matrix(0.48339876,0,0,2.5152896,219.4854,470.78522)"
+         id="g3355"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <path
+           id="path3358"
+           d="m -74.25,344.8125 0,15 730.4375,0 0,-15 -730.4375,0 z"
+           style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#000000;fill-opacity:1;stroke:none;stroke-width:15;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Andale Mono;-inkscape-font-specification:Andale Mono"
+           inkscape:connector-curvature="0" />
+      </g>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         sodipodi:linespacing="80.000001%"
+         x="349.88257"
+         y="1210.3958"
+         id="text3360"
+         style="font-size:20px;font-style:normal;font-weight:normal;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1210.3958"
+           x="349.88257"
+           id="tspan3362"
+           sodipodi:role="line">local</tspan><tspan
+           id="tspan3364"
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1226.3958"
+           x="349.88257"
+           sodipodi:role="line">file system</tspan></text>
+      <rect
+         id="rect3376"
+         width="163.92166"
+         height="89.972282"
+         x="239.94072"
+         y="1299.4851"
+         rx="7"
+         ry="7"
+         style="fill:url(#radialGradient3555);fill-opacity:1.0"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="257.58612"
+         y="1365.818"
+         id="text3378"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           id="tspan3380"
+           x="257.58612"
+           y="1365.818">JCR #2</tspan></text>
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         sodipodi:nodetypes="cs"
+         id="path3396"
+         d="m 383.67405,1292.3976 c -0.462,-34.8901 -0.0914,-19.4649 -0.57286,-55.734"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow1Mstart);marker-mid:none;marker-end:url(#Arrow1Mend)"
+         inkscape:connector-curvature="0" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         id="text3402"
+         y="1132.1257"
+         x="258.55304"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"><tspan
+           style="font-size:30px"
+           id="tspan3404"
+           y="1132.1257"
+           x="258.55304"
+           sodipodi:role="line">Local index</tspan></text>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         x="462.73706"
+         y="1361.521"
+         id="text3406"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle;opacity:0.39738045;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"
+         sodipodi:linespacing="80.000001%"><tspan
+           style="font-size:15px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1361.521"
+           x="462.73706"
+           sodipodi:role="line"
+           id="tspan3408">JBoss Cache</tspan></text>
+      <g
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         transform="translate(1283.846,1000.7636)"
+         id="g3410">
+        <g
+           style="fill:#000000;fill-opacity:1;filter:url(#filter3958)"
+           id="g3412">
+          <path
+             id="path3414"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3416"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3418"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3420"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3422"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3424"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           style="fill:none"
+           id="g3426">
+          <path
+             id="path3428"
+             style="fill:#e9e9ff;fill-rule:evenodd;stroke:none"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3430"
+             style="fill:#353564;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3432"
+             style="fill:#4d4d9f;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3434"
+             style="fill:url(#linearGradient3492);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3436"
+             style="fill:url(#linearGradient3494);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3438"
+             style="fill:url(#linearGradient3496);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+      <path
+         style="opacity:0.59825331999999998;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow2Lstart-53);marker-end:url(#Arrow2Lend-8)"
+         d="m 407.7407,1370.6464 107.44101,0"
+         id="path3448"
+         sodipodi:nodetypes="cc"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"
+         inkscape:connector-curvature="0" />
+      <g
+         id="g3450"
+         transform="translate(1277.846,878.7636)"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           style="fill:#000000;fill-opacity:1;filter:url(#filter6060)"
+           ry="4"
+           rx="4"
+           y="428.96268"
+           x="-1022.2118"
+           height="17.132936"
+           width="135.1803"
+           id="rect3452" />
+        <rect
+           id="rect3454"
+           width="135.1803"
+           height="17.132936"
+           x="-1022.2118"
+           y="428.96268"
+           rx="4"
+           ry="4"
+           style="fill:url(#radialGradient3498);fill-opacity:1" />
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           x="-1004.0707"
+           y="442.27301"
+           id="text3456"><tspan
+             sodipodi:role="line"
+             id="tspan3458"
+             x="-1004.0707"
+             y="442.27301"
+             style="font-size:15px">Volatile index</tspan></text>
+      </g>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         x="461.1297"
+         y="1385.8094"
+         id="text3464"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"
+         sodipodi:linespacing="80.000001%"><tspan
+           style="font-size:10px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1385.8094"
+           x="461.1297"
+           sodipodi:role="line"
+           id="tspan3466">list of new/updated</tspan><tspan
+           style="font-size:10px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1393.8094"
+           x="461.1297"
+           sodipodi:role="line"
+           id="tspan3468">content</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         id="text3470"
+         y="1260.0768"
+         x="375.82294"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           x="380.59833"
+           y="1260.0768"
+           style="font-size:15px;text-align:end;text-anchor:end"
+           id="tspan3472">flush </tspan><tspan
+           sodipodi:role="line"
+           x="375.82294"
+           y="1278.8268"
+           style="font-size:15px;text-align:end;text-anchor:end"
+           id="tspan3474">volatile index</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:20px;font-style:normal;font-weight:normal;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         id="text3570"
+         y="1210.3958"
+         x="149.88257"
+         sodipodi:linespacing="80.000001%"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           id="tspan3572"
+           x="149.88257"
+           y="1210.3958"
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle">local</tspan><tspan
+           sodipodi:role="line"
+           x="149.88257"
+           y="1226.3958"
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           id="tspan3574">file system</tspan></text>
+      <path
+         inkscape:connector-curvature="0"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow1Mstart);marker-mid:none;marker-end:url(#Arrow1Mend)"
+         d="m 183.67405,1292.3976 c -0.462,-34.8901 -0.0914,-19.4649 -0.57286,-55.734"
+         id="path3576"
+         sodipodi:nodetypes="cs"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <g
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         id="g3578"
+         transform="translate(1083.846,1000.7636)">
+        <g
+           id="g3580"
+           style="fill:#000000;fill-opacity:1;filter:url(#filter3958)">
+          <path
+             inkscape:connector-curvature="0"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             id="path3582" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             id="path3584" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             id="path3586" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             id="path3588" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             id="path3590" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             id="path3592" />
+        </g>
+        <g
+           id="g3594"
+           style="fill:none">
+          <path
+             inkscape:connector-curvature="0"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             style="fill:#e9e9ff;fill-rule:evenodd;stroke:none"
+             id="path3596" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             style="fill:#353564;fill-rule:evenodd;stroke:none"
+             id="path3598" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             style="fill:#4d4d9f;fill-rule:evenodd;stroke:none"
+             id="path3600" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             style="fill:url(#linearGradient3624);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             id="path3602" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             style="fill:url(#linearGradient3626);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             id="path3604" />
+          <path
+             inkscape:connector-curvature="0"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             style="fill:url(#linearGradient3628);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             id="path3606" />
+        </g>
+      </g>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         x="175.82294"
+         y="1260.0768"
+         id="text3618"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           id="tspan3620"
+           style="font-size:15px;text-align:end;text-anchor:end"
+           y="1260.0768"
+           x="180.59833"
+           sodipodi:role="line">flush </tspan><tspan
+           id="tspan3622"
+           style="font-size:15px;text-align:end;text-anchor:end"
+           y="1278.8268"
+           x="175.82294"
+           sodipodi:role="line">volatile index</tspan></text>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         sodipodi:linespacing="80.000001%"
+         x="629.88257"
+         y="1210.3958"
+         id="text3632"
+         style="font-size:20px;font-style:normal;font-weight:normal;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1210.3958"
+           x="629.88257"
+           id="tspan3634"
+           sodipodi:role="line">local</tspan><tspan
+           id="tspan3636"
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1226.3958"
+           x="629.88257"
+           sodipodi:role="line">file system</tspan></text>
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         sodipodi:nodetypes="cs"
+         id="path3638"
+         d="m 663.67405,1292.3976 c -0.462,-34.8901 -0.0914,-19.4649 -0.57286,-55.734"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow1Mstart);marker-mid:none;marker-end:url(#Arrow1Mend)"
+         inkscape:connector-curvature="0" />
+      <g
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         transform="translate(1563.846,1000.7636)"
+         id="g3640">
+        <g
+           style="fill:#000000;fill-opacity:1;filter:url(#filter3958)"
+           id="g3642">
+          <path
+             id="path3644"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3646"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3648"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3650"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3652"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3654"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           style="fill:none"
+           id="g3656">
+          <path
+             id="path3658"
+             style="fill:#e9e9ff;fill-rule:evenodd;stroke:none"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3660"
+             style="fill:#353564;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3662"
+             style="fill:#4d4d9f;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3664"
+             style="fill:url(#linearGradient3687);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3666"
+             style="fill:url(#linearGradient3689);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3668"
+             style="fill:url(#linearGradient3691);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         id="text3681"
+         y="1260.0768"
+         x="655.82294"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           x="660.59833"
+           y="1260.0768"
+           style="font-size:15px;text-align:end;text-anchor:end"
+           id="tspan3683">flush </tspan><tspan
+           sodipodi:role="line"
+           x="655.82294"
+           y="1278.8268"
+           style="font-size:15px;text-align:end;text-anchor:end"
+           id="tspan3685">volatile index</tspan></text>
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         id="rect4583"
+         width="163.92166"
+         height="89.972282"
+         x="39.94072"
+         y="1299.4851"
+         rx="7"
+         ry="7"
+         style="fill:url(#radialGradient4601);fill-opacity:1;stroke:#000000;stroke-opacity:1;filter:url(#filter5884)" />
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         style="fill:url(#radialGradient4603);fill-opacity:1"
+         ry="7"
+         rx="7"
+         y="1299.4851"
+         x="39.94072"
+         height="89.972282"
+         width="163.92166"
+         id="rect4585" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         id="text4587"
+         y="1365.818"
+         x="57.586121"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="1365.818"
+           x="57.586121"
+           id="tspan4589"
+           sodipodi:role="line">JCR #1</tspan></text>
+      <g
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         transform="translate(1077.846,878.7636)"
+         id="g4591">
+        <rect
+           id="rect4593"
+           width="135.1803"
+           height="17.132936"
+           x="-1022.2118"
+           y="428.96268"
+           rx="4"
+           ry="4"
+           style="fill:#000000;fill-opacity:1;filter:url(#filter6060)" />
+        <rect
+           style="fill:url(#radialGradient4605);fill-opacity:1"
+           ry="4"
+           rx="4"
+           y="428.96268"
+           x="-1022.2118"
+           height="17.132936"
+           width="135.1803"
+           id="rect4595" />
+        <text
+           id="text4597"
+           y="442.27301"
+           x="-1004.0707"
+           style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           xml:space="preserve"><tspan
+             style="font-size:15px"
+             y="442.27301"
+             x="-1004.0707"
+             id="tspan4599"
+             sodipodi:role="line">Volatile index</tspan></text>
+      </g>
+      <rect
+         style="fill:url(#radialGradient4625);fill-opacity:1;stroke:#000000;stroke-opacity:1;filter:url(#filter5884)"
+         ry="7"
+         rx="7"
+         y="1299.4851"
+         x="519.94073"
+         height="89.972282"
+         width="163.92166"
+         id="rect4607"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <rect
+         id="rect4609"
+         width="163.92166"
+         height="89.972282"
+         x="519.94073"
+         y="1299.4851"
+         rx="7"
+         ry="7"
+         style="fill:url(#radialGradient4627);fill-opacity:1"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="537.58612"
+         y="1365.818"
+         id="text4611"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           id="tspan4613"
+           x="537.58612"
+           y="1365.818">JCR #n</tspan></text>
+      <g
+         id="g4615"
+         transform="translate(1557.846,878.7636)"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           style="fill:#000000;fill-opacity:1;filter:url(#filter6060)"
+           ry="4"
+           rx="4"
+           y="428.96268"
+           x="-1022.2118"
+           height="17.132936"
+           width="135.1803"
+           id="rect4617" />
+        <rect
+           id="rect4619"
+           width="135.1803"
+           height="17.132936"
+           x="-1022.2118"
+           y="428.96268"
+           rx="4"
+           ry="4"
+           style="fill:url(#radialGradient4629);fill-opacity:1" />
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           x="-1004.0707"
+           y="442.27301"
+           id="text4621"><tspan
+             sodipodi:role="line"
+             id="tspan4623"
+             x="-1004.0707"
+             y="442.27301"
+             style="font-size:15px">Volatile index</tspan></text>
+      </g>
+      <path
+         inkscape:connector-curvature="0"
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         sodipodi:nodetypes="cc"
+         id="path4845"
+         d="m 207.7407,1370.6464 26.83084,0"
+         style="opacity:0.59825332;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow2Lstart-53);marker-end:url(#Arrow2Lend-8)" />
+    </g>
+    <g
+       id="g3817"
+       inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-shared-index.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         style="fill:url(#radialGradient3692);fill-opacity:1;stroke:#000000;stroke-opacity:1;filter:url(#filter5884)"
+         ry="7"
+         rx="7"
+         y="1659.4851"
+         x="239.94072"
+         height="89.972282"
+         width="163.92166"
+         id="rect3479"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <g
+         style="opacity:0.26200873"
+         transform="matrix(0.48339876,0,0,2.5152896,219.4854,830.78522)"
+         id="g3481"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <path
+           id="path3483"
+           d="m -74.25,344.8125 0,15 730.4375,0 0,-15 -730.4375,0 z"
+           style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#000000;fill-opacity:1;stroke:none;stroke-width:15;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Andale Mono;-inkscape-font-specification:Andale Mono"
+           inkscape:connector-curvature="0" />
+      </g>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         sodipodi:linespacing="80.000001%"
+         x="349.88257"
+         y="1570.3958"
+         id="text3485"
+         style="font-size:20px;font-style:normal;font-weight:normal;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1570.3958"
+           x="349.88257"
+           id="tspan3487"
+           sodipodi:role="line">shared</tspan><tspan
+           id="tspan3489"
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1586.3958"
+           x="349.88257"
+           sodipodi:role="line">file system</tspan></text>
+      <rect
+         id="rect3501"
+         width="163.92166"
+         height="89.972282"
+         x="239.94072"
+         y="1659.4851"
+         rx="7"
+         ry="7"
+         style="fill:url(#radialGradient3679);fill-opacity:1"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="257.58612"
+         y="1725.818"
+         id="text3503"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           id="tspan3505"
+           x="257.58612"
+           y="1725.818">JCR #2</tspan></text>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         x="314.95868"
+         y="1764.8414"
+         id="text3517"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:15px"
+           y="1764.8414"
+           x="314.95868"
+           id="tspan3519"
+           sodipodi:role="line">coordinator</tspan></text>
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         sodipodi:nodetypes="cs"
+         id="path3521"
+         d="m 383.67405,1652.3976 c -0.462,-34.8901 -0.0914,-19.4649 -0.57286,-55.734"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow1Mstart);marker-mid:none;marker-end:url(#Arrow1Mend)"
+         inkscape:connector-curvature="0" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         sodipodi:nodetypes="cs"
+         id="path3523"
+         d="m 128.0635,1639.5331 c 10.7939,-52.8187 82.8737,-104.2973 172.7081,-112.2878"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:8, 8;stroke-dashoffset:0;marker-start:url(#Arrow1Mstart);marker-mid:none;marker-end:none"
+         inkscape:connector-curvature="0" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         sodipodi:nodetypes="cs"
+         id="path3525"
+         d="m 614.84648,1636.6393 c -13.00506,-60.3041 -78.805,-107.6969 -206.55845,-110.4448"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:8, 8;stroke-dashoffset:0;marker-start:url(#Arrow1Mstart);marker-mid:none;marker-end:none"
+         inkscape:connector-curvature="0" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         id="text3527"
+         y="1492.1257"
+         x="258.55304"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"><tspan
+           style="font-size:30px"
+           id="tspan3529"
+           y="1492.1257"
+           x="258.55304"
+           sodipodi:role="line">Shared index</tspan></text>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         x="462.73706"
+         y="1721.521"
+         id="text3531"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle;opacity:0.39738045;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"
+         sodipodi:linespacing="80.000001%"><tspan
+           style="font-size:15px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1721.521"
+           x="462.73706"
+           sodipodi:role="line"
+           id="tspan3533">JBoss Cache</tspan></text>
+      <g
+         transform="translate(1283.846,1360.7636)"
+         id="g3535">
+        <g
+           style="fill:#000000;fill-opacity:1;filter:url(#filter3958)"
+           id="g3537">
+          <path
+             id="path3539"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3541"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3543"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3545"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3547"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3549"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           style="fill:none"
+           id="g3551">
+          <path
+             id="path3553"
+             style="fill:#e9e9ff;fill-rule:evenodd;stroke:none"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3555"
+             style="fill:#353564;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3557"
+             style="fill:#4d4d9f;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3559"
+             style="fill:url(#linearGradient3617);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3561"
+             style="fill:url(#linearGradient3619);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3563"
+             style="fill:url(#linearGradient3621);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         x="121.82293"
+         y="1625.0768"
+         id="text3565"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:15px;text-align:end;text-anchor:end"
+           y="1625.0768"
+           x="121.82293"
+           id="tspan3567"
+           sodipodi:role="line">read lucene</tspan><tspan
+           style="font-size:15px;text-align:end;text-anchor:end"
+           y="1643.8268"
+           x="121.82293"
+           sodipodi:role="line"
+           id="tspan3569">index on query</tspan></text>
+      <path
+         style="opacity:0.59825332;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow2Lstart-53)"
+         d="m 515.26014,1702.7261 -107.51944,0"
+         id="path3571"
+         sodipodi:nodetypes="cc"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"
+         inkscape:connector-curvature="0" />
+      <path
+         style="opacity:0.59825332;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow2Lstart-53)"
+         d="m 407.7407,1730.6464 107.44101,0"
+         id="path3573"
+         sodipodi:nodetypes="cc"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"
+         inkscape:connector-curvature="0" />
+      <g
+         id="g3575"
+         transform="translate(1277.846,1238.7636)"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           style="fill:#000000;fill-opacity:1;filter:url(#filter6060)"
+           ry="4"
+           rx="4"
+           y="428.96268"
+           x="-1022.2118"
+           height="17.132936"
+           width="135.1803"
+           id="rect3577" />
+        <rect
+           id="rect3579"
+           width="135.1803"
+           height="17.132936"
+           x="-1022.2118"
+           y="428.96268"
+           rx="4"
+           ry="4"
+           style="fill:url(#radialGradient3623);fill-opacity:1" />
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           x="-1004.0707"
+           y="442.27301"
+           id="text3581"><tspan
+             sodipodi:role="line"
+             id="tspan3583"
+             x="-1004.0707"
+             y="442.27301"
+             style="font-size:15px">Volatile index</tspan></text>
+      </g>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         x="496.50299"
+         y="1695.3475"
+         id="text3585"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:10px;text-align:end;text-anchor:end"
+           y="1695.3475"
+           x="496.50299"
+           sodipodi:role="line"
+           id="tspan3587">list of indexes</tspan></text>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         x="461.1297"
+         y="1745.8094"
+         id="text3589"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"
+         sodipodi:linespacing="80.000001%"><tspan
+           style="font-size:10px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1745.8094"
+           x="461.1297"
+           sodipodi:role="line"
+           id="tspan3591">list of new/updated</tspan><tspan
+           style="font-size:10px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1753.8094"
+           x="461.1297"
+           sodipodi:role="line"
+           id="tspan3593">content</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         id="text3595"
+         y="1620.0768"
+         x="375.82294"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           x="380.59833"
+           y="1620.0768"
+           style="font-size:15px;text-align:end;text-anchor:end"
+           id="tspan3597">flush </tspan><tspan
+           sodipodi:role="line"
+           x="375.82294"
+           y="1638.8268"
+           style="font-size:15px;text-align:end;text-anchor:end"
+           id="tspan3599">volatile index</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:start;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         id="text3601"
+         y="1625.0768"
+         x="621.82294"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           id="tspan3603"
+           x="621.82294"
+           y="1625.0768"
+           style="font-size:15px;text-align:start;text-anchor:start">read lucene</tspan><tspan
+           id="tspan3605"
+           sodipodi:role="line"
+           x="621.82294"
+           y="1643.8268"
+           style="font-size:15px;text-align:start;text-anchor:start">index on query</tspan></text>
+      <path
+         sodipodi:nodetypes="cc"
+         id="path3607"
+         d="m 207.981,1702.7261 26.8308,0"
+         style="opacity:0.59825332;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow2Lstart-53)"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"
+         inkscape:connector-curvature="0" />
+      <rect
+         style="fill:url(#radialGradient3712);fill-opacity:1;stroke:#000000;stroke-opacity:1;filter:url(#filter5884)"
+         ry="7"
+         rx="7"
+         y="1659.4851"
+         x="39.94072"
+         height="89.972282"
+         width="163.92166"
+         id="rect3694"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <rect
+         id="rect3696"
+         width="163.92166"
+         height="89.972282"
+         x="39.94072"
+         y="1659.4851"
+         rx="7"
+         ry="7"
+         style="fill:url(#radialGradient3714);fill-opacity:1"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="57.586121"
+         y="1725.818"
+         id="text3698"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           id="tspan3700"
+           x="57.586121"
+           y="1725.818">JCR #1</tspan></text>
+      <g
+         id="g3702"
+         transform="translate(1077.846,1238.7636)"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           style="fill:#000000;fill-opacity:1;filter:url(#filter6060)"
+           ry="4"
+           rx="4"
+           y="428.96268"
+           x="-1022.2118"
+           height="17.132936"
+           width="135.1803"
+           id="rect3704" />
+        <rect
+           id="rect3706"
+           width="135.1803"
+           height="17.132936"
+           x="-1022.2118"
+           y="428.96268"
+           rx="4"
+           ry="4"
+           style="fill:url(#radialGradient3716);fill-opacity:1" />
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           x="-1004.0707"
+           y="442.27301"
+           id="text3708"><tspan
+             sodipodi:role="line"
+             id="tspan3710"
+             x="-1004.0707"
+             y="442.27301"
+             style="font-size:15px">Volatile index</tspan></text>
+      </g>
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         id="rect3718"
+         width="163.92166"
+         height="89.972282"
+         x="519.94073"
+         y="1659.4851"
+         rx="7"
+         ry="7"
+         style="fill:url(#radialGradient3736);fill-opacity:1;stroke:#000000;stroke-opacity:1;filter:url(#filter5884)" />
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         style="fill:url(#radialGradient3738);fill-opacity:1"
+         ry="7"
+         rx="7"
+         y="1659.4851"
+         x="519.94073"
+         height="89.972282"
+         width="163.92166"
+         id="rect3720" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         id="text3722"
+         y="1725.818"
+         x="537.58612"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="1725.818"
+           x="537.58612"
+           id="tspan3724"
+           sodipodi:role="line">JCR #n</tspan></text>
+      <g
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-local-index.png"
+         transform="translate(1557.846,1238.7636)"
+         id="g3726">
+        <rect
+           id="rect3728"
+           width="135.1803"
+           height="17.132936"
+           x="-1022.2118"
+           y="428.96268"
+           rx="4"
+           ry="4"
+           style="fill:#000000;fill-opacity:1;filter:url(#filter6060)" />
+        <rect
+           style="fill:url(#radialGradient3740);fill-opacity:1"
+           ry="4"
+           rx="4"
+           y="428.96268"
+           x="-1022.2118"
+           height="17.132936"
+           width="135.1803"
+           id="rect3730" />
+        <text
+           id="text3732"
+           y="442.27301"
+           x="-1004.0707"
+           style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           xml:space="preserve"><tspan
+             style="font-size:15px"
+             y="442.27301"
+             x="-1004.0707"
+             id="tspan3734"
+             sodipodi:role="line">Volatile index</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g3802"
+       inkscape:export-filename="/home/nikolaz/java/jboss/jcr/trunk/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/resources/images/diagram-standalone-index.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         style="fill:url(#radialGradient3788);fill-opacity:1;stroke:#000000;stroke-opacity:1;filter:url(#filter5884)"
+         ry="7"
+         rx="7"
+         y="1919.4851"
+         x="139.94072"
+         height="89.972282"
+         width="163.92166"
+         id="rect3569"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         sodipodi:linespacing="80.000001%"
+         x="469.88257"
+         y="1978.3958"
+         id="text3576"
+         style="font-size:20px;font-style:normal;font-weight:normal;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1978.3958"
+           x="469.88257"
+           id="tspan3578"
+           sodipodi:role="line" /><tspan
+           id="tspan3580"
+           style="font-size:20px;text-align:center;line-height:80.00000119%;writing-mode:lr-tb;text-anchor:middle"
+           y="1994.3958"
+           x="469.88257"
+           sodipodi:role="line">file system</tspan></text>
+      <rect
+         id="rect3592"
+         width="163.92166"
+         height="89.972282"
+         x="139.94072"
+         y="1919.4851"
+         rx="7"
+         ry="7"
+         style="fill:url(#radialGradient3775);fill-opacity:1"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="225.8244"
+         y="1985.8179"
+         id="text3594"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           id="tspan3596"
+           x="225.8244"
+           y="1985.8179">JCR</tspan></text>
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         sodipodi:nodetypes="cs"
+         id="path3612"
+         d="m 327.52082,1985.8168 c 34.8901,-0.462 33.4649,-0.091 69.734,-0.5728"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow1Mstart);marker-mid:none;marker-end:url(#Arrow1Mend)"
+         inkscape:connector-curvature="0" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         id="text3619"
+         y="1892.1257"
+         x="190.55304"
+         style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"><tspan
+           style="font-size:30px"
+           id="tspan3621"
+           y="1892.1257"
+           x="190.55304"
+           sodipodi:role="line">Standalone index</tspan></text>
+      <g
+         transform="translate(1403.846,1780.7636)"
+         id="g3627">
+        <g
+           style="fill:#000000;fill-opacity:1;filter:url(#filter3958)"
+           id="g3629">
+          <path
+             id="path3631"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3634"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3637"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3639"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3641"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3643"
+             style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             inkscape:connector-curvature="0" />
+        </g>
+        <g
+           style="fill:none"
+           id="g3645">
+          <path
+             id="path3647"
+             style="fill:#e9e9ff;fill-rule:evenodd;stroke:none"
+             d="m -927.54545,153.32625 -46.3903,25.73628 -0.0692,-8.28635 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3649"
+             style="fill:#353564;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -0.0561,-6.71388 -45.32037,-4.9837 0.0522,6.24397 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3651"
+             style="fill:#4d4d9f;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -56.91756,-10.05543 46.3903,-25.73628 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3653"
+             style="fill:url(#linearGradient3790);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.27725,152.06598 -34.81726,27.91714 -56.91047,-9.20694 46.40736,-23.6939 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3655"
+             style="fill:url(#linearGradient3792);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -917.01819,189.11796 -0.0763,-9.13484 -56.91047,-9.20694 0.0692,8.28635 z"
+             inkscape:connector-curvature="0" />
+          <path
+             id="path3657"
+             style="fill:url(#linearGradient3794);fill-opacity:1;fill-rule:evenodd;stroke:none"
+             d="m -882.22116,158.77986 -34.79703,30.3381 -0.0763,-9.13484 34.81726,-27.91714 z"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+      <g
+         id="g3669"
+         transform="translate(1177.846,1498.7636)"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           style="fill:#000000;fill-opacity:1;filter:url(#filter6060)"
+           ry="4"
+           rx="4"
+           y="428.96268"
+           x="-1022.2118"
+           height="17.132936"
+           width="135.1803"
+           id="rect3671" />
+        <rect
+           id="rect3673"
+           width="135.1803"
+           height="17.132936"
+           x="-1022.2118"
+           y="428.96268"
+           rx="4"
+           ry="4"
+           style="fill:url(#radialGradient3719);fill-opacity:1" />
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           x="-1004.0707"
+           y="442.27301"
+           id="text3675"><tspan
+             sodipodi:role="line"
+             id="tspan3677"
+             x="-1004.0707"
+             y="442.27301"
+             style="font-size:15px">Volatile index</tspan></text>
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         id="text3690"
+         y="1933.0767"
+         x="359.62445"
+         inkscape:export-filename="/home/nikolaz/Desktop/shared_index.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"><tspan
+           sodipodi:role="line"
+           x="362.01215"
+           y="1933.0767"
+           style="font-size:15px;text-align:center;text-anchor:middle"
+           id="tspan3695">flush </tspan><tspan
+           id="tspan3798"
+           sodipodi:role="line"
+           x="359.62445"
+           y="1951.8267"
+           style="font-size:15px;text-align:center;text-anchor:middle">volatile</tspan><tspan
+           id="tspan3800"
+           sodipodi:role="line"
+           x="359.62445"
+           y="1970.5767"
+           style="font-size:15px;text-align:center;text-anchor:middle">index</tspan></text>
     </g>
   </g>
 </svg>
