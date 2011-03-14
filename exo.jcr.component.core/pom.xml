@@ -408,7 +408,6 @@
                   <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/TestErrorMultithreading.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/TestRollbackBigFiles.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceRestore.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
@@ -703,9 +702,7 @@
                         <exclude>org/exoplatform/services/jcr/**/TestErrorMultithreading.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceRestore.java</exclude>   
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>

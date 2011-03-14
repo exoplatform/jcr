@@ -745,13 +745,16 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                   // exists in workspace
                   if (removeExisting)
                   {
-                     // remove existed node, with validation (same as for restored
-                     // root)
-                     RemoveVisitor removeVisitor = new RemoveVisitor();
-                     removeVisitor.visit(existing);
+                     if (changes.getItemState(existing.getIdentifier(), ItemState.DELETED) == null)
+                     {
+                        // remove existed node, with validation (same as for restored
+                        // root)
+                        RemoveVisitor removeVisitor = new RemoveVisitor();
+                        removeVisitor.visit(existing);
 
-                     changes.addAll(removeVisitor.getRemovedStates());
-                     updatingPath.addAll(removeVisitor.getUpdatingPath());
+                        changes.addAll(removeVisitor.getRemovedStates());
+                        updatingPath.addAll(removeVisitor.getUpdatingPath());
+                     }
                   }
                   else
                   {
