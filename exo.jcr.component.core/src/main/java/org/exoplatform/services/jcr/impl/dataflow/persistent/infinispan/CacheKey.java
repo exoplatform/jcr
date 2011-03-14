@@ -18,7 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
-import java.io.Serializable;
+import org.exoplatform.services.jcr.impl.Constants;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -30,12 +35,16 @@ import java.io.Serializable;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: CacheKey.java 2845 2010-07-30 13:29:37Z tolusha $
  */
-public abstract class CacheKey implements Serializable, Comparable<CacheKey>
+public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
 {
 
-   protected final String fullId;
+   protected String fullId;
 
-   protected final int hash;
+   protected int hash;
+
+   public CacheKey()
+   {
+   }
 
    public CacheKey(String id)
    {
@@ -46,7 +55,7 @@ public abstract class CacheKey implements Serializable, Comparable<CacheKey>
    public CacheKey(String id, int hash)
    {
       this.fullId = this.getClass().getSimpleName() + "-" + id;
-      this.hash = this.fullId.hashCode();
+      this.hash = hash;
    }
 
    /**
@@ -73,6 +82,33 @@ public abstract class CacheKey implements Serializable, Comparable<CacheKey>
    public int compareTo(CacheKey o)
    {
       return fullId.compareTo(o.fullId);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      out.writeInt(hash);
+
+      byte[] buf = fullId.getBytes(Constants.DEFAULT_ENCODING);
+      out.writeInt(buf.length);
+      out.write(buf);
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      hash = in.readInt();
+
+      byte[] buf = new byte[in.readInt()];
+      in.readFully(buf);
+      fullId = new String(buf, Constants.DEFAULT_ENCODING);
    }
    
    /**

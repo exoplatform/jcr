@@ -30,6 +30,10 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey
  */
 public class IndexInfosKey extends CacheKey
 {
+   IndexInfosKey()
+   {
+      super();
+   }
 
    IndexInfosKey(String id)
    {

@@ -31,6 +31,11 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey
 public class IndexUpdateKey extends CacheKey
 {
 
+   IndexUpdateKey()
+   {
+      super();
+   }
+
    IndexUpdateKey(String id)
    {
       super(id);

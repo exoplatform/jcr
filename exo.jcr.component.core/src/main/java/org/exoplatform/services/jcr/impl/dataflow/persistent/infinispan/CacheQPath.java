@@ -35,6 +35,11 @@ import org.exoplatform.services.jcr.impl.Constants;
  */
 class CacheQPath extends CacheKey
 {
+   CacheQPath()
+   {
+      super();
+   }
+
    CacheQPath(String parentId, QPath path, ItemType itemType)
    {
       this(parentId, path.getEntries()[path.getEntries().length - 1], itemType);

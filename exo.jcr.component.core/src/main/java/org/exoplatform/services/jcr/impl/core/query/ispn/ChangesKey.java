@@ -20,6 +20,10 @@ package org.exoplatform.services.jcr.impl.core.query.ispn;
 
 import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 /**
  * Created by The eXo Platform SAS.
  *
@@ -30,9 +34,12 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey
  */
 public class ChangesKey extends CacheKey
 {
-   private static final long serialVersionUID = 8597037282459379392L;
+   private int wsId;
 
-   private final int wsId;
+   ChangesKey()
+   {
+      super();
+   }
 
    ChangesKey(int wsId, String id)
    {
@@ -46,6 +53,26 @@ public class ChangesKey extends CacheKey
    public int getWsId()
    {
       return wsId;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      super.writeExternal(out);
+      out.writeInt(wsId);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      super.readExternal(in);
+      wsId = in.readInt();
    }
 
    /**

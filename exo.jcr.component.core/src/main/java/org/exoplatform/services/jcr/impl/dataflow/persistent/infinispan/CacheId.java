@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
+
 /**
  * 
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
@@ -26,11 +27,11 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 public class CacheId extends CacheKey
 {
 
-   /**
-    * CacheId constructor.
-    * 
-    * @param id
-    */
+   CacheId()
+   {
+      super();
+   }
+
    CacheId(String id)
    {
       super(id);
