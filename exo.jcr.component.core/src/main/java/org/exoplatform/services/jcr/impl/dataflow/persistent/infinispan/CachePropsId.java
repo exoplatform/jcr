@@ -42,7 +42,7 @@ public class CachePropsId extends CacheKey
       if (obj instanceof CachePropsId)
       {
          CachePropsId cachePropsId = (CachePropsId)obj;
-         return (cachePropsId.hash == hash && cachePropsId.id.equals(id));
+         return (cachePropsId.hash == hash && cachePropsId.fullId.equals(fullId));
       }
       else
       {

@@ -1184,6 +1184,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
    {
+
       List<DataRestor> restorers = new ArrayList<DataRestor>();
 
       ObjectReader backupInfo = null;

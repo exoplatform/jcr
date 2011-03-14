@@ -42,7 +42,7 @@ public class CacheNodesId extends CacheKey
       if (obj instanceof CacheNodesId)
       {
          CacheNodesId cacheNodesId = (CacheNodesId)obj;
-         return (cacheNodesId.hash == hash && cacheNodesId.id.equals(id));
+         return (cacheNodesId.hash == hash && cacheNodesId.fullId.equals(fullId));
       }
       else
       {

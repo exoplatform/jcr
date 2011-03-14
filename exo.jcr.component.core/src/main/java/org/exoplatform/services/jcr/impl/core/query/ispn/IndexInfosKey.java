@@ -33,7 +33,7 @@ public class IndexInfosKey extends CacheKey
 
    IndexInfosKey(String id)
    {
-      super("IndexInfos" + id);
+      super(id);
    }
 
    /**
@@ -45,7 +45,7 @@ public class IndexInfosKey extends CacheKey
       if (obj instanceof IndexInfosKey)
       {
          IndexInfosKey key = (IndexInfosKey)obj;
-         return (key.hash == hash && key.id.equals(id));
+         return (key.hash == hash && key.fullId.equals(fullId));
       }
       else
       {

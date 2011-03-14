@@ -57,7 +57,7 @@ public class ChangesKey extends CacheKey
       if (obj instanceof ChangesKey)
       {
          ChangesKey key = (ChangesKey)obj;
-         return (key.hash == hash && key.id.equals(id));
+         return (key.hash == hash && key.fullId.equals(fullId));
       }
       else
       {

@@ -33,7 +33,7 @@ public class IndexUpdateKey extends CacheKey
 
    IndexUpdateKey(String id)
    {
-      super("UpdateMonitor" + id);
+      super(id);
    }
 
    /**
@@ -45,7 +45,7 @@ public class IndexUpdateKey extends CacheKey
       if (obj instanceof IndexUpdateKey)
       {
          IndexUpdateKey key = (IndexUpdateKey)obj;
-         return (key.hash == hash && key.id.equals(id));
+         return (key.hash == hash && key.fullId.equals(fullId));
       }
       else
       {

@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 /**
  * Created by The eXo Platform SAS. <br/>
- * 
+ * RE
  * Base class for WorkspaceCache keys.<br/>
  * 
  * Date: 10.06.2008<br/>
@@ -33,20 +33,20 @@ import java.io.Serializable;
 public abstract class CacheKey implements Serializable, Comparable<CacheKey>
 {
 
-   protected final String id;
+   protected final String fullId;
 
    protected final int hash;
 
    public CacheKey(String id)
    {
-      this.id = id;
-      this.hash = id.hashCode();
+      this.fullId = this.getClass().getSimpleName() + "-" + id;
+      this.hash = this.fullId.hashCode();
    }
 
    public CacheKey(String id, int hash)
    {
-      this.id = id;
-      this.hash = hash;
+      this.fullId = this.getClass().getSimpleName() + "-" + id;
+      this.hash = this.fullId.hashCode();
    }
 
    /**
@@ -64,7 +64,7 @@ public abstract class CacheKey implements Serializable, Comparable<CacheKey>
    @Override
    public String toString()
    {
-      return this.id.toString();
+      return this.fullId;
    }
 
    /**
@@ -72,7 +72,7 @@ public abstract class CacheKey implements Serializable, Comparable<CacheKey>
     */
    public int compareTo(CacheKey o)
    {
-      return id.compareTo(o.id);
+      return fullId.compareTo(o.fullId);
    }
    
    /**

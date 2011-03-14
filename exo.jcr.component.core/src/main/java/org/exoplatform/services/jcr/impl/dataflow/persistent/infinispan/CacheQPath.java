@@ -52,7 +52,7 @@ class CacheQPath extends CacheKey
       if (obj instanceof CacheQPath)
       {
          CacheQPath cacheQPath = (CacheQPath)obj;
-         return (cacheQPath.hash == hash && cacheQPath.id.equals(id));
+         return (cacheQPath.hash == hash && cacheQPath.fullId.equals(fullId));
       }
       else
       {

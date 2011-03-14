@@ -31,11 +31,9 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 public class CacheRefsId extends CacheKey
 {
 
-   public static final String PREFIX = "R";
-
    CacheRefsId(String id)
    {
-      super(PREFIX + id);
+      super(id);
    }
 
    @Override
@@ -44,7 +42,7 @@ public class CacheRefsId extends CacheKey
       if (obj instanceof CacheRefsId)
       {
          CacheRefsId cachePropsId = (CacheRefsId)obj;
-         return (cachePropsId.hash == hash && cachePropsId.id.equals(id));
+         return (cachePropsId.hash == hash && cachePropsId.fullId.equals(fullId));
       }
       else
       {
