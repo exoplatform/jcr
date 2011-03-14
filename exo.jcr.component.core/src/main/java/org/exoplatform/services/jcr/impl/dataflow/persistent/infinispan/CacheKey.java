@@ -48,8 +48,7 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
 
    public CacheKey(String id)
    {
-      this.fullId = this.getClass().getSimpleName() + "-" + id;
-      this.hash = this.fullId.hashCode();
+      this(id, id.hashCode());
    }
 
    public CacheKey(String id, int hash)
