@@ -125,84 +125,78 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
-   }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public int getNumLocks()
-   {
-      return cache.size();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean isLockLive(String nodeId) throws LockException
-   {
-      return cache.containsKey(nodeId);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected LockData getLockDataById(String nodeId)
-   {
-      return (LockData)cache.get(nodeId);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected synchronized List<LockData> getLockList()
-   {
-      Collection<Object> datas = cache.values();
-
-      List<LockData> locksData = new ArrayList<LockData>();
-      for (Object lockData : datas)
+      this.getNumLocks = new LockActionNonTxAware<Integer, Object>()
       {
-         if (lockData != null)
+         public Integer execute(Object arg)
          {
-            locksData.add((LockData)lockData);
+            return cache.size();
          }
-      }
-      return locksData;
-   }
+      };
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean lockExist(String nodeId)
-   {
-      return cache.containsKey(nodeId);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void refreshLockData(LockData newLockData) throws LockException
-   {
-      Object oldValue = PrivilegedISPNCacheHelper.put(cache, newLockData.getNodeIdentifier(), newLockData);
-      if (oldValue == null)
+      this.hasLocks = new LockActionNonTxAware<Boolean, Object>()
       {
-         throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
-            + " since lock is not exist");
-      }
-   }
+         public Boolean execute(Object arg)
+         {
+            return !cache.isEmpty();
+         }
+      };
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected boolean hasLocks()
-   {
-      return !cache.isEmpty();
+      this.isLockLive = new LockActionNonTxAware<Boolean, String>()
+      {
+         public Boolean execute(String nodeId)
+         {
+            return cache.containsKey(nodeId);
+         }
+      };
+
+      this.refresh = new LockActionNonTxAware<Object, LockData>()
+      {
+         public Object execute(LockData newLockData) throws LockException
+         {
+            Object oldValue = PrivilegedISPNCacheHelper.put(cache, newLockData.getNodeIdentifier(), newLockData);
+            if (oldValue == null)
+            {
+               throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
+                  + " since lock is not exist");
+            }
+            return null;
+         }
+      };
+
+      this.lockExist = new LockActionNonTxAware<Boolean, String>()
+      {
+         public Boolean execute(String nodeId) throws LockException
+         {
+            return cache.containsKey(nodeId);
+         }
+      };
+
+      this.getLockDataById = new LockActionNonTxAware<LockData, String>()
+      {
+         public LockData execute(String nodeId) throws LockException
+         {
+            return (LockData)cache.get(nodeId);
+         }
+      };
+
+      this.getLockList = new LockActionNonTxAware<List<LockData>, Object>()
+      {
+         public List<LockData> execute(Object arg) throws LockException
+         {
+            Collection<Object> datas = cache.values();
+
+            List<LockData> locksData = new ArrayList<LockData>();
+            for (Object lockData : datas)
+            {
+               if (lockData != null)
+               {
+                  locksData.add((LockData)lockData);
+               }
+            }
+            return locksData;
+         }
+      };
    }
 
    /**
