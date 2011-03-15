@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.ispn;
 
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey;
 
 import java.io.IOException;
@@ -34,14 +35,14 @@ import java.io.ObjectOutput;
  */
 public class ChangesKey extends CacheKey
 {
-   private int wsId;
+   private String wsId;
 
    ChangesKey()
    {
       super();
    }
 
-   ChangesKey(int wsId, String id)
+   ChangesKey(String wsId, String id)
    {
       super(id);
       this.wsId = wsId;
@@ -50,7 +51,7 @@ public class ChangesKey extends CacheKey
    /**
     * @return unique workspace identifier 
     */
-   public int getWsId()
+   public String getWsId()
    {
       return wsId;
    }
@@ -62,7 +63,9 @@ public class ChangesKey extends CacheKey
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
-      out.writeInt(wsId);
+      byte[] buf = wsId.getBytes(Constants.DEFAULT_ENCODING);
+      out.writeInt(buf.length);
+      out.write(buf);
    }
 
    /**
@@ -72,7 +75,9 @@ public class ChangesKey extends CacheKey
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);
-      wsId = in.readInt();
+      byte[] buf = new byte[in.readInt()];
+      in.readFully(buf);
+      wsId = new String(buf, Constants.DEFAULT_ENCODING);
    }
 
    /**

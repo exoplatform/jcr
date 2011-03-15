@@ -66,7 +66,7 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
    
    private final Cache<Serializable, Object> cache;
 
-   private final int wsId;
+   private final String wsId;
 
    /**
     * LocalIndexChangesFilter constructor.
@@ -78,7 +78,7 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
    {
       super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
 
-      this.wsId = searchManager.getWsId().hashCode();
+      this.wsId = searchManager.getWsId();
       ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
       config.putParameterValue(PARAM_INFINISPAN_CACHESTORE_CLASS, LocalIndexCacheStore.class.getName());
       this.cache = factory.createCache("Indexer_" + searchManager.getWsId(), config);

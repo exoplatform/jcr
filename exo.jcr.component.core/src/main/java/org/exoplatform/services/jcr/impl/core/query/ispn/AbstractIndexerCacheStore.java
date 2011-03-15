@@ -52,7 +52,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    /**
     * A map of all the indexers that has been registered
     */
-   protected final Map<Integer, Indexer> indexers = new HashMap<Integer, Indexer>();
+   protected final Map<String, Indexer> indexers = new HashMap<String, Indexer>();
 
    protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");
 
@@ -68,7 +68,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    public void register(SearchManager searchManager, SearchManager parentSearchManager, QueryHandler handler,
       QueryHandler parentHandler) throws RepositoryConfigurationException
    {
-      indexers.put(searchManager.getWsId().hashCode(), new Indexer(searchManager, parentSearchManager, handler,
+      indexers.put(searchManager.getWsId(), new Indexer(searchManager, parentSearchManager, handler,
          parentHandler));
       if (log.isDebugEnabled())
       {
@@ -81,7 +81,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
     */
    public void store(InternalCacheEntry entry) throws CacheLoaderException
    {
-      if (entry.getValue() instanceof ChangesFilterListsWrapper && entry.getKey() instanceof ChangesKey)
+      if (entry.getKey() instanceof ChangesKey && entry.getValue() instanceof ChangesFilterListsWrapper)
       {
          if (log.isDebugEnabled())
          {

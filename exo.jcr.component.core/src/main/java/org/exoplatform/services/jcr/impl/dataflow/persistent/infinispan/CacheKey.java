@@ -27,12 +27,11 @@ import java.io.ObjectOutput;
 
 /**
  * Created by The eXo Platform SAS. <br/>
- * RE
  * Base class for WorkspaceCache keys.<br/>
  * 
  * Date: 10.06.2008<br/>
  * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
+ * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: CacheKey.java 2845 2010-07-30 13:29:37Z tolusha $
  */
 public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
@@ -86,7 +85,6 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
    /**
     * {@inheritDoc}
     */
-   @Override
    public void writeExternal(ObjectOutput out) throws IOException
    {
       out.writeInt(hash);
@@ -100,7 +98,6 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
    /**
     * {@inheritDoc}
     */
-   @Override
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       hash = in.readInt();
@@ -109,7 +106,7 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
       in.readFully(buf);
       fullId = new String(buf, Constants.DEFAULT_ENCODING);
    }
-   
+
    /**
     * {@inheritDoc}
     */

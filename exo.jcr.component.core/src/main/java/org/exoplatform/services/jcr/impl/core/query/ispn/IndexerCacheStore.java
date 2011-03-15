@@ -166,7 +166,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
          log.debug("start pushing in-memory state to cache cacheLoader collection");
       }
 
-      Map<Integer, ChangesFilterListsWrapper> changesMap = new HashMap<Integer, ChangesFilterListsWrapper>();
+      Map<String, ChangesFilterListsWrapper> changesMap = new HashMap<String, ChangesFilterListsWrapper>();
       List<ChangesKey> processedItemKeys = new ArrayList<ChangesKey>();
 
       DataContainer dc = cache.getAdvancedCache().getDataContainer();
@@ -209,7 +209,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
       }
 
       // process all lists for each workspace
-      for (Entry<Integer, ChangesFilterListsWrapper> changesEntry : changesMap.entrySet())
+      for (Entry<String, ChangesFilterListsWrapper> changesEntry : changesMap.entrySet())
       {
          // create key based on wsId and generated id
          ChangesKey changesKey = new ChangesKey(changesEntry.getKey(), IdGenerator.generate());
