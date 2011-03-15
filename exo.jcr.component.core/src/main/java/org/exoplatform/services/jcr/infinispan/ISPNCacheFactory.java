@@ -164,6 +164,9 @@ public class ISPNCacheFactory<K, V>
       }
       else
       {
+         // Reset the manager before storing it into the map since the default config is used as
+         // template to define a new configuration
+         manager = new DefaultCacheManager(gc);
          CACHE_MANAGERS.put(gc, manager);
          if (log.isInfoEnabled())
          {
