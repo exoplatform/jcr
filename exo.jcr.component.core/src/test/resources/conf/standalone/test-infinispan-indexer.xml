@@ -38,7 +38,7 @@
       <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/>
       <jmxStatistics enabled="true"/>
       <eviction strategy="NONE"/>
-      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" syncRollbackPhase="false" syncCommitPhase="false"/>
+      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true"/>
 
       <loaders passivation="false" shared="false" preload="false">
         <loader class="${infinispan-cachestore-classname}" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">

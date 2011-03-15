@@ -36,7 +36,7 @@
 
     <default>
       <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/>
-      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" syncRollbackPhase="false" syncCommitPhase="false"/>
+      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true"/>
       <jmxStatistics enabled="true"/>
       <eviction strategy="NONE"/>
 
