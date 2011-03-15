@@ -37,25 +37,15 @@ public abstract class NullItemData implements ItemData
 
    private final String parentId;
 
+   private final QPathEntry name;
+
    private final QPath path;
 
-   public NullItemData(NodeData parentData, QPathEntry name)
+   public NullItemData(NodeData parent, QPathEntry name)
    {
-      this.parentId = parentData.getIdentifier();
-      this.path = QPath.makeChildPath(parentData.getQPath(), name);
-      this.id = NULL_ID;
-   }
-
-   /** 
-    * This constructor must never be used for null nodes placed in cache. Only for returned values.
-    * 
-    * @param parentId
-    * @param name
-    */
-   public NullItemData(String parentId, QPathEntry name)
-   {
-      this.parentId = parentId;
-      this.path = null;
+      this.parentId = parent.getIdentifier();
+      this.path = QPath.makeChildPath(parent.getQPath(), name);
+      this.name = name;
       this.id = NULL_ID;
    }
 
@@ -63,11 +53,21 @@ public abstract class NullItemData implements ItemData
    {
       this.parentId = null;
       this.path = null;
+      this.name = null;
       this.id = id;
+   }
+
+   public NullItemData()
+   {
+      this.parentId = null;
+      this.path = null;
+      this.name = null;
+      this.id = NULL_ID;
    }
 
    public void accept(ItemDataVisitor visitor) throws RepositoryException
    {
+      throw new UnsupportedOperationException("Method is not supported");
    }
 
    public String getIdentifier()
@@ -82,12 +82,17 @@ public abstract class NullItemData implements ItemData
 
    public int getPersistedVersion()
    {
-      return 0;
+      throw new UnsupportedOperationException("Method is not supported");
    }
 
    public QPath getQPath()
    {
       return path;
+   }
+
+   public QPathEntry getName()
+   {
+      return name;
    }
 
 }

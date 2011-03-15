@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.NullItemData;
 import org.exoplatform.services.jcr.datamodel.NullNodeData;
+import org.exoplatform.services.jcr.datamodel.NullPropertyData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -221,7 +222,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             do
             {
                String itemId = (String)cache.get(makeChildFqn(root, parentId, (String)childs.next()), ITEM_ID);
-               if (itemId != null && !itemId.equals(NullItemData.NULL_ID))
+               if (itemId != null)
                {
                   n = (T)cache.get(makeItemFqn(itemId), ITEM_DATA);
                }
@@ -712,8 +713,14 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       {
          if (itemId.equals(NullItemData.NULL_ID))
          {
-            // this NullNodeData object will not be placed at cache, so we can use unsafe constructor 
-            return new NullNodeData(parentId, name);
+            if (itemType == ItemType.UNKNOWN || itemType == ItemType.NODE)
+            {
+               return new NullNodeData();
+            }
+            else
+            {
+               return new NullPropertyData();
+            }
          }
          else
          {
@@ -1082,9 +1089,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    /**
     * Internal put NullNode.
     *
-    * @param node, NodeData, new data to put in the cache
+    * @param item, NullItemData, new data to put in the cache
     */
-   protected void putNullItem(NullItemData node)
+   protected void putNullItem(NullItemData item)
    {
       boolean inTransaction = cache.isTransactionActive();
       try
@@ -1095,24 +1102,24 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          }
          cache.setLocal(true);
 
-         if (node.getQPath() == null)
+         if (!item.getIdentifier().equals(NullItemData.NULL_ID))
          {
             //put in $ITEMS
-            cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+            cache.put(makeItemFqn(item.getIdentifier()), ITEM_DATA, item);
          }
-         else
+         else if (item.getName() != null && item.getParentIdentifier() != null)
          {
-            if (node.isNode())
+            if (item.isNode())
             {
                // put in $CHILD_NODES
-               cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node
-                  .getQPath().getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+               cache.put(makeChildFqn(childNodes, item.getParentIdentifier(), item.getName()), ITEM_ID,
+                  NullItemData.NULL_ID);
             }
             else
             {
                // put in $CHILD_PROPERTIES
-               cache.put(makeChildFqn(childProps, node.getParentIdentifier(), node.getQPath().getEntries()[node
-                  .getQPath().getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+               cache.put(makeChildFqn(childProps, item.getParentIdentifier(), item.getName()), ITEM_ID,
+                  NullItemData.NULL_ID);
             }
          }
       }
@@ -1355,7 +1362,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
          // check is this descendant of prevRootPath
          QPath nodeQPath = data.getQPath();
-         // NullNodeData's qPath==null;
          if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
          {
             //make relative path

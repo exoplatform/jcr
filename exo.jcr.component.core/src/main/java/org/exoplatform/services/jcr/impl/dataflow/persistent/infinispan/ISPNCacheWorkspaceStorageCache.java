@@ -487,8 +487,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       {
          if (itemId.equals(NullItemData.NULL_ID))
          {
-            // this NullNodeData object will not be placed at cache, so we can use unsafe constructor 
-            return new NullNodeData(parentIdentifier, name);
+            if (itemType == ItemType.UNKNOWN || itemType == ItemType.NODE)
+            {
+               return new NullNodeData();
+            }
+            else
+            {
+               return new NullPropertyData();
+            }
          }
          else
          {
@@ -694,9 +700,9 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    /**
     * Internal put NullNode.
     *
-    * @param node, NodeData, new data to put in the cache
+    * @param item, NullItemData, new data to put in the cache
     */
-   protected void putNullItem(NullItemData node)
+   protected void putNullItem(NullItemData item)
    {
       boolean inTransaction = cache.isTransactionActive();
       try
@@ -707,16 +713,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
          cache.setLocal(true);
 
-         if (node.getQPath() == null)
+         if (!item.getIdentifier().equals(NullItemData.NULL_ID))
          {
-            //put in $ITEMS
-            cache.put(new CacheId(node.getIdentifier()), node);
+            cache.put(new CacheId(item.getIdentifier()), item);
          }
-         else
+         else if (item.getName() != null && item.getParentIdentifier() != null)
          {
-
-            cache.put(new CacheQPath(node.getParentIdentifier(), node.getQPath(), (node.isNode() ? ItemType.NODE
-               : ItemType.PROPERTY)), node.getIdentifier());
+            cache.put(new CacheQPath(item.getParentIdentifier(), item.getName(), ItemType.getItemType(item)),
+               NullItemData.NULL_ID);
          }
       }
       finally
@@ -875,10 +879,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             {
                // check is this descendant of prevRootPath
                QPath nodeQPath = data.getQPath();
-               // NullNodeData's qPath==null;
                if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
                {
-
                   //make relative path
                   QPathEntry[] relativePath = null;
                   try

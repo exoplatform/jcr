@@ -29,25 +29,20 @@ import org.exoplatform.services.jcr.access.AccessControlList;
  */
 public class NullNodeData extends NullItemData implements NodeData
 {
-   public NullNodeData(NodeData parentData, QPathEntry name)
-   {
-      super(parentData, name);
-   }
 
-   /** 
-    * This constructor must never be used for null nodes placed in cache. Only for returned values.
-    * 
-    * @param parentId
-    * @param name
-    */
-   public NullNodeData(String parentId, QPathEntry name)
+   public NullNodeData(NodeData parent, QPathEntry name)
    {
-      super(parentId, name);
+      super(parent, name);
    }
 
    public NullNodeData(String id)
    {
       super(id);
+   }
+
+   public NullNodeData()
+   {
+      super();
    }
 
    /**
@@ -63,7 +58,7 @@ public class NullNodeData extends NullItemData implements NodeData
     */
    public AccessControlList getACL()
    {
-      return null;
+      throw new UnsupportedOperationException("Method is not supported");
    }
 
    /**
@@ -71,7 +66,7 @@ public class NullNodeData extends NullItemData implements NodeData
     */
    public InternalQName[] getMixinTypeNames()
    {
-      return null;
+      throw new UnsupportedOperationException("Method is not supported");
    }
 
    /**
@@ -79,7 +74,7 @@ public class NullNodeData extends NullItemData implements NodeData
     */
    public int getOrderNumber()
    {
-      return 0;
+      throw new UnsupportedOperationException("Method is not supported");
    }
 
    /**
@@ -87,7 +82,7 @@ public class NullNodeData extends NullItemData implements NodeData
     */
    public InternalQName getPrimaryTypeName()
    {
-      return null;
+      throw new UnsupportedOperationException("Method is not supported");
    }
 
 }

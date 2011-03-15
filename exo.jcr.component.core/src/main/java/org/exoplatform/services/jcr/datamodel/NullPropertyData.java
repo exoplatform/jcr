@@ -29,9 +29,9 @@ import java.util.List;
 public class NullPropertyData extends NullItemData implements PropertyData
 {
 
-   public NullPropertyData(NodeData parentData, QPathEntry name)
+   public NullPropertyData(NodeData parent, QPathEntry name)
    {
-      super(parentData, name);
+      super(parent, name);
    }
 
    public NullPropertyData(String id)
@@ -39,12 +39,17 @@ public class NullPropertyData extends NullItemData implements PropertyData
       super(id);
    }
 
+   public NullPropertyData()
+   {
+      super();
+   }
+
    /**
     * {@inheritDoc}
     */
    public int getType()
    {
-      return -1;
+      throw new UnsupportedOperationException("Method is not supported");
    }
 
    /**
@@ -52,7 +57,7 @@ public class NullPropertyData extends NullItemData implements PropertyData
     */
    public List<ValueData> getValues()
    {
-      return null;
+      throw new UnsupportedOperationException("Method is not supported");
    }
 
    /**
@@ -60,7 +65,7 @@ public class NullPropertyData extends NullItemData implements PropertyData
     */
    public boolean isMultiValued()
    {
-      return false;
+      throw new UnsupportedOperationException("Method is not supported");
    }
 
    /**
