@@ -166,8 +166,7 @@ public class DBRestor implements DataRestor
             String constraint = null;
             if (tableName.equals("JCR_SITEM") || tableName.equals("JCR_MITEM"))
             {
-               if (dialect != DBBackup.DB_DIALECT_MYSQL && dialect != DBBackup.DB_DIALECT_MYSQL_UTF8
-                  && dialect != DBBackup.DB_DIALECT_SYBASE)
+               if (dialect != DBBackup.DB_DIALECT_SYBASE)
                {
                   // resolve constraint name depends on database
                   String constraintName;
@@ -184,7 +183,15 @@ public class DBRestor implements DataRestor
 
                   // drop constraint
                   st = jdbcConn.createStatement();
-                  st.execute("ALTER TABLE " + tableName + " DROP CONSTRAINT " + constraintName);
+
+                  if (dialect == DBBackup.DB_DIALECT_MYSQL || dialect == DBBackup.DB_DIALECT_MYSQL_UTF8)
+                  {
+                     st.execute("ALTER TABLE " + tableName + " DROP FOREIGN KEY " + constraintName);
+                  }
+                  else
+                  {
+                     st.execute("ALTER TABLE " + tableName + " DROP CONSTRAINT " + constraintName);
+                  }
                }
             }
 
