@@ -132,16 +132,21 @@ public class DBCleanService
       String dialect = DialectDetecter.detect(jdbcConn.getMetaData());
 
       boolean cleanWithHelper = false;
-      if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8))
+      if (dialect.equals(DBConstants.DB_DIALECT_HSQLDB))
       {
          cleanWithHelper = true;
+      }
+      else if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8))
+      {
+         cleanWithHelper = true;
+         
          Statement st = jdbcConn.createStatement();
          st.execute("SELECT ENGINE FROM information_schema.TABLES where TABLE_SCHEMA='" + jdbcConn.getCatalog()
             + "' and (TABLE_NAME='JCR_SITEM' or TABLE_NAME='JCR_MITEM')");
          ResultSet result = st.getResultSet();
          if (result.next())
          {
-            String engine = result.getString(1);
+            String engine = result.getString("ENGINE");
             if (engine.equalsIgnoreCase("MyISAM"))
             {
                cleanWithHelper = false;
@@ -155,7 +160,7 @@ public class DBCleanService
          cleanScripts.add("delete from JCR_MVALUE");
          cleanScripts.add("delete from JCR_MREF");
 
-         if (dialect.equals(DBConstants.DB_DIALECT_HSQLDB) || cleanWithHelper)
+         if (cleanWithHelper)
          {
             cleanScripts.add("delete from JCR_MITEM where I_CLASS=2");
 
@@ -176,7 +181,7 @@ public class DBCleanService
             .add("delete from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
                + containerName + "')");
 
-         if (dialect.equals(DBConstants.DB_DIALECT_HSQLDB) || cleanWithHelper)
+         if (cleanWithHelper)
          {
             cleanScripts.add("delete from JCR_SITEM where I_CLASS=2 and CONTAINER_NAME='" + containerName + "'");
 
