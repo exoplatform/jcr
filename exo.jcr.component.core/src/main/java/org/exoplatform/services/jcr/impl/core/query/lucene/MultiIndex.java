@@ -20,6 +20,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
@@ -587,9 +588,17 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                // try to avoid getting index reader for each doc
                int lastIndexReaderId = indexes.size() - 1;
                // check, index list can be empty
-               lastIndexReader =
-                  (lastIndexReaderId >= 0) ? ((PersistentIndex)indexes.get(lastIndexReaderId)).getReadOnlyIndexReader()
-                     : null;
+               try
+               {
+                  lastIndexReader =
+                     (lastIndexReaderId >= 0) ? ((PersistentIndex)indexes.get(lastIndexReaderId))
+                        .getReadOnlyIndexReader() : null;
+               }
+               catch (Throwable e)
+               {
+                  // this is safe index reader retrieval. The last index already closed, possibly merged or any other exception that occurs here
+               }
+
                for (Iterator it = add.iterator(); it.hasNext();)
                {
                   Document doc = (Document)it.next();
@@ -616,7 +625,17 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                               lastIndexReader.release();
                            }
                            lastIndexReaderId = indexes.size() - 1;
-                           lastIndexReader = ((PersistentIndex)indexes.get(lastIndexReaderId)).getReadOnlyIndexReader();
+                           try
+                           {
+                              lastIndexReader =
+                                 ((PersistentIndex)indexes.get(lastIndexReaderId)).getReadOnlyIndexReader();
+                           }
+                           catch (Throwable e)
+                           {
+                              // this is safe index reader retrieval. The last index already closed, possibly merged or any other exception that occurs here
+                              lastIndexReader = null;
+                              lastIndexReaderId = -1;
+                           }
                         }
                         // if indexReader exists (it is possible that no persisted indexes exists on start)
                         if (lastIndexReader != null)
