@@ -108,6 +108,19 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionImpl");
 
+   /**
+    * Indicates if it must fail in case we use a closed session.
+    */
+   private static final boolean PROHIBIT_CLOSED_SESSION_USAGE =
+      Boolean.valueOf(PropertyManager.getProperty("exo.jcr.prohibit.closed.session.usage"));
+   static
+   {
+      if (PROHIBIT_CLOSED_SESSION_USAGE)
+      {
+         log.info("The JCR will throw an exception anytime we will try to use a dead session.");
+      }
+   }   
+
    public static final int DEFAULT_LAZY_READ_THRESHOLD = 100;
 
    private final RepositoryImpl repository;
@@ -135,6 +148,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    protected final String workspaceName;
 
    private boolean live;
+   
+   private Exception closedByCallStack;
 
    private final List<SessionLifecycleListener> lifecycleListeners;
 
@@ -877,13 +892,17 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    {
       if (!live)
       {
+         if (PROHIBIT_CLOSED_SESSION_USAGE)
+         {
+            throw new RepositoryException("This kind of operation is forbidden after a session.logout().", closedByCallStack);
+         }
          // warn in debug mode only
-         if (PropertyManager.isDevelopping())
+         else if (PropertyManager.isDevelopping())
          {
             log
                .warn(
                   "This kind of operation is forbidden after a session.logout(), please note that an exception will be raised in the next jcr version.",
-                  new Exception());
+                  new Exception(closedByCallStack));
          }
       }
    }
@@ -917,6 +936,10 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
       this.sessionRegistry.unregisterSession(getId());
       this.live = false;
+      if (PROHIBIT_CLOSED_SESSION_USAGE || PropertyManager.isDevelopping())
+      {
+         this.closedByCallStack = new Exception("The session has been closed by the following call stack");
+      }
    }
 
    /**

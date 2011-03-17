@@ -434,4 +434,42 @@
 &lt;!ELEMENT properties (property+)&gt;
 &lt;!ELEMENT property EMPTY&gt;</programlisting>
   </section>
+
+  <section>
+    <title>Help application to prohibit the use of closed sessions</title>
+
+    <para>Products that use eXo JCR, sometimes missuse it since they continue
+    to use a session that has been closed through a method call on a node, a
+    property or even the session itself. To prevent bad practices we propose
+    three modes which are the folllowing:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>If the system property
+        <emphasis>exo.jcr.prohibit.closed.session.usage</emphasis> has been
+        set to <emphasis>true</emphasis>, then a RepositoryException will be
+        thrown any time an application will try to access to a closed session.
+        In the stack trace, you will be able to know the call stack that
+        closes the session.</para>
+      </listitem>
+
+      <listitem>
+        <para>If the system property
+        <emphasis>exo.jcr.prohibit.closed.session.usage</emphasis> has not
+        been set and the system property
+        <emphasis>exo.product.developing</emphasis> has been set to
+        <emphasis>true</emphasis>, then a warning will be logged in the log
+        file with the full stack trace in order to help identifying the root
+        cause of the issue. In the stack trace, you will be able to know the
+        call stack that closes the session.</para>
+      </listitem>
+
+      <listitem>
+        <para>If none of the previous system properties have been set, then we
+        will ignore that the issue and let the application use the closed
+        session as it was possible before without doing anything in order to
+        allow applications to migrate step by step.</para>
+      </listitem>
+    </orderedlist>
+  </section>
 </chapter>
