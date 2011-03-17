@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.core.query.jbosscache.ChangesFilterList
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.context.Flag;
 import org.infinispan.loaders.AbstractCacheStore;
 import org.infinispan.loaders.AbstractCacheStoreConfig;
 import org.infinispan.loaders.CacheLoaderConfig;
@@ -116,7 +117,8 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
             if (getModeHandler().getMode() == IndexerIoMode.READ_WRITE)
             {
                // remove the data from the cache
-               cache.remove(key);
+               cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING);
+               cache.removeAsync(key);
             }
          }
       }

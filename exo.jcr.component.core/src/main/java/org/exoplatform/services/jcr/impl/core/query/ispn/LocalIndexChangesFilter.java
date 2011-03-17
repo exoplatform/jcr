@@ -35,6 +35,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.CacheException;
+import org.infinispan.context.Flag;
 import org.infinispan.loaders.CacheLoaderManager;
 
 import java.io.IOException;
@@ -122,6 +123,7 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
       ChangesKey changesKey = new ChangesKey(wsId, IdGenerator.generate());
       try
       {
+         cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING);
          PrivilegedISPNCacheHelper.put(cache, changesKey, new ChangesFilterListsWrapper(changes, parentChanges));
       }
       catch (CacheException e)
