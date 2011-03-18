@@ -86,6 +86,7 @@ public class WorkspaceDataTransmitter implements ItemsPersistenceListener
    public WorkspaceDataTransmitter(CacheableWorkspaceDataManager dataManager) throws RepositoryConfigurationException
    {
       dataManager.addItemPersistenceListener(this);
+      // TODO: need to use FileCleaner from FileCleanerHolder
       this.fileCleaner = new FileCleaner(ReplicationService.FILE_CLEANRE_TIMEOUT);
    }
 

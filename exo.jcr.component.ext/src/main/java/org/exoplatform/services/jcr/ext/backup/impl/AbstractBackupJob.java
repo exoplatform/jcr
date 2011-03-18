@@ -41,7 +41,7 @@ import java.util.Set;
 public abstract class AbstractBackupJob implements BackupJob
 {
 
-   protected int state;
+   protected volatile int state;
 
    protected int id;
 

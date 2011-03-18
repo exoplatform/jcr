@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.ext.backup.impl.PendingChangesLog;
 import org.exoplatform.services.jcr.ext.replication.FixupStream;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -58,7 +59,6 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 
    public IncrementalBackupJob()
    {
-      fileCleaner = new FileCleaner(10000);
    }
 
    public void init(ManageableRepository repository, String workspaceName, BackupConfig config, Calendar timeStamp)
@@ -67,6 +67,9 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
       this.workspaceName = workspaceName;
       this.config = config;
       this.timeStamp = timeStamp;
+      this.fileCleaner =
+         ((FileCleanerHolder)repository.getWorkspaceContainer(workspaceName).getComponent(FileCleanerHolder.class))
+            .getFileCleaner();
 
       try
       {
@@ -102,6 +105,7 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
       File backupFileData = fnp.getNextFile();
 
       oosFileData = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(backupFileData));
+
       return new URL("file:" + backupFileData.getAbsoluteFile());
    }
 

@@ -313,6 +313,7 @@ public class BackupChainImpl implements BackupChain
          {
             Thread starter = new Thread()
             {
+               @Override
                public void run()
                {
                   restartIncrementalBackup();

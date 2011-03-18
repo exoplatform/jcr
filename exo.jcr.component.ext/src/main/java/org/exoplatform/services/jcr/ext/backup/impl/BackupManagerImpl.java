@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
@@ -56,6 +57,7 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -431,7 +433,20 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       currentRepositoryBackups = Collections.synchronizedSet(new HashSet<RepositoryBackupChain>());
 
-      fileCleaner = new FileCleaner(10000);
+      // get FileCleaner from container's component FileCleanerHolder
+      try
+      {
+         ManageableRepository repository = repoService.getCurrentRepository();
+         String workspaceName = repository.getConfiguration().getSystemWorkspaceName();
+
+         this.fileCleaner =
+            ((FileCleanerHolder)repository.getWorkspaceContainer(workspaceName).getComponent(FileCleanerHolder.class))
+               .getFileCleaner();
+      }
+      catch (RepositoryException e)
+      {
+         // do nothing. should not happens
+      }
 
       messages = new BackupMessagesLog(MESSAGES_MAXSIZE);
 
