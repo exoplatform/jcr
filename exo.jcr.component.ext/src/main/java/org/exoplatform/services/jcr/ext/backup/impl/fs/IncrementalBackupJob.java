@@ -167,9 +167,6 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
                fis.close();
                fileCleaner.addFile(tempFile);
             }
-
-            // restore changes log worlds
-
          }
          else
          {

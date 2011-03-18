@@ -288,7 +288,7 @@ public class JCRRestor
 
          // read stream data
          int iStreamCount = in.readInt();
-         ArrayList<File> listFiles = new ArrayList<File>();
+         ArrayList<SpoolFile> listFiles = new ArrayList<SpoolFile>();
 
          for (int i = 0; i < iStreamCount; i++)
          {
@@ -297,8 +297,7 @@ public class JCRRestor
             long fileSize = in.readLong();
 
             // read content file
-            File contentFile = getAsFile(in, fileSize);
-            listFiles.add(contentFile);
+            listFiles.add(getAsFile(in, fileSize));
          }
 
          RestoreChangesLog restoreChangesLog =
@@ -315,12 +314,12 @@ public class JCRRestor
       return transactionChangesLog;
    }
 
-   private File getAsFile(ObjectInputStream ois, long fileSize) throws IOException
+   private SpoolFile getAsFile(ObjectInputStream ois, long fileSize) throws IOException
    {
       int bufferSize = 1024 * 8;
       byte[] buf = new byte[bufferSize];
 
-      File tempFile = SpoolFile.createTempFile("vdincb" + System.currentTimeMillis(), ".stmp", tempDir);
+      SpoolFile tempFile = SpoolFile.createTempFile("vdincb" + System.currentTimeMillis(), ".stmp", tempDir);
       FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
       long readBytes = fileSize;
 
@@ -359,12 +358,12 @@ public class JCRRestor
 
       private List<FixupStream> listFixupStream;
 
-      private List<File> listFile;
+      private List<SpoolFile> listFile;
 
       private FileCleaner fileCleaner;
 
       public RestoreChangesLog(TransactionChangesLog transactionChangesLog, List<FixupStream> listFixupStreams,
-         List<File> listFiles, FileCleaner fileCleaner)
+         List<SpoolFile> listFiles, FileCleaner fileCleaner)
       {
          this.itemDataChangesLog = transactionChangesLog;
          this.listFixupStream = listFixupStreams;
@@ -390,7 +389,7 @@ public class JCRRestor
 
             // re-init the value
             propertyData.getValues().set(listFixupStream.get(i).getValueDataId(),
-               new StreamPersistedValueData(vd.getOrderNumber(), new SpoolFile(listFile.get(i).getAbsolutePath())));
+               new StreamPersistedValueData(vd.getOrderNumber(), listFile.get(i)));
          }
 
          for (int i = 0; i < listFile.size(); i++)

@@ -67,6 +67,11 @@ public class DirectoryRestor implements DataRestor
    private static final String PREFIX = "fsrestorer";
 
    /**
+    * Guarantee the unique name.
+    */
+   private static volatile int uniqueIndex = 0;
+
+   /**
     * Constructor DirectoryRestorer.
     * 
     * @param dataDirs
@@ -99,7 +104,7 @@ public class DirectoryRestor implements DataRestor
       {
          try
          {
-            File tmpDir = new File(tempDir, PREFIX + System.currentTimeMillis());
+            File tmpDir = new File(tempDir, PREFIX + (System.currentTimeMillis() + uniqueIndex++));
             DirectoryHelper.copyDirectory(dataDir, tmpDir);
 
             tmpDirs.add(tmpDir);

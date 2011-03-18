@@ -117,7 +117,7 @@ public class PendingChangesLog
    /**
     * The list of Files who are contains in ChangesLog.
     */
-   private List<File> listFile;
+   private List<SpoolFile> listFile;
 
    /**
     * The identification string for PendingChangesLog.
@@ -155,7 +155,7 @@ public class PendingChangesLog
       listInputStream = new ArrayList<InputStream>();
       listFixupStream = new ArrayList<FixupStream>();
       containerType = analysisItemDataChangesLog();
-      listFile = new ArrayList<File>();
+      listFile = new ArrayList<SpoolFile>();
       identifier = IdGenerator.generate();
       this.fileCleaner = fileCleaner;
       this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
@@ -182,7 +182,7 @@ public class PendingChangesLog
       listInputStream = new ArrayList<InputStream>();
       listFixupStream = new ArrayList<FixupStream>();
       listRandomAccessFile = new ArrayList<RandomAccessFile>();
-      listFile = new ArrayList<File>();
+      listFile = new ArrayList<SpoolFile>();
       this.identifier = identifier;
       containerType = type;
       this.fileCleaner = fileCleaner;
@@ -217,7 +217,7 @@ public class PendingChangesLog
     *          the FileCleaner
     */
    public PendingChangesLog(TransactionChangesLog transactionChangesLog, List<FixupStream> listFixupStreams,
-      List<File> listFiles, FileCleaner fileCleaner)
+      List<SpoolFile> listFiles, FileCleaner fileCleaner)
    {
       this.itemDataChangesLog = transactionChangesLog;
       this.listFixupStream = listFixupStreams;
@@ -285,7 +285,7 @@ public class PendingChangesLog
     * 
     * @return List return list of Files
     */
-   public List<File> getListFile()
+   public List<SpoolFile> getListFile()
    {
       return listFile;
    }
@@ -468,7 +468,7 @@ public class PendingChangesLog
    {
       this.getFixupStreams().add(fs);
 
-      File f = SpoolFile.createTempFile("tempFile" + IdGenerator.generate(), ".tmp", tempDir);
+      SpoolFile f = SpoolFile.createTempFile("tempFile" + IdGenerator.generate(), ".tmp", tempDir);
 
       this.getListFile().add(f);
       this.getListRandomAccessFiles().add(PrivilegedFileHelper.randomAccessFile(f, "rw"));
@@ -495,10 +495,8 @@ public class PendingChangesLog
          ValueData vd = (propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
          // re-init the value
-         propertyData.getValues().set(
-            listFixupStream.get(i).getValueDataId(),
-            new StreamPersistedValueData(vd.getOrderNumber(), new SpoolFile(PrivilegedFileHelper
-               .getAbsolutePath(listFile.get(i)))));
+         propertyData.getValues().set(listFixupStream.get(i).getValueDataId(),
+            new StreamPersistedValueData(vd.getOrderNumber(), listFile.get(i)));
       }
 
       if (listRandomAccessFile != null)
