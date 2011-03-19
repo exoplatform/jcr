@@ -1504,6 +1504,9 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
             Thread.sleep(50);
          }
 
+         assertEquals(backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore(),
+            JobWorkspaceRestore.RESTORE_SUCCESSFUL);
+
          // check
          SessionImpl back1 = null;
          try
@@ -1589,6 +1592,9 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
          {
             Thread.sleep(50);
          }
+
+         assertEquals(backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore(),
+            JobWorkspaceRestore.RESTORE_SUCCESSFUL);
 
          // check
          SessionImpl back1 = null;
