@@ -1406,7 +1406,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   public void ExistedWorkspaceRestore() throws Exception
+   public void testExistedWorkspaceRestore() throws Exception
    {
       SessionImpl ws1Session = (SessionImpl)repositoryService.getRepository("db7").login(credentials, "ws1");
 
