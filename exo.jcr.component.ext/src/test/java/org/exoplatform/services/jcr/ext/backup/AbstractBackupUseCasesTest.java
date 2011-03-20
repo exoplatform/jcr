@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Map;
 
 import javax.jcr.Node;
@@ -313,15 +314,37 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
             assertTrue("Property should exists", ws1backTestRoot.hasProperty("node_1/exo:extraData"));
             assertTrue("Node should exists", ws1backTestRoot.hasNode("node_102"));
 
-            compareStream(new FileInputStream(tempf), ws1backTestRoot.getNode("node_5").getProperty("exo:data")
-               .getStream());
-            compareStream(new FileInputStream(tempf), ws1backTestRoot.getNode("node_1").getProperty("exo:extraData")
-               .getStream());
+            InputStream in = ws1backTestRoot.getNode("node_5").getProperty("exo:data").getStream();
+            try
+            {
+               compareStream(new FileInputStream(tempf), in);
+            }
+            finally
+            {
+               in.close();
+            }
+
+            in = ws1backTestRoot.getNode("node_1").getProperty("exo:extraData").getStream();
+            try
+            {
+               compareStream(new FileInputStream(tempf), in);
+            }
+            finally
+            {
+               in.close();
+            }
 
             assertFalse("Property should be removed", ws1backTestRoot.getNode("node_2").hasProperty("exo:data"));
 
-            compareStream(new ByteArrayInputStream("aaa".getBytes()),
-               ws1backTestRoot.getNode("node_3").getProperty("exo:data").getStream());
+            in = ws1backTestRoot.getNode("node_3").getProperty("exo:data").getStream();
+            try
+            {
+               compareStream(new ByteArrayInputStream("aaa".getBytes()), in);
+            }
+            finally
+            {
+               in.close();
+            }
 
             assertTrue("Node should be mix:lockable ", ws1backTestRoot.getNode("node_5").isNodeType("mix:lockable"));
             assertFalse("Node should be not locked ", ws1backTestRoot.getNode("node_5").isLocked());
@@ -1259,14 +1282,31 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
             Node node_101 = back1.getRootNode().getNode("node_101");
             assertNotNull(node_101);
-            assertEquals(tempf.length(), node_101.getProperty("exo:data").getStream().available());
-            compareStream(new FileInputStream(tempf), node_101.getProperty("exo:data").getStream());
+
+            InputStream in = node_101.getProperty("exo:data").getStream();
+            try
+            {
+               assertEquals(tempf.length(), in.available());
+               compareStream(new FileInputStream(tempf), in);
+            }
+            finally
+            {
+               in.close();
+            }
 
             Node node_102 = back1.getRootNode().getNode("node_102");
             assertNotNull(node_102);
-            assertEquals(tempf.length(), node_102.getProperty("exo:extraData").getStream().available());
-            compareStream(new FileInputStream(tempf), node_102.getProperty("exo:extraData").getStream());
 
+            in = node_102.getProperty("exo:extraData").getStream();
+            try
+            {
+               assertEquals(tempf.length(), in.available());
+               compareStream(new FileInputStream(tempf), in);
+            }
+            finally
+            {
+               in.close();
+            }
          }
          catch (Exception e)
          {
