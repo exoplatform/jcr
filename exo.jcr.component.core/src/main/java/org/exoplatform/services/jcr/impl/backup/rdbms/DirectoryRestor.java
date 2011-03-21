@@ -21,6 +21,7 @@ import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.DataRestor;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
+import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -67,11 +68,6 @@ public class DirectoryRestor implements DataRestor
    private static final String PREFIX = "fsrestorer";
 
    /**
-    * Guarantee the unique name.
-    */
-   private static volatile int uniqueIndex = 0;
-
-   /**
     * Constructor DirectoryRestorer.
     * 
     * @param dataDirs
@@ -104,7 +100,7 @@ public class DirectoryRestor implements DataRestor
       {
          try
          {
-            File tmpDir = new File(tempDir, PREFIX + (System.currentTimeMillis() + uniqueIndex++));
+            File tmpDir = new File(tempDir, IdGenerator.generate());
             DirectoryHelper.copyDirectory(dataDir, tmpDir);
 
             tmpDirs.add(tmpDir);
