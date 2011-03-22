@@ -181,7 +181,7 @@ public class DirectoryRestor implements DataRestor
          }
          catch (IOException e)
          {
-            LOG.error("Can't remove temporary directory " + PrivilegedFileHelper.getAbsolutePath(tmpDir), e);
+            throw new BackupException(e);
          }
       }
 

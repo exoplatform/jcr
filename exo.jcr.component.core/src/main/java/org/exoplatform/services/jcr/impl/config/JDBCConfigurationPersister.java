@@ -162,7 +162,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(dialect)
          || DBConstants.DB_DIALECT_HSQLDB.equalsIgnoreCase(dialect))
       {
-         binType = "VARBINARY(102400)"; // 100Kb
+         binType = "VARBINARY(1000000)"; // 1Mb
       }
       else if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect))
       {

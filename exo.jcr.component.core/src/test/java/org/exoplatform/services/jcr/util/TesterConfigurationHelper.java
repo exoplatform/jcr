@@ -59,7 +59,7 @@ public class TesterConfigurationHelper
 {
    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ConfigurationHelper");
 
-   private static TesterConfigurationHelper instence;
+   private static TesterConfigurationHelper instance;
 
    private TesterConfigurationHelper()
    {
@@ -339,11 +339,11 @@ public class TesterConfigurationHelper
 
    public static TesterConfigurationHelper getInstence()
    {
-      if (instence == null)
+      if (instance == null)
       {
-         instence = new TesterConfigurationHelper();
+         instance = new TesterConfigurationHelper();
       }
 
-      return instence;
+      return instance;
    }
 }
