@@ -65,7 +65,7 @@ public class DirectoryRestor implements DataRestor
    /**
     * The prefix for temporary directories.
     */
-   private static final String PREFIX = "fsrestorer";
+   private static final String PREFIX = "dr";
 
    /**
     * Constructor DirectoryRestorer.
@@ -100,7 +100,7 @@ public class DirectoryRestor implements DataRestor
       {
          try
          {
-            File tmpDir = new File(tempDir, IdGenerator.generate());
+            File tmpDir = new File(tempDir, PREFIX + IdGenerator.generate());
             DirectoryHelper.copyDirectory(dataDir, tmpDir);
 
             tmpDirs.add(tmpDir);
