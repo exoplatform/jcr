@@ -1,0 +1,306 @@
+Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestLock.java
+===================================================================
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestLock.java	(revision 4103)
++++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestLock.java	(working copy)
+@@ -21,14 +21,18 @@
+ import org.exoplatform.common.http.HTTPStatus;
+ import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
+ import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
++import org.exoplatform.services.jcr.webdav.command.LockCommand.LockResultResponseEntity;
+ import org.exoplatform.services.jcr.webdav.util.TextUtil;
+ import org.exoplatform.services.jcr.webdav.utils.TestUtils;
++import org.exoplatform.services.rest.ExtHttpHeaders;
+ import org.exoplatform.services.rest.impl.ContainerResponse;
+ import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
+ 
+ import java.io.ByteArrayInputStream;
++import java.io.ByteArrayOutputStream;
+ import java.io.InputStream;
+ 
++import javax.jcr.Node;
+ import javax.ws.rs.core.MediaType;
+ import javax.ws.rs.core.MultivaluedMap;
+ 
+@@ -46,6 +50,10 @@
+    private String path = TestUtils.getFileName();
+ 
+    private String fileContent = TestUtils.getFileContent();
++   
++   private String lockRequestBody = "<D:lockinfo xmlns:D='DAV:'>" + "<D:lockscope>" + "<D:exclusive/>"
++      + "</D:lockscope>" + "<D:locktype>" + "<D:write/>" + "</D:locktype>" + "<D:owner>" + "<D:href>testOwner</D:href>"
++      + "</D:owner>" + "</D:lockinfo>";
+ 
+    @Override
+    public void setUp() throws Exception
+@@ -55,17 +63,134 @@
+       TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
+    }
+ 
++   /**
++    * Testing Lock method. Firstly lock existing node via webdav LOCK method and check for correct response status.
++    * Secondly check if the node is locked indeed via webdav DELETE method (no delete or any other operation cannot
++    * be performed with locked node). The response status must be LOCKED.
++    * @throws Exception
++    */
+    public void testLock() throws Exception
+    {
+       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+-      headers.add("Content-Type", MediaType.TEXT_PLAIN);
+-      ContainerResponse containerResponse = service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, null);
++      headers.add(ExtHttpHeaders.CONTENTTYPE, MediaType.TEXT_PLAIN);
++      ContainerResponse containerResponse =
++         service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
++      MultivaluedMap<String, Object> lockResponseHeaders = containerResponse.getHttpHeaders();
++      
+       assertEquals(HTTPStatus.OK, containerResponse.getStatus());
++
++      // some manipulation to serialize response entity
++      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
++      LockResultResponseEntity entity = (LockResultResponseEntity)containerResponse.getEntity();
++      entity.write(outputStream);
++
++      System.out.println("\n=Lock method response body (add lock)=====");
++      System.out.println("==========================================");
++      System.out.println(outputStream.toString());
++      System.out.println("==========================================\n");
++
+       containerResponse = service("DELETE", getPathWS() + path, "", null, null);
++
+       assertEquals(HTTPStatus.LOCKED, containerResponse.getStatus());
+       assertTrue(session.getRootNode().getNode(TextUtil.relativizePath(path)).isLocked());
++      
++      // here we're unlocking a node, to use it in other tests
++      // firstly get lock-token from response entity
++      String lockToken = outputStream.toString();
++      lockToken = lockToken.substring(lockToken.indexOf(">opaquelocktoken:"));
++      lockToken = lockToken.substring(lockToken.indexOf(":") + 1, lockToken.indexOf("<"));
++
++      // secondly add lock-token to current session and unlock the node 
++      session.addLockToken(lockToken);
++      ((Node)session.getItem(path)).unlock();
+    }
+ 
++   /**
++    * Testing lock refreshing. Firstly we lock the node. Secondly we refresh the lock
++    * via webdav LOCK method with no body. In both cases OK webdav status must be returned. 
++    * @throws Exception
++    */
++   public void testLockRefresh() throws Exception
++   {
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add("Content-Type", MediaType.TEXT_PLAIN);
++      ContainerResponse containerResponse =
++         service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
++      MultivaluedMap<String, Object> lockResponseHeaders = containerResponse.getHttpHeaders();
++
++      assertEquals(HTTPStatus.OK, containerResponse.getStatus());
++      
++      // get lock-token from response body
++      // some manipulation to serialize response entity
++      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
++      LockResultResponseEntity entity = (LockResultResponseEntity)containerResponse.getEntity();
++      entity.write(outputStream);
++      
++      String lockToken = outputStream.toString();
++      lockToken = lockToken.substring(lockToken.indexOf(">opaquelocktoken:"));
++      lockToken = lockToken.substring(lockToken.indexOf(":") + 1, lockToken.indexOf("<"));
++      
++      //prepare to send lock refresh request
++      headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.CONTENTTYPE, MediaType.TEXT_PLAIN);
++      headers.add(ExtHttpHeaders.LOCKTOKEN, lockToken);
++
++      containerResponse = service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, null);
++
++      assertEquals(HTTPStatus.OK, containerResponse.getStatus());
++
++      // some manipulation to serialize response entity
++      outputStream = new ByteArrayOutputStream();
++      entity = (LockResultResponseEntity)containerResponse.getEntity();
++      entity.write(outputStream);
++
++      System.out.println("\n=Lock method response body (refresh lock)=");
++      System.out.println("==========================================");
++      System.out.println(outputStream.toString());
++      System.out.println("==========================================\n");
++
++      // add lock-token to current session and unlock the node 
++      session.addLockToken(lockToken);
++      ((Node)session.getItem(path)).unlock();
++
++   }
++   
++   /**
++    * Testing trying to lock already locked node. Firstly we lock the node. Secondly we send webdav LOCK
++    * request with request body (because in case the body is empty the LOCK request should refresh already
++    * existing lock) to try to lock previously locked node. LOCKED webdav status must be returned.
++    * @throws Exception
++    */
++   public void testAlreadyLocked() throws Exception
++   {
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.CONTENTTYPE, MediaType.TEXT_PLAIN);
++      ContainerResponse containerResponse =
++         service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
++
++      assertEquals(HTTPStatus.OK, containerResponse.getStatus());
++
++      // some manipulation to serialize response entity
++      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
++      LockResultResponseEntity entity = (LockResultResponseEntity)containerResponse.getEntity();
++      entity.write(outputStream);
++
++      String lockToken = outputStream.toString();
++      lockToken = lockToken.substring(lockToken.indexOf(">opaquelocktoken:"));
++      lockToken = lockToken.substring(lockToken.indexOf(":") + 1, lockToken.indexOf("<"));
++
++      // prepare to send lock request
++      headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.CONTENTTYPE, MediaType.TEXT_PLAIN);
++      containerResponse = service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
++
++      assertEquals(HTTPStatus.LOCKED, containerResponse.getStatus());
++
++      // add lock-token to current session and unlock the node
++      session.addLockToken(lockToken);
++      ((Node)session.getItem(path)).unlock();
++   }
++
+    @Override
+    protected String getRepositoryName()
+    {
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 4103)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(working copy)
+@@ -1281,7 +1281,10 @@
+ 
+       if (lockTokenHeader != null)
+       {
+-         lockTokenHeader = lockTokenHeader.substring(1, lockTokenHeader.length() - 1);
++         if (lockTokenHeader.startsWith("<"))
++         {
++            lockTokenHeader = lockTokenHeader.substring(1, lockTokenHeader.length() - 1);
++         }
+ 
+          if (lockTokenHeader.contains(WebDavConst.Lock.OPAQUE_LOCK_TOKEN))
+          {
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/LockCommand.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/LockCommand.java	(revision 4103)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/LockCommand.java	(working copy)
+@@ -26,6 +26,7 @@
+ import org.exoplatform.services.jcr.webdav.command.lock.LockRequestEntity;
+ import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
+ import org.exoplatform.services.jcr.webdav.resource.GenericResource;
++import org.exoplatform.services.jcr.webdav.util.PropertyConstants;
+ import org.exoplatform.services.jcr.webdav.xml.PropertyWriteUtil;
+ import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
+ import org.exoplatform.services.log.ExoLogger;
+@@ -42,6 +43,7 @@
+ import javax.jcr.lock.LockException;
+ import javax.ws.rs.core.Response;
+ import javax.ws.rs.core.StreamingOutput;
++import javax.xml.namespace.QName;
+ import javax.xml.stream.XMLOutputFactory;
+ import javax.xml.stream.XMLStreamWriter;
+ 
+@@ -89,6 +91,7 @@
+    public Response lock(Session session, String path, HierarchicalProperty body, Depth depth, String timeout)
+    {
+ 
++      boolean bodyIsEmpty = (body == null);
+       String lockToken;
+       try
+       {
+@@ -106,7 +109,21 @@
+                }
+             }
+ 
+-            Lock lock = node.lock((depth.getIntValue() != 1), false);
++            Lock lock;
++            if (bodyIsEmpty)
++            {
++               lock = node.getLock();
++               lock.refresh();
++
++               body = new HierarchicalProperty(new QName("DAV", "activelock", "D"));
++               HierarchicalProperty owner = new HierarchicalProperty(PropertyConstants.OWNER);
++               HierarchicalProperty href = new HierarchicalProperty(new QName("D", "href"), lock.getLockOwner());
++               body.addChild(owner).addChild(href);
++            }
++            else
++            {
++               lock = node.lock((depth.getIntValue() != 1), false);
++            }
+             lockToken = lock.getLockToken();
+          }
+          catch (PathNotFoundException pexc)
+@@ -118,8 +135,17 @@
+ 
+          lockToken = WebDavConst.Lock.OPAQUE_LOCK_TOKEN + ":" + lockToken;
+ 
+-         return Response.ok(body(nsContext, requestEntity, depth, lockToken, requestEntity.getOwner(), timeout),
+-            "text/xml").header("Lock-Token", "<" + lockToken + ">").build();
++         if (bodyIsEmpty)
++         {
++            return Response.ok(body(nsContext, requestEntity, depth, lockToken, requestEntity.getOwner(), timeout),
++               "text/xml").build();
++         }
++         else
++         {
++            return Response
++            .ok(body(nsContext, requestEntity, depth, lockToken, requestEntity.getOwner(), timeout), "text/xml")
++               .header("Lock-Token", "<" + lockToken + ">").build();
++         }
+ 
+          // TODO 412 Precondition Failed ?
+       }
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(revision 4103)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(working copy)
+@@ -303,5 +303,43 @@
+         </listitem>
+       </orderedlist>
+     </section>
++    <section>
++      <title>Microsoft Office 2010</title>
++      <para>If you have Microsoft Office 2010 applications or Microsoft Office 2007 applications installed on a client computer. From that client computer, you try to access an Office file that is stored on a web server that is configured for Basic authentication. The connection between your computer and the web server does not use Secure Sockets Layer (SSL). When you try to open or to download the file, you experience the following symptoms:
++        <itemizedlist>
++          <listitem>
++            <para>The Office file does not open or download.</para>
++          </listitem> 
++          <listitem>
++            <para>You do not receive a Basic authentication password prompt when you try to open or to download the file.</para>
++          </listitem>
++          <listitem>
++            <para>You do not receive an error message when you try to open the file. The associated Office application starts. However, the selected file does not open.</para>
++          </listitem>
++        </itemizedlist>
++      </para>
++      <para>To enable Basic authentication on the client computer, follow these steps:</para>
++      <orderedlist>
++        <listitem>
++          <para>Click Start, type regedit in the Start Search box, and then press Enter.</para>
++        </listitem>
++        <listitem>
++          <para>Locate and then click the following registry subkey: </para>
++          <para>HKEY_CURRENT_USER\Software\Microsoft\Office\14.0\Common\Internet</para>
++        </listitem>
++        <listitem>
++          <para>On the Edit menu, point to New, and then click DWORD Value.</para>
++        </listitem>
++        <listitem>
++          <para>Type BasicAuthLevel, and then press Enter.</para>
++        </listitem>
++        <listitem>
++          <para>Right-click BasicAuthLevel, and then click Modify.</para>
++        </listitem>
++        <listitem>
++          <para>In the Value data box, type 2, and then click OK.</para>
++        </listitem>
++      </orderedlist>
++    </section>
+   </section>
+ </chapter>
