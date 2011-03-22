@@ -340,7 +340,9 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
                // STOP backups
                for (BackupChain chain : stopedList)
+               {
                   stopBackup(chain);
+               }
             }
             catch (InterruptedException e)
             {

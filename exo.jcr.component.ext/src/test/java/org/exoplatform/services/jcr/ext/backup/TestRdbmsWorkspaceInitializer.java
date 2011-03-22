@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.impl.core.TesterRdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
-import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.File;
@@ -43,7 +42,7 @@ import java.util.List;
  */
 public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 {
-   TesterConfigurationHelper helper = TesterConfigurationHelper.getInstence();
+   TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
 
    public void testRDBMSInitializerRestoreTablesMultiDB() throws Exception
    {
@@ -65,54 +64,42 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
       {
          if (workspaceEntry.getName().equals("ws1"))
          {
-            String newValueStoragePath = "target/temp/values/" + IdGenerator.generate();
-            String newIndexPath = "target/temp/index/" + IdGenerator.generate();
-
-            String dsName = helper.getNewDataSource("");
-
-            // set the initializer
+            String dsName = helper.createDatasource();
             WorkspaceEntry newEntry =
-               helper.getNewWs("ws" + System.currentTimeMillis(), true, dsName, newValueStoragePath, newIndexPath,
-                  workspaceEntry.getContainer(), workspaceEntry.getContainer().getValueStorages());
-
-            WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
-            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
+               helper.createWorkspaceEntry(true, dsName,
+                  helper.getValueStorageIds(workspaceEntry.getContainer().getValueStorages()));
 
             List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
             wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(url
                .getFile()).getParent()));
 
+            WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
+            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
             wiEntry.setParameters(wieParams);
-
             newEntry.setInitializer(wiEntry);
 
-            repositoryService.getRepository("db1").configWorkspace(newEntry);
-            repositoryService.getRepository("db1").createWorkspace(newEntry.getName());
+            // restore
+            helper.addWorkspace(repositoryService.getRepository("db1"), newEntry);
 
-            dsName = helper.getNewDataSource("");
-
-            newValueStoragePath = "target/temp/values/" + IdGenerator.generate();
-            newIndexPath = "target/temp/index/" + IdGenerator.generate();
-
-            // set the initializer
+            dsName = helper.createDatasource();
             newEntry =
-               helper.getNewWs("ws" + System.currentTimeMillis(), true, dsName, newValueStoragePath, newIndexPath,
-                  workspaceEntry.getContainer(),
-                  workspaceEntry.getContainer().getValueStorages());
-
-            wiEntry = new WorkspaceInitializerEntry();
-            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
+               helper.createWorkspaceEntry(true, dsName,
+                  helper.getValueStorageIds(workspaceEntry.getContainer().getValueStorages()));
 
             wieParams = new ArrayList<SimpleParameterEntry>();
             wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(url
                .getFile()).getParent()));
 
+            wiEntry = new WorkspaceInitializerEntry();
+            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
             wiEntry.setParameters(wieParams);
-
             newEntry.setInitializer(wiEntry);
 
-            repositoryService.getRepository("db1").configWorkspace(newEntry);
-            repositoryService.getRepository("db1").createWorkspace(newEntry.getName());
+            // restore
+            helper.addWorkspace(repositoryService.getRepository("db1"), newEntry);
+
+            String newIndexPath = newEntry.getQueryHandler().getParameterValue("index-dir");
+            String newValueStoragePath = newEntry.getContainer().getValueStorages().get(0).getParameterValue("path");
 
             assertFalse(new File(newValueStoragePath).exists());
             assertTrue(new File(newIndexPath).list().length > 0);
@@ -143,25 +130,18 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
       {
          if (workspaceEntry.getName().equals("ws1"))
          {
-            String newValueStoragePath = "target/temp/values/" + IdGenerator.generate();
-            String newIndexPath = "target/temp/index/" + IdGenerator.generate();
-
-            String dsName = helper.getNewDataSource("");
-
-            // set the initializer
+            String dsName = helper.createDatasource();
             WorkspaceEntry newEntry =
-               helper.getNewWs("ws" + System.currentTimeMillis(), true, dsName, newValueStoragePath, newIndexPath,
-                  workspaceEntry.getContainer(), workspaceEntry.getContainer().getValueStorages());
-
-            WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
-            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
+               helper.createWorkspaceEntry(true, dsName,
+                  helper.getValueStorageIds(workspaceEntry.getContainer().getValueStorages()));
 
             List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
             wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(url
                .getFile()).getParent()));
 
+            WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
+            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
             wiEntry.setParameters(wieParams);
-
             newEntry.setInitializer(wiEntry);
 
             TesterRdbmsWorkspaceInitializer initializer =
@@ -169,32 +149,26 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
                   cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService, new FileCleanerHolder());
 
             // restore single -> multi
-            repositoryService.getRepository("db1").configWorkspace(newEntry);
-            repositoryService.getRepository("db1").createWorkspace(newEntry.getName());
+            helper.addWorkspace(repositoryService.getRepository("db1"), newEntry);
 
-            dsName = helper.getNewDataSource("");
-
-            newValueStoragePath = "target/temp/values/" + IdGenerator.generate();
-            newIndexPath = "target/temp/index/" + IdGenerator.generate();
-
-            // set the initializer
+            dsName = helper.createDatasource();
             newEntry =
-               helper.getNewWs("ws" + System.currentTimeMillis(), true, dsName, newValueStoragePath, newIndexPath,
-                  workspaceEntry.getContainer(), workspaceEntry.getContainer().getValueStorages());
-
-            wiEntry = new WorkspaceInitializerEntry();
-            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
+               helper.createWorkspaceEntry(true, dsName,
+                  helper.getValueStorageIds(workspaceEntry.getContainer().getValueStorages()));
 
             wieParams = new ArrayList<SimpleParameterEntry>();
             wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(url
                .getFile()).getParent()));
 
+            wiEntry = new WorkspaceInitializerEntry();
+            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
             wiEntry.setParameters(wieParams);
-
             newEntry.setInitializer(wiEntry);
 
-            repositoryService.getRepository("db1").configWorkspace(newEntry);
-            repositoryService.getRepository("db1").createWorkspace(newEntry.getName());
+            helper.addWorkspace(repositoryService.getRepository("db1"), newEntry);
+
+            String newIndexPath = newEntry.getQueryHandler().getParameterValue("index-dir");
+            String newValueStoragePath = newEntry.getContainer().getValueStorages().get(0).getParameterValue("path");
 
             assertFalse(new File(newValueStoragePath).exists());
             assertTrue(new File(newIndexPath).list().length > 0);

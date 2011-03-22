@@ -35,22 +35,29 @@ public class TestBackupManager
    extends AbstractBackupUseCasesTest
 {
 
+   private BackupManagerImpl backup;
+
+   @Override
    protected ExtendedBackupManager getBackupManager()
    {
-      InitParams initParams = new InitParams();
-      PropertiesParam pps = new PropertiesParam();
-      pps.setProperty(BackupManagerImpl.FULL_BACKUP_TYPE,
-               "org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob");
-      pps.setProperty(BackupManagerImpl.INCREMENTAL_BACKUP_TYPE,
-               "org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob");
-      pps.setProperty(BackupManagerImpl.BACKUP_DIR, "target/backup_testBackupManager");
-      pps.setProperty(BackupManagerImpl.DEFAULT_INCREMENTAL_JOB_PERIOD, "3600");
+      if (backup == null)
+      {
 
-      initParams.put(BackupManagerImpl.BACKUP_PROPERTIES, pps);
+         InitParams initParams = new InitParams();
+         PropertiesParam pps = new PropertiesParam();
+         pps.setProperty(BackupManagerImpl.FULL_BACKUP_TYPE,
+            "org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob");
+         pps.setProperty(BackupManagerImpl.INCREMENTAL_BACKUP_TYPE,
+            "org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob");
+         pps.setProperty(BackupManagerImpl.BACKUP_DIR, "target/backup_testBackupManager");
+         pps.setProperty(BackupManagerImpl.DEFAULT_INCREMENTAL_JOB_PERIOD, "3600");
 
-      BackupManagerImpl backupManagerImpl = new BackupManagerImpl(initParams, repositoryService);
-      backupManagerImpl.start();
+         initParams.put(BackupManagerImpl.BACKUP_PROPERTIES, pps);
 
-      return backupManagerImpl;
+         backup = new BackupManagerImpl(initParams, repositoryService);
+         backup.start();
+      }
+
+      return backup;
    }
 }

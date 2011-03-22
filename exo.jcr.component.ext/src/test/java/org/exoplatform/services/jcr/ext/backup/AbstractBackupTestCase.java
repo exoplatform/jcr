@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
@@ -37,14 +36,11 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -59,8 +55,6 @@ import javax.jcr.ValueFormatException;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -110,36 +104,6 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       super.setUp();// this
 
       backup = getBackupManager();
-
-      if (backup == null)
-         throw new Exception("There are no BackupManagerImpl in configuration");
-
-      for (String wsName : getReposityToBackup().getWorkspaceNames())
-      {
-         SessionImpl ws = (SessionImpl) getReposityToBackup().login(credentials, wsName);
-         Node wsTestRoot = ws.getRootNode().addNode("backupTest");
-         ws.save();
-         addContent(wsTestRoot, 1, 10, 1);
-
-         if ("ws1".equals(wsName))
-         {
-            ws1Session = ws;
-            ws1TestRoot = wsTestRoot;
-         }
-      }
-
-      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
-
-      for (String wsName : repositoryDB7.getWorkspaceNames())
-      {
-         SessionImpl sessionWS = (SessionImpl) repositoryDB7.login(credentials, wsName);
-
-         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
-         sessionWS.getRootNode().save();
-         addContent(wsTestRoot, 1, 10, 1);
-         sessionWS.getRootNode().save();
-      }
-
    }
 
    protected abstract ExtendedBackupManager getBackupManager();
@@ -149,59 +113,6 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       return (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackup);
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-
-      for (String wsName : getReposityToBackup().getWorkspaceNames())
-      {
-         try
-         {
-            SessionImpl ws = (SessionImpl) getReposityToBackup().login(credentials, wsName);
-            ws.getRootNode().getNode("backupTest").remove();
-            ws.save();
-         }
-         catch (PathNotFoundException e)
-         {
-            //skip
-         }
-      }
-
-      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
-
-      for (String wsName : repositoryDB7.getWorkspaceNames())
-      {
-         try
-         {
-            SessionImpl ws = (SessionImpl) repositoryDB7.login(credentials, wsName);
-            ws.getRootNode().getNode("backupTest").remove();
-            ws.save();
-         }
-         catch (PathNotFoundException e)
-         {
-            //skip
-         }
-      }
-
-      for (String wsName : getReposityToBackup().getWorkspaceNames())
-      {
-         if (wsName.equals(workspaceNameToRestore))
-         {
-            removeWorkspaceFully(getReposityToBackup().getName(), workspaceNameToRestore);
-         }
-      }
-
-      try 
-      {
-         repositoryService.getConfig().getRepositoryConfiguration(repositoryNameToRestore);
-         removeRepositoryFully(repositoryNameToRestore);
-      } 
-      catch (RepositoryConfigurationException e)
-      {
-         //skip
-      }
-
-   }
 
    protected WorkspaceEntry makeWorkspaceEntry(String name, String sourceName)
    {
@@ -479,52 +390,31 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
          repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName()
             .equals(wEntry.getName());
 
-      //close all session
+      // remove workspace 
       forceCloseSession(repositoryName, wEntry.getName());
-
       repositoryService.getRepository(repositoryName).removeWorkspace(wEntry.getName());
 
-      //clean database
-      DataSource ds =
-         (DataSource)new InitialContext().lookup(wEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME));
-      Connection conn = ds.getConnection();
+      // clean db
+      DBCleanService.cleanWorkspaceData(wEntry);
 
-      if (conn.getMetaData().getTables(null, null, "JCR_MITEM", new String[]{"TABLE"}).next())
-      {
-         Statement st = conn.createStatement();
-         st.execute("DROP TABLE JCR_MVALUE");
-         st.execute("DROP TABLE JCR_MREF");
-         st.execute("DROP TABLE JCR_MITEM");
-         conn.commit();
-         st.close();
-         conn.close();
-      }
-      else if (conn.getMetaData().getTables(null, null, "JCR_SITEM", new String[]{"TABLE"}).next())
-      {
-         Statement st = conn.createStatement();
-         st.execute("DROP TABLE JCR_SVALUE");
-         st.execute("DROP TABLE JCR_SREF");
-         st.execute("DROP TABLE JCR_SITEM");
-         conn.commit();
-         st.close();
-         conn.close();
-      }
-
+      // clean value storage
       if (wEntry.getContainer().getValueStorages() != null)
       {
          for (ValueStorageEntry valueStorage : wEntry.getContainer().getValueStorages())
          {
-            removeDirectory(new File(valueStorage.getParameterValue(FileValueStorage.PATH)));
+            DirectoryHelper.removeDirectory(new File(valueStorage.getParameterValue(FileValueStorage.PATH)));
          }
       }
 
+      // clean index
       if (wEntry.getQueryHandler() != null)
       {
-         removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR, null)));
+         DirectoryHelper.removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(
+            QueryHandlerParams.PARAM_INDEX_DIR, null)));
          if (isSystem)
          {
-            removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR,
+            DirectoryHelper.removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(
+               QueryHandlerParams.PARAM_INDEX_DIR,
                null)
                + "_" + SystemSearchManager.INDEX_DIR_SUFFIX));
          }
@@ -566,16 +456,18 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       {
          for (ValueStorageEntry valueStorage : wEntry.getContainer().getValueStorages())
          {
-            removeDirectory(new File(valueStorage.getParameterValue(FileValueStorage.PATH)));
+            DirectoryHelper.removeDirectory(new File(valueStorage.getParameterValue(FileValueStorage.PATH)));
          }
       }
 
       if (wEntry.getQueryHandler() != null)
       {
-         removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR, null)));
+         DirectoryHelper.removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(
+            QueryHandlerParams.PARAM_INDEX_DIR, null)));
          if (isSystem)
          {
-            removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR,
+            DirectoryHelper.removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(
+               QueryHandlerParams.PARAM_INDEX_DIR,
                null)
                + "_" + SystemSearchManager.INDEX_DIR_SUFFIX));
          }
@@ -618,6 +510,7 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
          repositoryService.removeRepository(repositoryEntry.getName());
       }
 
+      // clean data
       for (WorkspaceEntry wEntry : workspaceList)
       {
          DBCleanService.cleanWorkspaceData(wEntry);
@@ -626,7 +519,7 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
          {
             for (ValueStorageEntry valueStorage : wEntry.getContainer().getValueStorages())
             {
-               removeDirectory(new File(valueStorage.getParameterValue(FileValueStorage.PATH)));
+               DirectoryHelper.removeDirectory(new File(valueStorage.getParameterValue(FileValueStorage.PATH)));
             }
          }
 
@@ -634,12 +527,12 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
 
          if (wEntry.getQueryHandler() != null)
          {
-            removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR,
-               null)));
+            DirectoryHelper.removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(
+               QueryHandlerParams.PARAM_INDEX_DIR, null)));
             if (isSystem)
             {
-               removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR,
-                  null)
+               DirectoryHelper.removeDirectory(new File(wEntry.getQueryHandler().getParameterValue(
+                  QueryHandlerParams.PARAM_INDEX_DIR, null)
                   + "_" + SystemSearchManager.INDEX_DIR_SUFFIX));
             }
          }
@@ -668,36 +561,5 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       SessionRegistry sessionRegistry = (SessionRegistry) wc.getComponent(SessionRegistry.class);
 
       return sessionRegistry.closeSessions(workspaceName);
-   }
-
-   /**
-    * Remove directory.
-    * 
-    * @param dir
-    *          directory to remove
-    * @throws IOException
-    *          if any exception occurred
-    */
-   private void removeDirectory(File dir) throws IOException
-   {
-      if (PrivilegedFileHelper.isDirectory(dir))
-      {
-         for (File subFile : PrivilegedFileHelper.listFiles(dir))
-         {
-            removeDirectory(subFile);
-         }
-
-         if (!PrivilegedFileHelper.delete(dir))
-         {
-            throw new IOException("Can't remove folder : " + PrivilegedFileHelper.getCanonicalPath(dir));
-         }
-      }
-      else
-      {
-         if (!PrivilegedFileHelper.delete(dir))
-         {
-            throw new IOException("Can't remove file : " + PrivilegedFileHelper.getCanonicalPath(dir));
-         }
-      }
    }
 }
