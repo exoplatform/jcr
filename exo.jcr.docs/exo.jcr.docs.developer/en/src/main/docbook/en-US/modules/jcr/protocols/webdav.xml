@@ -303,5 +303,43 @@
         </listitem>
       </orderedlist>
     </section>
+        <section>
+      <title>Microsoft Office 2010</title>
+      <para>If you have Microsoft Office 2010 applications or Microsoft Office 2007 applications installed on a client computer. From that client computer, you try to access an Office file that is stored on a web server that is configured for Basic authentication. The connection between your computer and the web server does not use Secure Sockets Layer (SSL). When you try to open or to download the file, you experience the following symptoms:
+        <itemizedlist>
+          <listitem>
+            <para>The Office file does not open or download.</para>
+          </listitem> 
+          <listitem>
+            <para>You do not receive a Basic authentication password prompt when you try to open or to download the file.</para>
+          </listitem>
+          <listitem>
+            <para>You do not receive an error message when you try to open the file. The associated Office application starts. However, the selected file does not open.</para>
+          </listitem>
+        </itemizedlist>
+      </para>
+      <para>To enable Basic authentication on the client computer, follow these steps:</para>
+      <orderedlist>
+        <listitem>
+          <para>Click Start, type regedit in the Start Search box, and then press Enter.</para>
+        </listitem>
+        <listitem>
+          <para>Locate and then click the following registry subkey: </para>
+          <para>HKEY_CURRENT_USER\Software\Microsoft\Office\14.0\Common\Internet</para>
+        </listitem>
+        <listitem>
+          <para>On the Edit menu, point to New, and then click DWORD Value.</para>
+        </listitem>
+        <listitem>
+          <para>Type BasicAuthLevel, and then press Enter.</para>
+        </listitem>
+        <listitem>
+          <para>Right-click BasicAuthLevel, and then click Modify.</para>
+        </listitem>
+        <listitem>
+          <para>In the Value data box, type 2, and then click OK.</para>
+        </listitem>
+      </orderedlist>
+    </section>
   </section>
 </chapter>
