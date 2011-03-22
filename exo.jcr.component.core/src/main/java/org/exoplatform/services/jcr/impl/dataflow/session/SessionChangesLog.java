@@ -416,6 +416,13 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       return childCount == null ? 0 : childCount[0];
    }
 
+   public int getLastChildOrderNumber(String rootIdentifier)
+   {
+
+      int[] childInfo = childNodesCount.get(rootIdentifier);
+      return childInfo == null ? -1 : childInfo[1];
+   }
+
    /**
     * Collect last in ChangesLog order item child changes.
     * 
@@ -665,13 +672,17 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       {
          int[] childCount = childNodesCount.get(item.getData().getParentIdentifier());
          if (childCount == null)
-            childCount = new int[1];
+            childCount = new int[2];
 
          if (item.isDeleted())
+         {
             --childCount[0];
+         }
          else if (item.isAdded())
+         {
             ++childCount[0];
-
+            childCount[1] = ((NodeData)item.getData()).getOrderNumber();
+         }
          childNodesCount.put(item.getData().getParentIdentifier(), childCount);
       }
    }

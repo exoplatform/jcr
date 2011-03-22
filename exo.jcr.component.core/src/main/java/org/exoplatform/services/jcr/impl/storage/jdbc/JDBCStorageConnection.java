@@ -158,6 +158,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected PreparedStatement findNodesByParentId;
 
+   protected PreparedStatement findLastOrderNumberByParentId;
+
    protected PreparedStatement findNodesCountByParentId;
 
    protected PreparedStatement findPropertiesByParentId;
@@ -927,6 +929,51 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          throw new RepositoryException(e);
       }
       catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getLastOrderNumber(NodeData parent) throws RepositoryException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet count = findLastOrderNumberByParentIdentifier(getInternalId(parent.getIdentifier()));
+         try
+         {
+            if (count.next())
+            {
+               if (count.getInt(1) > 0)
+               {
+                  return count.getInt(2);
+               }
+               else
+               {
+                  return -1;
+               }
+            }
+            else
+            {
+               return -1;
+            }
+         }
+         finally
+         {
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+      catch (SQLException e)
       {
          throw new RepositoryException(e);
       }
@@ -2771,6 +2818,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected abstract ResultSet findItemByName(String parentId, String name, int index) throws SQLException;
 
    protected abstract ResultSet findChildNodesByParentIdentifier(String parentIdentifier) throws SQLException;
+
+   protected abstract ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException;
 

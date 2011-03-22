@@ -129,6 +129,9 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
 
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
+         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where I_CLASS=1 and PARENT_ID=?";
+
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?";
 
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by ID";
@@ -374,6 +377,21 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
+   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
+   {
+      if (findLastOrderNumberByParentId == null)
+         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      else
+         findLastOrderNumberByParentId.clearParameters();
+
+      findLastOrderNumberByParentId.setString(1, parentIdentifier);
+      return findLastOrderNumberByParentId.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    protected ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException
    {
       if (findNodesCountByParentId == null)
@@ -521,6 +539,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    @Override
    protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
    {
-      throw new UnsupportedOperationException("The method findNodesAndProperties is not supported for this type of connection use the complex queries instead");
+      throw new UnsupportedOperationException(
+         "The method findNodesAndProperties is not supported for this type of connection use the complex queries instead");
    }
 }

@@ -135,6 +135,9 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?" + " order by N_ORDER_NUM";
 
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
+         "select count(*), max(N_ORDER_NUM) from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
+
       FIND_NODES_COUNT_BY_PARENTID =
          "select count(ID) from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
 
@@ -278,6 +281,22 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       findNodesByParentId.setString(1, containerName);
       findNodesByParentId.setString(2, parentCid);
       return findNodesByParentId.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
+   {
+      if (findLastOrderNumberByParentId == null)
+         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      else
+         findLastOrderNumberByParentId.clearParameters();
+
+      findLastOrderNumberByParentId.setString(1, containerName);
+      findLastOrderNumberByParentId.setString(2, parentIdentifier);
+      return findLastOrderNumberByParentId.executeQuery();
    }
 
    /**
@@ -542,6 +561,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    @Override
    protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
    {
-      throw new UnsupportedOperationException("The method findNodesAndProperties is not supported for this type of connection use the complex queries instead");
+      throw new UnsupportedOperationException(
+         "The method findNodesAndProperties is not supported for this type of connection use the complex queries instead");
    }
 }

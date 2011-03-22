@@ -467,7 +467,24 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          con.close();
       }
    }
-
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
+   {
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      try
+      {
+         return con.getLastOrderNumber(nodeData);
+      }
+      finally
+      {
+         con.close();
+      }
+   }
+   
    /**
     * {@inheritDoc}
     */

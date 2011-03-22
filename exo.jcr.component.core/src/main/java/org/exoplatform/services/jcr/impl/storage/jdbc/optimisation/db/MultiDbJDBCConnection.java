@@ -153,6 +153,9 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
             + " from JCR_MITEM I, (SELECT ID, PARENT_ID from JCR_MITEM where ID=?) J"
             + " where I.ID = J.ID or I.ID = J.PARENT_ID";
 
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
+         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where I_CLASS=1 and PARENT_ID=?";
+
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?";
 
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by NAME";
@@ -180,8 +183,8 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       DELETE_VALUE = "delete from JCR_MVALUE where PROPERTY_ID=?";
       DELETE_REF = "delete from JCR_MREF where PROPERTY_ID=?";
 
-      FIND_NODES_AND_PROPERTIES = 
-         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED," 
+      FIND_NODES_AND_PROPERTIES =
+         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I"
             + " where I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
@@ -417,6 +420,21 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 
       findNodesByParentIdCQ.setString(1, parentIdentifier);
       return findNodesByParentIdCQ.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
+   {
+      if (findLastOrderNumberByParentId == null)
+         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      else
+         findLastOrderNumberByParentId.clearParameters();
+
+      findLastOrderNumberByParentId.setString(1, parentIdentifier);
+      return findLastOrderNumberByParentId.executeQuery();
    }
 
    /**

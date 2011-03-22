@@ -117,6 +117,12 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     * <code>getChildNodesCount(NodeData parent)</code>
     */
    private static final String GET_CHILD_NODES_COUNT_DESCR = "getChildNodesCount";
+   
+   /**
+    * The description of the statistics corresponding to the method 
+    * <code>getLastOrderNumber(NodeData parent)</code>
+    */
+   private static final String GET_LAST_ORDER_NUMBER_DESCR = "getLastOrderNumber";
 
    /**
     * The description of the statistics corresponding to the method 
@@ -171,6 +177,8 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
          GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR));
       ALL_STATISTICS.put(GET_CHILD_NODES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_DATA_DESCR));
       ALL_STATISTICS.put(GET_CHILD_NODES_COUNT_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_COUNT_DESCR));
+      ALL_STATISTICS.put(GET_LAST_ORDER_NUMBER_DESCR, new Statistics(GLOBAL_STATISTICS, GET_LAST_ORDER_NUMBER_DESCR));
+      
       ALL_STATISTICS.put(GET_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
          GET_CHILD_PROPERTIES_DATA_DESCR));
       ALL_STATISTICS.put(LIST_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
@@ -332,6 +340,23 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       }
    }
 
+   /**
+    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildNodesCount(org.exoplatform.services.jcr.datamodel.NodeData)
+    */
+   public int getLastOrderNumber(NodeData parent) throws RepositoryException
+   {
+      Statistics s = ALL_STATISTICS.get(GET_LAST_ORDER_NUMBER_DESCR);
+      try
+      {
+         s.begin();
+         return wcs.getLastOrderNumber(parent);
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+   
    /**
     * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildNodesCount(org.exoplatform.services.jcr.datamodel.NodeData)
     */

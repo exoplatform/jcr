@@ -2984,7 +2984,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
    private int getNextChildOrderNum() throws RepositoryException
    {
-      return dataManager.getChildNodesCount(nodeData());
+      return dataManager.getLastOrderNumber(nodeData()) + 1;
    }
 
    private int getNextChildIndex(InternalQName nameToAdd, NodeData parentNode) throws RepositoryException,

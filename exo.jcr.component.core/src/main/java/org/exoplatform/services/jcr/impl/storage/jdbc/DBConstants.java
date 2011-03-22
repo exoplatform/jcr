@@ -128,7 +128,12 @@ public class DBConstants
     * FIND_NODES_BY_PARENTID.
     */
    protected String FIND_NODES_BY_PARENTID;
-   
+
+   /**
+    * FIND_LAST_ORDER_NUMBER_BY_PARENTID.
+    */
+   protected String FIND_LAST_ORDER_NUMBER_BY_PARENTID;
+      
    /**
     * FIND_NODES_COUNT_BY_PARENTID.
     */

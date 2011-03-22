@@ -114,6 +114,46 @@ public class TransactionableDataManager implements TransactionResource, DataMana
    /**
     * {@inheritDoc}
     */
+   public int getLastOrderNumber(final NodeData parent) throws RepositoryException
+   {
+      if (txStarted())
+      {
+         int txLastOrderNumber = -1;
+         for (ItemState change : transactionLog.getAllStates())
+         {
+            if (change.isNode() && change.isPersisted()
+               && change.getData().getParentIdentifier().equals(parent.getIdentifier()))
+            {
+               if (change.isAdded())
+               {
+                  int orderNumber = ((NodeData)change.getData()).getOrderNumber();
+                  if (orderNumber > txLastOrderNumber)
+                  {
+                     txLastOrderNumber = orderNumber;
+                  }
+               }
+            }
+         }
+
+         int lastOrderNumber = storageDataManager.getLastOrderNumber(parent);
+         if (lastOrderNumber > txLastOrderNumber)
+         {
+            return lastOrderNumber;
+         }
+         else
+         {
+            return txLastOrderNumber;
+         }
+      }
+      else
+      {
+         return storageDataManager.getLastOrderNumber(parent);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
       if (txStarted())

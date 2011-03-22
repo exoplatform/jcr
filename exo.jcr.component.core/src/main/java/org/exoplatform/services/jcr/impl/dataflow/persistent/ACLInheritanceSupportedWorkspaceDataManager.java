@@ -158,6 +158,14 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
    /**
     * {@inheritDoc}
     */
+   public int getLastOrderNumber(final NodeData parent) throws RepositoryException
+   {
+      return persistentManager.getLastOrderNumber(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
       return persistentManager.getChildNodesCount(parent);

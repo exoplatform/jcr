@@ -135,6 +135,14 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    /**
     * {@inheritDoc}
     */
+   public int getLastOrderNumber(final NodeData parent) throws RepositoryException
+   {
+      return storageDataManager.getLastOrderNumber(parent);
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
    public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
       return storageDataManager.getChildNodesCount(parent);
