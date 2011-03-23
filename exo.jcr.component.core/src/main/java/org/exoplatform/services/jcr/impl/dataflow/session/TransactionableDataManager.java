@@ -121,16 +121,13 @@ public class TransactionableDataManager implements TransactionResource, DataMana
          int txLastOrderNumber = -1;
          for (ItemState change : transactionLog.getAllStates())
          {
-            if (change.isNode() && change.isPersisted()
+            if (change.isNode() && change.isPersisted() && change.isAdded()
                && change.getData().getParentIdentifier().equals(parent.getIdentifier()))
             {
-               if (change.isAdded())
+               int orderNumber = ((NodeData)change.getData()).getOrderNumber();
+               if (orderNumber > txLastOrderNumber)
                {
-                  int orderNumber = ((NodeData)change.getData()).getOrderNumber();
-                  if (orderNumber > txLastOrderNumber)
-                  {
-                     txLastOrderNumber = orderNumber;
-                  }
+                  txLastOrderNumber = orderNumber;
                }
             }
          }

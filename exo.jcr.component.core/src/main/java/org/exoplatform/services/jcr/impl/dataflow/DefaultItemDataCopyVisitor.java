@@ -264,7 +264,7 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
 
    protected int calculateNewNodeOrderNumber() throws RepositoryException
    {
-      return (dataManager.getLastOrderNumber(curParent()))+1;
+      return dataManager.getLastOrderNumber(curParent()) + 1;
    }
 
    protected QPath calculateNewNodePath(NodeData node, int level) throws RepositoryException

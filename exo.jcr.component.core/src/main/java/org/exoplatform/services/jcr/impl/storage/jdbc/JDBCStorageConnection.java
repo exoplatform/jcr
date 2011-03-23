@@ -470,6 +470,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             findNodesByParentId.close();
          }
 
+         if (findLastOrderNumberByParentId != null)
+         {
+            findLastOrderNumberByParentId.close();
+         }
+
          if (findNodesCountByParentId != null)
          {
             findNodesCountByParentId.close();
@@ -945,16 +950,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          ResultSet count = findLastOrderNumberByParentIdentifier(getInternalId(parent.getIdentifier()));
          try
          {
-            if (count.next())
+            if (count.next() && count.getInt(1) > 0)
             {
-               if (count.getInt(1) > 0)
-               {
-                  return count.getInt(2);
-               }
-               else
-               {
-                  return -1;
-               }
+               return count.getInt(2);
             }
             else
             {
