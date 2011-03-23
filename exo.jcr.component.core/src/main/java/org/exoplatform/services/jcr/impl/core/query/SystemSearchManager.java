@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
@@ -132,12 +131,5 @@ public class SystemSearchManager extends SearchManager
    protected String getStorageName()
    {
       return super.getStorageName() + "_" + INDEX_DIR_SUFFIX;
-   }
-
-   @Override
-   protected void suspendLocally() throws SuspendException
-   {
-      super.suspendLocally();
-      isStarted = false;
    }
 }

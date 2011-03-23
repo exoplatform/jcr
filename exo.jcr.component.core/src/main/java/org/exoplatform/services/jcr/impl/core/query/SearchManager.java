@@ -1130,8 +1130,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new SuspendException("Component already suspended.");
       }
 
+      if (handler instanceof Suspendable)
+      {
+         ((Suspendable)handler).suspend();
+      }
+
       isSuspended = true;
-      stop();
    }
 
    protected void resumeLocally() throws ResumeException
@@ -1141,7 +1145,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new ResumeException("Component is not suspended.");
       }
 
-      start();
+      if (handler instanceof Suspendable)
+      {
+         ((Suspendable)handler).resume();
+      }
+
       isSuspended = false;
    }
 

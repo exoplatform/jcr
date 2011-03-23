@@ -1178,8 +1178,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          throw new ResumeException("Component is not suspended.");
       }
 
-      isSuspended = false;
       latcher.countDown();
+      isSuspended = false;
    }
 
    /**

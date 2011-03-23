@@ -20,7 +20,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
@@ -29,7 +28,9 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.core.query.IndexRecovery;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
@@ -98,7 +99,7 @@ import javax.jcr.RepositoryException;
  * thread and reader threads is done using {@link #updateMonitor} and
  * {@link #updateInProgress}.
  */
-public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorListener
+public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorListener, Suspendable
 {
 
    /**
@@ -3617,6 +3618,40 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
       finally
       {
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void suspend() throws SuspendException
+   {
+      try
+      {
+         flush();
+      }
+      catch (IOException e)
+      {
+         throw new SuspendException(e);
+      }
+      merger.dispose();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void resume() throws ResumeException
+   {
+      try
+      {
+         indexNames.read();
+         refreshIndexList();
+
+         doInitIndexMerger();
+      }
+      catch (IOException e)
+      {
+         throw new ResumeException(e);
       }
    }
 }
