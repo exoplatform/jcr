@@ -61,8 +61,6 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.ws.frameworks.json.impl.JsonException;
-import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
 import org.picocontainer.Startable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1555,30 +1553,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
          }
       }
-      
-      // check if need to restore with same configuration or not
-      boolean isSameConfig = false;
-      try
-      {
-         String newConf = new JsonGeneratorImpl().createJsonObject(repositoryEntry).toString();
-         String currnetConf =
-            new JsonGeneratorImpl().createJsonObject(
-               repoService.getRepository(repositoryEntry.getName()).getConfiguration()).toString();
 
-         isSameConfig = newConf.equals(currnetConf);
-      }
-      catch (JsonException e)
-      {
-         this.log.error("Can't get JSON object from wokrspace configuration", e);
-      }
-      catch (RepositoryException e)
-      {
-         this.log.error(e);
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         this.log.error(e);
-      }
+      
 
       // check if we have deal with RDBMS backup
       boolean isRDBMSBackup = false;
@@ -1594,9 +1570,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
       JobRepositoryRestore jobExistedRepositoryRestore =
-         isSameConfig && isRDBMSBackup ? new JobExistedRepositoryRestoreSameConfig(repoService, this, repositoryEntry,
-            workspacesMapping, rblog) : new JobExistedRepositoryRestore(repoService, this, repositoryEntry,
-            workspacesMapping, rblog);
+         isRDBMSBackup ? new JobExistedRepositoryRDBMSRestore(repoService, this, repositoryEntry, workspacesMapping,
+            rblog) : new JobExistedRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, rblog);
 
       restoreRepositoryJobs.add(jobExistedRepositoryRestore);
       if (asynchronous)
@@ -1661,38 +1636,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          throw new WorkspaceRestoreException("Repository \"" + repositoryName + "\" should be existed", e);
       }
 
-      // check if need to restore with same configuration or not
-      boolean isSameConfig = false;
-      try
-      {
-         WorkspaceEntry currentWsEntry = null;
-         for (WorkspaceEntry wsEntry : repoService.getRepository(repositoryName).getConfiguration().getWorkspaceEntries())
-         {
-            if (wsEntry.getName().equals(workspaceEntry.getName()))
-            {
-               currentWsEntry = wsEntry;
-               break;
-            }
-         }
-         
-         String newConf = new JsonGeneratorImpl().createJsonObject(workspaceEntry).toString();
-         String currnetConf = new JsonGeneratorImpl().createJsonObject(currentWsEntry).toString();
-
-         isSameConfig = newConf.equals(currnetConf);
-      }
-      catch (JsonException e)
-      {
-         this.log.error("Can't get JSON object from wokrspace configuration", e);
-      }
-      catch (RepositoryException e)
-      {
-         this.log.error(e);
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         this.log.error(e);
-      }
-
       // check if we have deal with RDBMS backup
       boolean isRDBMSBackup = false;
       try
@@ -1707,9 +1650,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
       JobWorkspaceRestore jobRestore =
-         isSameConfig && isRDBMSBackup ? new JobExistedWorkspaceRestoreSameConfig(repoService, this, repositoryName,
-            log, workspaceEntry) : new JobExistedWorkspaceRestore(repoService, this, repositoryName, log,
-            workspaceEntry);
+         isRDBMSBackup ? new JobExistedWorkspaceRDBMSRestore(repoService, this, repositoryName, log,
+            workspaceEntry) : new JobExistedWorkspaceRestore(repoService, this, repositoryName, log, workspaceEntry);
       restoreJobs.add(jobRestore);
 
       if (asynchronous)

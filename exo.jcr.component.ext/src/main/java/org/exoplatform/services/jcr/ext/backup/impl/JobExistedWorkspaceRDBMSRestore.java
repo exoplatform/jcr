@@ -45,17 +45,17 @@ import java.util.List;
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: JobExistedWorkspaceRestoreSameConfig.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class JobExistedWorkspaceRestoreSameConfig extends JobWorkspaceRestore
+public class JobExistedWorkspaceRDBMSRestore extends JobWorkspaceRestore
 {
    /**
     * The logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobExistedWorkspaceRestoreSameConfig");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobExistedWorkspaceRDBMSRestore");
 
    /**
-    * JobExistedWorkspaceRestore constructor.
+    * JobExistedWorkspaceRestore JobExistedWorkspaceRDBMSRestore.
     */
-   public JobExistedWorkspaceRestoreSameConfig(RepositoryService repositoryService, BackupManager backupManager,
+   public JobExistedWorkspaceRDBMSRestore(RepositoryService repositoryService, BackupManager backupManager,
       String repositoryName, BackupChainLog log, WorkspaceEntry wEntry)
    {
       super(repositoryService, backupManager, repositoryName, log, wEntry);

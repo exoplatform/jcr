@@ -49,6 +49,7 @@ import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
+import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.File;
 import java.io.IOException;
@@ -1153,7 +1154,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public void clean() throws BackupException
    {
-      cache.clear();
+      if (cache.getStatus() == ComponentStatus.RUNNING)
+      {
+         cache.clear();
+      }
    }
 
    /**

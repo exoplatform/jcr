@@ -54,13 +54,13 @@ import javax.sql.DataSource;
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: JobExistedRepositoryRestoreSameConfig.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class JobExistedRepositoryRestoreSameConfig extends JobRepositoryRestore
+public class JobExistedRepositoryRDBMSRestore extends JobRepositoryRestore
 {
 
    /**
-    * JobExistedRepositoryRestoreSameConfig constructor.
+    * JobExistedRepositoryRDBMSRestore constructor.
     */
-   public JobExistedRepositoryRestoreSameConfig(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
+   public JobExistedRepositoryRDBMSRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
       RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping,
       RepositoryBackupChainLog backupChainLog)
    {

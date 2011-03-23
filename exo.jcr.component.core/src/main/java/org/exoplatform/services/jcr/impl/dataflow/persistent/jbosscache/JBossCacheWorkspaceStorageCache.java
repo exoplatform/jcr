@@ -49,6 +49,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
+import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.Configuration.CacheMode;
@@ -1634,22 +1635,25 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    private void cleanCache()
    {
-      cache.beginTransaction();
+      if (cache.getCacheStatus() == CacheStatus.STARTED)
+      {
+         cache.beginTransaction();
 
-      cache.removeNode(itemsRoot);
-      cache.removeNode(refRoot);
-      cache.removeNode(childNodes);
-      cache.removeNode(childProps);
-      cache.removeNode(childNodesList);
-      cache.removeNode(childPropsList);
+         cache.removeNode(itemsRoot);
+         cache.removeNode(refRoot);
+         cache.removeNode(childNodes);
+         cache.removeNode(childProps);
+         cache.removeNode(childNodesList);
+         cache.removeNode(childPropsList);
 
-      cache.commitTransaction();
+         cache.commitTransaction();
 
-      createResidentNode(childNodes);
-      createResidentNode(refRoot);
-      createResidentNode(childNodesList);
-      createResidentNode(childProps);
-      createResidentNode(childPropsList);
-      createResidentNode(itemsRoot);
+         createResidentNode(childNodes);
+         createResidentNode(refRoot);
+         createResidentNode(childNodesList);
+         createResidentNode(childProps);
+         createResidentNode(childPropsList);
+         createResidentNode(itemsRoot);
+      }
    }
 }
