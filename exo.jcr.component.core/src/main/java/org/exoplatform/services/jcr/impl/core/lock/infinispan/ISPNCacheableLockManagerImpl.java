@@ -38,6 +38,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
+import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.Serializable;
 import java.security.AccessController;
@@ -416,6 +417,9 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected void cleanCacheDirectly()
    {
-      cache.clear();
+      if (cache.getStatus() == ComponentStatus.RUNNING)
+      {
+         cache.clear();
+      }
    }
 }

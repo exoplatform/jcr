@@ -39,6 +39,7 @@ import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheSPI;
+import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.CacheLoaderConfig;
@@ -590,7 +591,10 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected void cleanCacheDirectly()
    {
-      cache.removeNode(lockRoot);
-      createStructuredNode(lockRoot);
+      if (cache.getCacheStatus() != CacheStatus.STARTED)
+      {
+         cache.removeNode(lockRoot);
+         createStructuredNode(lockRoot);
+      }
    }
 }
