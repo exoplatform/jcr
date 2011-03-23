@@ -327,7 +327,8 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       else
          findLastOrderNumberByParentId.clearParameters();
 
-      findLastOrderNumberByParentId.setString(1, parentIdentifier);
+      findLastOrderNumberByParentId.setString(1, containerName);
+      findLastOrderNumberByParentId.setString(2, parentIdentifier);
       return findLastOrderNumberByParentId.executeQuery();
    }
 
