@@ -295,11 +295,13 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
                {
                   merge(configurationService.getInputStream(paths[i]));
                }
-               // Store the merged configuration
-               if (configurationPersister != null)
-               {
-                  retain();
-               }
+            }
+            merge(configurationService.getInputStream(param.getValue()));
+
+            // Store the merged configuration
+            if (configurationPersister != null)
+            {
+               retain();
             }
          }
          else
