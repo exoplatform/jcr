@@ -19,8 +19,8 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
-   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd">
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
+   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd">
 
    <component>
       <key>org.exoplatform.services.log.LogConfigurationInitializer</key>
@@ -59,6 +59,16 @@
             <name>conf-path</name>
             <description>JCR configuration file</description>
             <value>jar:/conf/portal/exo-jcr-config.xml</value>
+         </value-param>
+         <value-param profiles="ispn">
+            <name>conf-path</name>
+            <description>JCR configuration file</description>
+            <value>jar:/conf/portal/exo-jcr-ispn-config.xml</value>
+         </value-param>
+         <value-param profiles="jbc">
+            <name>conf-path</name>
+            <description>JCR configuration file</description>
+            <value>jar:/conf/portal/exo-jcr-jbc-config.xml</value>
          </value-param>
       </init-params>
    </component>
@@ -168,7 +178,40 @@
          </object-param>
       </init-params>
    </component>
-
+  <component profiles="ispn,jbc">
+     <key>org.jboss.cache.transaction.TransactionManagerLookup</key>
+     <type>org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup</type>
+  </component>
+   
+  <component profiles="ispn,jbc">
+    <key>org.exoplatform.services.transaction.TransactionService</key>
+    <type>org.exoplatform.services.transaction.jbosscache.JBossTransactionsService</type>
+    <init-params>
+      <value-param>
+        <name>timeout</name>
+        <value>3000</value>
+      </value-param>
+    </init-params>   
+  </component>
+  
+  <component profiles="ispn,jbc">
+    <key>org.exoplatform.services.rpc.RPCService</key>
+    <type>org.exoplatform.services.rpc.impl.RPCServiceImpl</type>
+    <init-params>
+      <value-param>
+        <name>jgroups-configuration</name>
+        <value>jar:/conf/portal/cluster/udp-mux.xml</value>
+      </value-param>
+      <value-param>
+        <name>jgroups-cluster-name</name>
+        <value>RPCService-Cluster</value>
+      </value-param>
+      <value-param>
+        <name>jgroups-default-timeout</name>
+        <value>0</value>
+      </value-param>
+    </init-params>
+  </component>  
    <component>
       <type>org.exoplatform.services.rest.impl.method.MethodInvokerFilterComponentPlugin</type>
       <init-params>

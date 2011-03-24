@@ -80,8 +80,11 @@ set JONAS_OPTS=%JONAS_OPTS% -Djava.endorsed.dirs=%JONAS_ROOT%\lib\endorsed
 
 Rem ----------------------- Begin eXo configuration ----------------------------
 cd %JONAS_ROOT%/bin
-set JONAS_OPTS=%JONAS_OPTS% -Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog -Djava.awt.headless=true
+set JONAS_OPTS=%JONAS_OPTS% -Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog -Djava.awt.headless=true -Dexo.profiles=%1 -Djava.net.preferIPv4Stack=true
 set JAVA_OPTS=%JAVA_OPTS% -Xmx512M
+if ""%1"" == ""jbc"" shift
+if ""%1"" == ""ispn"" shift
+
 Rem ------------------------ End eXo configuration -----------------------------
 
 Rem ---------------------------------------------
