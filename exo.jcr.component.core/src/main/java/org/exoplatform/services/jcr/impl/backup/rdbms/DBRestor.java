@@ -66,6 +66,11 @@ import javax.naming.NamingException;
 public class DBRestor implements DataRestor
 {
    /**
+    * The maximum possible batch size.
+    */
+   private final int MAXIMUM_BATCH_SIZE = 1000;
+
+   /**
     * List of temporary files.
     */
    private final List<File> spoolFileList = new ArrayList<File>();
@@ -366,6 +371,10 @@ public class DBRestor implements DataRestor
             parameters += "?" + (i == targetColumnCount - 1 ? "" : ",");
          }
 
+         int batchSize = 0;
+         insertNode =
+            jdbcConn.prepareStatement("INSERT INTO " + tableName + " (" + names + ") VALUES(" + parameters + ")");
+
          // set data
          outer : while (true)
          {
@@ -404,13 +413,6 @@ public class DBRestor implements DataRestor
                      throw new IOException("Content length file is empty but content still present", e);
                   }
                   stream = len == -1 ? null : spoolInputStream(contentReader, len);
-               }
-
-               if (insertNode == null)
-               {
-                  insertNode =
-                     jdbcConn.prepareStatement("INSERT INTO " + tableName + " (" + names + ") VALUES(" + parameters
-                        + ")");
                }
 
                if (restoreRule.getSkipColumnIndex() != null && restoreRule.getSkipColumnIndex() == i)
@@ -529,13 +531,18 @@ public class DBRestor implements DataRestor
                   insertNode.setNull(targetIndex + 1, columnType.get(i));
                }
             }
-            if (insertNode != null)
+
+            // add statement to batch
+            insertNode.addBatch();
+
+            if (++batchSize == MAXIMUM_BATCH_SIZE)
             {
-               insertNode.addBatch();
+               insertNode.executeBatch();
+               batchSize = 0;
             }
          }
 
-         if (insertNode != null)
+         if (batchSize != 0)
          {
             insertNode.executeBatch();
          }
