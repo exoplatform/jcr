@@ -136,7 +136,12 @@ public class TestPersistedValueData extends TestCase
       }
 
       // should be enough to finish all the threads
-      Thread.sleep(4000);
+      Thread.sleep(1000);
+
+      for (int i = 0; i < 10; i++)
+      {
+         p[i].join();
+      }
 
       for (int i = 0; i < 10; i++)
       {
