@@ -33,12 +33,12 @@
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="../temp/swap/production" />
+                     <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/production" />
                   </properties>
                   <value-storages>
                      <value-storage id="production" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/production" />
+                           <property name="path" value="${exo.jcr.parent.dir:..}/temp/values/production" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -55,16 +55,16 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-data.xml" />
-                     <property name="jgroups-configuration" value="conf/portal/cluster/udp-mux.xml" />
+                     <property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="../temp/jcrlucenedb/production" />
+                     <property name="index-dir" value="${exo.jcr.parent.dir:..}/temp/jcrlucenedb/production" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/portal/cluster/udp-mux.xml" />
+                     <property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                   </properties>
@@ -73,7 +73,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/portal/cluster/udp-mux.xml" />
+                     <property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -94,12 +94,12 @@
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="../temp/swap/backup" />
+                     <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/backup" />
                   </properties>
                   <value-storages>
                      <value-storage id="backup" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/backup" />
+                           <property name="path" value="${exo.jcr.parent.dir:..}/temp/values/backup" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -116,16 +116,16 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-data.xml" />
-                     <property name="jgroups-configuration" value="conf/portal/cluster/udp-mux.xml" />
+                     <property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="../temp/jcrlucenedb/backup" />
+                     <property name="index-dir" value="${exo.jcr.parent.dir:..}/temp/jcrlucenedb/backup" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/portal/cluster/udp-mux.xml" />
+                     <property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                   </properties>
@@ -134,7 +134,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/portal/cluster/udp-mux.xml" />
+                     <property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -155,12 +155,12 @@
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="../temp/swap/digital-assets" />
+                     <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/digital-assets" />
                   </properties>
                   <value-storages>
                      <value-storage id="digital-assets" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/digital-assets" />
+                           <property name="path" value="${exo.jcr.parent.dir:..}/temp/values/digital-assets" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -177,16 +177,16 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-data.xml" />
-                     <property name="jgroups-configuration" value="conf/portal/cluster/udp-mux.xml" />
+                     <property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="../temp/jcrlucenedb/digital-assets" />
+                     <property name="index-dir" value="${exo.jcr.parent.dir:..}/temp/jcrlucenedb/digital-assets" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/portal/cluster/udp-mux.xml" />
+                     <property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />                     
                   </properties>
@@ -195,7 +195,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/portal/cluster/udp-mux.xml" />
+                     <property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
