@@ -101,11 +101,14 @@ public class DirectoryRestor implements DataRestor
          try
          {
             File tmpDir = new File(tempDir, PREFIX + IdGenerator.generate());
-            DirectoryHelper.copyDirectory(dataDir, tmpDir);
-
+            PrivilegedFileHelper.mkdirs(tmpDir);
             tmpDirs.add(tmpDir);
 
-            DirectoryHelper.removeDirectory(dataDir);
+            if (PrivilegedFileHelper.exists(dataDir))
+            {
+               DirectoryHelper.copyDirectory(dataDir, tmpDir);
+               DirectoryHelper.removeDirectory(dataDir);
+            }
          }
          catch (IOException e)
          {

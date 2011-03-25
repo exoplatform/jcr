@@ -140,6 +140,11 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
          for (DataRestor restorer : dataRestorers)
          {
+            restorer.clean();
+         }
+
+         for (DataRestor restorer : dataRestorers)
+         {
             restorer.restore();
          }
 
