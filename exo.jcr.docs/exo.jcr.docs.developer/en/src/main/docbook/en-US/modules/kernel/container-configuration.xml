@@ -1720,6 +1720,20 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
   </section>
 
   <section>
+    <title>Variable Syntaxes</title>
+
+    <para>All the variables that we described in the previous chapters can be
+    defined thanks to 2 possible syntaxes which are
+    <emphasis>${variable-name}</emphasis> or
+    <emphasis>${variable-name:default-value}</emphasis>. The first syntax
+    doesn't define any default value so if the variable has not be set the
+    value will be <emphasis>${variable-name}</emphasis> to indicate that it
+    could not be resolved. The second syntax allows you to define the default
+    value after the semi colon so if the variable has not be set the value
+    will be the given default value.</para>
+  </section>
+
+  <section>
     <title>Runtime configuration profiles</title>
 
     <para>The kernel configuration is able to handle configuration profiles at
