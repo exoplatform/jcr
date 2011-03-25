@@ -283,33 +283,42 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    {
       try
       {
-         if (configurationPersister != null && configurationPersister.hasConfig())
-         {
-            init(configurationPersister.read());
-            merge(configurationService.getInputStream(param.getValue()));
-         }
-         else
-         {
-            init(configurationService.getInputStream(param.getValue()));
-         }
-
-         // Will be merged extension repository configuration  
-         if (!configExtensionPaths.isEmpty())
+         // Start from extensions first
+         String[] paths = configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
+         for (int i = paths.length - 1; i >= 0; i--)
          {
             // We start from the last one because as it is the one with highest priority
-            String[] paths = configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
-            for (int i = paths.length - 1; i >= 0; i--)
+            if (i == paths.length - 1)
+            {
+               init(configurationService.getInputStream(paths[i]));
+            }
+            else
             {
                merge(configurationService.getInputStream(paths[i]));
             }
          }
 
-         // Store the merged configuration
-         if (configurationPersister != null)
+         // Then from normal config
+         if (configExtensionPaths.isEmpty())
          {
-            retain();
+            init(configurationService.getInputStream(param.getValue()));
+         }
+         else
+         {
+            merge(configurationService.getInputStream(param.getValue()));
          }
 
+         // Then from config from persister
+         if (configurationPersister != null)
+         {
+            if (configurationPersister.hasConfig())
+            {
+               merge(configurationPersister.read());
+            }
+
+            // Store the merged configuration
+            retain();
+         }
       }
       catch (RepositoryConfigurationException e)
       {
