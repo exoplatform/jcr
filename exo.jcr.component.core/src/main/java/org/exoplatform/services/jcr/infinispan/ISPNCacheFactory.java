@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.infinispan;
 
+import org.apache.commons.io.IOUtils;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -35,11 +36,13 @@ import org.infinispan.manager.EmbeddedCacheManager;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Factory that creates and starts pre-configured instances of Infinispan.
@@ -56,6 +59,7 @@ public class ISPNCacheFactory<K, V>
 
    public static final String INFINISPAN_CONFIG = "infinispan-configuration";
 
+   private final ConfigurationManager configurationManager;
    private final TemplateConfigurationHelper configurationHelper;
 
    private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.InfinispanCacheFactory");
@@ -75,6 +79,7 @@ public class ISPNCacheFactory<K, V>
     */
    public ISPNCacheFactory(ConfigurationManager configurationManager)
    {
+      this.configurationManager = configurationManager;
       this.configurationHelper = new ISPNCacheHelper(configurationManager);
    }
 
@@ -119,7 +124,9 @@ public class ISPNCacheFactory<K, V>
          {
             public EmbeddedCacheManager run() throws IOException
             {
-               return getUniqueInstance(regionIdEscaped, new DefaultCacheManager(configStream));
+               DefaultCacheManager manager = new DefaultCacheManager(configStream, false);
+               loadJGroupsConfig(manager);
+               return getUniqueInstance(regionIdEscaped, manager);
             }
          });
 
@@ -139,6 +146,48 @@ public class ISPNCacheFactory<K, V>
       Cache<K, V> cache = AccessController.doPrivileged(action);
 
       return cache;
+   }
+
+   /**
+    * This method is used to load the file corresponding to the path set on the property 
+    * <tt>configurationFile</tt> using the configuration manager, then set the XML content
+    *  as value of the property <tt>configurationXml</tt>.
+    * @param manager the manager from which we extract the transport properties in which
+    * we will find the path of the JGroups configuration
+    * @throws IOException if the configuration file cannot be read
+    */
+   private void loadJGroupsConfig(DefaultCacheManager manager) throws IOException
+   {
+      Properties p = manager.getGlobalConfiguration().getTransportProperties();
+      if (p != null && p.containsKey("configurationFile"))
+      {
+         URL jgroupsConfigURL = null;
+         InputStream jgroupsConfigInputStream = null;
+         try
+         {
+            // Trying to get the configuration from the configuration manager
+            String configurationFile = p.getProperty("configurationFile");
+            jgroupsConfigInputStream = configurationManager.getInputStream(configurationFile);
+            jgroupsConfigURL = configurationManager.getResource(configurationFile);
+         }
+         catch (Exception e)
+         {
+            // ignore me
+         }
+         if (jgroupsConfigInputStream != null)
+         {
+            try
+            {
+               log.info("Custom JGroups configuration set: " + jgroupsConfigURL);
+               p.setProperty("configurationXml", IOUtils.toString(jgroupsConfigInputStream));
+               p.remove("configurationFile");
+            }
+            finally
+            {
+               jgroupsConfigInputStream.close();
+            }
+         }
+      }
    }
 
    /**

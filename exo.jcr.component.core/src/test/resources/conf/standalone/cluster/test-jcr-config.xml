@@ -55,7 +55,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
@@ -64,7 +64,7 @@
                      <property name="index-dir" value="target/temp/index/db1/ws" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                   </properties>
@@ -73,7 +73,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -113,7 +113,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
@@ -121,7 +121,7 @@
                   <properties>
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                      <property name="index-dir" value="target/temp/index/db1/ws1" />
@@ -139,7 +139,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -179,7 +179,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
@@ -187,7 +187,7 @@
                   <properties>
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                      <property name="index-dir" value="target/temp/index/db1/ws2" />
@@ -205,7 +205,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -268,7 +268,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
@@ -276,7 +276,7 @@
                   <properties>
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                      <property name="index-dir" value="target/temp/index/db1/ws3" />
@@ -294,7 +294,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -351,7 +351,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
@@ -359,7 +359,7 @@
                   <properties>
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                      <property name="index-dir" value="target/temp/index/db2/ws" />
@@ -369,7 +369,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -415,7 +415,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
@@ -423,7 +423,7 @@
                   <properties>
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                      <property name="index-dir" value="target/temp/index/db2/ws1" />
@@ -433,7 +433,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -490,7 +490,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
@@ -498,7 +498,7 @@
                   <properties>
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                      <property name="index-dir" value="target/temp/index/db1tck/ws" />
@@ -517,7 +517,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -564,7 +564,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
@@ -572,7 +572,7 @@
                   <properties>
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                      <property name="index-dir" value="target/temp/index/db1tck/ws1" />
@@ -590,7 +590,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
@@ -637,7 +637,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                   </properties>
                </cache>
@@ -645,7 +645,7 @@
                   <properties>
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="max-volatile-time" value="60" />
                      <property name="index-dir" value="target/temp/index/db1tck/ws2" />
@@ -666,7 +666,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
-                     <property name="jgroups-configuration" value="flush-udp.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
