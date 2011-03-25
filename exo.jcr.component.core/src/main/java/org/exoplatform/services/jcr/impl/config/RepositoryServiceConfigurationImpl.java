@@ -283,50 +283,33 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    {
       try
       {
-         if ((configurationPersister != null && configurationPersister.hasConfig()))
+         if (configurationPersister != null && configurationPersister.hasConfig())
          {
-            initFromStream(configurationService.getInputStream(param.getValue()));
-
-            // Will be merged extension repository configuration with configuration from persister.  
-            if (!configExtensionPaths.isEmpty())
-            {
-               String[] paths = configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
-               for (int i = paths.length - 1; i >= 0; i--)
-               {
-                  merge(configurationService.getInputStream(paths[i]));
-               }
-            }
+            init(configurationPersister.read());
             merge(configurationService.getInputStream(param.getValue()));
-
-            // Store the merged configuration
-            if (configurationPersister != null)
-            {
-               retain();
-            }
          }
          else
          {
+            init(configurationService.getInputStream(param.getValue()));
+         }
 
+         // Will be merged extension repository configuration  
+         if (!configExtensionPaths.isEmpty())
+         {
+            // We start from the last one because as it is the one with highest priority
             String[] paths = configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
             for (int i = paths.length - 1; i >= 0; i--)
             {
-               // We start from the last one because as it is the one with highest priorityn
-               if (i == paths.length - 1)
-               {
-                  init(configurationService.getInputStream(paths[i]));
-               }
-               else
-               {
-                  merge(configurationService.getInputStream(paths[i]));
-               }
-            }
-            merge(configurationService.getInputStream(param.getValue()));
-            // Store the merged configuration
-            if (configurationPersister != null && !configurationPersister.hasConfig())
-            {
-               retain();
+               merge(configurationService.getInputStream(paths[i]));
             }
          }
+
+         // Store the merged configuration
+         if (configurationPersister != null)
+         {
+            retain();
+         }
+
       }
       catch (RepositoryConfigurationException e)
       {
