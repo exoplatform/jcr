@@ -679,8 +679,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             new Integer(getIndexFormatVersion().getVersion()));
       }
 
-      File file = new File(indexDirectory, ERROR_LOG);
-      errorLog = new ErrorLog(file, errorLogfileSize);
+      doInitErrorLog();
+
       // reprocess any notfinished notifies;
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
@@ -2837,6 +2837,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       errorLog.writeChanges(removed, added);
    }
 
+   /**
+    * Initialization error log.
+    */
+   private void doInitErrorLog() throws IOException
+   {
+      File file = new File(new File(path), ERROR_LOG);
+      errorLog = new ErrorLog(file, errorLogfileSize);
+   }
+
    private void recoverErrorLog(ErrorLog errlog) throws IOException, RepositoryException
    {
       final Set<String> rem = new HashSet<String>();
@@ -2967,6 +2976,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void suspend() throws SuspendException
    {
+      errorLog.close();
+
       if (index instanceof Suspendable)
       {
          ((Suspendable)index).suspend();
@@ -2978,6 +2989,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void resume() throws ResumeException
    {
+      try
+      {
+         doInitErrorLog();
+      }
+      catch (IOException e)
+      {
+         throw new ResumeException(e);
+      }
+
       if (index instanceof Suspendable)
       {
          ((Suspendable)index).resume();
