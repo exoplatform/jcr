@@ -43,13 +43,13 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
  */
-public class JobExistedRepositoryRestore extends JobRepositoryRestore
+public class JobExistingRepositoryRestore extends JobRepositoryRestore
 {
 
    /**
-    * JobExistedRepositoryRestore constructor.
+    * JobExistingRepositoryRestore constructor.
     */
-   public JobExistedRepositoryRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
+   public JobExistingRepositoryRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
       RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping,
       RepositoryBackupChainLog backupChainLog)
    {

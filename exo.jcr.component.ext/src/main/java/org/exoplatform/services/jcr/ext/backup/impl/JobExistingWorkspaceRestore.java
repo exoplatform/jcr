@@ -41,7 +41,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
  */
-public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
+public class JobExistingWorkspaceRestore extends JobWorkspaceRestore
 {
    /**
     * The logger.
@@ -49,9 +49,9 @@ public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
    private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobExistedWorkspaceRestore");
 
    /**
-    * JobExistedWorkspaceRestore constructor.
+    * JobExistingWorkspaceRestore constructor.
     */
-   public JobExistedWorkspaceRestore(RepositoryService repositoryService, BackupManager backupManager,
+   public JobExistingWorkspaceRestore(RepositoryService repositoryService, BackupManager backupManager,
       String repositoryName, BackupChainLog log, WorkspaceEntry wEntry)
    {
       super(repositoryService, backupManager, repositoryName, log, wEntry);
