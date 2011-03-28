@@ -1531,7 +1531,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * Initialize IndexMerger.
     */
-   private IndexMerger doInitIndexMerger() throws IOException
+   private void doInitIndexMerger() throws IOException
    {
       merger = new IndexMerger(this);
       merger.setMaxMergeDocs(handler.getMaxMergeDocs());
@@ -1542,8 +1542,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          merger.indexAdded(((PersistentIndex)index).getName(), ((PersistentIndex)index).getNumDocuments());
       }
-
-      return merger;
    }
 
    /**
@@ -3203,7 +3201,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       attemptDelete();
 
       // now that we are ready, start index merger
-      merger = doInitIndexMerger();
+      doInitIndexMerger();
       merger.start();
 
       if (redoLogApplied)
@@ -3648,6 +3646,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          refreshIndexList();
 
          doInitIndexMerger();
+         merger.start();
       }
       catch (IOException e)
       {
