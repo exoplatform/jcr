@@ -190,6 +190,7 @@
               <include>**/backup/load/TestLoadBackup.java</include>
               <include>**/backup/*.java</include>
               <include>**/backup/server/*.java</include>
+              <include>**/repository/creation/*.java</include>
             </includes>
             <excludes>
               <exclude>**/BaseStandaloneTest.java</exclude>

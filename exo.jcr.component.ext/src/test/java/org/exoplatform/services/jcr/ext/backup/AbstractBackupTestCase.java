@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
@@ -30,6 +32,9 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
+import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
+import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
+import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
@@ -38,9 +43,12 @@ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -66,11 +74,15 @@ import javax.jcr.version.VersionException;
 public abstract class AbstractBackupTestCase extends BaseStandaloneTest
 {
 
+   protected TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
+
+   protected File blob;
+
+   protected ExtendedBackupManager backup;
+
    protected SessionImpl ws1Session;
 
    protected Node ws1TestRoot;
-
-   protected ExtendedBackupManager backup;
 
    protected String repositoryNameToBackup = "db7";
 
@@ -104,9 +116,58 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       super.setUp();// this
 
       backup = getBackupManager();
+      blob = createBLOBTempFile(300);
    }
 
    protected abstract ExtendedBackupManager getBackupManager();
+
+   protected ExtendedBackupManager getJCRBackupManager()
+   {
+      if (backup == null)
+      {
+         InitParams initParams = new InitParams();
+         PropertiesParam pps = new PropertiesParam();
+         pps.setProperty(BackupManagerImpl.FULL_BACKUP_TYPE,
+            "org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob");
+         pps.setProperty(BackupManagerImpl.INCREMENTAL_BACKUP_TYPE,
+            "org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob");
+         pps.setProperty(BackupManagerImpl.BACKUP_DIR, "target/backup");
+         pps.setProperty(BackupManagerImpl.DEFAULT_INCREMENTAL_JOB_PERIOD, "3600");
+
+         initParams.put(BackupManagerImpl.BACKUP_PROPERTIES, pps);
+
+         BackupManagerImpl backup = new BackupManagerImpl(initParams, repositoryService);
+         backup.start();
+
+         return backup;
+      }
+
+      return backup;
+   }
+
+   protected ExtendedBackupManager getRDBMSBackupManager()
+   {
+      if (backup == null)
+      {
+         InitParams initParams = new InitParams();
+         PropertiesParam pps = new PropertiesParam();
+         pps.setProperty(BackupManagerImpl.FULL_BACKUP_TYPE,
+            "org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob");
+         pps.setProperty(BackupManagerImpl.INCREMENTAL_BACKUP_TYPE,
+            "org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob");
+         pps.setProperty(BackupManagerImpl.BACKUP_DIR, "target/backup");
+         pps.setProperty(BackupManagerImpl.DEFAULT_INCREMENTAL_JOB_PERIOD, "3600");
+
+         initParams.put(BackupManagerImpl.BACKUP_PROPERTIES, pps);
+
+         BackupManagerImpl backup = new BackupManagerImpl(initParams, repositoryService);
+         backup.start();
+
+         return backup;
+      }
+
+      return backup;
+   }
 
    protected RepositoryImpl getReposityToBackup() throws RepositoryException, RepositoryConfigurationException
    {
@@ -562,4 +623,102 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
 
       return sessionRegistry.closeSessions(workspaceName);
    }
+
+   public void waitEndOfBackup(BackupChain bch) throws Exception
+   {
+      while (bch.getFullBackupState() != BackupChain.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(50);
+      }
+   }
+
+   public void waitEndOfBackup(RepositoryBackupChain bch) throws Exception
+   {
+      while (bch.getState() != RepositoryBackupChain.FINISHED
+         && bch.getState() != RepositoryBackupChain.FULL_BACKUP_FINISHED_INCREMENTAL_BACKUP_WORKING)
+      {
+         Thread.yield();
+         Thread.sleep(50);
+      }
+   }
+
+   public void waitEndOfRestore(String repositoryName) throws Exception
+   {
+      while (backup.getLastRepositoryRestore(repositoryName).getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
+         && backup.getLastRepositoryRestore(repositoryName).getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+      {
+         Thread.sleep(50);
+      }
+   }
+
+   public void waitEndOfRestore(String repositoryName, String workspaceName) throws Exception
+   {
+      while (backup.getLastRestore(repositoryName, workspaceName).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
+         && backup.getLastRestore(repositoryName, workspaceName).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
+      {
+         Thread.sleep(50);
+      }
+   }
+
+   public void addIncrementalConent(ManageableRepository repository, String wsName) throws Exception
+   {
+      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
+      Node rootNode = session.getRootNode().addNode("testIncremental");
+
+      // add some changes which will be logged in incremental log
+      rootNode.addNode("node1").setProperty("prop1", "value1");
+      rootNode.addNode("node2").setProperty("prop2", new FileInputStream(blob));
+      rootNode.addNode("node3").addMixin("mix:lockable");
+      session.save();
+   }
+
+   public void addConent(ManageableRepository repository, String wsName) throws Exception
+   {
+      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
+      Node rootNode = session.getRootNode().addNode("test");
+
+      // add some changes which will be logged in incremental log
+      rootNode.addNode("node1").setProperty("prop1", "value1");
+      rootNode.addNode("node2").setProperty("prop2", new FileInputStream(blob));
+      rootNode.addNode("node3").addMixin("mix:lockable");
+      session.save();
+   }
+
+   public void checkConent(ManageableRepository repository, String wsName) throws Exception
+   {
+      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
+
+      Node rootNode = session.getRootNode().getNode("test");
+      assertEquals(rootNode.getNode("node1").getProperty("prop1").getString(), "value1");
+
+      InputStream in = rootNode.getNode("node2").getProperty("prop2").getStream();
+      try
+      {
+         compareStream(new FileInputStream(blob), in);
+      }
+      finally
+      {
+         in.close();
+      }
+   }
+
+   public void checkIncrementalConent(ManageableRepository repository, String wsName) throws Exception
+   {
+      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
+
+      Node rootNode = session.getRootNode().getNode("testIncremental");
+      assertEquals(rootNode.getNode("node1").getProperty("prop1").getString(), "value1");
+
+      InputStream in = rootNode.getNode("node2").getProperty("prop2").getStream();
+      try
+      {
+         compareStream(new FileInputStream(blob), in);
+      }
+      finally
+      {
+         in.close();
+      }
+   }
+
 }

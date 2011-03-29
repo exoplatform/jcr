@@ -22,16 +22,10 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.Map;
-
-import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS.
@@ -44,17 +38,6 @@ import javax.jcr.Node;
 public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 {
    
-   private File blob;
-
-   private TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
-
-   @Override
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      blob = createBLOBTempFile(300);
-   }
-
    public void testFullBackupRestore() throws Exception
    {
       // prepare
@@ -1205,103 +1188,5 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.restoreRepository(bchLog.getBackupConfig().getBackupDir(), false);
       checkConent(repositoryService.getRepository(config.getRepository()),
          repositoryService.getRepository(config.getRepository()).getConfiguration().getSystemWorkspaceName());
-   }
-
-   public void waitEndOfBackup(BackupChain bch) throws Exception
-   {
-      while (bch.getFullBackupState() != BackupChain.FINISHED)
-      {
-         Thread.yield();
-         Thread.sleep(50);
-      }
-   }
-
-   public void waitEndOfBackup(RepositoryBackupChain bch) throws Exception
-   {
-      while (bch.getState() != RepositoryBackupChain.FINISHED
-         && bch.getState() != RepositoryBackupChain.FULL_BACKUP_FINISHED_INCREMENTAL_BACKUP_WORKING)
-      {
-         Thread.yield();
-         Thread.sleep(50);
-      }
-   }
-
-   
-   public void waitEndOfRestore(String repositoryName) throws Exception
-   {
-      while (backup.getLastRepositoryRestore(repositoryName).getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
-         && backup.getLastRepositoryRestore(repositoryName).getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
-      {
-         Thread.sleep(50);
-      }
-   }
-
-   public void waitEndOfRestore(String repositoryName, String workspaceName) throws Exception
-   {
-      while (backup.getLastRestore(repositoryName, workspaceName).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
-         && backup.getLastRestore(repositoryName, workspaceName).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
-      {
-         Thread.sleep(50);
-      }
-   }
-
-   public void addIncrementalConent(ManageableRepository repository, String wsName) throws Exception
-   {
-      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
-      Node rootNode = session.getRootNode().addNode("testIncremental");
-
-      // add some changes which will be logged in incremental log
-      rootNode.addNode("node1").setProperty("prop1", "value1");
-      rootNode.addNode("node2").setProperty("prop2", new FileInputStream(blob));
-      rootNode.addNode("node3").addMixin("mix:lockable");
-      session.save();
-   }
-
-   public void addConent(ManageableRepository repository, String wsName) throws Exception
-   {
-      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
-      Node rootNode = session.getRootNode().addNode("test");
-
-      // add some changes which will be logged in incremental log
-      rootNode.addNode("node1").setProperty("prop1", "value1");
-      rootNode.addNode("node2").setProperty("prop2", new FileInputStream(blob));
-      rootNode.addNode("node3").addMixin("mix:lockable");
-      session.save();
-   }
-
-   public void checkConent(ManageableRepository repository, String wsName) throws Exception
-   {
-      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
-
-      Node rootNode = session.getRootNode().getNode("test");
-      assertEquals(rootNode.getNode("node1").getProperty("prop1").getString(), "value1");
-
-      InputStream in = rootNode.getNode("node2").getProperty("prop2").getStream();
-      try
-      {
-         compareStream(new FileInputStream(blob), in);
-      }
-      finally
-      {
-         in.close();
-      }
-   }
-
-   public void checkIncrementalConent(ManageableRepository repository, String wsName) throws Exception
-   {
-      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
-
-      Node rootNode = session.getRootNode().getNode("testIncremental");
-      assertEquals(rootNode.getNode("node1").getProperty("prop1").getString(), "value1");
-
-      InputStream in = rootNode.getNode("node2").getProperty("prop2").getStream();
-      try
-      {
-         compareStream(new FileInputStream(blob), in);
-      }
-      finally
-      {
-         in.close();
-      }
    }
 }

@@ -16,9 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.PropertiesParam;
-import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
 
 /**
  * Created by The eXo Platform SAS.
@@ -31,29 +28,10 @@ import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
 public class TestRDBMSBackupManager extends AbstractBackupUseCasesTest
 {
 
-   private BackupManagerImpl backup;
-
    @Override
    protected ExtendedBackupManager getBackupManager()
    {
-      if (backup == null)
-      {
-         InitParams initParams = new InitParams();
-         PropertiesParam pps = new PropertiesParam();
-         pps.setProperty(BackupManagerImpl.FULL_BACKUP_TYPE,
-            "org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob");
-         pps.setProperty(BackupManagerImpl.INCREMENTAL_BACKUP_TYPE,
-            "org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob");
-         pps.setProperty(BackupManagerImpl.BACKUP_DIR, "target/backup_testRDBMSBackupManager");
-         pps.setProperty(BackupManagerImpl.DEFAULT_INCREMENTAL_JOB_PERIOD, "3600");
-
-         initParams.put(BackupManagerImpl.BACKUP_PROPERTIES, pps);
-
-         backup = new BackupManagerImpl(initParams, repositoryService);
-         backup.start();
-      }
-
-      return backup;
+      return getRDBMSBackupManager();
    }
 
 }

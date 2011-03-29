@@ -19,18 +19,16 @@ package org.exoplatform.services.jcr.ext.repository.creation;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.AbstractBackupTestCase;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
-
-import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS.
@@ -43,86 +41,107 @@ import javax.jcr.Node;
 public class TestRepositoryCreationService extends AbstractBackupTestCase
 {
 
-   protected ExtendedBackupManager getBackupManager()
+   public void testCreateRepositoryMultiDB() throws Exception
    {
-      return (ExtendedBackupManager)container.getComponentInstanceOfType(BackupManager.class);
-   }
-
-   public void testCreateRepository() throws Exception
-   {
+      // prepare
+      ManageableRepository repository = helper.createRepository(container, true, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      helper.addWorkspace(repository, wsEntry);
+      addConent(repository, wsEntry.getName());
 
       // backup
       File backDir = new File("target/backup");
       backDir.mkdirs();
 
-      RepositoryImpl repository = getReposityToBackup();
-
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
+      config.setRepository(repository.getConfiguration().getName());
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
       config.setBackupDir(backDir);
 
-      backup.startBackup(config);
-
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
-
-      backup.getRepositoryBackupsLogs();
-
-      // wait till full backup will be stopped
-      while (bch.getState() != RepositoryBackupChain.FINISHED)
-      {
-         Thread.yield();
-         Thread.sleep(50);
-      }
-
-      // stop fullBackup
-
-      if (bch != null)
-         backup.stopBackup(bch);
-      else
-         fail("Can't get fullBackup chain");
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
 
       // restore with RepositoryCreatorService
       RepositoryCreationService creatorService =
          (RepositoryCreationService)container.getComponentInstanceOfType(RepositoryCreationService.class);
+      assertNotNull(creatorService);
 
-      String tenantName = "new_repository";
-
+      String tenantName = "new_repository_mutli-db";
       String repoToken = creatorService.reserveRepositoryName(tenantName);
 
       // restore             
-      RepositoryEntry baseRE =
-         (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry newRE =
+         helper.createRepositoryEntry(true, repository.getConfiguration().getSystemWorkspaceName(),
+            IdGenerator.generate());
+      newRE.setName(tenantName);
 
-      RepositoryEntry rEntry = makeRepositoryEntry(tenantName, baseRE, "source", null);
+      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(true, IdGenerator.generate());
+      newWSEntry.setName(wsEntry.getName());
+      newRE.addWorkspace(newWSEntry);
 
-      creatorService.createRepository(bch.getBackupId(), rEntry, repoToken);
+      creatorService.createRepository(bch.getBackupId(), newRE, repoToken);
+
+      // check
+      ManageableRepository restoredRepository = repositoryService.getRepository(tenantName);
+      assertNotNull(restoredRepository);
+      
+      checkConent(restoredRepository, wsEntry.getName());
+
+      //check repositoryConfiguration
+      RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
+      assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
+   }
+
+   public void testCreateRepositorySingleDB() throws Exception
+   {
+      // prepare
+      String dsName = helper.createDatasource();
+      ManageableRepository repository = helper.createRepository(container, false, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      helper.addWorkspace(repository, wsEntry);
+      addConent(repository, wsEntry.getName());
+
+      // backup
+      File backDir = new File("target/backup");
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      // restore with RepositoryCreatorService
+      RepositoryCreationService creatorService =
+         (RepositoryCreationService)container.getComponentInstanceOfType(RepositoryCreationService.class);
+      assertNotNull(creatorService);
+
+      String tenantName = "new_repository_single-db";
+      String repoToken = creatorService.reserveRepositoryName(tenantName);
+
+      // restore             
+      String newDSName = IdGenerator.generate();
+
+      RepositoryEntry newRE =
+         helper.createRepositoryEntry(false, repository.getConfiguration().getSystemWorkspaceName(), newDSName);
+      newRE.setName(tenantName);
+
+      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(false, newDSName);
+      newWSEntry.setName(wsEntry.getName());
+      newRE.addWorkspace(newWSEntry);
+
+      creatorService.createRepository(bch.getBackupId(), newRE, repoToken);
 
       // check
       ManageableRepository restoredRepository = repositoryService.getRepository(tenantName);
       assertNotNull(restoredRepository);
 
-      for (String wsName : restoredRepository.getWorkspaceNames())
-      {
-         SessionImpl back = null;
-         try
-         {
-            back = (SessionImpl)restoredRepository.login(credentials, wsName);
-            Node ws1backTestRoot = back.getRootNode().getNode("backupTest");
-            assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
-               .getProperty("exo:data").getString());
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-            fail(e.getMessage());
-         }
-         finally
-         {
-            if (back != null)
-               back.logout();
-         }
-      }
+      checkConent(restoredRepository, wsEntry.getName());
+
       //check repositoryConfiguration
       RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
@@ -164,10 +183,12 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
    public void testCreateRepositoryException() throws Exception
    {
       String tenantName = "new_repository_3";
-      RepositoryEntry baseRE =
-         (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
 
-      RepositoryEntry rEntry = makeRepositoryEntry(tenantName, baseRE, "source2", null);
+      // prepare
+      ManageableRepository repository = helper.createRepository(container, true, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      helper.addWorkspace(repository, wsEntry);
+      addConent(repository, wsEntry.getName());
 
       RepositoryCreationService creatorService =
          (RepositoryCreationService)container.getComponentInstanceOfType(RepositoryCreationService.class);
@@ -175,43 +196,67 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       // 1) try to create with unregistered token
       try
       {
-         creatorService.createRepository("nomatter", rEntry, "any_name");
+         creatorService.createRepository("nomatter", repository.getConfiguration(), "any_name");
          fail("There must be RepositoryCreationException.");
       }
       catch (RepositoryCreationException e)
       {
          //ok
       }
+   }
 
+   public void testCreateRepositoryMultiDBExistingDS() throws Exception
+   {
+      // prepare
+      ManageableRepository repository = helper.createRepository(container, true, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      helper.addWorkspace(repository, wsEntry);
+      addConent(repository, wsEntry.getName());
+
+      // backup
+      File backDir = new File("target/backup");
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      // restore with RepositoryCreatorService
+      RepositoryCreationService creatorService =
+         (RepositoryCreationService)container.getComponentInstanceOfType(RepositoryCreationService.class);
+      assertNotNull(creatorService);
+
+      String tenantName = "new_repository_mutli-db_existing_ds";
       String repoToken = creatorService.reserveRepositoryName(tenantName);
-      // 2) test with malformed repository entry
 
-      RepositoryEntry brokenRepositoryEntry = rEntry;
+      // restore             
+      RepositoryEntry newRE =
+         helper.createRepositoryEntry(true, repository.getConfiguration().getSystemWorkspaceName(), null);
+      newRE.setName(tenantName);
 
-      brokenRepositoryEntry.getWorkspaceEntries().get(0).getContainer().getParameters().remove(0);
-      brokenRepositoryEntry.getWorkspaceEntries().get(0).getContainer().getParameters().remove(0);
+      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(true, null);
+      newWSEntry.setName(wsEntry.getName());
+      newRE.addWorkspace(newWSEntry);
 
       try
       {
-         creatorService.createRepository("nomatter", brokenRepositoryEntry, repoToken);
-         fail("There must be RepositoryConfigurationException.");
+         creatorService.createRepository(bch.getBackupId(), newRE, repoToken);
+         fail("Exception should be thrown");
       }
       catch (RepositoryConfigurationException e)
       {
-         //ok
+         // ok
       }
+   }
 
-      repoToken = creatorService.reserveRepositoryName(tenantName);
-      // 3) test configuration with existing datasource
-      RepositoryEntry rEntryWithRealDataSource = makeRepositoryEntry(tenantName, baseRE, null, null);
-      try
-      {
-         creatorService.createRepository("nomatter", rEntryWithRealDataSource, repoToken);
-         fail("There must be RepositoryConfigurationException.");
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         //ok
-      }
+   @Override
+   protected ExtendedBackupManager getBackupManager()
+   {
+      return getRDBMSBackupManager();
    }
 }

@@ -427,7 +427,9 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          Map<String, String> refAddr = null;
          try
          {
-            DBConnectionInfo dbConnectionInfo = dbCreator.createDatabase(rEntry.getName() + "_" + dataSource);
+            DBConnectionInfo dbConnectionInfo =
+               dbCreator.createDatabase(rEntry.getName() + (dataSourceNames.size() == 1 ? "" : "_" + dataSource));
+
             refAddr = dbConnectionInfo.getProperties();
          }
          catch (DBCreatorException e)
