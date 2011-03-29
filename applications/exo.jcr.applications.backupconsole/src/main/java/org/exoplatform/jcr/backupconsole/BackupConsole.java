@@ -268,12 +268,24 @@ public class BackupConsole
             String repositoryName = getRepositoryName(pathToWS);
             String workspaceName = (pathToWS.split("/").length == 3 ? getWorkspaceName(pathToWS) : null);
 
+
+            String backupDir;
             if (curArg == args.length)
             {
-               System.out.println(INCORRECT_PARAM + "There is no path to backup dir parameter.");
-               return;
+               backupDir = null;
             }
-            String backupDir = args[curArg++];
+            else
+            {
+               //check is incremental job period
+               if (args[curArg].matches("[0-9]+"))
+               {
+                  backupDir = null;
+               }
+               else
+               {
+                  backupDir = args[curArg++];
+               }
+            }
 
             if (curArg == args.length)
             {

@@ -327,10 +327,19 @@ public class HTTPBackupAgent implements ResourceContainer
 
       try
       {
-         File backupDir = new File(bConfigBeen.getBackupDir());
-         if (!PrivilegedFileHelper.exists(backupDir))
-            throw new BackupDirNotFoundException("The backup folder not exists :  "
-               + PrivilegedFileHelper.getAbsolutePath(backupDir));
+         File backupDir;
+
+         if (bConfigBeen.getBackupDir() == null)
+         {
+            backupDir = backupManager.getBackupDirectory();
+         }
+         else
+         {
+            backupDir = new File(bConfigBeen.getBackupDir());
+            if (!PrivilegedFileHelper.exists(backupDir))
+               throw new BackupDirNotFoundException("The backup folder not exists :  "
+                        + PrivilegedFileHelper.getAbsolutePath(backupDir));
+         }
 
          BackupConfig config = new BackupConfig();
          config.setBackupType(bConfigBeen.getBackupType());
@@ -427,11 +436,18 @@ public class HTTPBackupAgent implements ResourceContainer
 
       try
       {
-         File backupDir = new File(bConfigBeen.getBackupDir());
-         if (!PrivilegedFileHelper.exists(backupDir))
+         File backupDir;
+
+         if (bConfigBeen.getBackupDir() == null)
          {
-            throw new BackupDirNotFoundException("The backup folder not exists :  "
-               + PrivilegedFileHelper.getAbsolutePath(backupDir));
+            backupDir = backupManager.getBackupDirectory();
+         }
+         else
+         {
+            backupDir = new File(bConfigBeen.getBackupDir());
+            if (!PrivilegedFileHelper.exists(backupDir))
+               throw new BackupDirNotFoundException("The backup folder not exists :  "
+                        + PrivilegedFileHelper.getAbsolutePath(backupDir));
          }
 
          RepositoryBackupConfig config = new RepositoryBackupConfig();
