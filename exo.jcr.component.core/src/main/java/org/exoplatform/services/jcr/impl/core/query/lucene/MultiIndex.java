@@ -3322,9 +3322,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             log.info("Setting index back online");
             offlineIndex.commit(true);
+            online = true;
             //invoking offline index
             invokeOfflineIndex();
-            online = true;
          }
          // switching to OFFLINE
          else
