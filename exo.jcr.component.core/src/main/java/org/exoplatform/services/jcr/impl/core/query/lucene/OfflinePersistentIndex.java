@@ -73,6 +73,7 @@ public class OfflinePersistentIndex extends PersistentIndex
    {
       int count = super.removeDocument(idTerm);
       processedIDs.add(idTerm.text());
+      System.out.println("RM: " + idTerm.text());
       return count;
    }
 
@@ -82,6 +83,7 @@ public class OfflinePersistentIndex extends PersistentIndex
       super.addDocuments(docs);
       for (Document doc : docs)
       {
+         System.out.println("add: " + doc.get(FieldNames.UUID));
          processedIDs.add(doc.get(FieldNames.UUID));
       }
    }

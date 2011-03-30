@@ -183,6 +183,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public static final boolean DEFAULT_RDBMS_REINDEXING = true;
 
+   /**
+    * The default value for {@link #asyncReindexing}.
+    */
+   public static final boolean DEFAULT_ASYNC_REINDEXING = false;
+
    /** 
     * The default value for {@link #indexRecoveryMode}. 
     */
@@ -494,6 +499,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private String indexRecoveryMode = INDEX_RECOVERY_MODE_FROM_INDEXING;
 
    /**
+    * Defines reindexing synchronization policy. Whether or not start it asynchronously  
+    */
+   private boolean asyncReindexing = DEFAULT_ASYNC_REINDEXING;
+
+   /**
     * Working constructor.
     * 
     * @throws RepositoryConfigurationException
@@ -635,38 +645,32 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       // if RW mode, create initial index and start check
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
-         if (index.numDocs() == 0 && context.isCreateInitialIndex())
+         final boolean doReindexing = (index.numDocs() == 0 && context.isCreateInitialIndex());
+         final boolean doCheck = (consistencyCheckEnabled && (index.getRedoLogApplied() || forceConsistencyCheck));
+         final ItemDataConsumer itemStateManager = context.getItemStateManager();
+
+         if (isAsyncReindexing() && doReindexing)
          {
-            index.createInitialIndex(context.getItemStateManager());
+            log.info("Launching reindexing in asynchronous mode.");
+            new Thread(new Runnable()
+            {
+               public void run()
+               {
+                  try
+                  {
+                     reindex(doReindexing, doCheck, itemStateManager);
+                  }
+                  catch (IOException e)
+                  {
+                     log
+                        .error("Error while reindexing the workspace. Please fix the problem, delete index and restart server.");
+                  }
+               }
+            }, "Reindexing-" + context.getContainer().getWorkspaceName()).start();
          }
-         if (consistencyCheckEnabled && (index.getRedoLogApplied() || forceConsistencyCheck))
+         else
          {
-            log.info("Running consistency check...");
-            try
-            {
-               ConsistencyCheck check = ConsistencyCheck.run(index, context.getItemStateManager());
-               if (autoRepair)
-               {
-                  check.repair(true);
-               }
-               else
-               {
-                  List<ConsistencyCheckError> errors = check.getErrors();
-                  if (errors.size() == 0)
-                  {
-                     log.info("No errors detected.");
-                  }
-                  for (Iterator<ConsistencyCheckError> it = errors.iterator(); it.hasNext();)
-                  {
-                     ConsistencyCheckError err = it.next();
-                     log.info(err.toString());
-                  }
-               }
-            }
-            catch (Exception e)
-            {
-               log.warn("Failed to run consistency check on index: " + e);
-            }
+            reindex(doReindexing, doCheck, itemStateManager);
          }
       }
       // initialize spell checker
@@ -688,6 +692,43 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
 
       modeHandler.addIndexerIoModeListener(this);
+   }
+
+   private void reindex(boolean doReindexing, boolean doCheck, ItemDataConsumer itemStateManager) throws IOException
+   {
+      if (doReindexing)
+      {
+         index.createInitialIndex(itemStateManager);
+      }
+      if (doCheck)
+      {
+         log.info("Running consistency check...");
+         try
+         {
+            ConsistencyCheck check = ConsistencyCheck.run(index, itemStateManager);
+            if (autoRepair)
+            {
+               check.repair(true);
+            }
+            else
+            {
+               List<ConsistencyCheckError> errors = check.getErrors();
+               if (errors.size() == 0)
+               {
+                  log.info("No errors detected.");
+               }
+               for (Iterator<ConsistencyCheckError> it = errors.iterator(); it.hasNext();)
+               {
+                  ConsistencyCheckError err = it.next();
+                  log.info(err.toString());
+               }
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn("Failed to run consistency check on index: " + e);
+         }
+      }
    }
 
    /**
@@ -1217,6 +1258,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    protected IndexReader getIndexReader(boolean includeSystemIndex) throws IOException
    {
+      // deny query execution if index in offline mode
+      // TODO Replace with special Exception Type
+      if (!index.isOnline())
+      {
+         throw new IndexOfflineIOException("Index is offline");
+      }
       QueryHandler parentHandler = getContext().getParentHandler();
       CachingMultiIndexReader parentReader = null;
       if (parentHandler instanceof SearchIndex && includeSystemIndex)
@@ -2731,6 +2778,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       return rdbmsReindexing;
    }
 
+   /**
+    * @return the current value for asyncReindexing
+    */
+   public boolean isAsyncReindexing()
+   {
+      return asyncReindexing;
+   }
+
    /** 
     * @return the current value for indexRecoveryMode 
     */
@@ -2802,6 +2857,17 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setIndexRecoveryMode(String indexRecoveryMode)
    {
       this.indexRecoveryMode = indexRecoveryMode;
+   }
+
+   /**
+    *  Set a new value for asyncReindexing. 
+    * 
+    * @param indexRecoveryMode 
+    *          the new value for asyncReindexing
+    */
+   public void setAsyncReindexing(boolean asyncReindexing)
+   {
+      this.asyncReindexing = asyncReindexing;
    }
 
    // ----------------------------< internal
@@ -2969,6 +3035,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       checkOpen();
       index.setOnline(isOnline);
+   }
+   
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#isOnline()
+    */
+   public boolean isOnline()
+   {
+      return index.isOnline();
    }
 
    /**

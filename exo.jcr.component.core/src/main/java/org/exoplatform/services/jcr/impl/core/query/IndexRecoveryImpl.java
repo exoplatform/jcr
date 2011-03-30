@@ -80,6 +80,11 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
    private RemoteCommand changeIndexMode;
 
    /**
+    * Remote command to check if index can be retrieved.
+    */
+   private RemoteCommand checkIndexReady;
+
+   /**
     * Remote command to check if node responsible for set index online leave the cluster. 
     */
    private RemoteCommand requestForResponsibleToSetIndexOnline;
@@ -201,6 +206,20 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
          }
       });
 
+      checkIndexReady = rpcService.registerCommand(new RemoteCommand()
+      {
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-checkIndexIsReady-" + commandSuffix;
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            // if index is currently online, then it can be retrieved 
+            return new Boolean(searchManager.isOnline());
+         }
+      });
+
       rpcService.registerTopologyChangeListener(this);
    }
 
@@ -271,6 +290,25 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
       try
       {
          return new RemoteInputStream(filePath);
+      }
+      catch (SecurityException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (RPCException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+   
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.IndexRecovery#checkIndexReady()
+    */
+   public boolean checkIndexReady() throws RepositoryException
+   {
+      try
+      {
+         return (Boolean)rpcService.executeCommandOnCoordinator(changeIndexMode, true, true);
       }
       catch (SecurityException e)
       {

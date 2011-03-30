@@ -114,4 +114,7 @@ public interface QueryHandlerParams
    public static final String PARAM_RDBMS_REINDEXING = "rdbms-reindexing";
    
    public static final String PARAM_INDEX_RECOVERY_MODE = "index-recovery-mode";
+
+   public static final String PARAM_ASYNC_REINDEXING = "async-reindexing";
+   
 }

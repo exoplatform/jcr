@@ -87,7 +87,7 @@ public interface QueryHandler
     * @return a {@link ChangesHolder} instance that contains all the changes
     */
    ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add);
-   
+
    /**
     * Applies the given changes to the indes in an atomic operation
     * @param changes the changes to apply
@@ -95,7 +95,7 @@ public interface QueryHandler
     * @throws IOException if an error occurs while updating the index.
     */
    void apply(ChangesHolder changes) throws RepositoryException, IOException;
-   
+
    /**
     * Closes this <code>QueryHandler</code> and frees resources attached
     * to this handler.
@@ -179,7 +179,7 @@ public interface QueryHandler
     * @param indexInfos
     */
    void setIndexInfos(IndexInfos indexInfos);
-   
+
    /**
     * Returns {@link IndexInfos} instance that was set into QueryHandler.
     * @return
@@ -203,5 +203,13 @@ public interface QueryHandler
     * @param isOnline
     */
    void setOnline(boolean isOnline) throws IOException;
+
+   /**
+    * Offline mode means that new indexing data is collected but index is guaranteed to be unmodified during
+    * offline state.
+    * 
+    * @return the state of index.
+    */
+   boolean isOnline();
 
 }

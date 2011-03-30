@@ -66,4 +66,12 @@ public interface IndexRecovery
     *          if any exception occurred
     */
    public InputStream getIndexFile(String filePath) throws RepositoryException;
+   
+   /**
+    * Check if index is ready and can be retrieved.
+    * 
+    * @return
+    * @throws RepositoryException if error occurs.
+    */
+   public boolean checkIndexReady() throws RepositoryException;
 }

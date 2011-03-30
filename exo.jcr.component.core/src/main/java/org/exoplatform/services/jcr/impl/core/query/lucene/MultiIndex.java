@@ -441,6 +441,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    void createInitialIndex(ItemDataConsumer stateMgr) throws IOException
    {
       // only do an initial index if there are no indexes at all
+      boolean indexCreated = false;
       if (indexNames.size() == 0)
       {
          setOnline(false);
@@ -453,12 +454,21 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                && handler.getContext().getRPCService().isCoordinator() == false)
             {
                log.info("Retrieving index from coordinator...");
-               recoveryIndexFromCoordinator();
+               indexCreated = recoveryIndexFromCoordinator();
 
-               indexNames.read();
-               refreshIndexList();
+               if (indexCreated)
+               {
+                  indexNames.read();
+                  refreshIndexList();
+               }
+               else
+               {
+                  log
+                     .info("Index can'b be retrieved from coordinator now, because it is offline. Possibly coordinator node performs reindexing now.");
+               }
             }
-            else
+            
+            if (!indexCreated)
             {
                if (handler.getIndexRecoveryMode().equals(SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR))
                {
@@ -3312,6 +3322,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
    }
 
+   /**
+    * @return true if index is online. It means that there is no background indexing or index retrieval jobs
+    */
+   public boolean isOnline()
+   {
+      return online;
+   }
+
+   /**
+    * Switches index mode
+    * 
+    * @param isOnline
+    * @throws IOException
+    */
    public synchronized void setOnline(boolean isOnline) throws IOException
    {
       // if mode really changed
@@ -3336,6 +3360,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             online = false;
             flush();
          }
+      }
+      else if (!online)
+      {
+         throw new IOException("Index is already in OFFLINE mode.");
       }
    }
 
@@ -3568,12 +3596,17 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws RepositoryException. 
     * @throws FileNotFoundException. 
     */
-   private void recoveryIndexFromCoordinator() throws FileNotFoundException, RepositoryException, IOException,
+   private boolean recoveryIndexFromCoordinator() throws FileNotFoundException, RepositoryException, IOException,
       SuspendException
    {
       try
       {
          IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
+         // check if index not ready
+         if (!indexRecovery.checkIndexReady())
+         {
+            return false;
+         }
          indexRecovery.setIndexOffline();
 
          File indexDirectory = new File(handler.getContext().getIndexDirectory());
@@ -3617,6 +3650,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       finally
       {
       }
+      return true;
    }
 
    /**

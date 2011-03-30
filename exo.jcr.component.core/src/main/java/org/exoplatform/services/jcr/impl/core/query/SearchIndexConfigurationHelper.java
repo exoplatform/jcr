@@ -198,5 +198,9 @@ public class SearchIndexConfigurationHelper
       {
          searchIndex.setIndexRecoveryMode(value);
       }
+      else if (QueryHandlerParams.PARAM_ASYNC_REINDEXING.equals(name))
+      {
+         searchIndex.setAsyncReindexing(Boolean.parseBoolean(value));
+      }
    }
 }

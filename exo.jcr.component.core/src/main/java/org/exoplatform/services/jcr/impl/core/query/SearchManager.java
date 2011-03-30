@@ -56,6 +56,8 @@ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexOfflineIOException;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexOfflineRepositoryException;
 import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableResolver;
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ScoreNode;
@@ -922,6 +924,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             result.add(sn.getNodeId());
          }
       }
+      catch (IndexOfflineIOException e)
+      {
+         throw new IndexOfflineRepositoryException(e.getMessage(), e);
+      }
       catch (IOException e)
       {
          throw new RepositoryException(e.getLocalizedMessage(), e);
@@ -1039,6 +1045,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public void setOnline(boolean isOnline) throws IOException
    {
       handler.setOnline(isOnline);
+   }
+
+   public boolean isOnline()
+   {
+      return handler.isOnline();
    }
 
    /**
