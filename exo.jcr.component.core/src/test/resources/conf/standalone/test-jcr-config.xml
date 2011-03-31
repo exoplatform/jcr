@@ -75,7 +75,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -130,7 +130,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -185,7 +185,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -262,7 +262,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -325,7 +325,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -378,7 +378,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -451,7 +451,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -512,7 +512,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -576,7 +576,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />

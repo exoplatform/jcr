@@ -75,7 +75,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -141,7 +141,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -207,7 +207,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -296,7 +296,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -371,7 +371,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -435,7 +435,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -519,7 +519,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -592,7 +592,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
@@ -668,7 +668,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
-                     <property name="infinispan-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
                      <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
                      <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
