@@ -308,7 +308,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
    {
       try
       {
-         return (Boolean)rpcService.executeCommandOnCoordinator(changeIndexMode, true, true);
+         return (Boolean)rpcService.executeCommandOnCoordinator(checkIndexReady, true);
       }
       catch (SecurityException e)
       {

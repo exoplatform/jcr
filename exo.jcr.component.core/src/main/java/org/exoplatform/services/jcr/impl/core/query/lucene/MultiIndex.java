@@ -464,7 +464,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                else
                {
                   log
-                     .info("Index can'b be retrieved from coordinator now, because it is offline. Possibly coordinator node performs reindexing now.");
+                     .info("Index can'b be retrieved from coordinator now, because it is offline. Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
                }
             }
             
