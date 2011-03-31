@@ -16,7 +16,7 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
        xmlStreamWriter.writeStartElement("DAV:", "href");
 -      String href = URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8");
 +      String href = resource.getIdentifier().toASCIIString();
-+
++      
        if (resource.isCollection())
        {
           xmlStreamWriter.writeCharacters(href + "/");
