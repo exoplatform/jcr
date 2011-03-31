@@ -663,7 +663,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                   catch (IOException e)
                   {
                      log
-                        .error("Error while reindexing the workspace. Please fix the problem, delete index and restart server.");
+                        .error("Error while reindexing the workspace. Please fix the problem, delete index and restart server.", e);
                   }
                }
             }, "Reindexing-" + context.getContainer().getWorkspaceName()).start();

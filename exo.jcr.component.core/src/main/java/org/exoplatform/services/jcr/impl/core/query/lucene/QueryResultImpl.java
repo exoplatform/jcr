@@ -332,6 +332,10 @@ public abstract class QueryResultImpl implements QueryResult
          // update numResults
          numResults = result.getSize();
       }
+      catch (IndexOfflineIOException e)
+      {
+         throw new IndexOfflineRepositoryException(e.getMessage(), e);
+      }
       catch (IOException e)
       {
          log.error("Exception while executing query: ", e);
