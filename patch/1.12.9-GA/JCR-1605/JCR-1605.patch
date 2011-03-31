@@ -1,0 +1,22 @@
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/propfind/PropFindResponseEntity.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/propfind/PropFindResponseEntity.java	(revision 4188)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/propfind/PropFindResponseEntity.java	(working copy)
+@@ -32,7 +32,6 @@
+ import java.io.OutputStream;
+ import java.io.UnsupportedEncodingException;
+ import java.net.URISyntaxException;
+-import java.net.URLDecoder;
+ import java.util.Set;
+ 
+ import javax.jcr.RepositoryException;
+@@ -172,7 +171,8 @@
+       xmlStreamWriter.writeStartElement("DAV:", "response");
+ 
+       xmlStreamWriter.writeStartElement("DAV:", "href");
+-      String href = URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8");
++      String href = resource.getIdentifier().toASCIIString();
++
+       if (resource.isCollection())
+       {
+          xmlStreamWriter.writeCharacters(href + "/");
