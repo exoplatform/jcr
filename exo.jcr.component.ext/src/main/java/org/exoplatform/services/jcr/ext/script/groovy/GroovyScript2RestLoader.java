@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexOfflineRepositoryException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
@@ -73,6 +74,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.observation.Event;
+import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 import javax.ws.rs.Consumes;
@@ -116,6 +118,8 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
 
    /** Service name. */
    private static final String SERVICE_NAME = "GroovyScript2RestLoader";
+
+   private static final int DELAYED_AUTOLOAD_TIMEOUT = 20000; // 20 sec
 
    /** See {@link InitParams}. */
    protected InitParams initParams;
@@ -274,50 +278,80 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
          try
          {
             // Deploy auto-load scripts and start Observation Listeners.
-            String repositoryName = observationListenerConfiguration.getRepository();
+            final String repositoryName = observationListenerConfiguration.getRepository();
             List<String> workspaceNames = observationListenerConfiguration.getWorkspaces();
 
-            ManageableRepository repository = repositoryService.getRepository(repositoryName);
+            final ManageableRepository repository = repositoryService.getRepository(repositoryName);
+
+            // JCR it offers an asynchronous workspace reindexing (since 1.14.0-CR2). But while it
+            // is performed in background queries can't be executed. In this case autoload scripts could only
+            // be loaded after reindexing finished.
+            final Set<String> delayedWorkspacePublishing = new HashSet<String>();
 
             for (String workspaceName : workspaceNames)
             {
                Session session = repository.getSystemSession(workspaceName);
-
-               String xpath = "//element(*, " + getNodeType() + ")[@exo:autoload='true']";
-               Query query = session.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
-
-               QueryResult result = query.execute();
-               NodeIterator nodeIterator = result.getNodes();
-               while (nodeIterator.hasNext())
+               try
                {
-                  Node node = nodeIterator.nextNode();
-
-                  if (node.getPath().startsWith("/jcr:system"))
-                  {
-                     continue;
-                  }
-
-                  try
-                  {
-                     groovyPublisher.publishPerRequest(node.getProperty("jcr:data").getStream(), new NodeScriptKey(
-                        repositoryName, workspaceName, node), null);
-                  }
-                  catch (CompilationFailedException e)
-                  {
-                     LOG.error(e.getMessage(), e);
-                  }
-                  catch (ResourcePublicationException e)
-                  {
-                     LOG.error(e.getMessage(), e);
-                  }
+                  autoLoadScripts(session);
+               }
+               catch (IndexOfflineRepositoryException e)
+               {
+                  delayedWorkspacePublishing.add(workspaceName);
                }
 
-               session
-                  .getWorkspace()
-                  .getObservationManager()
-                  .addEventListener(new GroovyScript2RestUpdateListener(repositoryName, workspaceName, this, session),
-                     Event.PROPERTY_ADDED | Event.PROPERTY_CHANGED | Event.PROPERTY_REMOVED, "/", true, null,
-                     new String[]{getNodeType()}, false);
+               session.getWorkspace().getObservationManager().addEventListener(
+                  new GroovyScript2RestUpdateListener(repositoryName, workspaceName, this, session),
+                  Event.PROPERTY_ADDED | Event.PROPERTY_CHANGED | Event.PROPERTY_REMOVED, "/", true, null,
+                  new String[]{getNodeType()}, false);
+            }
+            if (!delayedWorkspacePublishing.isEmpty())
+            {
+               LOG.warn("The following workspaces are being reindexed now: " + delayedWorkspacePublishing
+                  + ". Groove scripts from those workspaces marked as AutoLoad will be loaded later.");
+               // lauch delayed autoLoad
+               new Thread(new Runnable()
+               {
+                  public void run()
+                  {
+                     while (true)
+                     {
+                        if (delayedWorkspacePublishing.isEmpty())
+                        {
+                           // finish thread
+                           return;
+                        }
+                        for (Iterator iterator = delayedWorkspacePublishing.iterator(); iterator.hasNext();)
+                        {
+                           String workspaceName = (String)iterator.next();
+                           try
+                           {
+                              Session session = repository.getSystemSession(workspaceName);
+                              autoLoadScripts(session);
+                              // if no exception, then remove item from set
+                              iterator.remove();
+                           }
+                           catch (IndexOfflineRepositoryException e)
+                           {
+                              //it's okay. Retrying;
+                           }
+                           catch (Exception e)
+                           {
+                              // skip
+                              LOG.error(e);
+                           }
+                        }
+                        try
+                        {
+                           Thread.sleep(DELAYED_AUTOLOAD_TIMEOUT);
+                        }
+                        catch (InterruptedException e)
+                        {
+                           // skip
+                        }
+                     }
+                  }
+               }, "GrooveSrciptDelayedAutoLoader-" + repositoryName).start();
             }
          }
          catch (Exception e)
@@ -332,6 +366,41 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
       // to dependencies problem. And in other side not possible to use third
       // part which can be injected by GroovyScript2RestLoader.
       binder.addResource(this, null);
+   }
+
+   private void autoLoadScripts(Session session) throws RepositoryException
+   {
+      String workspaceName = session.getWorkspace().getName();
+      String repositoryName = observationListenerConfiguration.getRepository();
+
+      String xpath = "//element(*, " + getNodeType() + ")[@exo:autoload='true']";
+      Query query = session.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
+
+      QueryResult result = query.execute();
+      NodeIterator nodeIterator = result.getNodes();
+      while (nodeIterator.hasNext())
+      {
+         Node node = nodeIterator.nextNode();
+
+         if (node.getPath().startsWith("/jcr:system"))
+         {
+            continue;
+         }
+
+         try
+         {
+            groovyPublisher.publishPerRequest(node.getProperty("jcr:data").getStream(), new NodeScriptKey(
+               repositoryName, workspaceName, node), null);
+         }
+         catch (CompilationFailedException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+         catch (ResourcePublicationException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+      }
    }
 
    /**
@@ -526,7 +595,8 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
       Document doc;
       try
       {
-         doc = AccessController.doPrivileged(new PrivilegedExceptionAction<Document>() {
+         doc = AccessController.doPrivileged(new PrivilegedExceptionAction<Document>()
+         {
             public Document run() throws ParserConfigurationException
             {
                return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -851,7 +921,9 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
       throws MalformedScriptException
    {
       if (name != null && name.length() > 0 && name.startsWith("/"))
+      {
          name = name.substring(1);
+      }
       groovyPublisher.validateResource(script, name, src, files);
    }
 
@@ -1090,9 +1162,9 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
          {
             if (null == groovyPublisher.unpublishResource(key))
             {
-               return Response.status(Response.Status.BAD_REQUEST)
-                  .entity("Can't unbind script " + path + ", not bound or has wrong mapping to the resource class ")
-                  .type(MediaType.TEXT_PLAIN).build();
+               return Response.status(Response.Status.BAD_REQUEST).entity(
+                  "Can't unbind script " + path + ", not bound or has wrong mapping to the resource class ").type(
+                  MediaType.TEXT_PLAIN).build();
             }
          }
          return Response.status(Response.Status.NO_CONTENT).build();
@@ -1240,9 +1312,8 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
             sessionProviderService.getSessionProvider(null).getSession(workspace,
                repositoryService.getRepository(repository));
          Node scriptFile = (Node)ses.getItem("/" + path);
-         return Response.status(Response.Status.OK)
-            .entity(scriptFile.getNode("jcr:content").getProperty("jcr:data").getStream()).type("script/groovy")
-            .build();
+         return Response.status(Response.Status.OK).entity(
+            scriptFile.getNode("jcr:content").getProperty("jcr:data").getStream()).type("script/groovy").build();
       }
       catch (PathNotFoundException e)
       {
@@ -1417,9 +1488,13 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
             String str = sources.get(i);
             URL url = null;
             if (str.startsWith("jcr://"))
+            {
                url = new URL(null, str, UnifiedNodeReference.getURLStreamHandler());
+            }
             else
+            {
                url = new URL(str);
+            }
             src[i] = new SourceFolder(url);
          }
       }
@@ -1437,9 +1512,13 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
             String str = files.get(i);
             URL url = null;
             if (str.startsWith("jcr://"))
+            {
                url = new URL(null, str, UnifiedNodeReference.getURLStreamHandler());
+            }
             else
+            {
                url = new URL(str);
+            }
             srcFiles[i] = new SourceFile(url);
          }
       }
