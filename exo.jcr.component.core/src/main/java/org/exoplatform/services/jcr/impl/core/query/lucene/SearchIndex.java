@@ -700,7 +700,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       if (doReindexing)
       {
-         index.createInitialIndex(itemStateManager, false);
+         index.createInitialIndex(itemStateManager);
       }
       if (doCheck)
       {
