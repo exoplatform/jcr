@@ -499,7 +499,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.setLocal(false);
          if (!inTransaction)
          {
-            cache.commitTransaction();
+            dedicatedTxCommit();
          }
       }
    }
@@ -615,7 +615,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.setLocal(false);
          if (!inTransaction)
          {
-            cache.commitTransaction();
+            dedicatedTxCommit();
          }
       }
    }
@@ -658,7 +658,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.setLocal(false);
          if (!inTransaction)
          {
-            cache.commitTransaction();
+            dedicatedTxCommit();
          }
       }
    }
@@ -884,7 +884,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.setLocal(false);
          if (!inTransaction)
          {
-            cache.commitTransaction();
+            dedicatedTxCommit();
          }
       }
    }

@@ -275,7 +275,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          cache.setLocal(false);
          if (!inTransaction)
          {
-            cache.commitTransaction();
+            dedicatedTxCommit();
          }
       }
    }
@@ -390,7 +390,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          cache.setLocal(false);
          if (!inTransaction)
          {
-            cache.commitTransaction();
+            dedicatedTxCommit();
          }
       }
    }
@@ -432,7 +432,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          cache.setLocal(false);
          if (!inTransaction)
          {
-            cache.commitTransaction();
+            dedicatedTxCommit();
          }
       }
    }
@@ -1086,7 +1086,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          cache.setLocal(false);
          if (!inTransaction)
          {
-            cache.commitTransaction();
+            dedicatedTxCommit();
          }
       }
    }
