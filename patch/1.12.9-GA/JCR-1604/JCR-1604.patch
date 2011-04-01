@@ -1,0 +1,93 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4199)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(working copy)
+@@ -60,6 +60,7 @@
+ 
+ import javax.jcr.PropertyType;
+ import javax.jcr.RepositoryException;
++import javax.transaction.Transaction;
+ import javax.transaction.TransactionManager;
+ 
+ /**
+@@ -417,7 +418,7 @@
+          cache.setLocal(false);
+          if (!inTransaction)
+          {
+-            cache.commitTransaction();
++            dedicatedTxCommit();
+          }
+       }
+    }
+@@ -572,7 +573,7 @@
+          cache.setLocal(false);
+          if (!inTransaction)
+          {
+-            cache.commitTransaction();
++            dedicatedTxCommit();
+          }
+       }
+    }
+@@ -616,7 +617,7 @@
+          cache.setLocal(false);
+          if (!inTransaction)
+          {
+-            cache.commitTransaction();
++            dedicatedTxCommit();
+          }
+       }
+    }
+@@ -658,7 +659,7 @@
+          cache.setLocal(false);
+          if (!inTransaction)
+          {
+-            cache.commitTransaction();
++            dedicatedTxCommit();
+          }
+       }
+    }
+@@ -1347,4 +1348,44 @@
+       NOT_MODIFY, MODIFY, FORCE_MODIFY
+    }
+ 
++   /**
++    * Allows to commit the cache changes in a dedicated XA Tx in order to avoid potential
++    * deadlocks
++    */
++   private void dedicatedTxCommit()
++   {
++      // Ensure that the commit is done in a dedicated tx to avoid deadlock due
++      // to global XA Tx
++      TransactionManager tm = getTransactionManager();
++      Transaction tx = null;
++      try
++      {
++         if (tm != null)
++         {
++            try
++            {
++               tx = tm.suspend();
++            }
++            catch (Exception e)
++            {
++               LOG.warn("Cannot suspend the current transaction", e);
++            }
++         }
++         cache.commitTransaction();
++      }
++      finally
++      {
++         if (tx != null)
++         {
++            try
++            {
++               tm.resume(tx);
++            }
++            catch (Exception e)
++            {
++               LOG.warn("Cannot resume the current transaction", e);
++            }
++         }
++      }
++   }
+ }
