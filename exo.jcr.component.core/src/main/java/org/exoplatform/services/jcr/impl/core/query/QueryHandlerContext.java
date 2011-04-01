@@ -88,6 +88,8 @@ public class QueryHandlerContext
     * Field containing RPCService, if any configured in container  
     */
    private final RPCService rpcService;
+   
+   private final String repositoryName;
 
    /**
     * Creates a new context instance.
@@ -119,7 +121,7 @@ public class QueryHandlerContext
    public QueryHandlerContext(WorkspaceContainerFacade container, ItemDataConsumer stateMgr, IndexingTree indexingTree,
       NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
       String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
-      LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery, RPCService rpcService)
+      LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery, RPCService rpcService, String repositoryName)
    {
       this.indexRecovery = indexRecovery;
       this.container = container;
@@ -134,6 +136,7 @@ public class QueryHandlerContext
       this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
       this.rpcService = rpcService;
       this.parentHandler = parentHandler;
+      this.repositoryName = repositoryName;
       ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).addListener(propRegistry);
    }
 
@@ -252,6 +255,15 @@ public class QueryHandlerContext
    public RPCService getRPCService()
    {
       return rpcService;
+   }
+   
+   /**
+    * @return
+    *          The name of current repository
+    */
+   public String getRepositoryName()
+   {
+      return repositoryName;
    }
 
 }

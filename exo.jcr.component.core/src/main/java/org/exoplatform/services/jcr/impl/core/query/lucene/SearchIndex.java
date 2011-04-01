@@ -663,10 +663,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                   catch (IOException e)
                   {
                      log
-                        .error("Error while reindexing the workspace. Please fix the problem, delete index and restart server.", e);
+                        .error(
+                           "Error while reindexing the workspace. Please fix the problem, delete index and restart server.",
+                           e);
                   }
                }
-            }, "Reindexing-" + context.getContainer().getWorkspaceName()).start();
+            }, "Reindexing-" + context.getRepositoryName() + "-" + context.getContainer().getWorkspaceName()).start();
          }
          else
          {
@@ -698,7 +700,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       if (doReindexing)
       {
-         index.createInitialIndex(itemStateManager);
+         index.createInitialIndex(itemStateManager, false);
       }
       if (doCheck)
       {
@@ -3036,7 +3038,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       checkOpen();
       index.setOnline(isOnline);
    }
-   
+
    /**
     * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#isOnline()
     */
