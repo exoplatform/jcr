@@ -3660,6 +3660,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       try
       {
+         releaseMultiReader();
          flush();
       }
       catch (IOException e)
