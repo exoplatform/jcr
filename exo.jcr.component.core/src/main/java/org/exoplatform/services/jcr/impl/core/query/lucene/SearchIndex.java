@@ -3052,12 +3052,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void suspend() throws SuspendException
    {
-      errorLog.close();
-
-      if (index instanceof Suspendable)
-      {
-         ((Suspendable)index).suspend();
-      }
+      close();
    }
 
    /**
@@ -3067,16 +3062,16 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         doInitErrorLog();
+         closed = false;
+         doInit();
       }
       catch (IOException e)
       {
          throw new ResumeException(e);
       }
-
-      if (index instanceof Suspendable)
+      catch (RepositoryException e)
       {
-         ((Suspendable)index).resume();
+         throw new ResumeException(e);
       }
    }
 }

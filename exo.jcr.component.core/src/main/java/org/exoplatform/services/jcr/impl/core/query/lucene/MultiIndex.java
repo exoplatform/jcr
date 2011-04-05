@@ -99,7 +99,7 @@ import javax.jcr.RepositoryException;
  * thread and reader threads is done using {@link #updateMonitor} and
  * {@link #updateInProgress}.
  */
-public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorListener, Suspendable
+public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorListener
 {
 
    /**
@@ -3651,41 +3651,5 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
       }
       return true;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void suspend() throws SuspendException
-   {
-      try
-      {
-         releaseMultiReader();
-         flush();
-      }
-      catch (IOException e)
-      {
-         throw new SuspendException(e);
-      }
-      merger.dispose();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void resume() throws ResumeException
-   {
-      try
-      {
-         indexNames.read();
-         refreshIndexList();
-
-         doInitIndexMerger();
-         merger.start();
-      }
-      catch (IOException e)
-      {
-         throw new ResumeException(e);
-      }
    }
 }
