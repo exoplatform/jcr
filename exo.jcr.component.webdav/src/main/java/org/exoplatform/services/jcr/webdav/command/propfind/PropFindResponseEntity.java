@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
@@ -172,7 +171,7 @@ public class PropFindResponseEntity implements StreamingOutput
       xmlStreamWriter.writeStartElement("DAV:", "response");
 
       xmlStreamWriter.writeStartElement("DAV:", "href");
-      String href = URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8");
+      String href = resource.getIdentifier().toASCIIString();
       if (resource.isCollection())
       {
          xmlStreamWriter.writeCharacters(href + "/");

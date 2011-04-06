@@ -28,6 +28,7 @@ import org.exoplatform.services.rest.impl.ContainerResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.URLDecoder;
 
 import javax.ws.rs.core.MediaType;
 
@@ -45,6 +46,9 @@ public class TestSearch extends BaseStandaloneTest
 
    private final String fileContent = "TEST FILE CONTENT...";
 
+   private final String sql = "<D:searchrequest xmlns:D='DAV:'>" + "<D:sql>"
+      + "SELECT * FROM  nt:resource WHERE contains(*, 'TEST')" + "</D:sql>" + "</D:searchrequest>";
+
    public void testBasicSearch() throws Exception
    {
 
@@ -55,10 +59,6 @@ public class TestSearch extends BaseStandaloneTest
       // "</D:xpath>" +
       // "</D:searchrequest>";
 
-      String sql =
-         "<D:searchrequest xmlns:D='DAV:'>" + "<D:sql>" + "SELECT * FROM  nt:resource WHERE contains(*, 'TEST')"
-            + "</D:sql>" + "</D:searchrequest>";
-
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, fileName, inputStream, defaultFileNodeType, MediaType.TEXT_PLAIN);
       ContainerResponse response = service(WebDAVMethods.SEARCH, getPathWS(), "", null, sql.getBytes());
@@ -68,6 +68,41 @@ public class TestSearch extends BaseStandaloneTest
       entity.write(outputStream);
       String result = outputStream.toString();
       assertTrue(result.contains(fileName));
+   }
+
+   /**
+    * Here we test WebDAV SEARCH method implementation for correct response 
+    * if request contains encoded non-latin characters. We send a request with
+    * corresponding character sequence and expect to receive response containing
+    * 'href' element with URL encoded characters and 'displayname' element containing
+    * non-latin characters.    
+    * @throws Exception
+    */
+   public void testBasicSearchWithNonLatin() throws Exception
+   {
+      // prepare file name, content
+      String encodedfileName = "%e3%81%82%e3%81%84%e3%81%86%e3%81%88%e3%81%8a";
+      String decodedfileName = URLDecoder.decode(encodedfileName, "UTF-8");
+      InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
+      TestUtils.addContent(session, decodedfileName, inputStream, defaultFileNodeType, MediaType.TEXT_PLAIN);
+
+      ContainerResponse response = service(WebDAVMethods.SEARCH, getPathWS(), "", null, sql.getBytes());
+
+      // serialize response entity to string
+      SearchResultResponseEntity entity = (SearchResultResponseEntity)response.getEntity();
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      entity.write(outputStream);
+      String resp = outputStream.toString();
+
+      System.out.println("=======Search response============");
+      System.out.println(resp);
+      System.out.println("=======Decoded file name==========");
+      System.out.println(decodedfileName);
+      System.out.println("==================================");
+
+      assertTrue(resp.contains(encodedfileName));
+      assertTrue(resp.contains(decodedfileName));
+
    }
 
    @Override

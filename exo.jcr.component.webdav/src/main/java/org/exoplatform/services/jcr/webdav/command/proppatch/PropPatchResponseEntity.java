@@ -37,7 +37,6 @@ import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -155,7 +154,7 @@ public class PropPatchResponseEntity implements StreamingOutput
 
          xmlStreamWriter.writeStartElement("DAV:", "response");
          xmlStreamWriter.writeStartElement("DAV:", "href");
-         xmlStreamWriter.writeCharacters(URLDecoder.decode(uri.toASCIIString(), "UTF-8"));
+         xmlStreamWriter.writeCharacters(uri.toASCIIString());
          xmlStreamWriter.writeEndElement();
 
          Map<String, Set<HierarchicalProperty>> propStats = getPropStat();

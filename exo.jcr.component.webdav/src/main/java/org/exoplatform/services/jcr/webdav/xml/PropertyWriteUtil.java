@@ -20,8 +20,6 @@ package org.exoplatform.services.jcr.webdav.xml;
 
 import org.exoplatform.common.util.HierarchicalProperty;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -136,20 +134,7 @@ public class PropertyWriteUtil
          }
 
          writeAttributes(xmlStreamWriter, prop);
-         
-         if (prop.getName().getLocalPart().equals("displayname") && containsEncodedChar(prop.getValue()))
-         {
-            try
-            {
-               xmlStreamWriter.writeCharacters(URLDecoder.decode(prop.getValue(), "UTF-8"));
-            }
-            catch (UnsupportedEncodingException e)
-            {
-               e.printStackTrace();
-            }
-         } else {
-            xmlStreamWriter.writeCharacters(prop.getValue());
-         }
+         xmlStreamWriter.writeCharacters(prop.getValue());
          
          xmlStreamWriter.writeEndElement();
       }

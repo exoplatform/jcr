@@ -39,6 +39,7 @@ import org.exoplatform.services.rest.tools.ResourceLauncher;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -123,6 +124,42 @@ public class TestPropFind extends BaseStandaloneTest
       TestUtils.addContent(session, file, new ByteArrayInputStream(content.getBytes()), nt_webdave_file, "");
       ContainerResponse containerResponseFind = service(WebDAVMethods.PROPFIND, getPathWS() + file, "", null, null);
       assertEquals(HTTPStatus.MULTISTATUS, containerResponseFind.getStatus());
+   }
+
+   /**
+    * Here we test WebDAV PROPFIND method implementation for correct response 
+    * if request contains encoded non-latin characters. We send a request with
+    * corresponding character sequence and expect to receive response containing
+    * 'href' element with URL encoded characters and 'displayname' element containing
+    * non-latin characters.  
+    * @throws Exception
+    */
+   public void testSimplePropFindWithNonLatin() throws Exception
+   {
+      // prepare file name and content
+      String encodedfileName = "%e3%81%82%e3%81%84%e3%81%86%e3%81%88%e3%81%8a";
+      String decodedfileName = URLDecoder.decode(encodedfileName, "UTF-8");
+      String content = TestUtils.getFileContent();
+      TestUtils.addContent(session, decodedfileName, new ByteArrayInputStream(content.getBytes()), nt_webdave_file, "");
+      TestUtils.addNodeProperty(session, decodedfileName, authorProp, author);
+
+      ContainerResponse response =
+         service(WebDAVMethods.PROPFIND, getPathWS() + "/" + encodedfileName, "", null, allPropsXML.getBytes());
+
+      // serialize response entity to string
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      PropFindResponseEntity entity = (PropFindResponseEntity)response.getEntity();
+      entity.write(outputStream);
+      String resp = outputStream.toString();
+
+      System.out.println("=======PropFind response==========");
+      System.out.println(resp);
+      System.out.println("=======Decoded file name==========");
+      System.out.println(decodedfileName);
+      System.out.println("==================================");
+
+      assertTrue(resp.contains(encodedfileName));
+      assertTrue(resp.contains(decodedfileName));
    }
 
    public void testPropFind() throws Exception

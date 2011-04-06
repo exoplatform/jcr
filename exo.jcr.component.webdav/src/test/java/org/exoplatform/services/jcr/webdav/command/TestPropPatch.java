@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URLDecoder;
 import java.util.Calendar;
 
 import javax.jcr.Node;
@@ -157,6 +158,52 @@ public class TestPropPatch extends BaseStandaloneTest
       String str = p.getString();
       str.trim();
 
+   }
+
+   /**
+    * Here we test WebDAV PROPPATCH method implementation for correct response 
+    * if request contains encoded non-latin characters. We send a request with
+    * corresponding character sequence and expect to receive response containing
+    * 'href' element with URL encoded characters.
+    * @throws Exception
+    */
+   public void testPropPatchWithNonLatin() throws Exception
+   {
+
+      // prepare file names, content
+      String encodedfileName = "%e3%81%82%e3%81%84%e3%81%86%e3%81%88%e3%81%8a";
+      String decodedfileName = URLDecoder.decode(encodedfileName, "UTF-8");
+
+      Node node = session.getRootNode().addNode(decodedfileName, nt_webdave_file);
+      node.setProperty(authorProp, author);
+
+      node.addNode("jcr:content", "nt:resource");
+      Node content = node.getNode("jcr:content");
+      content.setProperty("jcr:mimeType", "text/xml");
+      content.setProperty("jcr:lastModified", Calendar.getInstance());
+      content.setProperty("jcr:data", "data");
+      node.addMixin("mix:lockable");
+      session.save();
+      node.lock(true, true);
+      session.save();
+
+      ContainerResponse response =
+         service(WebDAVMethods.PROPPATCH, getPathWS() + "/" + encodedfileName, "", null, patch.getBytes());
+
+      // serialize response entity to string
+      PropPatchResponseEntity entity = (PropPatchResponseEntity)response.getEntity();
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      entity.write(outputStream);
+      String resp = outputStream.toString();
+
+      System.out.println("=======PropPatch response=========");
+      System.out.println(resp);
+      System.out.println("=======Decoded file name==========");
+      System.out.println(decodedfileName);
+      System.out.println("==================================");
+
+      assertTrue(resp.contains(encodedfileName));
+      assertFalse(resp.contains(decodedfileName));
    }
 
    // public void testPropPatch() throws Exception {
