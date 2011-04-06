@@ -88,6 +88,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
@@ -502,6 +503,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Defines reindexing synchronization policy. Whether or not start it asynchronously  
     */
    private boolean asyncReindexing = DEFAULT_ASYNC_REINDEXING;
+
+   /**
+    * Waiting query execution until resume. 
+    */
+   protected CountDownLatch latcher = null;
 
    /**
     * Working constructor.
@@ -1017,6 +1023,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public MultiColumnQueryHits executeQuery(SessionImpl session, AbstractQueryImpl queryImpl, Query query,
       QPath[] orderProps, boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
    {
+      waitForResuming();
+
       checkOpen();
 
       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
@@ -1066,6 +1074,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public MultiColumnQueryHits executeQuery(SessionImpl session, MultiColumnQuery query, QPath[] orderProps,
       boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
    {
+      waitForResuming();
+
       checkOpen();
 
       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
@@ -2997,6 +3007,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public QueryHits executeQuery(Query query) throws IOException
    {
+      waitForResuming();
+
       checkOpen();
 
       IndexReader reader = getIndexReader(true);
@@ -3052,6 +3064,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void suspend() throws SuspendException
    {
+      latcher = new CountDownLatch(1);
       close();
    }
 
@@ -3064,6 +3077,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          closed = false;
          doInit();
+
+         latcher.countDown();
       }
       catch (IOException e)
       {
@@ -3072,6 +3087,27 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       catch (RepositoryException e)
       {
          throw new ResumeException(e);
+      }
+   }
+
+   /**
+    * If component is suspended need to wait resuming and not allow
+    * execute query on closed index.
+    * 
+    * @throws IOException
+    */
+   private void waitForResuming() throws IOException
+   {
+      if (latcher != null && latcher.getCount() != 0)
+      {
+         try
+         {
+            latcher.await();
+         }
+         catch (InterruptedException e)
+         {
+            throw new IOException(e);
+         }
       }
    }
 }

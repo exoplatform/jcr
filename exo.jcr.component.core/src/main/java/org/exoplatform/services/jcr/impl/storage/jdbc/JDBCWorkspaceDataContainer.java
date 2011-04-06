@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+z * Copyright (C) 2009 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -85,7 +85,6 @@ import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -1108,21 +1107,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                   + containerName + "'");
          }
 
-         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-         if (ds == null)
-         {
-            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
-         }
-
-         Connection jdbcConn =
-            SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-            {
-               public Connection run() throws Exception
-               {
-                  return ds.getConnection();
-
-               }
-            });
+         // using existing DataSource to get a JDBC Connection.
+         Connection jdbcConn = connFactory.getJdbcConnection();
 
          DBBackup.backup(storageDir, jdbcConn, scripts);
 
@@ -1155,11 +1141,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          throw new BackupException(e);
       }
-      catch (NamingException e)
-      {
-         throw new BackupException(e);
-      }
-      catch (SQLException e)
+      catch (RepositoryException e)
       {
          throw new BackupException(e);
       }
@@ -1390,32 +1372,16 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    {
       try
       {
-         final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+         Connection jdbcConn = connFactory.getJdbcConnection();
+         jdbcConn.setAutoCommit(false);
 
-         if (ds != null)
-         {
-            Connection jdbcConn =
-               SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-            {
-               public Connection run() throws Exception
-               {
-                  return ds.getConnection();
-               }
-            });
-            jdbcConn.setAutoCommit(false);
-
-            return getDataRestorer(storageDir, jdbcConn);
-         }
-         else
-         {
-            throw new NameNotFoundException("Data source " + dbSourceName + " not found");
-         }
+         return getDataRestorer(storageDir, jdbcConn);
       }
       catch (SQLException e)
       {
          throw new BackupException(e);
       }
-      catch (NamingException e)
+      catch (RepositoryException e)
       {
          throw new BackupException(e);
       }
