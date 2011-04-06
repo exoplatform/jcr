@@ -130,7 +130,7 @@ public class FullBackupJob extends AbstractFullBackupJob
          for (Suspendable component : suspendableComponents)
          {
             component.suspend();
-            resumeComponents.add(component);
+            resumeComponents.add(0, component); // ensure that first component will be resumed as last 
          }
 
          List<Backupable> backupableComponents =

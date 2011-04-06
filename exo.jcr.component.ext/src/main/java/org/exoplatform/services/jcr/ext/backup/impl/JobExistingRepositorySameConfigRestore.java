@@ -39,6 +39,7 @@ import java.io.File;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -116,7 +117,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             for (Suspendable component : suspendableComponents)
             {
                component.suspend();
-               resumeComponents.add(component);
+               resumeComponents.add(0, component); // ensure that first component will be resumed as last
             }
          }
 
@@ -160,16 +161,19 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          }
 
          // resume components
-         for (int i = 0; i < resumeComponents.size(); i++)
+         Iterator<Suspendable> iter = resumeComponents.iterator();
+         while (iter.hasNext())
          {
             try
             {
-               resumeComponents.remove(i).resume();
+               iter.next().resume();
             }
             catch (ResumeException e)
             {
                log.error("Can't resume component", e);
             }
+
+            iter.remove();
          }
 
          // incremental restore

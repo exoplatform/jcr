@@ -35,6 +35,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -83,7 +84,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
          for (Suspendable component : suspendableComponents)
          {
             component.suspend();
-            resumeComponents.add(component);
+            resumeComponents.add(0, component); // ensure that first component will be resumed as last
          }
 
          // get all restorers
@@ -115,16 +116,19 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
          }
 
          // resume components
-         for (int i = 0; i < resumeComponents.size(); i++)
+         Iterator<Suspendable> iter = resumeComponents.iterator();
+         while (iter.hasNext())
          {
             try
             {
-               resumeComponents.remove(i).resume();
+               iter.next().resume();
             }
             catch (ResumeException e)
             {
                log.error("Can't resume component", e);
             }
+
+            iter.remove();
          }
 
          // incremental restore
