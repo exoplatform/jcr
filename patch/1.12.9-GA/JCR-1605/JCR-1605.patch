@@ -1,6 +1,286 @@
+Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPropPatch.java
+===================================================================
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPropPatch.java	(revision 4209)
++++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPropPatch.java	(working copy)
+@@ -25,6 +25,7 @@
+ import org.exoplatform.services.rest.impl.ContainerResponse;
+ 
+ import java.io.ByteArrayOutputStream;
++import java.net.URLDecoder;
+ import java.util.Calendar;
+ 
+ import javax.jcr.Node;
+@@ -159,6 +160,52 @@
+ 
+    }
+ 
++   /**
++    * Here we test WebDAV PROPPATCH method implementation for correct response 
++    * if request contains encoded non-latin characters. We send a request with
++    * corresponding character sequence and expect to receive response containing
++    * 'href' element with URL encoded characters.
++    * @throws Exception
++    */
++   public void testPropPatchWithNonLatin() throws Exception
++   {
++
++      // prepare file names, content
++      String encodedfileName = "%e3%81%82%e3%81%84%e3%81%86%e3%81%88%e3%81%8a";
++      String decodedfileName = URLDecoder.decode(encodedfileName, "UTF-8");
++
++      Node node = session.getRootNode().addNode(decodedfileName, nt_webdave_file);
++      node.setProperty(authorProp, author);
++
++      node.addNode("jcr:content", "nt:resource");
++      Node content = node.getNode("jcr:content");
++      content.setProperty("jcr:mimeType", "text/xml");
++      content.setProperty("jcr:lastModified", Calendar.getInstance());
++      content.setProperty("jcr:data", "data");
++      node.addMixin("mix:lockable");
++      session.save();
++      node.lock(true, true);
++      session.save();
++
++      ContainerResponse response =
++         service(WebDAVMethods.PROPPATCH, getPathWS() + "/" + encodedfileName, "", null, patch.getBytes());
++
++      // serialize response entity to string
++      PropPatchResponseEntity entity = (PropPatchResponseEntity)response.getEntity();
++      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
++      entity.write(outputStream);
++      String resp = outputStream.toString();
++
++      System.out.println("=======PropPatch response=========");
++      System.out.println(resp);
++      System.out.println("=======Decoded file name==========");
++      System.out.println(decodedfileName);
++      System.out.println("==================================");
++
++      assertTrue(resp.contains(encodedfileName));
++      assertFalse(resp.contains(decodedfileName));
++   }
++
+    // public void testPropPatch() throws Exception {
+    // String description = "test description property";
+    // String rights = "test rights property";
+Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPropFind.java
+===================================================================
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPropFind.java	(revision 4209)
++++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPropFind.java	(working copy)
+@@ -30,6 +30,7 @@
+ 
+ import java.io.ByteArrayInputStream;
+ import java.io.ByteArrayOutputStream;
++import java.net.URLDecoder;
+ 
+ import javax.jcr.Node;
+ import javax.ws.rs.core.HttpHeaders;
+@@ -101,6 +102,42 @@
+       assertEquals(HTTPStatus.MULTISTATUS, containerResponseFind.getStatus());
+    }
+ 
++   /**
++    * Here we test WebDAV PROPFIND method implementation for correct response 
++    * if request contains encoded non-latin characters. We send a request with
++    * corresponding character sequence and expect to receive response containing
++    * 'href' element with URL encoded characters and 'displayname' element containing
++    * non-latin characters.  
++    * @throws Exception
++    */
++   public void testSimplePropFindWithNonLatin() throws Exception
++   {
++      // prepare file name and content
++      String encodedfileName = "%e3%81%82%e3%81%84%e3%81%86%e3%81%88%e3%81%8a";
++      String decodedfileName = URLDecoder.decode(encodedfileName, "UTF-8");
++      String content = TestUtils.getFileContent();
++      TestUtils.addContent(session, decodedfileName, new ByteArrayInputStream(content.getBytes()), nt_webdave_file, "");
++      TestUtils.addNodeProperty(session, decodedfileName, authorProp, author);
++
++      ContainerResponse response =
++         service(WebDAVMethods.PROPFIND, getPathWS() + "/" + encodedfileName, "", null, allPropsXML.getBytes());
++
++      // serialize response entity to string
++      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
++      PropFindResponseEntity entity = (PropFindResponseEntity)response.getEntity();
++      entity.write(outputStream);
++      String resp = outputStream.toString();
++
++      System.out.println("=======PropFind response==========");
++      System.out.println(resp);
++      System.out.println("=======Decoded file name==========");
++      System.out.println(decodedfileName);
++      System.out.println("==================================");
++
++      assertTrue(resp.contains(encodedfileName));
++      assertTrue(resp.contains(decodedfileName));
++   }
++
+    public void testPropFind() throws Exception
+    {
+       String content = TestUtils.getFileContent();
+Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestSearch.java
+===================================================================
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestSearch.java	(revision 4209)
++++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestSearch.java	(working copy)
+@@ -28,6 +28,7 @@
+ import java.io.ByteArrayInputStream;
+ import java.io.ByteArrayOutputStream;
+ import java.io.InputStream;
++import java.net.URLDecoder;
+ 
+ import javax.ws.rs.core.MediaType;
+ 
+@@ -45,6 +46,10 @@
+ 
+    private final String fileContent = "TEST FILE CONTENT...";
+ 
++   private final String sql = "<D:searchrequest xmlns:D='DAV:'>" + "<D:sql>"
++      + "SELECT * FROM  nt:resource WHERE contains(*, 'TEST')" + "</D:sql>" + "</D:searchrequest>";
++
++
+    public void testBasicSearch() throws Exception
+    {
+ 
+@@ -55,9 +60,6 @@
+       // "</D:xpath>" +
+       // "</D:searchrequest>";
+ 
+-      String sql =
+-         "<D:searchrequest xmlns:D='DAV:'>" + "<D:sql>" + "SELECT * FROM  nt:resource WHERE contains(*, 'TEST')"
+-            + "</D:sql>" + "</D:searchrequest>";
+ 
+       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
+       TestUtils.addContent(session, fileName, inputStream, defaultFileNodeType, MediaType.TEXT_PLAIN);
+@@ -70,6 +72,41 @@
+       assertTrue(result.contains(fileName));
+    }
+ 
++   /**
++    * Here we test WebDAV SEARCH method implementation for correct response 
++    * if request contains encoded non-latin characters. We send a request with
++    * corresponding character sequence and expect to receive response containing
++    * 'href' element with URL encoded characters and 'displayname' element containing
++    * non-latin characters.    
++    * @throws Exception
++    */
++   public void testBasicSearchWithNonLatin() throws Exception
++   {
++      // prepare file name, content
++      String encodedfileName = "%e3%81%82%e3%81%84%e3%81%86%e3%81%88%e3%81%8a";
++      String decodedfileName = URLDecoder.decode(encodedfileName, "UTF-8");
++      InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
++      TestUtils.addContent(session, decodedfileName, inputStream, defaultFileNodeType, MediaType.TEXT_PLAIN);
++
++      ContainerResponse response = service(WebDAVMethods.SEARCH, getPathWS(), "", null, sql.getBytes());
++
++      // serialize response entity to string
++      SearchResultResponseEntity entity = (SearchResultResponseEntity)response.getEntity();
++      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
++      entity.write(outputStream);
++      String resp = outputStream.toString();
++
++      System.out.println("=======Search response============");
++      System.out.println(resp);
++      System.out.println("=======Decoded file name==========");
++      System.out.println(decodedfileName);
++      System.out.println("==================================");
++
++      assertTrue(resp.contains(encodedfileName));
++      assertTrue(resp.contains(decodedfileName));
++      
++   }
++
+    @Override
+    protected String getRepositoryName()
+    {
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/xml/PropertyWriteUtil.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/xml/PropertyWriteUtil.java	(revision 4209)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/xml/PropertyWriteUtil.java	(working copy)
+@@ -20,8 +20,6 @@
+ 
+ import org.exoplatform.common.util.HierarchicalProperty;
+ 
+-import java.io.UnsupportedEncodingException;
+-import java.net.URLDecoder;
+ import java.util.HashMap;
+ import java.util.Iterator;
+ import java.util.Map;
+@@ -135,21 +133,8 @@
+          }
+ 
+          writeAttributes(xmlStreamWriter, prop);
++         xmlStreamWriter.writeCharacters(prop.getValue());
+          
+-         if (prop.getName().getLocalPart().equals("displayname") && containsEncodedChar(prop.getValue()))
+-         {
+-            try
+-            {
+-               xmlStreamWriter.writeCharacters(URLDecoder.decode(prop.getValue(), "UTF-8"));
+-            }
+-            catch (UnsupportedEncodingException e)
+-            {
+-               e.printStackTrace();
+-            }
+-         } else {
+-            xmlStreamWriter.writeCharacters(prop.getValue());
+-         }
+-         
+          xmlStreamWriter.writeEndElement();
+       }
+    }
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/resource/CollectionResource.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/resource/CollectionResource.java	(revision 4209)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/resource/CollectionResource.java	(working copy)
+@@ -29,9 +29,7 @@
+ import java.io.InputStream;
+ import java.io.PipedInputStream;
+ import java.io.PipedOutputStream;
+-import java.io.UnsupportedEncodingException;
+ import java.net.URI;
+-import java.net.URLDecoder;
+ import java.util.ArrayList;
+ import java.util.Calendar;
+ import java.util.HashSet;
+@@ -418,10 +416,8 @@
+                writer.writeStartElement(XML_NODE);
+                writer.writeAttribute(PREFIX_XMLNS, PREFIX_LINK);
+                writer.writeAttribute(XLINK_XMLNS, XLINK_LINK);
+-               String itemName = URLDecoder.decode(node.getName(), "UTF-8");
+-               writer.writeAttribute(XML_NAME, itemName);
+-               String itemPath = node.getPath();
+-               writer.writeAttribute(XML_HREF, rootHref + itemPath);
++               writer.writeAttribute(XML_NAME, node.getName());
++               writer.writeAttribute(XML_HREF, rootHref + TextUtil.escape(node.getPath(), '%', true));
+                // add properties
+                for (PropertyIterator pi = node.getProperties(); pi.hasNext();)
+                {
+@@ -437,8 +433,8 @@
+                {
+                   Node childNode = ni.nextNode();
+                   writer.writeStartElement(XML_NODE);
+-                  writer.writeAttribute(XML_NAME, URLDecoder.decode(childNode.getName(), "UTF-8"));
+-                  String childNodeHref = rootHref + URLDecoder.decode(childNode.getPath(), "UTF-8");
++                  writer.writeAttribute(XML_NAME, childNode.getName());
++                  String childNodeHref = rootHref + TextUtil.escape(childNode.getPath(), '%', true);
+                   writer.writeAttribute(XML_HREF, childNodeHref);
+                   writer.writeEndElement();
+                }
+@@ -453,10 +449,6 @@
+             {
+                LOG.error("Error has occured while xml processing : ", e);
+             }
+-            catch (UnsupportedEncodingException e)
+-            {
+-               LOG.warn(e.getMessage());
+-            }
+             finally
+             {
+                try
 Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/propfind/PropFindResponseEntity.java
 ===================================================================
---- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/propfind/PropFindResponseEntity.java	(revision 4188)
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/propfind/PropFindResponseEntity.java	(revision 4209)
 +++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/propfind/PropFindResponseEntity.java	(working copy)
 @@ -32,7 +32,6 @@
  import java.io.OutputStream;
@@ -10,13 +290,54 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
  import java.util.Set;
  
  import javax.jcr.RepositoryException;
-@@ -172,7 +171,8 @@
+@@ -172,7 +171,7 @@
        xmlStreamWriter.writeStartElement("DAV:", "response");
  
        xmlStreamWriter.writeStartElement("DAV:", "href");
 -      String href = URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8");
 +      String href = resource.getIdentifier().toASCIIString();
-+      
        if (resource.isCollection())
        {
           xmlStreamWriter.writeCharacters(href + "/");
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/dasl/SearchResultResponseEntity.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/dasl/SearchResultResponseEntity.java	(revision 4209)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/dasl/SearchResultResponseEntity.java	(working copy)
+@@ -35,7 +35,6 @@
+ import java.io.IOException;
+ import java.io.OutputStream;
+ import java.net.URI;
+-import java.net.URLDecoder;
+ import java.util.HashSet;
+ import java.util.Set;
+ 
+@@ -172,7 +171,7 @@
+             xmlStreamWriter.writeStartElement("DAV:", "response");
+ 
+             xmlStreamWriter.writeStartElement("DAV:", "href");
+-            xmlStreamWriter.writeCharacters(URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8"));
++            xmlStreamWriter.writeCharacters(resource.getIdentifier().toASCIIString());
+             xmlStreamWriter.writeEndElement();
+ 
+             PropstatGroupedRepresentation propstat = new PropstatGroupedRepresentation(resource, properties, false);
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/proppatch/PropPatchResponseEntity.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/proppatch/PropPatchResponseEntity.java	(revision 4209)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/proppatch/PropPatchResponseEntity.java	(working copy)
+@@ -37,7 +37,6 @@
+ import java.io.IOException;
+ import java.io.OutputStream;
+ import java.net.URI;
+-import java.net.URLDecoder;
+ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.List;
+@@ -155,7 +154,7 @@
+ 
+          xmlStreamWriter.writeStartElement("DAV:", "response");
+          xmlStreamWriter.writeStartElement("DAV:", "href");
+-         xmlStreamWriter.writeCharacters(URLDecoder.decode(uri.toASCIIString(), "UTF-8"));
++         xmlStreamWriter.writeCharacters(uri.toASCIIString());
+          xmlStreamWriter.writeEndElement();
+ 
+          Map<String, Set<HierarchicalProperty>> propStats = getPropStat();
