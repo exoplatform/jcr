@@ -174,9 +174,16 @@
       <section>
         <title>How to setup eXo JCR for mutilingial content on MySQL?</title>
 
-        <para>MySQL database should be configured to use single-byte encoding,
-        e.g. "latin1". eXo JCR application (e.g. GateIn) should use JCR
-        dialect "MySQL-UTF8".</para>
+        <para>To allow multiple character sets to be sent from the client, the
+        UTF-8 encoding should be used, either by configuring utf8 as the
+        default server character set, or by configuring the JDBC driver to use
+        UTF-8 through the characterEncoding property. MySQL database should be
+        created in single-byte encoding, e.g. "latin1": </para>
+
+        <programlisting>CREATE DATABASE db1 CHARACTER SET latin1 COLLATE latin1_general_cs;</programlisting>
+
+        <para>eXo JCR application (e.g. GateIn) should use JCR dialect
+        "MySQL-UTF8".</para>
 
         <para>In other words: MySQL database default encoding and JCR dialect
         cannot be UTF8 both. Use single-byte encoding (e.g. "latin1") for
@@ -453,7 +460,7 @@ session.logout();
 
         <itemizedlist>
           <listitem>
-            <para> Remote sites can be visualized as different buildings
+            <para>Remote sites can be visualized as different buildings
             seperated by a WAN network.</para>
           </listitem>
         </itemizedlist>
