@@ -467,7 +467,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                      .info("Index can'b be retrieved from coordinator now, because it is offline. Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
                }
             }
-            
+
             if (!indexCreated)
             {
                if (handler.getIndexRecoveryMode().equals(SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR))
@@ -1289,31 +1289,31 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void close()
    {
-      if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
+
+      // stop index merger
+      // when calling this method we must not lock this MultiIndex, otherwise
+      // a deadlock might occur
+      merger.dispose();
+
+      synchronized (this)
       {
-
-         // stop index merger
-         // when calling this method we must not lock this MultiIndex, otherwise
-         // a deadlock might occur
-         merger.dispose();
-
-         synchronized (this)
+         // stop timer
+         if (flushTask != null)
          {
-            // stop timer
-            if (flushTask != null)
-            {
-               flushTask.cancel();
-            }
+            flushTask.cancel();
+         }
 
-            // commit / close indexes
-            try
-            {
-               releaseMultiReader();
-            }
-            catch (IOException e)
-            {
-               log.error("Exception while closing search index.", e);
-            }
+         // commit / close indexes
+         try
+         {
+            releaseMultiReader();
+         }
+         catch (IOException e)
+         {
+            log.error("Exception while closing search index.", e);
+         }
+         if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
+         {
             try
             {
                flush();
@@ -1322,27 +1322,27 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             {
                log.error("Exception while closing search index.", e);
             }
-            volatileIndex.close();
-            for (int i = 0; i < indexes.size(); i++)
-            {
-               ((PersistentIndex)indexes.get(i)).close();
-            }
-
-            // close indexing queue
-            indexingQueue.close();
-
-            // finally close directory
-            try
-            {
-               indexDir.close();
-            }
-            catch (IOException e)
-            {
-               log.error("Exception while closing directory.", e);
-            }
          }
+         volatileIndex.close();
+         for (int i = 0; i < indexes.size(); i++)
+         {
+            ((PersistentIndex)indexes.get(i)).close();
+         }
+
+         // close indexing queue
+         indexingQueue.close();
+
+         // finally close directory
+         try
+         {
+            indexDir.close();
+         }
+         catch (IOException e)
+         {
+            log.error("Exception while closing directory.", e);
+         }
+         this.stopped = true;
       }
-      this.stopped = true;
    }
 
    /**
