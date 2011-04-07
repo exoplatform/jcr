@@ -350,7 +350,7 @@ public class RepositoryBackupChainLog
 
          if (!PrivilegedFileHelper.exists(configFile))
          {
-            throw new RepositoryRestoreExeption("The backup set is not contains original repositpry configuration : "
+            throw new RepositoryRestoreExeption("The backup set is not contains original repository configuration : "
                      + PrivilegedFileHelper.getCanonicalPath(getBackupConfig().getBackupDir()));
          }
 
