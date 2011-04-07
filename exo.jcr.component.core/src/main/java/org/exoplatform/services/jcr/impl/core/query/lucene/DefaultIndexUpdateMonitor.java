@@ -76,4 +76,12 @@ public class DefaultIndexUpdateMonitor implements IndexUpdateMonitor
       listeners.add(listener);
    }
 
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#removeIndexUpdateMonitorListener(org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener)
+    */
+   public void removeIndexUpdateMonitorListener(IndexUpdateMonitorListener listener)
+   {
+      listeners.remove(listener);
+   }
+
 }

@@ -175,6 +175,14 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
    }
 
    /**
+    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#removeIndexUpdateMonitorListener(org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener)
+    */
+   public void removeIndexUpdateMonitorListener(IndexUpdateMonitorListener listener)
+   {
+      listeners.remove(listener);
+   }
+
+   /**
     * Method will be invoked when a cache entry has been modified only in READ_ONLY mode.
     * 
     * @param event

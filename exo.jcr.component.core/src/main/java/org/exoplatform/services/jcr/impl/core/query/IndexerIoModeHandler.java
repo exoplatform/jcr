@@ -90,4 +90,13 @@ public class IndexerIoModeHandler
    {
       listeners.add(listener);
    }
+   
+   /**
+    * Removes IndexerIoModeListener from the list of listeners
+    * @param listener
+    */
+   public void removeIndexerIoModeListener(IndexerIoModeListener listener)
+   {
+      listeners.remove(listener);
+   }
 }

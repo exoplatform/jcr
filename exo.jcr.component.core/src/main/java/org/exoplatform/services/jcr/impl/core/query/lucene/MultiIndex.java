@@ -28,9 +28,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
-import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.core.query.IndexRecovery;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
@@ -1341,6 +1339,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             log.error("Exception while closing directory.", e);
          }
+         modeHandler.removeIndexerIoModeListener(this);
+         indexUpdateMonitor.removeIndexUpdateMonitorListener(this);
          this.stopped = true;
       }
    }

@@ -180,6 +180,14 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
    }
 
    /**
+    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#removeIndexUpdateMonitorListener(org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener)
+    */
+   public void removeIndexUpdateMonitorListener(IndexUpdateMonitorListener listener)
+   {
+      listeners.remove(listener);
+   }
+
+   /**
     * Called when a node of the cache has been modified. It will be used to trigger events
     * when the value of <code>updateInProgress</code> has been changed remotely
     * @param event the event
