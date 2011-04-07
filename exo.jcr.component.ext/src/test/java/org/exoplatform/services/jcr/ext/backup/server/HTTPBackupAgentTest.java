@@ -68,6 +68,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -1425,7 +1426,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
+               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
                break;
             }
          }
@@ -1553,7 +1554,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
+               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
                break;
             }
          }
@@ -1655,7 +1656,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
+               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
                break;
             }
          }
@@ -1758,7 +1759,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
+               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
                break;
             }
          }
@@ -2512,7 +2513,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
+               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
                break;
             }
          }
@@ -2659,7 +2660,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
+               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
                break;
             }
          }
@@ -2806,7 +2807,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
+               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
                break;
             }
          }
@@ -2907,7 +2908,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
+               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
                break;
             }
          }
