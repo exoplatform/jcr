@@ -3161,35 +3161,4 @@ public class HTTPBackupAgentTest
          }
       }
    }
-
-   public void testStartBackupRepository_OnWin() throws Exception
-   {
-      Session session_db6_ws2 = repositoryService.getRepository("db6").login(credentials, "ws2");
-      assertNotNull(session_db6_ws2);
-
-      session_db6_ws2.getRootNode().addNode("NODE_NAME_TO_TEST");
-      session_db6_ws2.save();
-
-      File f = new File("E:\\data\\exo-working\\temp\\backup");
-
-      BackupConfigBean configBean = new BackupConfigBean(BackupManager.FULL_AND_INCREMENTAL, f.getPath(), 10000l);
-
-      JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
-      JsonValue json = generatorImpl.createJsonObject(configBean);
-
-      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      headers.putSingle("Content-Type", "application/json; charset=UTF-8");
-      ContainerRequestUserRole creq =
-               new ContainerRequestUserRole("POST", new URI(HTTP_BACKUP_AGENT_PATH
-                        + HTTPBackupAgent.Constants.OperationType.START_BACKUP_REPOSITORY + "/db6"), new URI(""),
-                        new ByteArrayInputStream(json.toString().getBytes("UTF-8")), new InputHeadersMap(headers));
-
-      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
-      ContainerResponse cres = new ContainerResponse(responseWriter);
-      handler.handleRequest(creq, cres);
-
-      assertEquals(200, cres.getStatus());
-
-      Thread.sleep(10000);
-   }
 }
