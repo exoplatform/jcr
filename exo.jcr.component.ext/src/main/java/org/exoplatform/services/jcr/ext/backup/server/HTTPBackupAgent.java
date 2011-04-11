@@ -56,8 +56,6 @@ import org.exoplatform.services.rest.resource.ResourceContainer;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +70,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -840,30 +837,13 @@ public class HTTPBackupAgent implements ResourceContainer
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/restore/backup-set/{repo}/{remove-Existing}")
+   @Path("/restore/backup-set/{repo}/{backup-set-path:.*}/{remove-Existing}")
    public Response restoreBackupSet(WorkspaceEntry wEntry, @PathParam("repo") String repository,
-            @QueryParam("backup-set-path") String backupSetPathEncoded, @PathParam("remove-Existing") Boolean removeExisting)
+            @PathParam("backup-set-path") String backupSetPath, @PathParam("remove-Existing") Boolean removeExisting)
    {
       String failMessage;
       Response.Status status;
       Throwable exception;
-
-      String backupSetPath = null;
-
-      try
-      {
-         backupSetPath = URLDecoder.decode(backupSetPathEncoded, "UTF-8");
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         log.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
-                  + "' from backup set '" + backupSetPath + "'", e);
-
-         return Response.status(Response.Status.BAD_REQUEST).entity(
-                  "Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
-                           + "' from backup set '" + backupSetPath + "' : " + e.getMessage())
-                  .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
-      }
 
       try
       {
@@ -1155,28 +1135,13 @@ public class HTTPBackupAgent implements ResourceContainer
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/restore/backup-set/{remove-Existing}")
-   public Response restoreFromBackupSet(@QueryParam("backup-set-path") String backupSetPathEncoded,
+   @Path("/restore/backup-set/{backup-set-path:.*}/{remove-Existing}")
+   public Response restoreFromBackupSet(@PathParam("backup-set-path") String backupSetPath,
             @PathParam("remove-Existing") Boolean removeExisting)
    {
       String failMessage = null;
       Response.Status status = null;
       Throwable exception = null;
-      
-      String backupSetPath = null;
-
-      try
-      {
-         backupSetPath = URLDecoder.decode(backupSetPathEncoded, "UTF-8");
-      }
-      catch (UnsupportedEncodingException e) 
-      {
-         log.error("Can not start restore from backup set '" + backupSetPathEncoded + "'", e);
-
-         return Response.status(Response.Status.BAD_REQUEST).entity(
-                  "Can not start restore from backup set  '" + backupSetPathEncoded + "' : " + e.getMessage()).type(
-                  MediaType.TEXT_PLAIN).cacheControl(noCache).build();
-      }
 
       File backupSetDir = (new File(backupSetPath));
       File backuplog = null;
@@ -1646,31 +1611,14 @@ public class HTTPBackupAgent implements ResourceContainer
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/restore-repository/backup-set/{remove-Existing}")
+   @Path("/restore-repository/backup-set/{backup-set-path:.*}/{remove-Existing}")
    public Response restoreRepositoryBackupSet(RepositoryEntry rEntry,
-            @QueryParam("backup-set-path") String backupSetPathEncoded,
+            @PathParam("backup-set-path") String backupSetPath,
             @PathParam("remove-Existing") Boolean removeExisting)
    {
       String failMessage;
       Response.Status status;
       Throwable exception;
-
-      String backupSetPath = null;
-
-      try
-      {
-         backupSetPath = URLDecoder.decode(backupSetPathEncoded, "UTF-8");
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup set '"
-                  + backupSetPath + "'", e);
-
-         return Response.status(Response.Status.BAD_REQUEST).entity(
-                  "Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup set '"
-                           + backupSetPath + "' : " + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(noCache)
-                  .build();
-      }
 
       try
       {

@@ -52,7 +52,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 import javax.ws.rs.core.Response;
 
@@ -470,13 +469,6 @@ public class BackupClientImpl
       BackupAgentResponse response = null;
       String sURL = null;
 
-      String backupSetPathEncoded = null;
-
-      if (backupSetPath != null)
-      {
-         backupSetPathEncoded = URLEncoder.encode(backupSetPath, "UTF-8");
-      }
-
       if (workspaceName != null)
       {
          if (config != null)
@@ -492,8 +484,7 @@ public class BackupClientImpl
                sURL =
                         path + HTTPBackupAgent.Constants.BASE_URL
                                  + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/"
-                                 + repositoryName
-                                 + "/" + removeExists + "?backup-set-path=" + backupSetPathEncoded;
+                                 + repositoryName + "/" + backupSetPath + "/" + removeExists;
             }
 
             WorkspaceEntry wEntry = null;
@@ -538,7 +529,8 @@ public class BackupClientImpl
                sURL =
                         path + HTTPBackupAgent.Constants.BASE_URL
                                  + HTTPBackupAgent.Constants.OperationType.RESTORE_REPOSITORY_BACKUP_SET + "/"
-                                 + removeExists + "?backup-set-path=" + backupSetPathEncoded;
+                                 + backupSetPath + "/"
+                                 + removeExists;
             }
    
             RepositoryEntry wEntry = null;
@@ -621,8 +613,8 @@ public class BackupClientImpl
          {
             sURL =
                      path + HTTPBackupAgent.Constants.BASE_URL
-                              + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + removeExists
-                              + "?backup-set-path=" + backupSetPathEncoded;
+                              + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + backupSetPath + "/"
+                              + removeExists;
          }
 
          response = transport.executeGET(sURL);

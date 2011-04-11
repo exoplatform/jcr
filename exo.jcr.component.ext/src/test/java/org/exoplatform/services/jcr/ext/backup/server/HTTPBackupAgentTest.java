@@ -68,7 +68,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -1426,7 +1425,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
+               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
                break;
             }
          }
@@ -1473,9 +1472,8 @@ public class HTTPBackupAgentTest
          headers.putSingle("Content-Type", "application/json; charset=UTF-8");
          ContainerRequestUserRole creq =
             new ContainerRequestUserRole("POST", new URI(HTTP_BACKUP_AGENT_PATH
-                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + "db6" + "/" + "true"
-                           + "?backup-set-path=" + backupSetPath), new URI(""), new ByteArrayInputStream(json
-                           .toString().getBytes("UTF-8")),
+               + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + "db6" + "/" + backupSetPath + "/"
+               + "true"), new URI(""), new ByteArrayInputStream(json.toString().getBytes("UTF-8")),
                new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
@@ -1554,7 +1552,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
+               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
                break;
             }
          }
@@ -1577,8 +1575,8 @@ public class HTTPBackupAgentTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
                   new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + "true"
-                           + "?backup-set-path=" + backupSetPath), new URI(""), null, new InputHeadersMap(headers));
+                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + backupSetPath + "/"
+                           + "true"), new URI(""), null, new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
          ContainerResponse cres = new ContainerResponse(responseWriter);
@@ -1656,7 +1654,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
+               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
                break;
             }
          }
@@ -1680,8 +1678,8 @@ public class HTTPBackupAgentTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
                   new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + "false"
-                           + "?backup-set-path=" + backupSetPath), new URI(""), null, new InputHeadersMap(headers));
+                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + backupSetPath + "/"
+                           + "false"), new URI(""), null, new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
          ContainerResponse cres = new ContainerResponse(responseWriter);
@@ -1759,7 +1757,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
+               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
                break;
             }
          }
@@ -1809,7 +1807,7 @@ public class HTTPBackupAgentTest
          ContainerRequestUserRole creq =
                   new ContainerRequestUserRole("POST", new URI(HTTP_BACKUP_AGENT_PATH
                            + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + "db6" + "/"
-                           + "false" + "?backup-set-path=" + backupSetPath), new URI(""), new ByteArrayInputStream(json.toString()
+                           + backupSetPath + "/" + "false"), new URI(""), new ByteArrayInputStream(json.toString()
                            .getBytes("UTF-8")), new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
@@ -2513,7 +2511,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
+               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
                break;
             }
          }
@@ -2581,7 +2579,8 @@ public class HTTPBackupAgentTest
          ContainerRequestUserRole creq =
                   new ContainerRequestUserRole("POST", new URI(HTTP_BACKUP_AGENT_PATH
                            + HTTPBackupAgent.Constants.OperationType.RESTORE_REPOSITORY_BACKUP_SET + "/"
-                           + "true" + "?backup-set-path=" + backupSetPath),
+                           + backupSetPath + "/"
+                           + "true"),
                            new URI(""), new ByteArrayInputStream(json.toString().getBytes("UTF-8")),
                            new InputHeadersMap(headers));
 
@@ -2660,7 +2659,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
+               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
                break;
             }
          }
@@ -2729,7 +2728,7 @@ public class HTTPBackupAgentTest
          ContainerRequestUserRole creq =
                   new ContainerRequestUserRole("POST", new URI(HTTP_BACKUP_AGENT_PATH
                            + HTTPBackupAgent.Constants.OperationType.RESTORE_REPOSITORY_BACKUP_SET + "/"
-                           + "false" + "?backup-set-path=" + backupSetPath), new URI(""), new ByteArrayInputStream(json.toString()
+                           + backupSetPath + "/" + "false"), new URI(""), new ByteArrayInputStream(json.toString()
                            .getBytes("UTF-8")), new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
@@ -2807,7 +2806,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
+               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
                break;
             }
          }
@@ -2830,8 +2829,8 @@ public class HTTPBackupAgentTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
                   new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + "true"
-                           + "?backup-set-path=" + backupSetPath), new URI(""), null, new InputHeadersMap(headers));
+                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + backupSetPath + "/"
+                           + "true"), new URI(""), null, new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
          ContainerResponse cres = new ContainerResponse(responseWriter);
@@ -2908,7 +2907,7 @@ public class HTTPBackupAgentTest
          {
             if (bcl.getBackupId().equals(id))
             {
-               backupSetPath = URLEncoder.encode(bcl.getBackupConfig().getBackupDir().getCanonicalPath(), "UTF-8");
+               backupSetPath = bcl.getBackupConfig().getBackupDir().getCanonicalPath();
                break;
             }
          }
@@ -2932,8 +2931,8 @@ public class HTTPBackupAgentTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
                   new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + "false"
-                           + "?backup-set-path=" + backupSetPath), new URI(""), null, new InputHeadersMap(headers));
+                           + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + backupSetPath + "/"
+                           + "false"), new URI(""), null, new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
          ContainerResponse cres = new ContainerResponse(responseWriter);
