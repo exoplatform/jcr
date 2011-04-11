@@ -52,6 +52,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import javax.ws.rs.core.Response;
 
@@ -469,6 +470,13 @@ public class BackupClientImpl
       BackupAgentResponse response = null;
       String sURL = null;
 
+      String backupSetPathEncoded = null;
+
+      if (backupSetPath != null)
+      {
+         backupSetPathEncoded = URLEncoder.encode(backupSetPath, "UTF-8");
+      }
+
       if (workspaceName != null)
       {
          if (config != null)
@@ -484,7 +492,8 @@ public class BackupClientImpl
                sURL =
                         path + HTTPBackupAgent.Constants.BASE_URL
                                  + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/"
-                                 + repositoryName + "/" + backupSetPath + "/" + removeExists;
+                                 + repositoryName
+                                 + "/" + removeExists + "?backup-set-path=" + backupSetPathEncoded;
             }
 
             WorkspaceEntry wEntry = null;
@@ -529,8 +538,7 @@ public class BackupClientImpl
                sURL =
                         path + HTTPBackupAgent.Constants.BASE_URL
                                  + HTTPBackupAgent.Constants.OperationType.RESTORE_REPOSITORY_BACKUP_SET + "/"
-                                 + backupSetPath + "/"
-                                 + removeExists;
+                                 + removeExists + "?backup-set-path=" + backupSetPathEncoded;
             }
    
             RepositoryEntry wEntry = null;
@@ -613,8 +621,8 @@ public class BackupClientImpl
          {
             sURL =
                      path + HTTPBackupAgent.Constants.BASE_URL
-                              + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + backupSetPath + "/"
-                              + removeExists;
+                              + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + removeExists
+                              + "?backup-set-path=" + backupSetPathEncoded;
          }
 
          response = transport.executeGET(sURL);
