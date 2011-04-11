@@ -487,6 +487,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     *         if renaming is not detected.
     * @throws IllegalPathException
     */
+   @Deprecated
    public ItemState[] findRenamed(QPath deletedPath) throws IllegalPathException
    {
       List<ItemState> allStates = getAllStates();

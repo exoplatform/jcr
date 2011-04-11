@@ -355,7 +355,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
             ItemState itemState =
                new ItemState(newData, prevState.getState(), prevState.isEventFire(), prevState.getAncestorToSave(),
-                  prevState.isInternallyCreated(), prevState.isPersisted());
+                  prevState.isInternallyCreated(), prevState.isPersisted(), prevState.getOldPath());
 
             newLog.add(itemState);
 

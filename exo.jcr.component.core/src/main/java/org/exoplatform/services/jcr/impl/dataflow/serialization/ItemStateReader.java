@@ -22,6 +22,9 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.EOFException;
@@ -94,23 +97,36 @@ public class ItemStateReader
          boolean isPersisted = in.readBoolean();
          boolean eventFire = in.readBoolean();
 
+         QPath oldPath = null;
+         int len = in.readInt();
+         if (len != -1)
+         {
+            byte[] buf = new byte[len];
+            in.readFully(buf);
+            oldPath = QPath.parse(new String(buf, Constants.DEFAULT_ENCODING));
+         }
+
          boolean isNodeData = in.readBoolean();
 
          if (isNodeData)
          {
             PresistedNodeDataReader rdr = new PresistedNodeDataReader();
-            is = new ItemState(rdr.read(in), state, eventFire, null, false, isPersisted);
+            is = new ItemState(rdr.read(in), state, eventFire, null, false, isPersisted, oldPath);
          }
          else
          {
             PersistedPropertyDataReader rdr = new PersistedPropertyDataReader(fileCleaner, maxBufferSize, holder);
-            is = new ItemState(rdr.read(in), state, eventFire, null, false, isPersisted);
+            is = new ItemState(rdr.read(in), state, eventFire, null, false, isPersisted, oldPath);
          }
          return is;
       }
       catch (EOFException e)
       {
          throw new StreamCorruptedException("Unexpected EOF in middle of data block.");
+      }
+      catch (IllegalPathException e)
+      {
+         throw new IOException("Data corrupted", e);
       }
    }
 }

@@ -32,6 +32,8 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -43,10 +45,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
-import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -1885,6 +1887,68 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                // MOVE operation (DESTENATION changes, same as ADDED), states for whole subtree!
                // RENAME goes before DELETE
                put(item);
+            }
+            else if (state.isPathChanged())
+            {
+               writeLock.lock();
+               try
+               {
+                  for (Entry<CacheKey, CacheValue> cacheEntry : cache.entrySet())
+                  {
+                     CacheKey cacheKey = cacheEntry.getKey();
+                     CacheValue cacheValue = cacheEntry.getValue();
+
+                     ItemData oldItemData = cacheValue.getItem();
+                     if (oldItemData.getQPath().isDescendantOf(state.getOldPath()))
+                     {
+                        int relativeDegree = oldItemData.getQPath().getDepth() - state.getOldPath().getDepth();
+                        QPath newQPath =
+                           QPath.makeChildPath(state.getData().getQPath(),
+                              oldItemData.getQPath().getRelPath(relativeDegree));
+
+                        if (oldItemData.isNode())
+                        {
+                           NodeData nodeData = (NodeData)oldItemData;
+                           TransientNodeData newItemData =
+                              new TransientNodeData(newQPath, nodeData.getIdentifier(), nodeData.getPersistedVersion(),
+                                 nodeData.getPrimaryTypeName(), nodeData.getMixinTypeNames(),
+                                 nodeData.getOrderNumber(), nodeData.getParentIdentifier(), nodeData.getACL());
+                           cache.put(cacheKey, new CacheValue(newItemData, cacheValue.getExpiredTime()));
+
+                           // update in children nodes 
+                           List<NodeData> cachedChildNodes = nodesCache.get(nodeData.getParentIdentifier());
+                           if (cachedChildNodes != null)
+                           {
+                              int index = cachedChildNodes.indexOf(oldItemData);
+                              cachedChildNodes.set(index, newItemData);
+                           }
+                        }
+                        else
+                        {
+                           PropertyData oldPropertyData = (PropertyData)oldItemData;
+                           TransientPropertyData newPropertyData =
+                              new TransientPropertyData(newQPath, oldPropertyData.getIdentifier(),
+                                 oldPropertyData.getPersistedVersion(), oldPropertyData.getType(),
+                                 oldPropertyData.getParentIdentifier(), oldPropertyData.isMultiValued(),
+                                 oldPropertyData.getValues());
+                           cache.put(cacheKey, new CacheValue(newPropertyData, cacheValue.getExpiredTime()));
+
+                           // update in children properties 
+                           List<PropertyData> cachedChildProps =
+                              propertiesCache.get(oldPropertyData.getParentIdentifier());
+                           if (cachedChildProps != null)
+                           {
+                              int index = cachedChildProps.indexOf(oldItemData);
+                              cachedChildProps.set(index, newPropertyData);
+                           }
+                        }
+                     }
+                  }
+               }
+               finally
+               {
+                  writeLock.unlock();
+               }
             }
             else if (state.isUpdated())
             {

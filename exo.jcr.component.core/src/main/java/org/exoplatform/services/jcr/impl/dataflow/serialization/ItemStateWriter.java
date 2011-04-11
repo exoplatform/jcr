@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.impl.Constants;
 
 import java.io.IOException;
 
@@ -57,6 +58,17 @@ public class ItemStateWriter
       out.writeInt(itemState.getState());
       out.writeBoolean(itemState.isPersisted());
       out.writeBoolean(itemState.isEventFire());
+
+      if (itemState.getOldPath() == null)
+      {
+         out.writeInt(-1);
+      }
+      else
+      {
+         byte[] buf = itemState.getOldPath().getAsString().getBytes(Constants.DEFAULT_ENCODING);
+         out.writeInt(buf.length);
+         out.write(buf);
+      }
 
       // write flag isNodeData and ItemData
       ItemData data = itemState.getData();

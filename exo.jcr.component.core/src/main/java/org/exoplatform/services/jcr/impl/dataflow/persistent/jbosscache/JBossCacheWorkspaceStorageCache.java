@@ -554,6 +554,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             {
                putItem(state.getData());
             }
+            else if (state.isPathChanged())
+            {
+               updateTreePath(state.getOldPath(), state.getData().getQPath(), null);
+            }
             else if (state.isMixinChanged())
             {
                if (state.isPersisted())

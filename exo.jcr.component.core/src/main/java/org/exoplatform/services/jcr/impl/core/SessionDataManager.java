@@ -1851,7 +1851,7 @@ public class SessionDataManager implements ItemDataConsumer
             continue;
          }
 
-         if (rstate.getState() == ItemState.RENAMED)
+         if (rstate.isRenamed())
          {
             // find DELETED
             rstate = changes.findItemState(rstate.getData().getIdentifier(), false, new int[]{ItemState.DELETED});
