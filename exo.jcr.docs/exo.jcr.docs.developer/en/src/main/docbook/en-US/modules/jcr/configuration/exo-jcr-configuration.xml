@@ -251,6 +251,21 @@
     <para><emphasis role="bold">properties</emphasis>: The list of properties
     (name-value pairs) for the concrete Workspace data container.</para>
 
+    <table>
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>trigger_events_for_descendents_on_rename</entry>
+
+            <entry>indicates if need to trigger events for descendents on
+            rename or not. It allows to increase performance on rename
+            operation but in same time Observation'll not notified, has
+            default value true</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
     <para><emphasis role="bold">value-storages</emphasis>: The list of value
     storage plugins.</para>
   </section>
