@@ -212,7 +212,7 @@ public final class SessionRegistry implements Startable
       {
          super(workTime);
          this.sessionTimeOut = sessionTimeOut;
-         setName("SessionCleaner " + (id == null ? getId() : id));
+         setName("Session Cleaner " + (id == null ? getId() : id));
          setPriority(Thread.MIN_PRIORITY);
          setDaemon(true);
          start();

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.util.io;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -50,9 +51,19 @@ public class FileCleaner extends WorkerThread
       this(DEFAULT_TIMEOUT);
    }
 
+   public FileCleaner(ExoContainerContext ctx)
+   {
+      this(null, ctx, DEFAULT_TIMEOUT);
+   }
+
    public FileCleaner(long timeout)
    {
       this(timeout, true);
+   }
+
+   public FileCleaner(String prefix, ExoContainerContext ctx, long timeout)
+   {
+      this(ctx == null ? prefix : (prefix == null ? "" : prefix + " ") + ctx.getName(), timeout, true);
    }
 
    public FileCleaner(boolean start)
@@ -62,8 +73,13 @@ public class FileCleaner extends WorkerThread
 
    public FileCleaner(long timeout, boolean start)
    {
+      this(null, timeout, start);
+   }
+   
+   public FileCleaner(String id, long timeout, boolean start)
+   {
       super(timeout);
-      setName("FileCleaner " + getId());
+      setName("File Cleaner " + (id == null ? getId() : id));
       setDaemon(true);
       setPriority(Thread.MIN_PRIORITY);
 

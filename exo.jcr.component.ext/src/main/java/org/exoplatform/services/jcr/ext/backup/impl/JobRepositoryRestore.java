@@ -117,6 +117,7 @@ public class JobRepositoryRestore extends Thread
       RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping,
       RepositoryBackupChainLog backupChainLog)
    {
+      super("JobRepositoryRestore " + repositoryEntry.getName());
       this.repositoryService = repoService;
       this.backupManager = backupManagerImpl;
       this.repositoryEntry = repositoryEntry;

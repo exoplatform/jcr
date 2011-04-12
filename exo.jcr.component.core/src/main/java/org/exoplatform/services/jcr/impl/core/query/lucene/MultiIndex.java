@@ -197,7 +197,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * Timer to schedule flushes of this index after some idle time.
     */
-   private static final Timer FLUSH_TIMER = new Timer(true);
+   private static final Timer FLUSH_TIMER = new Timer("MultiIndex Flush Timer", true);
 
    /**
     * Task that is periodically called by {@link #FLUSH_TIMER} and checks if
@@ -253,6 +253,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private final IndexerIoModeHandler modeHandler;
 
    /**
+    * The unique id of the workspace corresponding to this multi index
+    */
+    final String workspaceId;
+   
+   /**
     * Creates a new MultiIndex.
     * 
     * @param handler
@@ -272,6 +277,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // this method is run in privileged mode internally
       this.indexDir = directoryManager.getDirectory(".");
       this.handler = handler;
+      this.workspaceId = handler.getWsId();
       this.cache = new DocNumberCache(handler.getCacheSize());
       this.indexingTree = indexingTree;
       this.nsMappings = handler.getNamespaceMappings();

@@ -108,7 +108,7 @@ class IndexMerger extends Thread implements IndexListener
    IndexMerger(MultiIndex multiIndex)
    {
       this.multiIndex = multiIndex;
-      setName("IndexMerger");
+      setName("Index Merger" + (multiIndex.workspaceId == null ? "" : " " + multiIndex.workspaceId));
       setDaemon(true);
       try
       {

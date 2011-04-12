@@ -311,7 +311,7 @@ public class BackupChainImpl implements BackupChain
          }
          else
          {
-            Thread starter = new Thread()
+            Thread starter = new Thread("IncrementalBackup Starter")
             {
                @Override
                public void run()

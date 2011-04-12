@@ -22,6 +22,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -208,7 +209,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    private final WorkspaceBackupAutoStopper workspaceBackupStopper;
 
    private final RepositoryBackupAutoStopper repositoryBackupStopper;
-
+   
    /**
     * Temporary directory;
     */
@@ -309,6 +310,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    class WorkspaceBackupAutoStopper extends Thread
    {
 
+      WorkspaceBackupAutoStopper(ExoContainerContext ctx)
+      {
+         super("WorkspaceBackupAutoStopper" + (ctx == null ? "" : " " + ctx.getName()));
+      }
+      
       /**
        * {@inheritDoc}
        */
@@ -358,6 +364,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
    class RepositoryBackupAutoStopper extends Thread
    {
+
+      RepositoryBackupAutoStopper(ExoContainerContext ctx)
+      {
+         super("RepositoryBackupAutoStopper" + (ctx == null ? "" : " " + ctx.getName()));
+      }
 
       /**
        * {@inheritDoc}
@@ -410,7 +421,20 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public BackupManagerImpl(InitParams initParams, RepositoryService repoService)
    {
-      this(initParams, repoService, null);
+      this(null, initParams, repoService, null);
+   }
+
+   /**
+    * BackupManagerImpl  constructor.
+    *
+    * @param initParams
+    *          InitParams,  the init parameters
+    * @param repoService
+    *          RepositoryService, the repository service
+    */
+   public BackupManagerImpl(ExoContainerContext ctx, InitParams initParams, RepositoryService repoService)
+   {
+      this(ctx, initParams, repoService, null);
    }
 
    /**
@@ -424,7 +448,20 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public BackupManagerImpl(InitParams initParams, RepositoryService repoService, RegistryService registryService)
    {
-
+      this(null, initParams, repoService, registryService);
+   }
+   
+   /**
+    * BackupManagerImpl  constructor.
+    *
+    *          InitParams,  the init parameters
+    * @param repoService
+    *          RepositoryService, the repository service
+    * @param registryService
+    *          RegistryService, the registry service
+    */
+   public BackupManagerImpl(ExoContainerContext ctx, InitParams initParams, RepositoryService repoService, RegistryService registryService)
+   {
       this.messagesListener = new MessagesListener();
       this.repoService = repoService;
       this.registryService = registryService;
@@ -457,13 +494,13 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       this.restoreJobs = new ArrayList<JobWorkspaceRestore>();
       this.restoreRepositoryJobs = new ArrayList<JobRepositoryRestore>();
 
-      this.workspaceBackupStopper = new WorkspaceBackupAutoStopper();
+      this.workspaceBackupStopper = new WorkspaceBackupAutoStopper(ctx);
       this.workspaceBackupStopper.start();
 
-      this.repositoryBackupStopper = new RepositoryBackupAutoStopper();
+      this.repositoryBackupStopper = new RepositoryBackupAutoStopper(ctx);
       this.repositoryBackupStopper.start();
    }
-
+   
    /**
     * {@inheritDoc}
     */

@@ -392,6 +392,7 @@ public class RemoteWorkspaceInitializationService implements ResourceContainer
        */
       public WorkspaceDataPublisher(BackupChain chain, RemoteTransport transport)
       {
+         super("WorkspaceDataPublisher");
          this.backupChain = chain;
          this.transport = transport;
       }

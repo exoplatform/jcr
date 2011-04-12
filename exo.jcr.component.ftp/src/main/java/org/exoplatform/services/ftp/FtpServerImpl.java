@@ -219,6 +219,7 @@ public class FtpServerImpl implements FtpServer
       {
          this.ftpServer = ftpServer;
          this.serverSocket = serverSocket;
+         setName("Ftp Server" + (configuration.getPortalContainer() == null ? "" : " " + configuration.getPortalContainer().getName()));
          setDaemon(true);
       }
 

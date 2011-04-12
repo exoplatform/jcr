@@ -22,6 +22,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -180,6 +181,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected final String wsId;
 
    /**
+    * The unique name of the workspace container
+    */
+   protected final String wsContainerId;
+
+   /**
     * Component responsible for executing commands in cluster nodes.
     */
    protected final RPCService rpcService;
@@ -214,19 +220,21 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    private RemoteCommand requestForResponsibleForResuming;
 
-   public SearchManager(WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
+   public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
       QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
       throws RepositoryException, RepositoryConfigurationException
    {
-      this(wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, parentSearchManager, extractor, cfm,
+      this(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, parentSearchManager, extractor, cfm,
          indexSearcherHolder, null);
    }
 
    /**
     * Creates a new <code>SearchManager</code>.
     * 
+    * @param ctx
+    *            The eXo Container context in which the SearchManager is registered
     * @param rEntry
     *            repository configuration
     * @param rService
@@ -253,13 +261,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     *             if the search manager cannot be initialized
     * @throws RepositoryConfigurationException
     */
-   public SearchManager(WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
+   public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
       QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm,
       final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
       RepositoryConfigurationException
    {
+      this.wsContainerId = ctx.getName();
       this.rpcService = rpcService;
       this.repositoryName = rEntry.getName();
       this.workspaceName = wEntry.getName();
@@ -863,8 +872,18 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       try
       {
          Class qHandlerClass = Class.forName(className, true, this.getClass().getClassLoader());
-         Constructor constuctor = qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
-         handler = (QueryHandler)constuctor.newInstance(config, cfm);
+         try
+         {
+            // We first try a constructor with the workspace id
+            Constructor constuctor = qHandlerClass.getConstructor(String.class, QueryHandlerEntry.class, ConfigurationManager.class);
+            handler = (QueryHandler)constuctor.newInstance(wsContainerId, config, cfm);
+         }
+         catch (NoSuchMethodException e)
+         {
+            // No constructor with the workspace id can be found so we use the default constructor
+            Constructor constuctor = qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
+            handler = (QueryHandler)constuctor.newInstance(config, cfm);
+         }
          QueryHandler parentHandler = (this.parentSearchManager != null) ? parentSearchManager.getHandler() : null;
          QueryHandlerContext context = createQueryHandlerContext(parentHandler);
          handler.setContext(context);

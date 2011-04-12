@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.impl.proccess.WorkerService;
 
@@ -39,21 +40,30 @@ public class LockRemoverHolder
     */
    private final WorkerService workerService;
 
+
    /**
     * Constructor.
     * @param entry - RepositoryEntry that may contain lock-remover-max-threads parameter.
     */
    public LockRemoverHolder(RepositoryEntry entry)
    {
+      this(null, entry);
+   }
+   
+   /**
+    * Constructor.
+    * @param ctx - The {@link ExoContainerContext} in which the {@link LockRemoverHolder}
+    * is registered
+    * @param entry - RepositoryEntry that may contain lock-remover-max-threads parameter.
+    */
+   public LockRemoverHolder(ExoContainerContext ctx, RepositoryEntry entry)
+   {
       int threadCount = DEFAULT_THREAD_COUNT;
-      if (entry != null)
+      if (entry != null && entry.getLockRemoverThreadsCount() > 0)
       {
-         if (entry.getLockRemoverThreadsCount() > 0)
-         {
-            threadCount = entry.getLockRemoverThreadsCount();
-         }
+         threadCount = entry.getLockRemoverThreadsCount();
       }
-      workerService = new WorkerService(threadCount, "lock-remover-" + entry.getName());
+      workerService = new WorkerService(threadCount, "Lock Remover " + (ctx != null ? ctx.getName() : (entry == null ? "" : entry.getName())));
    }
 
    /**

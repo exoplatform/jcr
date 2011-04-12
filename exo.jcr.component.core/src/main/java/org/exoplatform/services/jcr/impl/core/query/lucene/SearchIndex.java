@@ -482,6 +482,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    private ErrorLog errorLog;
 
+   /**
+    * The unique id of the workspace corresponding to current instance of {@link SearchIndex}
+    */
+   private final String wsId;
+   
    private final ConfigurationManager cfm;
 
    /**
@@ -515,15 +520,26 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * @throws RepositoryConfigurationException
     * @throws IOException
     */
-   public SearchIndex(QueryHandlerEntry queryHandlerConfig, ConfigurationManager cfm) throws IOException,
+   public SearchIndex(String wsId, QueryHandlerEntry queryHandlerConfig, ConfigurationManager cfm) throws IOException,
       RepositoryConfigurationException
    {
+      this.wsId = wsId;
       this.analyzer = new JcrStandartAnalyzer();
-      // this.queryHandlerConfig = new QueryHandlerEntryWrapper(
-      // queryHandlerConfig);
       this.cfm = cfm;
       SearchIndexConfigurationHelper searchIndexConfigurationHelper = new SearchIndexConfigurationHelper(this);
       searchIndexConfigurationHelper.init(queryHandlerConfig);
+   }
+
+   /**
+    * Working constructor.
+    * 
+    * @throws RepositoryConfigurationException
+    * @throws IOException
+    */
+   public SearchIndex(QueryHandlerEntry queryHandlerConfig, ConfigurationManager cfm) throws IOException,
+      RepositoryConfigurationException
+   {
+      this(null, queryHandlerConfig, cfm);
    }
 
    /**
@@ -532,8 +548,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public SearchIndex()
    {
       this.analyzer = new JcrStandartAnalyzer();
-      // this.queryHandlerConfig = null;
       this.cfm = null;
+      this.wsId = null;
    }
 
    /**
@@ -700,6 +716,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
 
       modeHandler.addIndexerIoModeListener(this);
+   }   
+   
+   /**
+    * @return the wsId
+    */
+   public String getWsId()
+   {
+      return wsId;
    }
 
    private void reindex(boolean doReindexing, boolean doCheck, ItemDataConsumer itemStateManager) throws IOException

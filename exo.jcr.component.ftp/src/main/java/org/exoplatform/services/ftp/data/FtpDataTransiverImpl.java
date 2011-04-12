@@ -209,6 +209,11 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
    protected class AcceptDataConnect extends Thread
    {
 
+      public AcceptDataConnect()
+      {
+         super("AcceptDataConnect" + (configuration.getPortalContainer() == null ? "" : " " + configuration.getPortalContainer().getName()));
+      }
+      
       protected Log acceptLog = ExoLogger.getLogger("jcr.AcceptDataConnect");
 
       @Override
@@ -236,6 +241,11 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
 
    protected class ConnectDataPort extends Thread
    {
+
+      public ConnectDataPort()
+      {
+         super("ConnectDataPort" + (configuration.getPortalContainer() == null ? "" : " " + configuration.getPortalContainer().getName()));
+      }
 
       protected Log connectLog = ExoLogger.getLogger("jcr.ConnectDataPort");
 

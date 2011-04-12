@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
+import org.exoplatform.container.ExoContainerContext;
+
 /**
  * Created by The eXo Platform SAS. <br/> per workspace container file cleaner holder object
  * 
@@ -31,7 +33,12 @@ public class FileCleanerHolder
 
    public FileCleanerHolder()
    {
-      this.fileCleaner = new FileCleaner();
+      this(null);
+   }
+
+   public FileCleanerHolder(ExoContainerContext ctx)
+   {
+      this.fileCleaner = new FileCleaner(ctx);
    }
 
    public FileCleaner getFileCleaner()

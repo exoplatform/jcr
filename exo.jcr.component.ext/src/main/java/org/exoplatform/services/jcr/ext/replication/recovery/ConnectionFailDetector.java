@@ -310,6 +310,11 @@ public class ConnectionFailDetector implements StateListener
        */
       private final ConcurrentLinkedQueue<Integer> queue = new ConcurrentLinkedQueue<Integer>();
 
+      public ViewChecker()
+      {
+         super("ViewChecker");
+      }
+      
       /**
        * putView.
        *
@@ -368,6 +373,7 @@ public class ConnectionFailDetector implements StateListener
        */
       public ReconectTtread(boolean isStop)
       {
+         super("ReconectTtread");
          log.info("Thread '" + getName() + "' is init ...");
          this.isStop = isStop;
       }

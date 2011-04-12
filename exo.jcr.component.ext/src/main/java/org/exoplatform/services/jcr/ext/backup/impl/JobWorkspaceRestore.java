@@ -134,6 +134,7 @@ public class JobWorkspaceRestore extends Thread
    public JobWorkspaceRestore(RepositoryService repositoryService, BackupManager backupManager, String repositoryName,
       BackupChainLog log, WorkspaceEntry wEntry)
    {
+      super("JobWorkspaceRestore " + wEntry.getUniqueName());
       this.repositoryService = repositoryService;
       this.backupManager = backupManager;
       this.repositoryName = repositoryName;

@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -61,22 +62,22 @@ public class SystemSearchManager extends SearchManager
 
    public static final String INDEX_DIR_SUFFIX = "system";
 
-   public SystemSearchManager(WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
+   public SystemSearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
       QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
       RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
       RepositoryConfigurationException
    {
-      super(wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder,
+      super(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder,
          rpcService);
    }
 
-   public SystemSearchManager(WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
+   public SystemSearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
       QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
       RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException, RepositoryConfigurationException
    {
-      this(wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, service, cfm, indexSearcherHolder, null);
+      this(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, service, cfm, indexSearcherHolder, null);
    }
 
    @Override
