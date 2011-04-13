@@ -41,6 +41,21 @@ import java.util.List;
 @NameTemplate(@Property(key = "service", value = "RepositorySuspendController"))
 public class RepositorySuspendController implements Startable
 {
+   /**
+    * Repository ONLINE status.
+    */
+   private final String ONLINE = "online";
+
+   /**
+    * Repository SUSPENDED state.
+    */
+   private final String SUSPENDED = "suspended";
+
+   /**
+    * Undefined state. 
+    */
+   public final String UNDEFINED = "undefined";
+
    private final ManageableRepository repository;
 
    /**
@@ -63,7 +78,7 @@ public class RepositorySuspendController implements Startable
     */
    @Managed
    @ManagedDescription("Suspend repository which means that allow only read operations. All writing threads will wait until resume operations invoked.")
-   public int suspend()
+   public String suspend()
    {
       for (Suspendable component : getSuspendableComponents())
       {
@@ -87,7 +102,7 @@ public class RepositorySuspendController implements Startable
     */
    @Managed
    @ManagedDescription("Resume repository. All previously suspended threads continue working.")
-   public int resume()
+   public String resume()
    {
       List<Suspendable> components = getSuspendableComponents();
       Collections.reverse(components);
@@ -115,9 +130,9 @@ public class RepositorySuspendController implements Startable
     */
    @Managed
    @ManagedDescription("Returns repository state.")
-   public int getState()
+   public String getState()
    {
-      int state = ManageableRepository.ONLINE;
+      String state = ONLINE;
       
       boolean hasSuspendedComponents = false;
       boolean hasOnlineComponents = false;
@@ -130,17 +145,17 @@ public class RepositorySuspendController implements Startable
 
             if (hasOnlineComponents)
             {
-               return ManageableRepository.UNDEFINED;
+               return UNDEFINED;
             }
 
-            state = ManageableRepository.SUSPENDED;
+            state = SUSPENDED;
          }
          else
          {
             hasOnlineComponents = true;
             if (hasSuspendedComponents)
             {
-               return ManageableRepository.UNDEFINED;
+               return UNDEFINED;
             }
          }
       }
