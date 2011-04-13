@@ -121,7 +121,7 @@
   <xi:include href="jcr/backup/backup-client.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />    
 
-  <xi:include href="jcr/backup/search-index-backup.xml"
+  <xi:include href="jcr/backup/use-external-backup-tool.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />    
 
   <!-- other  -->
