@@ -594,10 +594,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          }
 
          cache.setLocal(true);
-         // remove previous all (to be sure about consistency)
-         //TODO do we need remove node, while we can replace node?
-         cache.removeNode(makeChildListFqn(childNodesList, parent.getIdentifier()));
-
          if (childs.size() > 0)
          {
             Set<Object> set = new HashSet<Object>();
@@ -606,12 +602,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                putNode(child, ModifyChildOption.NOT_MODIFY);
                set.add(child.getIdentifier());
             }
-            cache.put(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, set);
+            cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, set);
          }
          else
          {
             // cache fact of empty childs list
-            cache.put(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, new HashSet<Object>());
+            cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, new HashSet<Object>());
          }
       }
       finally
@@ -637,9 +633,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             cache.beginTransaction();
          }
          cache.setLocal(true);
-         // remove previous all (to be sure about consistency)
-         //TODO do we need remove node, while we can replace node?
-         cache.removeNode(makeChildListFqn(childPropsList, parent.getIdentifier()));
          if (childs.size() > 0)
          {
             // add all new
@@ -649,7 +642,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                putProperty(child, ModifyChildOption.NOT_MODIFY);
                set.add(child.getIdentifier());
             }
-            cache.put(makeChildListFqn(childPropsList, parent.getIdentifier()), ITEM_LIST, set);
+            cache.putIfAbsent(makeChildListFqn(childPropsList, parent.getIdentifier()), ITEM_LIST, set);
 
          }
          else
@@ -872,16 +865,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
          cache.setLocal(true);
 
-         // remove previous all
-         cache.removeNode(makeRefFqn(identifier));
-
          Set<Object> set = new HashSet<Object>();
          for (PropertyData prop : refProperties)
          {
             putProperty(prop, ModifyChildOption.NOT_MODIFY);
             set.add(prop.getIdentifier());
          }
-         cache.put(makeRefFqn(identifier), ITEM_LIST, set);
+         cache.putIfAbsent(makeRefFqn(identifier), ITEM_LIST, set);
       }
       finally
       {
@@ -1077,8 +1067,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       if (node.getParentIdentifier() != null)
       {
          // add in CHILD_NODES
-         cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
-            .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+         cache.put(
+            makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
+               .getEntries().length - 1]), ITEM_ID, node.getIdentifier(),
+            modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
 
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
@@ -1088,7 +1080,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       }
 
       // add in ITEMS
-      return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+      return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node, modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
    }
 
    /**
@@ -1110,20 +1102,20 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          if (!item.getIdentifier().equals(NullItemData.NULL_ID))
          {
             //put in $ITEMS
-            cache.put(makeItemFqn(item.getIdentifier()), ITEM_DATA, item);
+            cache.putIfAbsent(makeItemFqn(item.getIdentifier()), ITEM_DATA, item);
          }
          else if (item.getName() != null && item.getParentIdentifier() != null)
          {
             if (item.isNode())
             {
                // put in $CHILD_NODES
-               cache.put(makeChildFqn(childNodes, item.getParentIdentifier(), item.getName()), ITEM_ID,
+               cache.putIfAbsent(makeChildFqn(childNodes, item.getParentIdentifier(), item.getName()), ITEM_ID,
                   NullItemData.NULL_ID);
             }
             else
             {
                // put in $CHILD_PROPERTIES
-               cache.put(makeChildFqn(childProps, item.getParentIdentifier(), item.getName()), ITEM_ID,
+               cache.putIfAbsent(makeChildFqn(childProps, item.getParentIdentifier(), item.getName()), ITEM_ID,
                   NullItemData.NULL_ID);
             }
          }
@@ -1170,7 +1162,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       // add in CHILD_PROPS
       cache.put(makeChildFqn(childProps, prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath()
-         .getEntries().length - 1]), ITEM_ID, prop.getIdentifier());
+         .getEntries().length - 1]), ITEM_ID, prop.getIdentifier(), modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
 
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
       {
@@ -1206,7 +1198,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
       // add in ITEMS
       // NullItemData must never be returned inside internal cache operations. 
-      ItemData returnedData = (ItemData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop);
+      ItemData returnedData = (ItemData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop, modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
       return (returnedData instanceof NullItemData) ? null : (PropertyData)returnedData;
    }
 
@@ -1279,9 +1271,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    }
 
    /**
-    * Update Node hierachy in case of same-name siblings reorder.
-    * Assumes the new (updated) nodes already putted in the cache. Previous name of updated nodes will be calculated
-    * and that node will be deleted (if has same id as the new node). Childs paths will be updated to a new node path.
+    * Update Node hierarchy in case of same-name siblings reorder.
+    * Assumes the new (updated) nodes already put in the cache. Previous name of updated nodes will be calculated
+    * and that node will be deleted (if has same id as the new node). Children paths will be updated to a new node path.
     *
     * @param node NodeData
     * @param prevNode NodeData
@@ -1477,15 +1469,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    protected void updateChildsACL(final String parentId, final AccessControlList acl)
    {
-      for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
+      loop: for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
       {
          NodeData prevNode = iter.next();
-         // is ACL changes on this node (i.e. ACL inheritance brokes)
+         // is ACL changes on this node (i.e. ACL inheritance broken)
          for (InternalQName mixin : prevNode.getMixinTypeNames())
          {
             if (mixin.equals(Constants.EXO_PRIVILEGEABLE) || mixin.equals(Constants.EXO_OWNEABLE))
             {
-               continue;
+               continue loop;
             }
          }
          // recreate with new path for child Nodes only

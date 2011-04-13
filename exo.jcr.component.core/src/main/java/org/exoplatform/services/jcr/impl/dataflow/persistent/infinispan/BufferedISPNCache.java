@@ -29,7 +29,6 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.util.concurrent.NotifyingFuture;
 
-import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
@@ -49,12 +48,12 @@ import javax.transaction.TransactionManager;
  * 
  */
 @SuppressWarnings("unchecked")
-public class BufferedISPNCache implements Cache<Serializable, Object>
+public class BufferedISPNCache implements Cache<CacheKey, Object>
 {
    /**
     * Parent cache.
     */
-   private final AdvancedCache<Serializable, Object> parentCache;
+   private final AdvancedCache<CacheKey, Object> parentCache;
 
    private final ThreadLocal<CompressedISPNChangesBuffer> changesList = new ThreadLocal<CompressedISPNChangesBuffer>();
 
@@ -80,7 +79,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
 
       protected final ChangesType changesType;
 
-      protected final AdvancedCache<Serializable, Object> cache;
+      protected final AdvancedCache<CacheKey, Object> cache;
 
       protected final int historicalIndex;
 
@@ -88,7 +87,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
 
       private final Boolean allowLocalChanges;
 
-      public ChangesContainer(CacheKey key, ChangesType changesType, AdvancedCache<Serializable, Object> cache,
+      public ChangesContainer(CacheKey key, ChangesType changesType, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean localMode, Boolean allowLocalChanges)
       {
          this.key = key;
@@ -170,7 +169,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    {
       private final Object value;
 
-      public PutObjectContainer(CacheKey key, Object value, AdvancedCache<Serializable, Object> cache,
+      public PutObjectContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
          super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
@@ -185,6 +184,30 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
          cache.put(key, value);
       }
    }
+   
+
+   /**
+    * Put object if absent container
+    */
+   public static class PutObjectIfAbsentContainer extends ChangesContainer
+   {
+      private final Object value;
+
+      public PutObjectIfAbsentContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
+         int historicalIndex, boolean local, Boolean allowLocalChanges)
+      {
+         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
+
+         this.value = value;
+      }
+
+      @Override
+      public void apply()
+      {
+         setCacheLocalMode();
+         cache.putIfAbsent(key, value);
+      }
+   }   
 
    /**
     * It tries to get Set by given key. If it is Set then adds new value and puts new set back. If
@@ -196,7 +219,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
 
       private final boolean forceModify;
 
-      public AddToListContainer(CacheKey key, Object value, AdvancedCache<Serializable, Object> cache,
+      public AddToListContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
          boolean forceModify, int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
          super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
@@ -242,7 +265,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    {
       private final Object value;
 
-      public RemoveFromListContainer(CacheKey key, Object value, AdvancedCache<Serializable, Object> cache,
+      public RemoveFromListContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
          super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
@@ -275,7 +298,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
     */
    public static class RemoveObjectContainer extends ChangesContainer
    {
-      public RemoveObjectContainer(CacheKey key, AdvancedCache<Serializable, Object> cache, int historicalIndex,
+      public RemoveObjectContainer(CacheKey key, AdvancedCache<CacheKey, Object> cache, int historicalIndex,
          boolean local, Boolean allowLocalChanges)
       {
          super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
@@ -289,7 +312,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
       }
    }
 
-   public BufferedISPNCache(Cache<Serializable, Object> parentCache, Boolean allowLocalChanges)
+   public BufferedISPNCache(Cache<CacheKey, Object> parentCache, Boolean allowLocalChanges)
    {
       this.parentCache = parentCache.getAdvancedCache();
       this.allowLocalChanges = allowLocalChanges;
@@ -322,7 +345,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Set<java.util.Map.Entry<Serializable, Object>> entrySet()
+   public Set<java.util.Map.Entry<CacheKey, Object>> entrySet()
    {
       return parentCache.entrySet();
    }
@@ -330,7 +353,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public void evict(Serializable key)
+   public void evict(CacheKey key)
    {
       parentCache.evict(key);
    }
@@ -338,7 +361,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public AdvancedCache<Serializable, Object> getAdvancedCache()
+   public AdvancedCache<CacheKey, Object> getAdvancedCache()
    {
       return parentCache.getAdvancedCache();
    }
@@ -386,7 +409,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Set<Serializable> keySet()
+   public Set<CacheKey> keySet()
    {
       return parentCache.keySet();
    }
@@ -394,7 +417,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Object put(Serializable key, Object value, long lifespan, TimeUnit unit)
+   public Object put(CacheKey key, Object value, long lifespan, TimeUnit unit)
    {
       return parentCache.put(key, value, lifespan, unit);
    }
@@ -402,7 +425,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Object put(Serializable key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime,
+   public Object put(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime,
       TimeUnit maxIdleTimeUnit)
    {
       return parentCache.put(key, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
@@ -411,7 +434,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public void putAll(Map<? extends Serializable, ? extends Object> map, long lifespan, TimeUnit unit)
+   public void putAll(Map<? extends CacheKey, ? extends Object> map, long lifespan, TimeUnit unit)
    {
       parentCache.putAll(map, lifespan, unit);
    }
@@ -419,7 +442,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public void putAll(Map<? extends Serializable, ? extends Object> map, long lifespan, TimeUnit lifespanUnit,
+   public void putAll(Map<? extends CacheKey, ? extends Object> map, long lifespan, TimeUnit lifespanUnit,
       long maxIdleTime, TimeUnit maxIdleTimeUnit)
    {
       parentCache.putAll(map, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
@@ -428,7 +451,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Void> putAllAsync(Map<? extends Serializable, ? extends Object> data)
+   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ? extends Object> data)
    {
       return parentCache.putAllAsync(data);
    }
@@ -436,7 +459,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Void> putAllAsync(Map<? extends Serializable, ? extends Object> data, long lifespan,
+   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ? extends Object> data, long lifespan,
       TimeUnit unit)
    {
       return parentCache.putAllAsync(data, lifespan, unit);
@@ -445,7 +468,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Void> putAllAsync(Map<? extends Serializable, ? extends Object> data, long lifespan,
+   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ? extends Object> data, long lifespan,
       TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
    {
       return parentCache.putAllAsync(data, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
@@ -454,7 +477,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> putAsync(Serializable key, Object value)
+   public NotifyingFuture<Object> putAsync(CacheKey key, Object value)
    {
       return parentCache.putAsync(key, value);
    }
@@ -462,7 +485,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> putAsync(Serializable key, Object value, long lifespan, TimeUnit unit)
+   public NotifyingFuture<Object> putAsync(CacheKey key, Object value, long lifespan, TimeUnit unit)
    {
       return parentCache.putAsync(key, value, lifespan, unit);
    }
@@ -470,7 +493,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> putAsync(Serializable key, Object value, long lifespan, TimeUnit lifespanUnit,
+   public NotifyingFuture<Object> putAsync(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit,
       long maxIdle, TimeUnit maxIdleUnit)
    {
       return parentCache.putAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
@@ -479,7 +502,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public void putForExternalRead(Serializable key, Object value)
+   public void putForExternalRead(CacheKey key, Object value)
    {
       parentCache.putForExternalRead(key, value);
    }
@@ -487,7 +510,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Object putIfAbsent(Serializable key, Object value, long lifespan, TimeUnit unit)
+   public Object putIfAbsent(CacheKey key, Object value, long lifespan, TimeUnit unit)
    {
       return parentCache.putIfAbsent(key, value, lifespan, unit);
    }
@@ -495,7 +518,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Object putIfAbsent(Serializable key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime,
+   public Object putIfAbsent(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime,
       TimeUnit maxIdleTimeUnit)
    {
       return parentCache.putIfAbsent(key, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
@@ -504,7 +527,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> putIfAbsentAsync(Serializable key, Object value)
+   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value)
    {
       return parentCache.putIfAbsentAsync(key, value);
    }
@@ -512,7 +535,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> putIfAbsentAsync(Serializable key, Object value, long lifespan, TimeUnit unit)
+   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value, long lifespan, TimeUnit unit)
    {
       return parentCache.putIfAbsentAsync(key, value, lifespan, unit);
    }
@@ -520,7 +543,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> putIfAbsentAsync(Serializable key, Object value, long lifespan,
+   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value, long lifespan,
       TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
    {
       return parentCache.putIfAbsentAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
@@ -545,7 +568,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Object replace(Serializable key, Object value, long lifespan, TimeUnit unit)
+   public Object replace(CacheKey key, Object value, long lifespan, TimeUnit unit)
    {
       return parentCache.replace(key, value, lifespan, unit);
    }
@@ -553,7 +576,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public boolean replace(Serializable key, Object oldValue, Object value, long lifespan, TimeUnit unit)
+   public boolean replace(CacheKey key, Object oldValue, Object value, long lifespan, TimeUnit unit)
    {
       return parentCache.replace(key, oldValue, value, lifespan, unit);
    }
@@ -561,7 +584,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Object replace(Serializable key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime,
+   public Object replace(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime,
       TimeUnit maxIdleTimeUnit)
    {
       return parentCache.replace(key, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
@@ -570,7 +593,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public boolean replace(Serializable key, Object oldValue, Object value, long lifespan, TimeUnit lifespanUnit,
+   public boolean replace(CacheKey key, Object oldValue, Object value, long lifespan, TimeUnit lifespanUnit,
       long maxIdleTime, TimeUnit maxIdleTimeUnit)
    {
       return parentCache.replace(key, oldValue, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
@@ -579,7 +602,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> replaceAsync(Serializable key, Object value)
+   public NotifyingFuture<Object> replaceAsync(CacheKey key, Object value)
    {
       return parentCache.replaceAsync(key, value);
    }
@@ -587,7 +610,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Boolean> replaceAsync(Serializable key, Object oldValue, Object newValue)
+   public NotifyingFuture<Boolean> replaceAsync(CacheKey key, Object oldValue, Object newValue)
    {
       return parentCache.replaceAsync(key, oldValue, newValue);
    }
@@ -595,7 +618,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> replaceAsync(Serializable key, Object value, long lifespan, TimeUnit unit)
+   public NotifyingFuture<Object> replaceAsync(CacheKey key, Object value, long lifespan, TimeUnit unit)
    {
       return parentCache.replaceAsync(key, value, lifespan, unit);
    }
@@ -603,7 +626,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Boolean> replaceAsync(Serializable key, Object oldValue, Object newValue, long lifespan,
+   public NotifyingFuture<Boolean> replaceAsync(CacheKey key, Object oldValue, Object newValue, long lifespan,
       TimeUnit unit)
    {
       return parentCache.replaceAsync(key, oldValue, newValue, lifespan, unit);
@@ -612,7 +635,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> replaceAsync(Serializable key, Object value, long lifespan, TimeUnit lifespanUnit,
+   public NotifyingFuture<Object> replaceAsync(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit,
       long maxIdle, TimeUnit maxIdleUnit)
    {
       return parentCache.replaceAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
@@ -621,7 +644,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Boolean> replaceAsync(Serializable key, Object oldValue, Object newValue, long lifespan,
+   public NotifyingFuture<Boolean> replaceAsync(CacheKey key, Object oldValue, Object newValue, long lifespan,
       TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
    {
       return parentCache.replaceAsync(key, oldValue, newValue);
@@ -646,9 +669,12 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Object putIfAbsent(Serializable key, Object value)
+   public Object putIfAbsent(CacheKey key, Object value)
    {
-      return parentCache.putIfAbsent(key, value);
+      CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new PutObjectIfAbsentContainer(key, value, parentCache, changesContainer.getHistoryIndex(), local
+         .get(), allowLocalChanges));
+      return null;
    }
 
    /**
@@ -662,7 +688,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Object replace(Serializable key, Object value)
+   public Object replace(CacheKey key, Object value)
    {
       return parentCache.replace(key, value);
    }
@@ -670,7 +696,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public boolean replace(Serializable key, Object oldValue, Object newValue)
+   public boolean replace(CacheKey key, Object oldValue, Object newValue)
    {
       return parentCache.replace(key, oldValue, newValue);
    }
@@ -760,15 +786,7 @@ public class BufferedISPNCache implements Cache<Serializable, Object>
    /**
     * {@inheritDoc}
     */
-   public Object put(Serializable key, Object value)
-   {
-      throw new UnsupportedOperationException("Unexpected method call use put(CacheKey key, Object value)");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void putAll(Map<? extends Serializable, ? extends Object> m)
+   public void putAll(Map<? extends CacheKey, ? extends Object> m)
    {
       parentCache.putAll(m);
    }

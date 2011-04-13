@@ -489,7 +489,32 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
       return parentCache.get(fqn, key);
    }
+   
+   /**
+    * in case putIfAbsent is set to <code>true</code> this method will call cache.putIfAbsent(Fqn fqn, Serializable key, Object value)
+    *  otherwise it will call cache.put(Fqn fqn, Serializable key, Object value)
+    */
+   protected Object put(Fqn fqn, Serializable key, Object value, boolean putIfAbsent)
+   {
+      if (putIfAbsent)
+      {
+         putIfAbsent(fqn, key, value);
+         return null;
+      }
+      return put(fqn, key, value);
+   }
 
+   /**
+    * This method will create and add a ChangesContainer that will put the value only if no value has been added
+    */
+   protected Object putIfAbsent(Fqn fqn, Serializable key, Object value)
+   {
+      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new PutIfAbsentKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
+         local.get(), useExpiration, expirationTimeOut));
+      return null;
+   }
+   
    public Object putInBuffer(Fqn fqn, Serializable key, Object value)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
@@ -823,6 +848,42 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       }
    }
 
+   /**
+    * PutIfAbsent  container.
+    */
+   public static class PutIfAbsentKeyValueContainer extends ChangesContainer
+   {
+      private final Serializable key;
+
+      private final Object value;
+
+      public PutIfAbsentKeyValueContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
+         int historicalIndex, boolean local, boolean useExpiration, long timeOut)
+      {
+         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         this.key = key;
+         this.value = value;
+      }
+
+      @Override
+      public void apply()
+      {
+         cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
+         if (cache.get(fqn, key) != null)
+         {
+            // skip
+            return;
+         }
+         if (useExpiration)
+         {
+            putExpiration(fqn);
+         }
+
+         setCacheLocalMode();
+         cache.put(fqn, key, value);
+      }
+   }
+   
    /**
     * Put  container.
     */

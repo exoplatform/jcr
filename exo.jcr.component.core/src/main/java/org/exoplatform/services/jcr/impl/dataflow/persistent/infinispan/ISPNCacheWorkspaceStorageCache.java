@@ -53,7 +53,6 @@ import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -223,11 +222,11 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       this.enabled = wsConfig.getCache().isEnabled();
       
       // create cache using custom factory
-      ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
+      ISPNCacheFactory<CacheKey, Object> factory = new ISPNCacheFactory<CacheKey, Object>(cfm);
 
       // create parent Infinispan instance
       CacheEntry cacheEntry = wsConfig.getCache();
-      Cache<Serializable, Object> parentCache = factory.createCache("Data_" + wsConfig.getUniqueName(), cacheEntry);
+      Cache<CacheKey, Object> parentCache = factory.createCache("Data_" + wsConfig.getUniqueName(), cacheEntry);
 
       Boolean allowLocalChanges = null;
       try
@@ -369,10 +368,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
 
          cache.setLocal(true);
-
-         // remove previous all (to be sure about consistency)
-         cache.remove(new CacheNodesId(parent.getIdentifier()));
-
          if (childs.size() > 0)
          {
             Set<Object> set = new HashSet<Object>();
@@ -381,12 +376,12 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                putNode(child, ModifyChildOption.NOT_MODIFY);
                set.add(child.getIdentifier());
             }
-            cache.put(new CacheNodesId(parent.getIdentifier()), set);
+            cache.putIfAbsent(new CacheNodesId(parent.getIdentifier()), set);
          }
          else
          {
             // cache fact of empty childs list
-            cache.put(new CacheNodesId(parent.getIdentifier()), new HashSet<Object>());
+            cache.putIfAbsent(new CacheNodesId(parent.getIdentifier()), new HashSet<Object>());
          }
       }
       finally
@@ -412,8 +407,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             cache.beginTransaction();
          }
          cache.setLocal(true);
-         // remove previous all (to be sure about consistency)
-         cache.remove(new CachePropsId(parent.getIdentifier()));
          if (childs.size() > 0)
          {
             // add all new
@@ -423,7 +416,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                putProperty(child, ModifyChildOption.NOT_MODIFY);
                set.add(child.getIdentifier());
             }
-            cache.put(new CachePropsId(parent.getIdentifier()), set);
+            cache.putIfAbsent(new CachePropsId(parent.getIdentifier()), set);
 
          }
          else
@@ -670,7 +663,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       if (node.getParentIdentifier() != null)
       {
-         cache.put(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node.getIdentifier());
+         if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
+         {
+            cache.putIfAbsent(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node.getIdentifier());            
+         }
+         else
+         {
+            cache.put(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node.getIdentifier());            
+         }
 
          // if MODIFY and List present OR FORCE_MODIFY, then write
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
@@ -680,7 +680,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
       }
 
-      return (ItemData)cache.put(new CacheId(node.getIdentifier()), node, true);
+      if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
+      {
+         return (ItemData)cache.putIfAbsent(new CacheId(node.getIdentifier()), node);
+      }
+      else
+      {
+         return (ItemData)cache.put(new CacheId(node.getIdentifier()), node, true);
+      }
    }
 
    protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
@@ -720,11 +727,11 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
          if (!item.getIdentifier().equals(NullItemData.NULL_ID))
          {
-            cache.put(new CacheId(item.getIdentifier()), item);
+            cache.putIfAbsent(new CacheId(item.getIdentifier()), item);
          }
          else if (item.getName() != null && item.getParentIdentifier() != null)
          {
-            cache.put(new CacheQPath(item.getParentIdentifier(), item.getName(), ItemType.getItemType(item)),
+            cache.putIfAbsent(new CacheQPath(item.getParentIdentifier(), item.getName(), ItemType.getItemType(item)),
                NullItemData.NULL_ID);
          }
       }
@@ -752,8 +759,15 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          cache.addToList(new CachePropsId(prop.getParentIdentifier()), prop.getIdentifier(),
             modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
       }
+      if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
+      {
+         cache.putIfAbsent(new CacheQPath(prop.getParentIdentifier(), prop.getQPath(), ItemType.PROPERTY), prop.getIdentifier());
+      }
+      else
+      {
+         cache.put(new CacheQPath(prop.getParentIdentifier(), prop.getQPath(), ItemType.PROPERTY), prop.getIdentifier());
+      }
 
-      cache.put(new CacheQPath(prop.getParentIdentifier(), prop.getQPath(), ItemType.PROPERTY), prop.getIdentifier());
 
       // add referenced property
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY && prop.getType() == PropertyType.REFERENCE)
@@ -780,7 +794,16 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
       }
       // NullItemData must never be returned inside internal cache operations. 
-      PropertyData propData = (PropertyData)cache.put(new CacheId(prop.getIdentifier()), prop, true);
+      PropertyData propData;
+      if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
+      {
+         propData = (PropertyData)cache.putIfAbsent(new CacheId(prop.getIdentifier()), prop);
+      }
+      else
+      {
+         propData = (PropertyData)cache.put(new CacheId(prop.getIdentifier()), prop, true);
+      }
+      
       return (propData instanceof NullPropertyData) ? null : propData;
    }
 
@@ -871,7 +894,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       boolean inheritACL = acl != null;
 
       // check all ITEMS in cache 
-      Iterator<Serializable> keys = cache.keySet().iterator();
+      Iterator<CacheKey> keys = cache.keySet().iterator();
 
       while (keys.hasNext())
       {
@@ -947,7 +970,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    protected void updateChildsACL(final String parentId, final AccessControlList acl)
    {
-      for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
+      loop: for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
       {
          NodeData prevNode = iter.next();
 
@@ -956,7 +979,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          {
             if (mixin.equals(Constants.EXO_PRIVILEGEABLE) || mixin.equals(Constants.EXO_OWNEABLE))
             {
-               continue;
+               continue loop;
             }
          }
 
@@ -1074,8 +1097,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             cache.beginTransaction();
          }
          cache.setLocal(true);
-         // remove previous all (to be sure about consistency)
-         cache.remove(new CacheRefsId(identifier));
 
          Set<Object> set = new HashSet<Object>();
          for (PropertyData prop : refProperties)
@@ -1083,7 +1104,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             putProperty(prop, ModifyChildOption.NOT_MODIFY);
             set.add(prop.getIdentifier());
          }
-         cache.put(new CacheRefsId(identifier), set);
+         cache.putIfAbsent(new CacheRefsId(identifier), set);
       }
       finally
       {
