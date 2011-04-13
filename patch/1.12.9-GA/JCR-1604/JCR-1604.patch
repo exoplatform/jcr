@@ -1,6 +1,85 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(revision 4234)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(working copy)
+@@ -471,6 +471,31 @@
+       return parentCache.get(fqn, key);
+    }
+ 
++   /**
++    * in case putIfAbsent is set to <code>true</code> this method will call cache.putIfAbsent(Fqn fqn, Serializable key, Object value)
++    *  otherwise it will call cache.put(Fqn fqn, Serializable key, Object value)
++    */
++   protected Object put(Fqn fqn, Serializable key, Object value, boolean putIfAbsent)
++   {
++      if (putIfAbsent)
++      {
++         putIfAbsent(fqn, key, value);
++         return null;
++      }
++      return put(fqn, key, value);
++   }
++
++   /**
++    * This method will create and add a ChangesContainer that will put the value only if no value has been added
++    */
++   protected Object putIfAbsent(Fqn fqn, Serializable key, Object value)
++   {
++      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
++      changesContainer.add(new PutIfAbsentKeyValueContainer(fqn, key, value, parentCache, changesContainer
++         .getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
++      return null;
++   }
++
+    public Object putInBuffer(Fqn fqn, Serializable key, Object value)
+    {
+       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+@@ -789,6 +814,42 @@
+    }
+ 
+    /**
++     * PutIfAbsent  container.
++     */
++   public static class PutIfAbsentKeyValueContainer extends ChangesContainer
++   {
++      private final Serializable key;
++
++      private final Object value;
++
++      public PutIfAbsentKeyValueContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
++         int historicalIndex, boolean local, boolean useExpiration, long timeOut)
++      {
++         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
++         this.key = key;
++         this.value = value;
++      }
++
++      @Override
++      public void apply()
++      {
++         cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
++         if (cache.get(fqn, key) != null)
++         {
++            // skip
++            return;
++         }
++         if (useExpiration)
++         {
++            putExpiration(fqn);
++         }
++
++         setCacheLocalMode();
++         cache.put(fqn, key, value);
++      }
++   }
++
++   /**
+     * Put  container.
+     */
+    public static class PutKeyValueContainer extends ChangesContainer
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4199)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4234)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(working copy)
 @@ -60,6 +60,7 @@
  
@@ -19,7 +98,24 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
           }
        }
     }
-@@ -572,7 +573,7 @@
+@@ -556,23 +557,20 @@
+ 
+          cache.setLocal(true);
+ 
+-         // remove previous all 
+-         cache.removeNode(makeRefFqn(identifier));
+-
+          Set<Object> set = new HashSet<Object>();
+          for (PropertyData prop : refProperties)
+          {
+             putProperty(prop, ModifyChildOption.NOT_MODIFY);
+             set.add(prop.getIdentifier());
+          }
+-         cache.put(makeRefFqn(identifier), ITEM_LIST, set);
++         cache.putIfAbsent(makeRefFqn(identifier), ITEM_LIST, set);
+       }
+       finally
+       {
           cache.setLocal(false);
           if (!inTransaction)
           {
@@ -28,7 +124,32 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
           }
        }
     }
-@@ -616,7 +617,7 @@
+@@ -592,8 +590,6 @@
+          }
+ 
+          cache.setLocal(true);
+-         // remove previous all (to be sure about consistency)
+-         cache.removeNode(makeChildListFqn(childNodesList, parent.getIdentifier()));
+ 
+          if (childs.size() > 0)
+          {
+@@ -603,12 +599,13 @@
+                putNode(child, ModifyChildOption.NOT_MODIFY);
+                set.add(child.getIdentifier());
+             }
+-            cache.put(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, set);
++            cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, set);
+          }
+          else
+          {
+             // cache fact of empty childs list
+-            cache.put(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, new HashSet<Object>());
++            cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST,
++               new HashSet<Object>());
+          }
+       }
+       finally
+@@ -616,7 +613,7 @@
           cache.setLocal(false);
           if (!inTransaction)
           {
@@ -37,7 +158,25 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
           }
        }
     }
-@@ -658,7 +659,7 @@
+@@ -634,8 +631,6 @@
+             cache.beginTransaction();
+          }
+          cache.setLocal(true);
+-         // remove previous all (to be sure about consistency)
+-         cache.removeNode(makeChildListFqn(childPropsList, parent.getIdentifier()));
+          if (childs.size() > 0)
+          {
+             // add all new
+@@ -645,7 +640,7 @@
+                putProperty(child, ModifyChildOption.NOT_MODIFY);
+                set.add(child.getIdentifier());
+             }
+-            cache.put(makeChildListFqn(childPropsList, parent.getIdentifier()), ITEM_LIST, set);
++            cache.putIfAbsent(makeChildListFqn(childPropsList, parent.getIdentifier()), ITEM_LIST, set);
+ 
+          }
+          else
+@@ -658,7 +653,7 @@
           cache.setLocal(false);
           if (!inTransaction)
           {
@@ -46,7 +185,205 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
           }
        }
     }
-@@ -1347,4 +1348,44 @@
+@@ -669,17 +664,6 @@
+    public void addChildPropertiesList(NodeData parent, List<PropertyData> childProperties)
+    {
+       // TODO not implemented, will force read from DB
+-      //      try
+-      //      {
+-      //         cache.beginTransaction();
+-      //         cache.setLocal(true);
+-      //
+-      //      }
+-      //      finally
+-      //      {
+-      //         cache.setLocal(false);
+-      //         cache.commitTransaction();
+-      //      }
+    }
+ 
+    /**
+@@ -945,18 +929,19 @@
+       if (node.getParentIdentifier() != null)
+       {
+          // add in CHILD_NODES
+-         cache.put(
+-            makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
+-               .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
++         cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
++            .getEntries().length - 1]), ITEM_ID, node.getIdentifier(),
++            modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+ 
+          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
+          {
+-            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
+-               node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
++            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
++               .getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
+          }
+       }
+       // add in ITEMS
+-      return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
++      return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node,
++         modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+    }
+ 
+    protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
+@@ -965,14 +950,13 @@
+       if (node.getParentIdentifier() != null)
+       {
+          // add in CHILD_NODES
+-         cache.put(
+-            makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
+-               .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
++         cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
++            .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+ 
+          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
+          {
+-            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
+-               node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
++            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
++               .getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
+          }
+       }
+       // add in ITEMS
+@@ -988,9 +972,8 @@
+    protected PropertyData putProperty(PropertyData prop, ModifyChildOption modifyListsOfChild)
+    {
+       // add in CHILD_PROPS
+-      cache.put(
+-         makeChildFqn(childProps, prop.getParentIdentifier(),
+-            prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]), ITEM_ID, prop.getIdentifier());
++      cache.put(makeChildFqn(childProps, prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath()
++         .getEntries().length - 1]), ITEM_ID, prop.getIdentifier(), modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+ 
+       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
+       {
+@@ -1025,7 +1008,8 @@
+       }
+ 
+       // add in ITEMS
+-      return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop);
++      return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
++         modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+    }
+ 
+    protected void removeItem(ItemData item)
+@@ -1041,8 +1025,8 @@
+                .getQPath().getEntries().length - 1]));
+ 
+             // remove from CHILD_NODES_LIST of parent
+-            cache.removeFromList(makeChildListFqn(childNodesList, item.getParentIdentifier()), ITEM_LIST,
+-               item.getIdentifier());
++            cache.removeFromList(makeChildListFqn(childNodesList, item.getParentIdentifier()), ITEM_LIST, item
++               .getIdentifier());
+ 
+             // remove from CHILD_NODES as parent
+             cache.removeNode(makeChildListFqn(childNodes, item.getIdentifier()));
+@@ -1066,8 +1050,8 @@
+             .getQPath().getEntries().length - 1]));
+ 
+          // remove from CHILD_PROPS_LIST
+-         cache.removeFromList(makeChildListFqn(childPropsList, item.getParentIdentifier()), ITEM_LIST,
+-            item.getIdentifier());
++         cache.removeFromList(makeChildListFqn(childPropsList, item.getParentIdentifier()), ITEM_LIST, item
++            .getIdentifier());
+       }
+       // remove from ITEMS
+       cache.removeNode(makeItemFqn(item.getIdentifier()));
+@@ -1096,10 +1080,10 @@
+    }
+ 
+    /**
+-    * Update Node hierachy in case of same-name siblings reorder.
+-    * Assumes the new (updated) nodes already putted in the cache. Previous name of updated nodes will be calculated
+-    * and that node will be deleted (if has same id as the new node). Childs paths will be updated to a new node path.
+-    *
++    * Update Node hierarchy in case of same-name siblings reorder.
++    * Assumes the new (updated) nodes already put in the cache. Previous name of updated nodes will be calculated
++    * and that node will be deleted (if has same id as the new node). Children paths will be updated to a new node path.    *
++    * 
+     * @param node NodeData
+     * @param prevNode NodeData
+     */
+@@ -1205,9 +1189,9 @@
+                NodeData prevNode = (NodeData)data;
+ 
+                TransientNodeData newNode =
+-                  new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
+-                     prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+-                     prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
++                  new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(), prevNode
++                     .getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
++                     .getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
+                // update this node
+                cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
+             }
+@@ -1225,8 +1209,8 @@
+                }
+ 
+                TransientPropertyData newProp =
+-                  new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(),
+-                     prevProp.getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
++                  new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(), prevProp
++                     .getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
+                cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
+             }
+          }
+@@ -1260,8 +1244,8 @@
+             QPath
+                .makeChildPath(rootPath, prevProp.getQPath().getEntries()[prevProp.getQPath().getEntries().length - 1]);
+          TransientPropertyData newProp =
+-            new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(),
+-               prevProp.getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
++            new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(), prevProp
++               .getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
+          cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
+       }
+ 
+@@ -1274,9 +1258,9 @@
+             QPath
+                .makeChildPath(rootPath, prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1]);
+          TransientNodeData newNode =
+-            new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
+-               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+-               prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
++            new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(), prevNode
++               .getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
++               .getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
+          // update this node
+          cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
+          // update childs recursive
+@@ -1292,22 +1276,22 @@
+     */
+    protected void updateChildsACL(final String parentId, final AccessControlList acl)
+    {
+-      for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
++      loop : for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
+       {
+          NodeData prevNode = iter.next();
+-         // is ACL changes on this node (i.e. ACL inheritance brokes)
++         // is ACL changes on this node (i.e. ACL inheritance broken)
+          for (InternalQName mixin : prevNode.getMixinTypeNames())
+          {
+             if (mixin.equals(Constants.EXO_PRIVILEGEABLE) || mixin.equals(Constants.EXO_OWNEABLE))
+             {
+-               continue;
++               continue loop;
+             }
+          }
+          // recreate with new path for child Nodes only
+          TransientNodeData newNode =
+             new TransientNodeData(prevNode.getQPath(), prevNode.getIdentifier(), prevNode.getPersistedVersion(),
+-               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+-               prevNode.getParentIdentifier(), acl);
++               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
++                  .getParentIdentifier(), acl);
+          // update this node
+          cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
+          // update childs recursive
+@@ -1347,4 +1331,44 @@
        NOT_MODIFY, MODIFY, FORCE_MODIFY
     }
  
