@@ -515,6 +515,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    protected CountDownLatch latcher = null;
 
    /**
+    * Indicates if component suspended or not.
+    */
+   protected boolean isSuspended = false;
+
+   /**
     * Working constructor.
     * 
     * @throws RepositoryConfigurationException
@@ -3090,6 +3095,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       latcher = new CountDownLatch(1);
       close();
+
+      isSuspended = true;
    }
 
    /**
@@ -3103,6 +3110,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          doInit();
 
          latcher.countDown();
+
+         isSuspended = false;
       }
       catch (IOException e)
       {
@@ -3115,6 +3124,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public boolean isSuspended()
+   {
+      return isSuspended;
+   }
+
+   /**
     * If component is suspended need to wait resuming and not allow
     * execute query on closed index.
     * 
@@ -3122,7 +3139,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    private void waitForResuming() throws IOException
    {
-      if (latcher != null && latcher.getCount() != 0)
+      if (isSuspended)
       {
          try
          {

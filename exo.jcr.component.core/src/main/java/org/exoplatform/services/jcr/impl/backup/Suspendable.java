@@ -25,17 +25,24 @@ package org.exoplatform.services.jcr.impl.backup;
 public interface Suspendable
 {
    /**
-    *  Suspend component.
+    * Suspend component.
     *  
-    *  @throws SuspendException of error occurred 
+    * @throws SuspendException of error occurred 
     */
    void suspend() throws SuspendException;
 
    /**
-    *  Resume component.
+    * Resume component.
     *  
-    *  @throws ResumeException of error occurred 
+    * @throws ResumeException of error occurred 
     */
    void resume() throws ResumeException;
+
+   /**
+    * Indicates if component is suspended or not.
+    * 
+    * @return
+    */
+   boolean isSuspended();
 
 }

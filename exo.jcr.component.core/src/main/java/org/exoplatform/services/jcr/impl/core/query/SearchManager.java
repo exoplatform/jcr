@@ -1056,6 +1056,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public boolean isSuspended()
+   {
+      return isSuspended;
+   }
+
+   /**
     * Switches index into online or offline modes.
     * 
     * @param isOnline

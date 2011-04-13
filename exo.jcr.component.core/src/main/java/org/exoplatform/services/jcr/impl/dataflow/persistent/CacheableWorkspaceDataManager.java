@@ -1148,6 +1148,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       isResponsibleForResuming = false;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isSuspended()
+   {
+      return isSuspended;
+   }
+
    private void suspendLocally() throws SuspendException
    {
       if (isSuspended)
