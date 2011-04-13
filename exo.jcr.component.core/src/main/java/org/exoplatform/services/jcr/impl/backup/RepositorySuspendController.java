@@ -41,21 +41,6 @@ import java.util.List;
 @NameTemplate(@Property(key = "service", value = "RepositorySuspendController"))
 public class RepositorySuspendController implements Startable
 {
-   /**
-    * Repository ONLINE state.
-    */
-   private final int ONLINE = 1;
-
-   /**
-    * Repository SUSPENDED state.
-    */
-   private final int SUSPENDED = 3;
-
-   /**
-    * Undefined state. 
-    */
-   private final int UNDEFINED = 4;
-
    private final ManageableRepository repository;
 
    /**
@@ -72,11 +57,13 @@ public class RepositorySuspendController implements Startable
    }
 
    /**
-    * {@inheritDoc}
+    * Suspend repository which means that allow only read operations. All writing threads will wait until resume operations invoked.
+    * 
+    * @return repository state
     */
    @Managed
    @ManagedDescription("Suspend repository which means that allow only read operations. All writing threads will wait until resume operations invoked.")
-   public void suspend()
+   public int suspend()
    {
       for (Suspendable component : getSuspendableComponents())
       {
@@ -89,14 +76,18 @@ public class RepositorySuspendController implements Startable
             log.error("Can't suspend component", e);
          }
       }
+
+      return getState();
    }
 
    /**
-    * {@inheritDoc}
+    * Resume repository. All previously suspended threads continue working.
+    * 
+    * @return repository state
     */
    @Managed
    @ManagedDescription("Resume repository. All previously suspended threads continue working.")
-   public void resume()
+   public int resume()
    {
       List<Suspendable> components = getSuspendableComponents();
       Collections.reverse(components);
@@ -115,16 +106,18 @@ public class RepositorySuspendController implements Startable
             log.error("Can't resume component", e);
          }
       }
+
+      return getState();
    }
 
    /**
-    * {@inheritDoc}
+    * Returns repository state.
     */
    @Managed
    @ManagedDescription("Returns repository state.")
    public int getState()
    {
-      int state = ONLINE;
+      int state = ManageableRepository.ONLINE;
       
       boolean hasSuspendedComponents = false;
       boolean hasOnlineComponents = false;
@@ -137,17 +130,17 @@ public class RepositorySuspendController implements Startable
 
             if (hasOnlineComponents)
             {
-               return UNDEFINED;
+               return ManageableRepository.UNDEFINED;
             }
 
-            state = SUSPENDED;
+            state = ManageableRepository.SUSPENDED;
          }
          else
          {
             hasOnlineComponents = true;
             if (hasSuspendedComponents)
             {
-               return UNDEFINED;
+               return ManageableRepository.UNDEFINED;
             }
          }
       }

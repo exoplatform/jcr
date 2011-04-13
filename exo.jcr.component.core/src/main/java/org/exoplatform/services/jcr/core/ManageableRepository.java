@@ -60,6 +60,16 @@ public interface ManageableRepository extends Repository
    final int READONLY = 2;
 
    /**
+    * Repository SUSPENDED state.
+    */
+   public final int SUSPENDED = 3;
+
+   /**
+    * Undefined state. 
+    */
+   public final int UNDEFINED = 4;
+
+   /**
     * Add the items persistence listener to the named workspace.
     * 
     * @param workspaceName - name of workspace
