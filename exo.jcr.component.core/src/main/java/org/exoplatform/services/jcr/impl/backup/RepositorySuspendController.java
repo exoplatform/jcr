@@ -23,6 +23,7 @@ import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
@@ -54,7 +55,7 @@ public class RepositorySuspendController implements Startable
    /**
     * Undefined state. 
     */
-   public final String UNDEFINED = "undefined";
+   private final String UNDEFINED = "undefined";
 
    private final ManageableRepository repository;
 
@@ -80,6 +81,13 @@ public class RepositorySuspendController implements Startable
    @ManagedDescription("Suspend repository which means that allow only read operations. All writing threads will wait until resume operations invoked.")
    public String suspend()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       for (Suspendable component : getSuspendableComponents())
       {
          try
@@ -104,6 +112,13 @@ public class RepositorySuspendController implements Startable
    @ManagedDescription("Resume repository. All previously suspended threads continue working.")
    public String resume()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       List<Suspendable> components = getSuspendableComponents();
       Collections.reverse(components);
 
