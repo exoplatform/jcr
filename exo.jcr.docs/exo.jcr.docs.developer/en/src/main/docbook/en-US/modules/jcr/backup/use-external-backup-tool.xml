@@ -31,6 +31,9 @@
         <imagedata fileref="images/repository-suspend-controller-suspended.png" />
       </imageobject>
     </mediaobject>
+
+    <para>The result "undefined" means not all components successfully
+    suspended, check console to see stacktraces.</para>
   </section>
 
   <section>
@@ -57,8 +60,8 @@
   <section>
     <title>Repository resuming</title>
 
-    <para>Once backup is done need to invoke resume() operation to resume
-    repository. The returned result will be "online" </para>
+    <para>Once backup is done need to invoke resume() operation to switch
+    repository back to online. The returned result will be "online".</para>
 
     <mediaobject>
       <imageobject>
