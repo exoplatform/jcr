@@ -1,8 +1,780 @@
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(revision 0)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(revision 0)
+@@ -0,0 +1,648 @@
++/*
++ * Copyright (C) 2011 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
++
++import org.exoplatform.container.configuration.ConfigurationManagerImpl;
++import org.exoplatform.services.jcr.JcrImplBaseTest;
++import org.exoplatform.services.jcr.config.CacheEntry;
++import org.exoplatform.services.jcr.config.SimpleParameterEntry;
++import org.exoplatform.services.jcr.config.WorkspaceEntry;
++import org.exoplatform.services.jcr.dataflow.ItemState;
++import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
++import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
++import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
++import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
++import org.exoplatform.services.jcr.datamodel.InternalQName;
++import org.exoplatform.services.jcr.datamodel.ItemData;
++import org.exoplatform.services.jcr.datamodel.ItemType;
++import org.exoplatform.services.jcr.datamodel.NodeData;
++import org.exoplatform.services.jcr.datamodel.PropertyData;
++import org.exoplatform.services.jcr.datamodel.QPath;
++import org.exoplatform.services.jcr.datamodel.QPathEntry;
++import org.exoplatform.services.jcr.datamodel.ValueData;
++import org.exoplatform.services.jcr.impl.Constants;
++import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
++import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
++import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
++import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
++import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
++import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
++import org.exoplatform.services.transaction.TransactionService;
++
++import java.io.UnsupportedEncodingException;
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.List;
++import java.util.concurrent.CountDownLatch;
++import java.util.concurrent.atomic.AtomicReference;
++
++import javax.jcr.InvalidItemStateException;
++import javax.jcr.PropertyType;
++import javax.jcr.RepositoryException;
++
++/**
++ * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>
++ * @version $Id$
++ */
++public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBaseTest
++{
++
++   public JBossCacheWorkspaceStorageCache getCacheImpl() throws Exception
++   {
++      TransactionService transactionService =
++         (TransactionService)container.getComponentInstanceOfType(TransactionService.class);
++
++      ArrayList<SimpleParameterEntry> list = new ArrayList<SimpleParameterEntry>();
++      list.add(new SimpleParameterEntry(JBossCacheWorkspaceStorageCache.JBOSSCACHE_CONFIG,
++         "jar:/conf/standalone/cluster/test-jbosscache-data-no-mux.xml"));
++      list.add(new SimpleParameterEntry("jbosscache-cluster-name", "TestJBossCacheWorkspaceStorageCacheInClusterMode"));
++      
++      CacheEntry entry = new CacheEntry(list);
++      WorkspaceEntry workspaceEntry = new WorkspaceEntry();
++      workspaceEntry.setCache(entry);
++      return new JBossCacheWorkspaceStorageCache(workspaceEntry,
++         transactionService == null ? null : transactionService, new ConfigurationManagerImpl());
++   }
++
++   public void testRaceConditions() throws Exception
++   {
++      JBossCacheWorkspaceStorageCache cache1 = null, cache2 = null;
++      try
++      {
++         MyWorkspaceStorageConnection con = new MyWorkspaceStorageConnection();
++         WorkspaceDataContainer wdc = new MyWorkspaceDataContainer(con);
++         CacheableWorkspaceDataManager cwdmNode1 =
++            new CacheableWorkspaceDataManager(wdc, cache1 = getCacheImpl(), new SystemDataContainerHolder(wdc));
++         CacheableWorkspaceDataManager cwdmNode2 =
++            new CacheableWorkspaceDataManager(wdc, cache2 = getCacheImpl(), new SystemDataContainerHolder(wdc));
++         NodeData parentNode = new PersistedNodeData("parent-id", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
++         // Test getChildNodesData
++         Action readAction = new Action(cwdmNode2)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               cwdm.getChildNodesData(parentNode);
++            }
++         };
++         Action writeAction = new Action(cwdmNode1)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               PlainChangesLog chlog = new PlainChangesLogImpl();            
++               cwdm.getChildNodesData(parentNode);
++               chlog.add(ItemState.createAddedState(new PersistedNodeData("id-node" + parentNode.getIdentifier(), QPath.makeChildPath(parentNode.getQPath(), new InternalQName(null, "node")), parentNode.getIdentifier(), 1, 0,
++                  Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
++               cwdm.save(chlog);            
++            }
++         };
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getChildNodesData(parentNode));
++         assertEquals(2, cwdmNode1.getChildNodesData(parentNode).size());
++         assertNotNull(cwdmNode2.getChildNodesData(parentNode));
++         assertEquals(2, cwdmNode2.getChildNodesData(parentNode).size());
++         parentNode = new PersistedNodeData("parent-id2", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node2")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.WRITE_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getChildNodesData(parentNode));
++         assertEquals(2, cwdmNode1.getChildNodesData(parentNode).size());
++         assertNotNull(cwdmNode2.getChildNodesData(parentNode));
++         assertEquals(2, cwdmNode2.getChildNodesData(parentNode).size());
++         // Test getChildPropertiesData
++         readAction = new Action(cwdmNode2)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               cwdm.getChildPropertiesData(parentNode);
++            }
++         };
++         writeAction = new Action(cwdmNode1)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               PlainChangesLog chlog = new PlainChangesLogImpl();            
++               cwdm.getChildPropertiesData(parentNode);
++               chlog.add(ItemState.createAddedState(new PersistedPropertyData("id-property" + parentNode.getIdentifier(), QPath.makeChildPath(
++                  parentNode.getQPath(), new InternalQName(null, "property")), parentNode.getIdentifier(), 0,
++                  PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8"))))));
++               cwdm.save(chlog);
++            }
++         };      
++         parentNode = new PersistedNodeData("parent-id3", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node3")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);      
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getChildPropertiesData(parentNode));
++         assertEquals(2, cwdmNode1.getChildPropertiesData(parentNode).size());
++         assertNotNull(cwdmNode2.getChildPropertiesData(parentNode));
++         assertEquals(2, cwdmNode2.getChildPropertiesData(parentNode).size());
++         parentNode = new PersistedNodeData("parent-id4", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node4")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.WRITE_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getChildPropertiesData(parentNode));
++         assertEquals(2, cwdmNode1.getChildPropertiesData(parentNode).size());
++         assertNotNull(cwdmNode2.getChildPropertiesData(parentNode));
++         assertEquals(2, cwdmNode2.getChildPropertiesData(parentNode).size());
++         // Test getReferencesData
++         readAction = new Action(cwdmNode2)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               cwdm.getReferencesData(parentNode.getIdentifier(), false);
++            }
++         };
++         writeAction = new Action(cwdmNode1)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               PlainChangesLog chlog = new PlainChangesLogImpl();            
++               cwdm.getReferencesData(parentNode.getIdentifier(), false);
++               chlog.add(ItemState.createAddedState(new PersistedPropertyData("id-reference" + parentNode.getIdentifier(), QPath.makeChildPath(
++                  parentNode.getQPath(), new InternalQName(null, "reference")), parentNode.getIdentifier(), 0,
++                  PropertyType.REFERENCE, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8"))))));
++               cwdm.save(chlog);
++            }
++         };      
++         parentNode = new PersistedNodeData("parent-id5", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node5")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);      
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getReferencesData(parentNode.getIdentifier(), false));
++         assertEquals(2, cwdmNode1.getReferencesData(parentNode.getIdentifier(), false).size());
++         assertNotNull(cwdmNode2.getReferencesData(parentNode.getIdentifier(), false));
++         assertEquals(2, cwdmNode2.getReferencesData(parentNode.getIdentifier(), false).size());
++         parentNode = new PersistedNodeData("parent-id6", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node6")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.WRITE_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getReferencesData(parentNode.getIdentifier(), false));
++         assertEquals(2, cwdmNode1.getReferencesData(parentNode.getIdentifier(), false).size());
++         assertNotNull(cwdmNode2.getReferencesData(parentNode.getIdentifier(), false));
++         assertEquals(2, cwdmNode2.getReferencesData(parentNode.getIdentifier(), false).size()); 
++         
++         // Test getItemData by Id
++         readAction = new Action(cwdmNode2)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               cwdm.getItemData(parentNode.getIdentifier());
++            }
++         };
++         writeAction = new Action(cwdmNode1)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               PlainChangesLog chlog = new PlainChangesLogImpl();
++               cwdm.getItemData(parentNode.getIdentifier());
++               chlog.add(ItemState.createUpdatedState(new PersistedNodeData(parentNode.getIdentifier(), parentNode.getQPath(), Constants.ROOT_UUID, 2, 1,
++                  Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
++               cwdm.save(chlog);
++            }
++         };      
++         parentNode = new PersistedNodeData("parent-id7", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node7")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);      
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getItemData(parentNode.getIdentifier()));
++         assertEquals(2, cwdmNode1.getItemData(parentNode.getIdentifier()).getPersistedVersion());
++         assertNotNull(cwdmNode2.getItemData(parentNode.getIdentifier()));
++         assertEquals(2, cwdmNode2.getItemData(parentNode.getIdentifier()).getPersistedVersion());
++         parentNode = new PersistedNodeData("parent-id8", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node8")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.WRITE_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getItemData(parentNode.getIdentifier()));
++         assertEquals(2, cwdmNode1.getItemData(parentNode.getIdentifier()).getPersistedVersion());
++         assertNotNull(cwdmNode2.getItemData(parentNode.getIdentifier()));
++         assertEquals(2, cwdmNode2.getItemData(parentNode.getIdentifier()).getPersistedVersion()); 
++              
++         // Test getItemData by Path
++         final QPathEntry qpe = new QPathEntry(null, "my-property", 1);
++         readAction = new Action(cwdmNode2)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               cwdm.getItemData(parentNode, qpe, ItemType.PROPERTY);
++            }
++         };
++         writeAction = new Action(cwdmNode1)
++         {
++            public void execute(NodeData parentNode) throws Exception
++            {
++               PlainChangesLog chlog = new PlainChangesLogImpl();
++               cwdm.getItemData(parentNode, qpe, ItemType.PROPERTY);
++               chlog.add(ItemState.createUpdatedState(new PersistedPropertyData("property-by-path"
++                  + parentNode.getIdentifier(), QPath.makeChildPath(parentNode.getQPath(), qpe), parentNode
++                  .getIdentifier(), 2, PropertyType.STRING, false, Arrays
++                  .asList((ValueData)new ByteArrayPersistedValueData(0, "some new data".getBytes("UTF-8"))))));
++               cwdm.save(chlog);
++            }
++         };      
++         parentNode = new PersistedNodeData("parent-id9", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node9")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);      
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getItemData(parentNode, qpe, ItemType.PROPERTY));
++         assertEquals(2, cwdmNode1.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
++         assertNotNull(cwdmNode2.getItemData(parentNode, qpe, ItemType.PROPERTY));
++         assertEquals(2, cwdmNode2.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
++         parentNode = new PersistedNodeData("parent-id10", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node10")), Constants.ROOT_UUID, 1, 0,
++            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
++         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.WRITE_FIRST, parentNode);
++         assertNotNull(cwdmNode1.getItemData(parentNode, qpe, ItemType.PROPERTY));
++         assertEquals(2, cwdmNode1.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
++         assertNotNull(cwdmNode2.getItemData(parentNode, qpe, ItemType.PROPERTY));
++         assertEquals(2, cwdmNode2.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
++      }
++      finally
++      {
++         if (cache1 != null)
++         {
++            try
++            {
++               cache1.cache.stop();
++            }
++            catch (Exception e)
++            {
++               // ignore me
++            }
++         }
++         if (cache2 != null)
++         {
++            try
++            {
++               cache2.cache.stop();
++            }
++            catch (Exception e)
++            {
++               // ignore me
++            }
++         }
++      }
++   }
++
++   /**
++    * @param con
++    * @param cwdm
++    * @param mode
++    * @param idNode
++    * @throws InterruptedException
++    */
++   private void executeConcurrentReadNWrite(final MyWorkspaceStorageConnection con, final Action readAction,
++      final Action writeAction, final Mode mode, final NodeData parentNode) throws InterruptedException
++   {
++      final CountDownLatch goSignal = con.initCountDownLatch();
++      con.setParentNode(parentNode);
++      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
++      final CountDownLatch startSignal = new CountDownLatch(1);
++      final CountDownLatch doneSignal = new CountDownLatch(2);
++      Thread writer = new Thread()
++      {
++         public void run()
++         {
++            try
++            {
++               startSignal.await();
++               con.wait.set(mode != Mode.WRITE_FIRST);
++               writeAction.execute(parentNode);
++            }
++            catch (Exception e)
++            {
++               e.printStackTrace();               
++               ex.set(e);
++            }
++            finally
++            {
++               if (mode == Mode.WRITE_FIRST) goSignal.countDown();
++               doneSignal.countDown();
++            }
++         }
++      };
++      writer.start();
++      Thread reader = new Thread()
++      {
++         public void run()
++         {
++            try
++            {
++               startSignal.await();
++               con.wait.set(mode != Mode.READ_FIRST);
++               readAction.execute(parentNode);
++            }
++            catch (Exception e)
++            {
++               e.printStackTrace();
++               ex.set(e);
++            }
++            finally
++            {
++               if (mode == Mode.READ_FIRST) goSignal.countDown();
++               doneSignal.countDown();
++            }            
++         }
++      };
++      reader.start();
++      startSignal.countDown();
++      doneSignal.await();
++      assertNull(ex.get());
++   }   
++
++   private abstract class Action
++   {
++    
++      protected final CacheableWorkspaceDataManager cwdm;
++      public Action(CacheableWorkspaceDataManager cwdm)
++      {
++         this.cwdm = cwdm;
++      }
++      protected abstract void execute(NodeData parentNode) throws Exception;
++   }
++   private static enum Mode
++   {
++      READ_FIRST, WRITE_FIRST;
++   }
++   private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
++   {
++      public ThreadLocal<Boolean> wait = new ThreadLocal<Boolean>();
++      private NodeData parentNode;
++      private CountDownLatch goSignal;
++      
++      public CountDownLatch initCountDownLatch()
++      {
++         return this.goSignal = new CountDownLatch(1);
++      }
++      
++      public void setParentNode(NodeData parentNode)
++      {
++         this.parentNode = parentNode;
++      }
++      
++      public void add(NodeData data) throws RepositoryException, UnsupportedOperationException,
++         InvalidItemStateException, IllegalStateException
++      {
++      }
++
++      public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
++         InvalidItemStateException, IllegalStateException
++      {
++      }
++
++      public void close() throws IllegalStateException, RepositoryException
++      {
++      }
++
++      public void commit() throws IllegalStateException, RepositoryException
++      {
++         if (wait.get() != null && wait.get())
++         {
++            try
++            {
++               goSignal.await();
++            }
++            catch (InterruptedException e)
++            {
++               Thread.currentThread().interrupt();
++            }            
++         }
++      }
++
++      public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
++         InvalidItemStateException, IllegalStateException
++      {
++      }
++
++      public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
++         InvalidItemStateException, IllegalStateException
++      {
++      }
++
++      public int getChildNodesCount(NodeData parent) throws RepositoryException
++      {
++         return -1;
++      }
++
++      public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException
++      {
++         if (wait.get() != null && wait.get())
++         {
++            try
++            {
++               goSignal.await();
++            }
++            catch (InterruptedException e)
++            {
++               Thread.currentThread().interrupt();
++            }            
++         }
++         List<NodeData> children = new ArrayList<NodeData>();
++         children.add(new PersistedNodeData("id-node2" + parentNode.getIdentifier(), QPath.makeChildPath(parent.getQPath(), new InternalQName(null, "node2")), parent.getIdentifier(), 1, 0,
++                  Constants.NT_UNSTRUCTURED, new InternalQName[0], null));
++         return children;
++      }
++
++      public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException,
++         IllegalStateException
++      {
++         if (wait.get() != null && wait.get())
++         {
++            try
++            {
++               goSignal.await();
++            }
++            catch (InterruptedException e)
++            {
++               Thread.currentThread().interrupt();
++            }            
++         }
++         List<PropertyData> children = new ArrayList<PropertyData>();
++         try
++         {
++            children.add(new PersistedPropertyData("id-property2" + parentNode.getIdentifier(), QPath.makeChildPath(
++               parentNode.getQPath(), new InternalQName(null, "property2")), parentNode.getIdentifier(), 0,
++               PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8")))));
++         }
++         catch (UnsupportedEncodingException e)
++         {
++            e.printStackTrace();
++         }
++         return children;
++      }
++
++      /**
++       * {@inheritDoc}
++       */
++      public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,
++         IllegalStateException
++      {
++         return getItemData(parentData, name, ItemType.UNKNOWN);
++      }
++
++      public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
++         IllegalStateException
++      {
++         if (wait.get() != null && wait.get())
++         {
++            try
++            {
++               goSignal.await();
++            }
++            catch (InterruptedException e)
++            {
++               Thread.currentThread().interrupt();
++            }            
++         }
++         if (itemType == ItemType.NODE)
++         {
++            return new PersistedNodeData("my-node" + parentNode.getIdentifier(), QPath.makeChildPath(parentNode.getQPath(), name), Constants.ROOT_UUID, 1, 1,
++               Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
++         }
++         try
++         {
++            return new PersistedPropertyData("property-by-path"
++               + parentNode.getIdentifier(), QPath.makeChildPath(parentNode.getQPath(), name), parentNode
++               .getIdentifier(), 1, PropertyType.STRING, false, Arrays
++               .asList((ValueData)new ByteArrayPersistedValueData(0, "some new data".getBytes("UTF-8"))));
++         }
++         catch (UnsupportedEncodingException e)
++         {
++            e.printStackTrace();
++         }
++         return null;
++      }
++
++      public ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException
++      {
++         if (wait.get() != null && wait.get())
++         {
++            try
++            {
++               goSignal.await();
++            }
++            catch (InterruptedException e)
++            {
++               Thread.currentThread().interrupt();
++            }            
++         }
++         return parentNode;
++      }
++
++      public List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException,
++         IllegalStateException, UnsupportedOperationException
++      {        
++         if (wait.get() != null && wait.get())
++         {
++            try
++            {
++               goSignal.await();
++            }
++            catch (InterruptedException e)
++            {
++               Thread.currentThread().interrupt();
++            }            
++         }
++         List<PropertyData> children = new ArrayList<PropertyData>();
++         try
++         {
++            children.add(new PersistedPropertyData("id-reference2" + parentNode.getIdentifier(), QPath.makeChildPath(
++               parentNode.getQPath(), new InternalQName(null, "reference2")), parentNode.getIdentifier(), 0,
++               PropertyType.REFERENCE, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8")))));
++         }
++         catch (UnsupportedEncodingException e)
++         {
++            e.printStackTrace();
++         }
++         return children;
++      }
++
++      public boolean isOpened()
++      {
++         return true;
++      }
++
++      public List<PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException,
++         IllegalStateException
++      {
++         return null;
++      }
++
++      public void rename(NodeData data) throws RepositoryException, UnsupportedOperationException,
++         InvalidItemStateException, IllegalStateException
++      {
++      }
++
++      public void rollback() throws IllegalStateException, RepositoryException
++      {
++      }
++
++      public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
++         InvalidItemStateException, IllegalStateException
++      {
++      }
++
++      public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
++         InvalidItemStateException, IllegalStateException
++      {
++      }
++   };
++   
++   private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase
++   {
++
++      private WorkspaceStorageConnection con;
++
++      public MyWorkspaceDataContainer(WorkspaceStorageConnection con)
++      {
++         this.con = con;
++      }
++
++      public boolean isCheckSNSNewConnection()
++      {
++         return false;
++      }
++
++      public boolean isSame(WorkspaceDataContainer another)
++      {
++         return false;
++      }
++
++      public WorkspaceStorageConnection openConnection() throws RepositoryException
++      {
++         return con;
++      }
++
++      public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
++      {
++         return con;
++      }
++
++      public WorkspaceStorageConnection reuseConnection(WorkspaceStorageConnection original) throws RepositoryException
++      {
++         return con;
++      }
++
++      public String getInfo()
++      {
++         return "MyWorkspaceDataContainer";
++      }
++
++      public String getName()
++      {
++         return "MyWorkspaceDataContainer";
++      }
++
++      public String getStorageVersion()
++      {
++         return "0";
++      }
++   };   
++}
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-data-no-mux.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-data-no-mux.xml	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-data-no-mux.xml	(revision 0)
+@@ -0,0 +1,24 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1">
++
++   <locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
++      lockAcquisitionTimeout="20000" />
++   <transaction syncRollbackPhase="true" syncCommitPhase="true" />
++      
++   <clustering mode="replication" clusterName="${jbosscache-cluster-name}">
++      <stateRetrieval timeout="20000" fetchInMemoryState="false" />
++      <sync replTimeout="20000"/>
++      <jgroupsConfig configFile="udp.xml">
++      </jgroupsConfig>     
++   </clustering>
++
++   <!-- Eviction configuration -->
++   <eviction wakeUpInterval="5000">
++      <default algorithmClass="org.jboss.cache.eviction.ExpirationAlgorithm"
++         actionPolicyClass="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ParentNodeEvictionActionPolicy"
++         eventQueueSize="1000000">
++         <property name="maxNodes" value="1000000" />
++         <property name="warnNoExpirationKey" value="false" />
++      </default>
++   </eviction>
++</jbosscache>
+\ No newline at end of file
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(revision 4235)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(revision 4237)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(working copy)
-@@ -471,6 +471,31 @@
+@@ -40,6 +40,7 @@
+ import java.util.Map;
+ import java.util.Set;
+ 
++import javax.transaction.Status;
+ import javax.transaction.TransactionManager;
+ 
+ /**
+@@ -64,6 +65,8 @@
+    private final boolean useExpiration;
+    
+    private final long expirationTimeOut;
++   
++   private final TransactionManager tm;
+ 
+    protected static final Log LOG =
+       ExoLogger.getLogger("org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache");
+@@ -71,6 +74,7 @@
+    public BufferedJBossCache(Cache<Serializable, Object> parentCache, boolean useExpiration, long expirationTimeOut)
+    {
+       super();
++      this.tm = ((CacheSPI<Serializable, Object>)parentCache).getTransactionManager();
+       this.parentCache = parentCache;
+       this.useExpiration = useExpiration;
+       this.expirationTimeOut = expirationTimeOut;
+@@ -109,7 +113,53 @@
+          //log.info("After=" + changesContainer.toString());
+          for (ChangesContainer cacheChange : containers)
+          {
+-            cacheChange.apply();
++            boolean isTxCreated = false;
++            try
++            {
++               if (cacheChange.isTxRequired() && tm != null && tm.getStatus() == Status.STATUS_NO_TRANSACTION)
++               {
++                  // No tx exists so we create a new tx
++                  if (LOG.isTraceEnabled()) LOG.trace("No Tx is active we then create a new tx");
++                  tm.begin();
++                  isTxCreated = true;
++               }
++            }
++            catch (Exception e)
++            {
++               LOG.warn("Could not create a new tx", e);
++            }
++            try
++            {
++               cacheChange.apply();
++            }
++            catch (RuntimeException e)
++            {
++               if (isTxCreated)
++               {
++                  try
++                  {
++                     if (LOG.isTraceEnabled()) LOG.trace("An error occurs the tx will be rollbacked");
++                     tm.rollback();
++                  }
++                  catch (Exception e1)
++                  {
++                     LOG.warn("Could not rollback the tx", e1);
++                  }
++               }
++               throw e;
++            }
++            if (isTxCreated)
++            {
++               try
++               {
++                  if (LOG.isTraceEnabled()) LOG.trace("The tx will be committed");
++                  tm.commit();
++               }
++               catch (Exception e)
++               {
++                  LOG.warn("Could not commit the tx", e);
++               }
++            }
+          }
+       }
+       finally
+@@ -118,6 +168,7 @@
+          changesContainer = null;
+       }
+    }
++   
+ 
+    /**
+     * Tries to get buffer and if it is null throws an exception otherwise returns buffer. 
+@@ -471,6 +522,31 @@
        return parentCache.get(fqn, key);
     }
  
@@ -34,7 +806,19 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
     public Object putInBuffer(Fqn fqn, Serializable key, Object value)
     {
        CompressedChangesBuffer changesContainer = getChangesBufferSafe();
-@@ -789,6 +814,42 @@
+@@ -758,6 +834,11 @@
+       }
+ 
+       public abstract void apply();
++            
++      public boolean isTxRequired()
++      {
++         return false;
++      }
+    }
+ 
+    /**
+@@ -789,6 +870,48 @@
     }
  
     /**
@@ -71,15 +855,47 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 +         setCacheLocalMode();
 +         cache.put(fqn, key, value);
 +      }
++           
++      @Override
++      public boolean isTxRequired()
++      {
++         return true;
++      }      
 +   }
 +
 +   /**
      * Put  container.
      */
     public static class PutKeyValueContainer extends ChangesContainer
+@@ -871,6 +994,12 @@
+                + existingObject.getClass().getName());
+          }
+       }
++      
++      @Override
++      public boolean isTxRequired()
++      {
++         return true;
++      }      
+    }
+ 
+    /**
+@@ -913,6 +1042,12 @@
+             cache.put(fqn, key, newSet);
+          }
+       }
++      
++      @Override
++      public boolean isTxRequired()
++      {
++         return false;
++      }      
+    }
+ 
+    /**
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4235)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4237)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(working copy)
 @@ -60,6 +60,7 @@
  
