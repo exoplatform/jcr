@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 /**
@@ -160,6 +161,11 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       }
 
       public abstract void apply();
+
+      public boolean isTxRequired()
+      {
+         return false;
+      }
    }
 
    /**
@@ -255,6 +261,12 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                + existingObject.getClass().getName());
          }
       }
+      
+      @Override
+      public boolean isTxRequired()
+      {
+         return true;
+      }
    }
 
    /**
@@ -290,6 +302,12 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             setCacheLocalMode();
             cache.put(key, newSet);
          }
+      }
+      
+      @Override
+      public boolean isTxRequired()
+      {
+         return true;
       }
    }
 
@@ -892,12 +910,62 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public void commitTransaction()
    {
       CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
+      TransactionManager tm = getTransactionManager();
       try
       {
          List<ChangesContainer> containers = changesContainer.getSortedList();
          for (ChangesContainer cacheChange : containers)
          {
-            cacheChange.apply();
+            boolean isTxCreated = false;
+            try
+            {
+               if (cacheChange.isTxRequired() && tm != null && tm.getStatus() == Status.STATUS_NO_TRANSACTION)
+               {
+                  // No tx exists so we create a new tx
+                  if (LOG.isTraceEnabled())
+                     LOG.trace("No Tx is active we then create a new tx");
+                  tm.begin();
+                  isTxCreated = true;
+               }
+            }
+            catch (Exception e)
+            {
+               LOG.warn("Could not create a new tx", e);
+            }
+            try
+            {
+               cacheChange.apply();
+            }
+            catch (RuntimeException e)
+            {
+               if (isTxCreated)
+               {
+                  try
+                  {
+                     if (LOG.isTraceEnabled())
+                        LOG.trace("An error occurs the tx will be rollbacked");
+                     tm.rollback();
+                  }
+                  catch (Exception e1)
+                  {
+                     LOG.warn("Could not rollback the tx", e1);
+                  }
+               }
+               throw e;
+            }
+            if (isTxCreated)
+            {
+               try
+               {
+                  if (LOG.isTraceEnabled())
+                     LOG.trace("The tx will be committed");
+                  tm.commit();
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("Could not commit the tx", e);
+               }
+            }
          }
       }
       finally

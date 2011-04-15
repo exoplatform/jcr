@@ -534,7 +534,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
       }
 
-      @Override
       public int getLastOrderNumber(NodeData parent) throws RepositoryException
       {
          return -1;
@@ -592,7 +591,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          return "0";
       }
 
-      @Override
       public String getUniqueName()
       {
          return "MyWorkspaceDataContainer";
