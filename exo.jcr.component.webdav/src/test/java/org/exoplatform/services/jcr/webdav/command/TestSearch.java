@@ -92,7 +92,7 @@ public class TestSearch extends BaseStandaloneTest
       SearchResultResponseEntity entity = (SearchResultResponseEntity)response.getEntity();
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       entity.write(outputStream);
-      String resp = outputStream.toString();
+      String resp = outputStream.toString("UTF-8");
 
       System.out.println("=======Search response============");
       System.out.println(resp);

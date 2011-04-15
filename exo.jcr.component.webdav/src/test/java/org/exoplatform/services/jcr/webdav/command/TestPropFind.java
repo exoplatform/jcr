@@ -150,7 +150,7 @@ public class TestPropFind extends BaseStandaloneTest
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       PropFindResponseEntity entity = (PropFindResponseEntity)response.getEntity();
       entity.write(outputStream);
-      String resp = outputStream.toString();
+      String resp = outputStream.toString("UTF-8");
 
       System.out.println("=======PropFind response==========");
       System.out.println(resp);
