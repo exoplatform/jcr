@@ -180,7 +180,7 @@ public final class WorkspaceContainerFacade
          case ManageableRepository.OFFLINE :
             break;
          case ManageableRepository.READONLY :
-            setReadOnly();
+            setReadOnly(true);
             break;
          case ManageableRepository.SUSPENDED :
             suspend();
@@ -193,12 +193,12 @@ public final class WorkspaceContainerFacade
    /**
     * Set all components readonly.
     */
-   private void setReadOnly()
+   private void setReadOnly(boolean readOnly)
    {
       List<ReadOnlySupport> components = getComponentInstancesOfType(ReadOnlySupport.class);
       for (ReadOnlySupport component : components)
       {
-         component.setReadOnly(true);
+         component.setReadOnly(readOnly);
       }
    }
 
@@ -224,29 +224,20 @@ public final class WorkspaceContainerFacade
    }
 
    /**
-    * Set all components online.
+    * Suspend all components in workspace.
     * 
     * @throws RepositoryException
     */
-   private void setOnline() throws RepositoryException
+   private void resume() throws RepositoryException
    {
-      List<ReadOnlySupport> readOnlyComponents = getComponentInstancesOfType(ReadOnlySupport.class);
-      for (ReadOnlySupport component : readOnlyComponents)
-      {
-         component.setReadOnly(false);
-      }
+      List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
+      Collections.reverse(components);
 
-      List<Suspendable> suspendableComponents = getComponentInstancesOfType(Suspendable.class);
-      Collections.reverse(suspendableComponents);
-
-      for (Suspendable component : suspendableComponents)
+      for (Suspendable component : components)
       {
          try
          {
-            if (component.isSuspended())
-            {
-               component.resume();
-            }
+            component.resume();
          }
          catch (ResumeException e)
          {
@@ -255,4 +246,14 @@ public final class WorkspaceContainerFacade
       }
    }
 
+   /**
+    * Set all components online.
+    * 
+    * @throws RepositoryException
+    */
+   private void setOnline() throws RepositoryException
+   {
+      setReadOnly(false);
+      resume();
+   }
 }

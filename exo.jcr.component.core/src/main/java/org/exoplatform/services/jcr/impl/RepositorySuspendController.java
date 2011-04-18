@@ -121,7 +121,7 @@ public class RepositorySuspendController implements Startable
    @ManagedDescription("Returns repository state.")
    public String getState()
    {
-      return repository.toString();
+      return repository.getStateTitle();
    }
 
    /**

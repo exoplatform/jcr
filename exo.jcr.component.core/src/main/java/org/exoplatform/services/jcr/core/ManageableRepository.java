@@ -179,4 +179,11 @@ public interface ManageableRepository extends Repository
     */
    int getState();
 
+   /**
+    * Returns the string representation of current repository state.
+    * 
+    * @return repository state
+    */
+   String getStateTitle();
+
 }

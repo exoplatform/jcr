@@ -692,32 +692,32 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * {@inheritDoc}
     */
-   @Override
-   public String toString()
+   public String getStateTitle()
    {
-      String stateTitle;
       switch (getState())
       {
          case ONLINE :
-            stateTitle = "online";
-            break;
+            return "online";
          case OFFLINE :
-            stateTitle = "offline";
-            break;
+            return "offline";
          case READONLY :
-            stateTitle = "readonly";
-            break;
+            return "readonly";
          case SUSPENDED :
-            stateTitle = "suspended";
-            break;
+            return "suspended";
          default :
-            stateTitle = "undefined";
-            break;
+            return "undefined";
       }
+   }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public String toString()
+   {
       String defaultWorkspaceName = config.getDefaultWorkspaceName();
       return String.format(
          "Repository {\n name: %s;\n system workspace: %s;\n default workspace: %s;\n workspaces: %s;\n state: %s \n}",
-         name, systemWorkspaceName, defaultWorkspaceName, Arrays.toString(getWorkspaceNames()), stateTitle);
+         name, systemWorkspaceName, defaultWorkspaceName, Arrays.toString(getWorkspaceNames()), getStateTitle());
    }
 }
