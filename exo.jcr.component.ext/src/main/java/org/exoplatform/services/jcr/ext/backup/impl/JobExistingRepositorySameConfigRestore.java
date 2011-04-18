@@ -18,8 +18,10 @@ package org.exoplatform.services.jcr.ext.backup.impl;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
@@ -29,8 +31,6 @@ import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestor;
 import org.exoplatform.services.jcr.impl.backup.JCRRestor;
 import org.exoplatform.services.jcr.impl.backup.JdbcBackupable;
-import org.exoplatform.services.jcr.impl.backup.ResumeException;
-import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
@@ -39,10 +39,10 @@ import java.io.File;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.jcr.RepositoryException;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.sql.DataSource;
@@ -77,9 +77,6 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
       // list of data restorers
       List<DataRestor> dataRestorer = new ArrayList<DataRestor>();
 
-      // the list of components to resume
-      List<Suspendable> resumeComponents = new ArrayList<Suspendable>();
-
       try
       {
          WorkspaceEntry wsEntry = repositoryEntry.getWorkspaceEntries().get(0);
@@ -107,19 +104,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             jdbcConn.setAutoCommit(false);
          }
 
-         // suspend all components
-         for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
-         {
-            List<Suspendable> suspendableComponents =
-               repositoryService.getRepository(this.repositoryEntry.getName()).getWorkspaceContainer(wEntry.getName())
-                  .getComponentInstancesOfType(Suspendable.class);
-
-            for (Suspendable component : suspendableComponents)
-            {
-               component.suspend();
-               resumeComponents.add(0, component); // ensure that first component will be resumed as last
-            }
-         }
+         repositoryService.getRepository(this.repositoryEntry.getName()).setState(ManageableRepository.SUSPENDED);
 
          // collect all restorers
          for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
@@ -161,20 +146,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          }
 
          // resume components
-         Iterator<Suspendable> iter = resumeComponents.iterator();
-         while (iter.hasNext())
-         {
-            try
-            {
-               iter.next().resume();
-            }
-            catch (ResumeException e)
-            {
-               log.error("Can't resume component", e);
-            }
-
-            iter.remove();
-         }
+         repositoryService.getRepository(this.repositoryEntry.getName()).setState(ManageableRepository.ONLINE);
 
          // incremental restore
          for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
@@ -232,16 +204,17 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             }
          }
 
-         for (Suspendable component : resumeComponents)
+         try
          {
-            try
-            {
-               component.resume();
-            }
-            catch (ResumeException e)
-            {
-               log.error("Can't resume component " + component.getClass(), e);
-            }
+            repositoryService.getRepository(this.repositoryEntry.getName()).setState(ManageableRepository.ONLINE);
+         }
+         catch (RepositoryException e)
+         {
+            log.error("Can't resume repository", e);
+         }
+         catch (RepositoryConfigurationException e)
+         {
+            log.error("Can't resume repository", e);
          }
       }
    }

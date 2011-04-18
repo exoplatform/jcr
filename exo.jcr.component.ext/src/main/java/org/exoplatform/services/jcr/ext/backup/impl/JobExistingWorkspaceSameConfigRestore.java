@@ -17,7 +17,9 @@
 package org.exoplatform.services.jcr.ext.backup.impl;
 
 import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
@@ -26,8 +28,6 @@ import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestor;
 import org.exoplatform.services.jcr.impl.backup.JCRRestor;
-import org.exoplatform.services.jcr.impl.backup.ResumeException;
-import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
@@ -35,8 +35,9 @@ import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -71,21 +72,10 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
       // list of data restorers
       List<DataRestor> dataRestorer = new ArrayList<DataRestor>();
 
-      // the list of components to resume
-      List<Suspendable> resumeComponents = new ArrayList<Suspendable>();
-
       try
       {
-         // suspend all components
-         List<Suspendable> suspendableComponents =
-            repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
-               .getComponentInstancesOfType(Suspendable.class);
-
-         for (Suspendable component : suspendableComponents)
-         {
-            component.suspend();
-            resumeComponents.add(0, component); // ensure that first component will be resumed as last
-         }
+         repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
+            .setState(ManageableRepository.SUSPENDED);
 
          // get all restorers
          List<Backupable> backupable =
@@ -115,21 +105,8 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
             restorer.commit();
          }
 
-         // resume components
-         Iterator<Suspendable> iter = resumeComponents.iterator();
-         while (iter.hasNext())
-         {
-            try
-            {
-               iter.next().resume();
-            }
-            catch (ResumeException e)
-            {
-               log.error("Can't resume component", e);
-            }
-
-            iter.remove();
-         }
+         repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
+            .setState(ManageableRepository.ONLINE);
 
          // incremental restore
          DataManager dataManager =
@@ -178,16 +155,18 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
             }
          }
 
-         for (Suspendable component : resumeComponents)
+         try
          {
-            try
-            {
-               component.resume();
-            }
-            catch (ResumeException e)
-            {
-               log.error("Can't resume component", e);
-            }
+            repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
+               .setState(ManageableRepository.ONLINE);
+         }
+         catch (RepositoryException e)
+         {
+            log.error("Can't resume component", e);
+         }
+         catch (RepositoryConfigurationException e)
+         {
+            log.error("Can't resume component", e);
          }
       }
    }

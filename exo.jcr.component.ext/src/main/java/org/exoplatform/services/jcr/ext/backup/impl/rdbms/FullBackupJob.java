@@ -19,16 +19,12 @@
 package org.exoplatform.services.jcr.ext.backup.impl.rdbms;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
 import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
-import org.exoplatform.services.jcr.impl.backup.ResumeException;
-import org.exoplatform.services.jcr.impl.backup.SuspendException;
-import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -36,7 +32,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -52,11 +47,6 @@ public class FullBackupJob extends AbstractFullBackupJob
    * Logger.
    */
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
-
-   /**
-    * Workspace configuration.
-    */
-   private WorkspaceEntry workspaceEntry;
 
    /**
     * {@inheritDoc}
@@ -104,34 +94,9 @@ public class FullBackupJob extends AbstractFullBackupJob
    {
       notifyListeners();
 
-      List<Suspendable> suspendableComponents =
-         repository.getWorkspaceContainer(workspaceName).getComponentInstancesOfType(Suspendable.class);
-
-      // the list of components to resume
-      List<Suspendable> resumeComponents = new ArrayList<Suspendable>();
-
       try
       {
-         for (WorkspaceEntry entry : repository.getConfiguration().getWorkspaceEntries())
-         {
-            if (entry.getName().equals(workspaceName))
-            {
-               workspaceEntry = entry;
-               break;
-            }
-         }
-
-         if (workspaceEntry == null)
-         {
-            throw new RepositoryException("Workpace [" + workspaceName + "] is absent in repository configuration");
-         }
-
-         // suspend all components
-         for (Suspendable component : suspendableComponents)
-         {
-            component.suspend();
-            resumeComponents.add(0, component); // ensure that first component will be resumed as last 
-         }
+         repository.getWorkspaceContainer(workspaceName).setState(ManageableRepository.SUSPENDED);
 
          List<Backupable> backupableComponents =
             repository.getWorkspaceContainer(workspaceName).getComponentInstancesOfType(Backupable.class);
@@ -141,11 +106,6 @@ public class FullBackupJob extends AbstractFullBackupJob
          {
             component.backup(new File(getStorageURL().getFile()));
          }
-      }
-      catch (SuspendException e)
-      {
-         log.error("Full backup failed " + getStorageURL().getPath(), e);
-         notifyError("Full backup failed", e);
       }
       catch (BackupException e)
       {
@@ -159,17 +119,14 @@ public class FullBackupJob extends AbstractFullBackupJob
       }
       finally
       {
-         for (Suspendable component : resumeComponents)
+         try
          {
-            try
-            {
-               component.resume();
-            }
-            catch (ResumeException e)
-            {
-               log.error("Full backup failed " + getStorageURL().getPath(), e);
-               notifyError("Full backup failed", e);
-            }
+            repository.getWorkspaceContainer(workspaceName).setState(ManageableRepository.ONLINE);
+         }
+         catch (RepositoryException e)
+         {
+            log.error("Full backup failed " + getStorageURL().getPath(), e);
+            notifyError("Full backup failed", e);
          }
       }
 
