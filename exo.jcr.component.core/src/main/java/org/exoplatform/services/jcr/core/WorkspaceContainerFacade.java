@@ -237,7 +237,10 @@ public final class WorkspaceContainerFacade
       {
          try
          {
-            component.resume();
+            if (component.isSuspended())
+            {
+               component.resume();
+            }
          }
          catch (ResumeException e)
          {
