@@ -242,4 +242,9 @@ public class BindableRepositoryImpl implements Serializable, Referenceable, Mana
       delegatee.setState(state);
    }
 
+   public String getStateTitle()
+   {
+      return delegatee.getStateTitle();
+   }
+
 }
