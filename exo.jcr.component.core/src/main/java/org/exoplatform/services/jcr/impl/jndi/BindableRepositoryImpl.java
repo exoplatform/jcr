@@ -237,7 +237,7 @@ public class BindableRepositoryImpl implements Serializable, Referenceable, Mana
       return delegatee.getState();
    }
 
-   public void setState(int state)
+   public void setState(int state) throws RepositoryException
    {
       delegatee.setState(state);
    }

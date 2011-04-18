@@ -34,7 +34,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
-import org.exoplatform.services.jcr.impl.backup.RepositorySuspendController;
 import org.exoplatform.services.jcr.impl.core.AddNamespacePluginHolder;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceDataPersister;

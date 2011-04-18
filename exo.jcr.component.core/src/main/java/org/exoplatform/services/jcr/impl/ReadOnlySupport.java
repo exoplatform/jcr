@@ -16,33 +16,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.backup;
+package org.exoplatform.services.jcr.impl;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
- * @version $Id: Suspendable.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: ReadOnlySupport.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public interface Suspendable
+public interface ReadOnlySupport
 {
-   /**
-    * Suspend component.
-    *  
-    * @throws SuspendException if error occurred 
-    */
-   void suspend() throws SuspendException;
 
    /**
-    * Resume component.
-    *  
-    * @throws ResumeException if error occurred 
-    */
-   void resume() throws ResumeException;
-
-   /**
-    * Indicates if component is suspended or not.
+    * Status of write-operations restrictions.
     * 
-    * @return
+    * Read-only status is descriptive within the container, i.e. will not prevent any write
+    * operation.
+    * 
+    * Used in DataManager implementations.
+    * 
+    * @return true - if write-operations allowed, false - otherwise.
     */
-   boolean isSuspended();
+   boolean isReadOnly();
+
+   /**
+    * Set status of write-operations restrictions.
+    * 
+    * Read-only status is descriptive within the container, i.e. will not prevent any write
+    * operation.
+    * 
+    * Used in DataManager implementations.
+    * 
+    * @param status
+    *          , true - if write-operations allowed, false - otherwise.
+    */
+   void setReadOnly(boolean status);
 
 }

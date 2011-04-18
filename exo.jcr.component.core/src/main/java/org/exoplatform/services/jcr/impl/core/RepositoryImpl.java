@@ -137,7 +137,7 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * Repository state. OFFLINE by default.
     */
-   private int state = OFFLINE;
+   private boolean isOffline = true;
 
    /**
     * RepositoryImpl constructor.
@@ -648,60 +648,55 @@ public class RepositoryImpl implements ManageableRepository
     */
    public int getState()
    {
-      return state;
+      if (isOffline)
+      {
+         return OFFLINE;
+      }
+      
+      Integer state = null;
+      for (String workspaceName : getWorkspaceNames())
+      {
+         int workspaceState = getWorkspaceContainer(workspaceName).getState();
+         if (state == null)
+         {
+            state = workspaceState;
+         }
+         else if (state != workspaceState)
+         {
+            return UNDEFINED;
+         }
+      }
+      
+      return state == null ? ONLINE : state;
    }
 
    /**
     * {@inheritDoc}
     */
-   public void setState(int state)
+   public void setState(int state) throws RepositoryException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
+      if (getState() != ONLINE && !(state == ONLINE || state == OFFLINE))
       {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+         throw new RepositoryException("First switch repository to ONLINE and then to needed state.\n" + toString());
       }
 
-      switch (state)
+      // set state for all workspaces
+      for (String workspaceName : getWorkspaceNames())
       {
-         case ONLINE :
-            // set ONLINE all workspaces
-            setAllWorkspacesReadOnly(false);
-            break;
-         case OFFLINE :
-            // TODO do nothing
-            break;
-         case READONLY :
-            // set READONLY all workspaces
-            setAllWorkspacesReadOnly(true);
-            break;
+         getWorkspaceContainer(workspaceName).setState(state);
       }
 
-      this.state = state;
+      isOffline = state == OFFLINE;
    }
 
    /**
-    * Set all repository workspaces ReadOnly status.
-    *
-    * @param wsStatus ReadOnly workspace status
+    * {@inheritDoc}
     */
-   private void setAllWorkspacesReadOnly(boolean wsStatus)
-   {
-      WorkspaceContainerFacade wsFacade;
-      for (String workspaceName : getWorkspaceNames())
-      {
-         wsFacade = getWorkspaceContainer(workspaceName);
-         PersistentDataManager dataManager = (PersistentDataManager)wsFacade.getComponent(PersistentDataManager.class);
-         dataManager.setReadOnly(wsStatus);
-      }
-   }
-
    @Override
    public String toString()
    {
       String stateTitle;
-      switch (state)
+      switch (getState())
       {
          case ONLINE :
             stateTitle = "online";
@@ -712,13 +707,17 @@ public class RepositoryImpl implements ManageableRepository
          case READONLY :
             stateTitle = "readonly";
             break;
+         case SUSPENDED :
+            stateTitle = "suspended";
+            break;
          default :
             stateTitle = "undefined";
+            break;
       }
+
       String defaultWorkspaceName = config.getDefaultWorkspaceName();
       return String.format(
          "Repository {\n name: %s;\n system workspace: %s;\n default workspace: %s;\n workspaces: %s;\n state: %s \n}",
          name, systemWorkspaceName, defaultWorkspaceName, Arrays.toString(getWorkspaceNames()), stateTitle);
    }
-
 }

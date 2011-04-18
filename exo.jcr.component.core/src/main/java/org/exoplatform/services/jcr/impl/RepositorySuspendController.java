@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.backup;
+package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -28,9 +28,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import javax.jcr.RepositoryException;
 
 /**
  * Allows via JMX suspend and resume repository's components.
@@ -43,20 +41,8 @@ import java.util.List;
 public class RepositorySuspendController implements Startable
 {
    /**
-    * Repository ONLINE status.
+    * The current repository.
     */
-   private final String ONLINE = "online";
-
-   /**
-    * Repository SUSPENDED state.
-    */
-   private final String SUSPENDED = "suspended";
-
-   /**
-    * Undefined state. 
-    */
-   private final String UNDEFINED = "undefined";
-
    private final ManageableRepository repository;
 
    /**
@@ -88,16 +74,13 @@ public class RepositorySuspendController implements Startable
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      for (Suspendable component : getSuspendableComponents())
+      try
       {
-         try
-         {
-            component.suspend();
-         }
-         catch (SuspendException e)
-         {
-            log.error("Can't suspend component", e);
-         }
+         repository.setState(ManageableRepository.SUSPENDED);
+      }
+      catch (RepositoryException e)
+      {
+         log.error(e);
       }
 
       return getState();
@@ -119,22 +102,13 @@ public class RepositorySuspendController implements Startable
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      List<Suspendable> components = getSuspendableComponents();
-      Collections.reverse(components);
-
-      for (Suspendable component : components)
+      try
       {
-         try
-         {
-            if (component.isSuspended())
-            {
-               component.resume();
-            }
-         }
-         catch (ResumeException e)
-         {
-            log.error("Can't resume component", e);
-         }
+         repository.setState(ManageableRepository.ONLINE);
+      }
+      catch (RepositoryException e)
+      {
+         log.error(e);
       }
 
       return getState();
@@ -147,35 +121,7 @@ public class RepositorySuspendController implements Startable
    @ManagedDescription("Returns repository state.")
    public String getState()
    {
-      String state = ONLINE;
-      
-      boolean hasSuspendedComponents = false;
-      boolean hasOnlineComponents = false;
-
-      for (Suspendable component : getSuspendableComponents())
-      {
-         if (component.isSuspended())
-         {
-            hasSuspendedComponents = true;
-
-            if (hasOnlineComponents)
-            {
-               return UNDEFINED;
-            }
-
-            state = SUSPENDED;
-         }
-         else
-         {
-            hasOnlineComponents = true;
-            if (hasSuspendedComponents)
-            {
-               return UNDEFINED;
-            }
-         }
-      }
-
-      return state;
+      return repository.toString();
    }
 
    /**
@@ -190,17 +136,5 @@ public class RepositorySuspendController implements Startable
     */
    public void stop()
    {
-   }
-
-   private List<Suspendable> getSuspendableComponents()
-   {
-      List<Suspendable> components = new ArrayList<Suspendable>();
-      for (String workspaceName : repository.getWorkspaceNames())
-      {
-         components.addAll(repository.getWorkspaceContainer(workspaceName).getComponentInstancesOfType(
-            Suspendable.class));
-      }
-
-      return components;
    }
 }
