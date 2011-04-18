@@ -396,11 +396,26 @@
                      <name>jbosscache-shareable</name>
                      <value>${jbosscache.shareable}</value>
                   </property>                  
-            <!-- Uncomment the line below if you want to enable the statistics -->
-            <!--property>
-                <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                <value>true</value>
-            </property-->
+                  <!-- Uncomment the line below if you want to enable the statistics -->
+                  <!--property>
+                      <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                      <value>true</value>
+                  </property-->
+                  <!-- We add this system property due to some incompatibility between IPv6 and 
+						some JVM of Linux distributions such as Ubuntu and Fedora-->
+                  <property>
+                     <name>java.net.preferIPv4Stack</name>
+                     <value>true</value>
+                  </property>
+                  <!-- Avoid the firewall -->
+                  <property>
+                     <name>bind.address</name>
+                     <value>127.0.0.1</value>
+                  </property>
+                  <property>
+                     <name>jgroups.stack</name>
+                     <value>udp</value>
+                  </property>            
                </systemProperties>
                <includes>
                   <include>org/exoplatform/services/jcr/api/**/Test*.java</include>
@@ -605,6 +620,21 @@
                      <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
                      <value>true</value>
                      </property-->
+                     <!-- We add this system property due to some incompatibility between IPv6 and 
+						some JVM of Linux distributions such as Ubuntu and Fedora-->
+                        <property>
+                           <name>java.net.preferIPv4Stack</name>
+                           <value>true</value>
+                        </property>
+                        <!-- Avoid the firewall -->
+                        <property>
+                           <name>bind.address</name>
+                           <value>127.0.0.1</value>
+                        </property>
+                        <property>
+                           <name>jgroups.stack</name>
+                           <value>udp</value>
+                        </property>                     
                      </systemProperties>
                      <includes>
                         <include>org/apache/jackrabbit/test/api/*Test.java</include>
@@ -682,6 +712,21 @@
                      <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
                      <value>true</value>
                      </property-->
+                     <!-- We add this system property due to some incompatibility between IPv6 and 
+						some JVM of Linux distributions such as Ubuntu and Fedora-->
+                        <property>
+                           <name>java.net.preferIPv4Stack</name>
+                           <value>true</value>
+                        </property>
+                        <!-- Avoid the firewall -->
+                        <property>
+                           <name>bind.address</name>
+                           <value>127.0.0.1</value>
+                        </property>
+                        <property>
+                           <name>jgroups.stack</name>
+                           <value>udp</value>
+                        </property>                     
                      </systemProperties>
                      <includes>
                         <!-- From default tests -->
@@ -761,6 +806,21 @@
                         <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
                         <value>true</value>
                         </property-->
+                        <!-- We add this system property due to some incompatibility between IPv6 and 
+						some JVM of Linux distributions such as Ubuntu and Fedora-->
+                        <property>
+                           <name>java.net.preferIPv4Stack</name>
+                           <value>true</value>
+                        </property>
+                        <!-- Avoid the firewall -->
+                        <property>
+                           <name>bind.address</name>
+                           <value>127.0.0.1</value>
+                        </property>
+                        <property>
+                           <name>jgroups.stack</name>
+                           <value>udp</value>
+                        </property>                        
                      </systemProperties>
                      <includes>
                         <include>**/**/reading_/Test*.java</include>
