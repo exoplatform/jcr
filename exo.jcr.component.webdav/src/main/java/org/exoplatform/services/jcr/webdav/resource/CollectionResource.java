@@ -29,9 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -418,10 +416,8 @@ public class CollectionResource extends GenericResource
                writer.writeStartElement(XML_NODE);
                writer.writeAttribute(PREFIX_XMLNS, PREFIX_LINK);
                writer.writeAttribute(XLINK_XMLNS, XLINK_LINK);
-               String itemName = URLDecoder.decode(node.getName(), "UTF-8");
-               writer.writeAttribute(XML_NAME, itemName);
-               String itemPath = node.getPath();
-               writer.writeAttribute(XML_HREF, rootHref + itemPath);
+               writer.writeAttribute(XML_NAME, node.getName());
+               writer.writeAttribute(XML_HREF, rootHref + TextUtil.escape(node.getPath(), '%', true));
                // add properties
                for (PropertyIterator pi = node.getProperties(); pi.hasNext();)
                {
@@ -437,8 +433,8 @@ public class CollectionResource extends GenericResource
                {
                   Node childNode = ni.nextNode();
                   writer.writeStartElement(XML_NODE);
-                  writer.writeAttribute(XML_NAME, URLDecoder.decode(childNode.getName(), "UTF-8"));
-                  String childNodeHref = rootHref + URLDecoder.decode(childNode.getPath(), "UTF-8");
+                  writer.writeAttribute(XML_NAME, childNode.getName());
+                  String childNodeHref = rootHref + TextUtil.escape(childNode.getPath(), '%', true);
                   writer.writeAttribute(XML_HREF, childNodeHref);
                   writer.writeEndElement();
                }
@@ -452,10 +448,6 @@ public class CollectionResource extends GenericResource
             catch (XMLStreamException e)
             {
                LOG.error("Error has occured while xml processing : ", e);
-            }
-            catch (UnsupportedEncodingException e)
-            {
-               LOG.warn(e.getMessage());
             }
             finally
             {
