@@ -652,6 +652,71 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/da
 +   };   
 +}
 \ No newline at end of file
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/search/TestSearch.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/search/TestSearch.java	(revision 4238)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/search/TestSearch.java	(working copy)
+@@ -71,6 +71,60 @@
+       return ntFile;
+    }
+ 
++   public void testSpecialCharacters() throws Exception
++   {
++      Node queryNode = testNode.addNode("node-testSpecialCharacters");
++      String[] specialChar = {"a", "+", "-", "&&", "||", "!", "(", ")", "{", "}", "[", "]", "^","\"", "~", "*", "?", ":", "\\", "&", "$", "@", "%", "|", "(1+1):2", "\\(1\\+1\\)\\:2"};
++      StringBuilder buffer = new StringBuilder();
++      for (String sChar : specialChar)
++      {
++         buffer.append(' ').append(sChar);
++      }
++      queryNode.setProperty("full-content", buffer.toString());
++      session.save();
++      for (String sChar : specialChar)
++      {
++         QueryManager manager = session.getWorkspace().getQueryManager();
++         String sqlQuery = "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testNode.getPath() + "/%' and contains(*, '" + sChar + "')";
++         Query query = manager.createQuery(sqlQuery, Query.SQL);
++
++         QueryResult queryResult;
++         try
++         {
++            queryResult = query.execute();
++            assertNotNull(queryResult.getNodes());
++            if (queryResult.getNodes().hasNext())
++               System.out.println("It works well with '" + sChar + "' path =" + queryResult.getNodes().nextNode().getPath());
++            else  
++               System.err.println("No results could be found for '" + sChar + "'");
++         }
++         catch (Exception e)
++         {
++            System.err.println("It fails with '" + sChar + "' let's escape it");
++            StringBuilder sb = new StringBuilder();
++            for (int i = 0; i < sChar.length(); i++)
++            {
++               sb.append('\\').append(sChar.charAt(i));
++            }
++            sChar = sb.toString();
++            sqlQuery = "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testNode.getPath() + "/%' and contains(*, '" + sChar + "')";
++            query = manager.createQuery(sqlQuery, Query.SQL);
++            try
++            {
++               queryResult = query.execute();
++               assertNotNull(queryResult.getNodes());
++               if (queryResult.getNodes().hasNext())
++                  System.out.println("It works well with '" + sChar + "' path =" + queryResult.getNodes().nextNode().getPath());
++               else  
++                  System.err.println("No results could be found for '" + sChar + "'");
++            }
++            catch (Exception e1)
++            {
++               System.out.println("It fails also with '" + sChar + "'");
++            }
++         }
++      }      
++   }
+    public void testAllofNodeType() throws Exception
+    {
+ 
 Index: exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-data-no-mux.xml
 ===================================================================
 --- exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-data-no-mux.xml	(revision 0)
@@ -684,7 +749,7 @@ Index: exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jb
 \ No newline at end of file
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(revision 4237)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(revision 4238)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(working copy)
 @@ -40,6 +40,7 @@
  import java.util.Map;
@@ -895,7 +960,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
     /**
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4237)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4238)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(working copy)
 @@ -60,6 +60,7 @@
  
@@ -1244,3 +1309,105 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 +      }
 +   }
  }
+Index: exo.jcr.component.core/pom.xml
+===================================================================
+--- exo.jcr.component.core/pom.xml	(revision 4238)
++++ exo.jcr.component.core/pom.xml	(working copy)
+@@ -383,11 +383,26 @@
+                      <name>emma.coverage.out.file</name>
+                      <value>target/emma/coverage.ec</value>
+                   </property>
+-            <!-- Uncomment the line below if you want to enable the statistics -->
+-            <!--property>
+-                <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+-                <value>true</value>
+-            </property-->
++                  <!-- Uncomment the line below if you want to enable the statistics -->
++                  <!--property>
++                      <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
++                      <value>true</value>
++                  </property-->
++                  <!-- We add this system property due to some incompatibility between IPv6 and 
++						some JVM of Linux distributions such as Ubuntu and Fedora-->
++                  <property>
++                     <name>java.net.preferIPv4Stack</name>
++                     <value>true</value>
++                  </property>
++                  <!-- Avoid the firewall -->
++                  <property>
++                     <name>bind.address</name>
++                     <value>127.0.0.1</value>
++                  </property>
++                  <property>
++                     <name>jgroups.stack</name>
++                     <value>udp</value>
++                  </property>            
+                </systemProperties>
+                <includes>
+                   <include>org/exoplatform/services/jcr/api/**/Test*.java</include>
+@@ -575,6 +590,21 @@
+                      <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                      <value>true</value>
+                      </property-->
++                     <!-- We add this system property due to some incompatibility between IPv6 and 
++						some JVM of Linux distributions such as Ubuntu and Fedora-->
++                        <property>
++                           <name>java.net.preferIPv4Stack</name>
++                           <value>true</value>
++                        </property>
++                        <!-- Avoid the firewall -->
++                        <property>
++                           <name>bind.address</name>
++                           <value>127.0.0.1</value>
++                        </property>
++                        <property>
++                           <name>jgroups.stack</name>
++                           <value>udp</value>
++                        </property>                     
+                      </systemProperties>
+                      <includes>
+                         <include>org/apache/jackrabbit/test/api/*Test.java</include>
+@@ -647,6 +677,21 @@
+                      <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                      <value>true</value>
+                      </property-->
++                     <!-- We add this system property due to some incompatibility between IPv6 and 
++						some JVM of Linux distributions such as Ubuntu and Fedora-->
++                        <property>
++                           <name>java.net.preferIPv4Stack</name>
++                           <value>true</value>
++                        </property>
++                        <!-- Avoid the firewall -->
++                        <property>
++                           <name>bind.address</name>
++                           <value>127.0.0.1</value>
++                        </property>
++                        <property>
++                           <name>jgroups.stack</name>
++                           <value>udp</value>
++                        </property>                     
+                      </systemProperties>
+                      <includes>
+                         <!-- From default tests -->
+@@ -725,6 +770,21 @@
+                         <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                         <value>true</value>
+                         </property-->
++                        <!-- We add this system property due to some incompatibility between IPv6 and 
++						some JVM of Linux distributions such as Ubuntu and Fedora-->
++                        <property>
++                           <name>java.net.preferIPv4Stack</name>
++                           <value>true</value>
++                        </property>
++                        <!-- Avoid the firewall -->
++                        <property>
++                           <name>bind.address</name>
++                           <value>127.0.0.1</value>
++                        </property>
++                        <property>
++                           <name>jgroups.stack</name>
++                           <value>udp</value>
++                        </property>                        
+                      </systemProperties>
+                      <includes>
+                         <include>**/**/reading_/Test*.java</include>
