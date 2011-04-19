@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 /**
@@ -64,6 +65,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    private final boolean useExpiration;
    
    private final long expirationTimeOut;
+   
+   private final TransactionManager tm;
 
    protected static final Log LOG =
       ExoLogger.getLogger("org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache");
@@ -71,6 +74,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public BufferedJBossCache(Cache<Serializable, Object> parentCache, boolean useExpiration, long expirationTimeOut)
    {
       super();
+      this.tm = ((CacheSPI<Serializable, Object>)parentCache).getTransactionManager();
       this.parentCache = parentCache;
       this.useExpiration = useExpiration;
       this.expirationTimeOut = expirationTimeOut;
@@ -109,7 +113,53 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          //log.info("After=" + changesContainer.toString());
          for (ChangesContainer cacheChange : containers)
          {
-            cacheChange.apply();
+            boolean isTxCreated = false;
+            try
+            {
+               if (cacheChange.isTxRequired() && tm != null && tm.getStatus() == Status.STATUS_NO_TRANSACTION)
+               {
+                  // No tx exists so we create a new tx
+                  if (LOG.isTraceEnabled()) LOG.trace("No Tx is active we then create a new tx");
+                  tm.begin();
+                  isTxCreated = true;
+               }
+            }
+            catch (Exception e)
+            {
+               LOG.warn("Could not create a new tx", e);
+            }
+            try
+            {
+               cacheChange.apply();
+            }
+            catch (RuntimeException e)
+            {
+               if (isTxCreated)
+               {
+                  try
+                  {
+                     if (LOG.isTraceEnabled()) LOG.trace("An error occurs the tx will be rollbacked");
+                     tm.rollback();
+                  }
+                  catch (Exception e1)
+                  {
+                     LOG.warn("Could not rollback the tx", e1);
+                  }
+               }
+               throw e;
+            }
+            if (isTxCreated)
+            {
+               try
+               {
+                  if (LOG.isTraceEnabled()) LOG.trace("The tx will be committed");
+                  tm.commit();
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("Could not commit the tx", e);
+               }
+            }
          }
       }
       finally
@@ -118,6 +168,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          changesContainer = null;
       }
    }
+   
 
    /**
     * Tries to get buffer and if it is null throws an exception otherwise returns buffer. 
@@ -471,6 +522,31 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       return parentCache.get(fqn, key);
    }
 
+   /**
+    * in case putIfAbsent is set to <code>true</code> this method will call cache.putIfAbsent(Fqn fqn, Serializable key, Object value)
+    *  otherwise it will call cache.put(Fqn fqn, Serializable key, Object value)
+    */
+   protected Object put(Fqn fqn, Serializable key, Object value, boolean putIfAbsent)
+   {
+      if (putIfAbsent)
+      {
+         putIfAbsent(fqn, key, value);
+         return null;
+      }
+      return put(fqn, key, value);
+   }
+
+   /**
+    * This method will create and add a ChangesContainer that will put the value only if no value has been added
+    */
+   protected Object putIfAbsent(Fqn fqn, Serializable key, Object value)
+   {
+      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new PutIfAbsentKeyValueContainer(fqn, key, value, parentCache, changesContainer
+         .getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
+      return null;
+   }
+
    public Object putInBuffer(Fqn fqn, Serializable key, Object value)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
@@ -758,6 +834,11 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       }
 
       public abstract void apply();
+            
+      public boolean isTxRequired()
+      {
+         return false;
+      }
    }
 
    /**
@@ -786,6 +867,48 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             putExpiration(fqn);
          }
       }
+   }
+
+   /**
+     * PutIfAbsent  container.
+     */
+   public static class PutIfAbsentKeyValueContainer extends ChangesContainer
+   {
+      private final Serializable key;
+
+      private final Object value;
+
+      public PutIfAbsentKeyValueContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
+         int historicalIndex, boolean local, boolean useExpiration, long timeOut)
+      {
+         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         this.key = key;
+         this.value = value;
+      }
+
+      @Override
+      public void apply()
+      {
+         cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
+         if (cache.get(fqn, key) != null)
+         {
+            // skip
+            return;
+         }
+         if (useExpiration)
+         {
+            putExpiration(fqn);
+         }
+
+         setCacheLocalMode();
+         cache.put(fqn, key, value);
+      }
+           
+      @Override
+      public boolean isTxRequired()
+      {
+         return true;
+      }      
    }
 
    /**
@@ -871,6 +994,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                + existingObject.getClass().getName());
          }
       }
+      
+      @Override
+      public boolean isTxRequired()
+      {
+         return true;
+      }      
    }
 
    /**
@@ -913,6 +1042,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             cache.put(fqn, key, newSet);
          }
       }
+      
+      @Override
+      public boolean isTxRequired()
+      {
+         return false;
+      }      
    }
 
    /**
