@@ -192,7 +192,9 @@ public abstract class AccessManager
 
             }
             else if (user.isMemberOf(ace.getMembershipEntry()))
+            {
                return true;
+            }
          }
       }
       return false;

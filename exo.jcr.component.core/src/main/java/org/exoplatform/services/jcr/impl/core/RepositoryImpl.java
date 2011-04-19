@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.access.AuthenticationPolicy;
+import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -41,6 +42,8 @@ import org.exoplatform.services.jcr.impl.xml.importing.StreamImporter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.MembershipEntry;
 import org.picocontainer.ComponentAdapter;
 
 import java.io.IOException;
@@ -51,6 +54,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -84,7 +88,7 @@ public class RepositoryImpl implements ManageableRepository
     */
    private static final CredentialsImpl SYSTEM_CREDENTIALS = new CredentialsImpl(SystemIdentity.SYSTEM,
       "".toCharArray());
-
+   
    /**
     * Logger.
     */
@@ -393,6 +397,29 @@ public class RepositoryImpl implements ManageableRepository
       SessionFactory sessionFactory = workspaceContainer.getSessionFactory();
 
       return sessionFactory.createSession(authenticationPolicy.authenticate(SYSTEM_CREDENTIALS));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public SessionImpl getDynamicSession(String workspaceName, Collection<MembershipEntry> membershipEntries)
+            throws RepositoryException
+   {
+
+      if (getState() == OFFLINE)
+         LOG.warn("Repository " + getName() + " is OFFLINE.");
+
+      WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
+      if (workspaceContainer == null || !workspaceContainer.getWorkspaceInitializer().isWorkspaceInitialized())
+      {
+         throw new RepositoryException("Workspace " + workspaceName + " not found or workspace is not initialized");
+      }
+
+      SessionFactory sessionFactory = workspaceContainer.getSessionFactory();
+
+      Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
+
+      return sessionFactory.createSession(new ConversationState(id));
    }
 
    /**

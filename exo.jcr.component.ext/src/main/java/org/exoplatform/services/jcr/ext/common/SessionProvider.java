@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.ext.common;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.ManageableRepository;
@@ -28,6 +30,7 @@ import org.exoplatform.services.security.MembershipEntry;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.jcr.LoginException;
@@ -113,6 +116,29 @@ public class SessionProvider implements SessionLifecycleListener
       return new SessionProvider(new ConversationState(id));
    }
 
+   public static SessionProvider createProvider(List<AccessControlEntry> accessList)
+   {
+      if (accessList == null || accessList.isEmpty())
+      {
+         return createAnonimProvider();
+      }
+      else
+      {
+         HashSet<MembershipEntry> membershipEntries = new HashSet<MembershipEntry>();
+
+         for (AccessControlEntry ace : accessList)
+         {
+            membershipEntries.add(ace.getMembershipEntry());
+         }
+
+         Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
+         ConversationState conversationState = new ConversationState(id);
+         ConversationState.setCurrent(conversationState);
+         return new SessionProvider(conversationState);
+      }
+
+   }
+
    /**
     * Gets the session from internal cache or creates and caches new one.
     * 
@@ -142,11 +168,19 @@ public class SessionProvider implements SessionLifecycleListener
 
       if (session == null)
       {
-
-         if (!isSystem)
+         ConversationState conversationState = ConversationState.getCurrent();
+         if (conversationState != null && conversationState.getIdentity().getUserId().equals(DynamicIdentity.DYNAMIC))
+         {
+            session = (ExtendedSession) repository.getDynamicSession(workspaceName, conversationState.getIdentity().getMemberships());
+         }
+         else if (!isSystem)
+         {
             session = (ExtendedSession)repository.login(workspaceName);
+         }
          else
+         {
             session = (ExtendedSession)repository.getSystemSession(workspaceName);
+         }
 
          session.registerLifecycleListener(this);
 

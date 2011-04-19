@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
@@ -131,6 +132,15 @@ public class SessionFactory
          {
             security.checkPermission(JCRRuntimePermissions.CREATE_SYSTEM_SESSION_PERMISSION);
          }         
+      }
+      else if (DynamicIdentity.DYNAMIC.equals(user.getIdentity().getUserId()))
+      {
+         // Need privileges to get Dynamic session.
+         SecurityManager security = System.getSecurityManager();
+         if (security != null)
+         {
+            security.checkPermission(JCRRuntimePermissions.CREATE_DYNAMIC_SESSION_PERMISSION);
+         }
       }
       if (tService == null)
       {
