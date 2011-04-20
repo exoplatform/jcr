@@ -6,8 +6,7 @@
 
   <title>eXoCore</title>
 
-  <xi:include href="core/core.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <xi:include href="core/core.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="core/db-creator-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
@@ -19,26 +18,29 @@
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="core/organization-service.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="core/organization-service-initalizer.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />                            
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="core/organization-service-listener.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="core/conversationstate-when-membership-changed.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" /> 
-              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="core/db-schema-creator-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="core/db-configuration-hibernate.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />                      
-              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="core/ldap-configuration.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />                                    
-              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="core/tika-document-reader-service.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />                                    
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              
+  <xi:include href="core/digest-auth.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 </part>
