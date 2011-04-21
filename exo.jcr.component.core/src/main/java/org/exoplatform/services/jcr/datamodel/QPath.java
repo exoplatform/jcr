@@ -173,7 +173,7 @@ public class QPath implements Comparable<QPath>
       if (names.length - ancestorNames.length <= 0)
          return false;
 
-      for (int i = 0; i < ancestorNames.length; i++)
+      for (int i = ancestorNames.length - 1; i >= 0; i--)
       {
          if (!names[i].equals(ancestorNames[i]))
             return false;
@@ -191,13 +191,11 @@ public class QPath implements Comparable<QPath>
    {
       final InternalQName[] anotherNames = anotherPath.names;
 
-      // int depthDiff = getDepth() - anotherPath.getDepth();
       int depthDiff = names.length - anotherNames.length;
       if (depthDiff <= 0 || (childOnly && depthDiff != 1))
          return false;
 
-      // InternalQName[] anotherNames = anotherPath.getEntries();
-      for (int i = 0; i < anotherNames.length; i++)
+      for (int i = anotherNames.length - 1; i >= 0; i--)
       {
          if (!anotherNames[i].equals(names[i]))
             return false;
