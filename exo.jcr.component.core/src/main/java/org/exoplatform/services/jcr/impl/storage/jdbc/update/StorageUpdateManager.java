@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.update;
 
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,11 +34,6 @@ import java.sql.Statement;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -416,7 +416,7 @@ public class StorageUpdateManager
       }
       catch (SQLException e)
       {
-         e.printStackTrace();
+         log.error(e.getLocalizedMessage(), e);
       }
       finally
       {

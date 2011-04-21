@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.impl;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,6 +32,8 @@ import org.exoplatform.services.jcr.datamodel.QPath;
  */
 public class Constants
 {
+
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.Constants");
 
    /**
     * Default namespace prefix (empty uri).
@@ -708,8 +712,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse JCR_SYSTEM_URI for constant JCR_SYSTEM (" + JCR_SYSTEM_URI + "): " + e);
+         log.error("ERROR: Can't parse JCR_SYSTEM_URI for constant JCR_SYSTEM (" + JCR_SYSTEM_URI + "): " + e, e);
       }
 
       try
@@ -718,9 +721,8 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse JCR_VERSION_STORAGE_URI for constant JCR_VERSION_STORAGE_PATH ("
-            + JCR_VERSION_STORAGE_URI + "): " + e);
+         log.error("ERROR: Can't parse JCR_VERSION_STORAGE_URI for constant JCR_VERSION_STORAGE_PATH ("
+                  + JCR_VERSION_STORAGE_URI + "): " + e, e);
       }
 
       try
@@ -729,9 +731,8 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse JCR_NODETYPES_URI for constant JCR_NODETYPES_PATH ("
-            + JCR_NODETYPES_URI + "): " + e);
+         log.error("ERROR: Can't parse JCR_NODETYPES_URI for constant JCR_NODETYPES_PATH ("
+            + JCR_NODETYPES_URI + "): " + e, e);
       }
 
       String nsUri = JCR_SYSTEM_URI + EXO_NAMESPACES.getAsString() + ":1";
@@ -741,8 +742,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse EXO_NAMESPACES_URI for constant EXO_NAMESPACES (" + nsUri + "): " + e);
+         log.error("ERROR: Can't parse EXO_NAMESPACES_URI for constant EXO_NAMESPACES (" + nsUri + "): " + e, e);
       }
 
       try
@@ -751,8 +751,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse ROOT_URI " + e);
+         log.error("ERROR: Can't parse ROOT_URI " + e, e);
       }
 
    }

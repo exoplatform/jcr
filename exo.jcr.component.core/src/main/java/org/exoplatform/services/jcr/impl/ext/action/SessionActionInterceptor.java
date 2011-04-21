@@ -48,11 +48,14 @@ import javax.jcr.RepositoryException;
 public class SessionActionInterceptor
 {
 
+   /**
+    * Logger
+    */
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionActionInterceptor");
+
    private final ActionCatalog catalog;
 
    private final ExoContainer container;
-
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionActionInterceptor");
 
    /**
     * SessionActionInterceptor is per session, and only one action per session/time can be active.
@@ -403,10 +406,7 @@ public class SessionActionInterceptor
       InternalQName[] nodeTypeNames = new InternalQName[mixinNames.length + 1];
 
       nodeTypeNames[0] = primaryTypeName;
-      for (int i = 1; i <= mixinNames.length; i++)
-      {
-         nodeTypeNames[i] = mixinNames[i - 1];
-      }
+      System.arraycopy(mixinNames, 0, nodeTypeNames, 1, mixinNames.length);
 
       return nodeTypeNames;
    }
@@ -425,7 +425,7 @@ public class SessionActionInterceptor
             }
             catch (Exception e)
             {
-               e.printStackTrace();
+               log.error(e.getLocalizedMessage(), e);
             }
          }
       }

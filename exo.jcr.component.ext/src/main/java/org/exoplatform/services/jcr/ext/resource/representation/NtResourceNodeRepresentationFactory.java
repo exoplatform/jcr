@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.ext.resource.representation;
 
 import org.exoplatform.services.jcr.ext.resource.NodeRepresentation;
 import org.exoplatform.services.jcr.ext.resource.NodeRepresentationFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -30,6 +32,10 @@ import javax.jcr.RepositoryException;
  */
 public class NtResourceNodeRepresentationFactory implements NodeRepresentationFactory
 {
+   /**
+    * Logger.
+    */
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.NtFileNodeRepresentationFactory");
 
    /**
     * {@inheritDoc}
@@ -45,7 +51,7 @@ public class NtResourceNodeRepresentationFactory implements NodeRepresentationFa
       }
       catch (RepositoryException e)
       {
-         e.printStackTrace();
+         LOG.error(e.getLocalizedMessage(), e);
       }
       return null;
    }

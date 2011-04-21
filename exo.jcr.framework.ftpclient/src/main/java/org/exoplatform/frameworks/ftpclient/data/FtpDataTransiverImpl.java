@@ -127,7 +127,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
       }
       catch (Exception exc)
       {
-         exc.printStackTrace();
+         log.error(exc.getLocalizedMessage(), exc);
       }
 
       try

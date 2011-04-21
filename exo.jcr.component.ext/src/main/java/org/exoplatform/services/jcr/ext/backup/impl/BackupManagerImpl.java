@@ -1291,7 +1291,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          if (!log.getBackupConfig().getRepository().equals(repositoryName))
          {
             throw new WorkspaceRestoreException("If workspaceEntry is null, so will be restored with original configuration. " +
-            		"The repositoryName (\"" + repositoryName +"\")  should be equals original repository name (\"" + log.getBackupConfig().getRepository() +"\"). " );
+                     "The repositoryName (\"" + repositoryName +"\")  should be equals original repository name (\"" 
+                     + log.getBackupConfig().getRepository() +"\"). " );
          }
          
          if (log.getOriginalWorkspaceEntry() == null)

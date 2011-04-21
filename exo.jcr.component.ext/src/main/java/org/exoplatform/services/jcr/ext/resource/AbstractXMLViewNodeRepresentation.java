@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.ext.resource;
 
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +42,11 @@ import javax.jcr.UnsupportedRepositoryOperationException;
  */
 public abstract class AbstractXMLViewNodeRepresentation implements NodeRepresentation
 {
+
+   /**
+    * Logger.
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.AbstractXMLViewNodeRepresentation");
 
    private Node node;
 
@@ -176,7 +183,7 @@ public abstract class AbstractXMLViewNodeRepresentation implements NodeRepresent
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         LOG.error(e.getLocalizedMessage(), e);
          throw new IOException("can't get input stream");
       }
 

@@ -18,6 +18,8 @@ package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.lock.LockImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -33,6 +35,8 @@ import javax.jcr.lock.LockException;
  */
 public class CacheLockImpl extends LockImpl
 {
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.CacheLockImpl");
+
    private boolean live;
 
    private LockData lockData;
@@ -113,8 +117,7 @@ public class CacheLockImpl extends LockImpl
       }
       catch (RepositoryException e)
       {
-         //TODO
-         e.printStackTrace();
+         log.error(e.getLocalizedMessage(), e);
       }
       return null;
    }

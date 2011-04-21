@@ -798,7 +798,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
       }
       catch (Throwable e)
       {
-         System.err.println(this.name + " cache, finalyze error " + e);
+         LOG.error(this.name + " cache, finalyze error " + e, e);
       }
 
       nodesCache.clear();

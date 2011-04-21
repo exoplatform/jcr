@@ -52,8 +52,7 @@ public class FtpTextUtils
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage());
-         exc.printStackTrace();
+         log.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       String resStr = "";
       for (int i = 0; i < reqLen; i++)

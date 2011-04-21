@@ -376,11 +376,11 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
          }
          catch (NoSuchNodeTypeException e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
          }
          catch (RepositoryException e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
          }
       }
       return superTypes;

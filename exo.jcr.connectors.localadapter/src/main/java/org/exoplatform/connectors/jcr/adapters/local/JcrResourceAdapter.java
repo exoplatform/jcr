@@ -53,7 +53,7 @@ public class JcrResourceAdapter implements ResourceAdapter
    public synchronized void start(BootstrapContext ctx) throws ResourceAdapterInternalException
    {
 
-      System.out.println("<<<<<<<<<<<<<<<<<< JcrResourceAdapter.start(), " + containerConfig + " >>>>>>>>>>>>>>>>>>>");
+      log.info("<<<<<<<<<<<<<<<<<< JcrResourceAdapter.start(), " + containerConfig + " >>>>>>>>>>>>>>>>>>>");
 
       log.info("Container config: " + containerConfig);
       Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
@@ -68,8 +68,7 @@ public class JcrResourceAdapter implements ResourceAdapter
       }
       catch (MalformedURLException e)
       {
-         log.warn("Invalid containerConfig URL, ignored: " + containerConfig);
-         e.printStackTrace();
+         log.warn("Invalid containerConfig URL, ignored: " + containerConfig, e);
       }
 
       try
@@ -78,8 +77,7 @@ public class JcrResourceAdapter implements ResourceAdapter
       }
       catch (Exception e)
       {
-         log.error("Standalone container start error: " + e);
-         e.printStackTrace();
+         log.error("Standalone container start error: " + e, e);
       }
    }
 
@@ -89,7 +87,7 @@ public class JcrResourceAdapter implements ResourceAdapter
     */
    public void stop()
    {
-      System.out.println("<<<<<<<<<<<<<<<<<< JcrResourceAdapter.stop(), " + containerConfig + " >>>>>>>>>>>>>>>>>>>");
+      log.info("<<<<<<<<<<<<<<<<<< JcrResourceAdapter.stop(), " + containerConfig + " >>>>>>>>>>>>>>>>>>>");
       try
       {
          StandaloneContainer sc = StandaloneContainer.getInstance();
@@ -97,8 +95,7 @@ public class JcrResourceAdapter implements ResourceAdapter
       }
       catch (Exception e)
       {
-         log.error("Standalone container stop error: " + e);
-         e.printStackTrace();
+         log.error("Standalone container stop error: " + e, e);
       }
    }
 

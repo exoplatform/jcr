@@ -240,7 +240,6 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         exc.printStackTrace();
          log.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 

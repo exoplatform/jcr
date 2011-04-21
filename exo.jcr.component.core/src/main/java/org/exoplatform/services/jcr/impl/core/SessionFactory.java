@@ -44,7 +44,7 @@ import javax.jcr.RepositoryException;
 public class SessionFactory
 {
 
-   protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionFactory");
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionFactory");
 
    private final ExoContainer container;
 
@@ -99,7 +99,7 @@ public class SessionFactory
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
          }
       }
    }

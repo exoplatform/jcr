@@ -185,8 +185,7 @@ public class FtpClientCommandThread extends Thread
             }
             catch (Exception exc)
             {
-               log.info("Unahdled exception. " + exc.getMessage());
-               exc.printStackTrace();
+               log.info("Unahdled exception. " + exc.getMessage(), exc);
             }
          }
 

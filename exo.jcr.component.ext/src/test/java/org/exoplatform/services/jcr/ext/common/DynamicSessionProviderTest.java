@@ -21,8 +21,9 @@ import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
-import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,8 @@ public class DynamicSessionProviderTest
       testRoot = (NodeImpl)root.addNode("testDynamicSession");
       root.save();
    }
+   
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.DynamicTest");
    
    public void testDynamicSession() throws Exception
    {

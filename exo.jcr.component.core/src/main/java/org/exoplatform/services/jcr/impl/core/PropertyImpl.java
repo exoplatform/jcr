@@ -28,6 +28,8 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.core.nodetype.PropertyDefinitionImpl;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.InputStream;
 import java.util.Calendar;
@@ -52,6 +54,11 @@ import javax.jcr.version.VersionException;
  */
 public class PropertyImpl extends ItemImpl implements Property
 {
+
+   /**
+    * Logger.
+    */
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.PropertyImpl");
 
    /**
     * Value type.
@@ -580,7 +587,7 @@ public class PropertyImpl extends ItemImpl implements Property
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         LOG.error(e.getLocalizedMessage(), e);
       }
       return vals;
    }

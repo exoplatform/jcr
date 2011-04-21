@@ -18,7 +18,8 @@
  */
 package org.exoplatform.services.jcr.core.nodetype;
 
-import java.util.ArrayList;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Serialization/Deserialization for simple java types and Strings. For JiBX binding process only.
@@ -27,6 +28,8 @@ import java.util.ArrayList;
  */
 public class DefaulStringConversion
 {
+
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DefaulStringConversion");
 
    public static String serializeString(String stringValue)
    {
@@ -38,7 +41,7 @@ public class DefaulStringConversion
       }
       catch (Exception e)
       {
-         System.err.println("serializeString.Exception: " + e);
+         LOG.error("serializeString.Exception: " + e, e);
       }
       return r;
    }
@@ -53,7 +56,7 @@ public class DefaulStringConversion
       }
       catch (Exception e)
       {
-         System.err.println("deserializeString.Exception: " + e);
+         LOG.error("deserializeString.Exception: " + e, e);
       }
       return r;
    }
@@ -67,6 +70,7 @@ public class DefaulStringConversion
       }
       catch (Exception e)
       {
+         LOG.error("serializeInt.Exception: " + e, e);
       }
       return r;
    }
@@ -81,6 +85,7 @@ public class DefaulStringConversion
       }
       catch (Exception e)
       {
+         LOG.error("deserializeInt.Exception: " + e, e);
       }
       return r;
    }
@@ -95,6 +100,7 @@ public class DefaulStringConversion
       }
       catch (Exception e)
       {
+         LOG.error("serializeLong.Exception: " + e, e);
       }
       return r;
    }
@@ -109,6 +115,7 @@ public class DefaulStringConversion
       }
       catch (Exception e)
       {
+         LOG.error("deserializeLong.Exception: " + e, e);
       }
       return r;
    }
@@ -123,6 +130,7 @@ public class DefaulStringConversion
       }
       catch (Exception e)
       {
+         LOG.error("serializeLong.Exception: " + e, e);
       }
       return r;
    }
@@ -133,35 +141,11 @@ public class DefaulStringConversion
       boolean r = false;
       try
       {
-         System.err.println("deserializeBoolean: " + boolString);
          r = Boolean.parseBoolean(boolString);
-         System.err.println("deserializeBoolean: res: " + r);
       }
       catch (Exception e)
       {
-         System.err.println("deserializeBoolean.Exception: " + e);
-      }
-      return r;
-   }
-
-   public static String serializeArrayList(ArrayList arrayList)
-   {
-
-      String r = ""; // default
-      try
-      {
-         if (arrayList != null)
-         {
-
-         }
-      }
-      catch (IllegalArgumentException e)
-      {
-         // r = PropertyType.TYPENAME_UNDEFINED;
-      }
-      catch (Exception e)
-      {
-         // r = PropertyType.TYPENAME_UNDEFINED;
+         LOG.error("deserializeBoolean.Exception: " + e, e);
       }
       return r;
    }

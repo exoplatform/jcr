@@ -499,7 +499,7 @@ public class BackupScheduler
             backupConfig = conf;
          }
 
-         // TODO use cycle to read CHARACTERS
+         // Read CHARACTERS
          private String readContent() throws XMLStreamException
          {
             String content = null;
@@ -853,26 +853,6 @@ public class BackupScheduler
       // registerShutdownHook();
    }
 
-   private void registerShutdownHook()
-   {
-      // register shutdownhook for final cancel all taskes scheduled
-      try
-      {
-         Runtime.getRuntime().addShutdownHook(new Thread()
-         {
-            @Override
-            public void run()
-            {
-               timer.cancel();
-            }
-         });
-      }
-      catch (IllegalStateException e)
-      {
-         // can't register shutdownhook
-      }
-   }
-
    public BackupMessage[] getErrors()
    {
       return messages.getMessages();
@@ -908,7 +888,7 @@ public class BackupScheduler
          {
 
             // by stop time
-            // TODO restore without scheduler now. Add task search capabilities to the scheduler and add
+            // Restore without scheduler now. Add task search capabilities to the scheduler and add
             // listener to a task
             schedule(tconf.backupConfig, tconf.startTime, tconf.stopTime, tconf.chainPeriod, tconf.incrPeriod, null);
          } // else - the start time in past and no periodic configuration found

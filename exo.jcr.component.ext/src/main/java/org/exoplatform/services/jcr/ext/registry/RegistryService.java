@@ -375,13 +375,11 @@ public class RegistryService extends Registry implements Startable
          }
          catch (RepositoryConfigurationException e)
          {
-            log.error(e.getLocalizedMessage());
-            e.printStackTrace();
+            log.error(e.getLocalizedMessage(), e);
          }
          catch (RepositoryException e)
          {
-            log.error(e.getLocalizedMessage());
-            e.printStackTrace();
+            log.error(e.getLocalizedMessage(), e);
          }
       else if (log.isDebugEnabled())
          log.warn("Registry service already started");
@@ -443,19 +441,19 @@ public class RegistryService extends Registry implements Startable
                   Throwable cause = pae.getCause();
                   if (cause instanceof ParserConfigurationException)
                   {
-                     cause.printStackTrace();
+                     log.error(cause.getLocalizedMessage(), cause);
                   }
                   else if (cause instanceof IOException)
                   {
-                     cause.printStackTrace();
+                     log.error(cause.getLocalizedMessage(), cause);
                   }
                   else if (cause instanceof SAXException)
                   {
-                     cause.printStackTrace();
+                     log.error(cause.getLocalizedMessage(), cause);
                   }
                   else if (cause instanceof TransformerException)
                   {
-                     cause.printStackTrace();
+                     log.error(cause.getLocalizedMessage(), cause);
                   }
                   else if (cause instanceof RuntimeException)
                   {

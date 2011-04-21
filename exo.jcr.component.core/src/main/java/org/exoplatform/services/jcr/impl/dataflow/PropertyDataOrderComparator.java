@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.impl.dataflow;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.Comparator;
 
@@ -30,6 +32,10 @@ import java.util.Comparator;
  */
 public class PropertyDataOrderComparator implements Comparator<PropertyData>
 {
+   /**
+    * Logger.
+    */
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.PropertyDataOrderComparator");
 
    public int compare(PropertyData p1, PropertyData p2)
    {
@@ -69,7 +75,7 @@ public class PropertyDataOrderComparator implements Comparator<PropertyData>
       }
       catch (Exception e)
       {
-         System.err.println("PropertiesOrderComparator error: " + e);
+         LOG.error("PropertiesOrderComparator error: " + e, e);
       }
       return r;
    }

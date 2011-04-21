@@ -2790,7 +2790,8 @@ public class HTTPBackupAgent implements ResourceContainer
       for (JobWorkspaceRestore job : backupManager.getRestores())
          if (repositoryName.equals(job.getRepositoryName())
             && workspaceName.endsWith(job.getWorkspaceName())
-            && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
+            && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED 
+                     || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
          {
             throw new WorkspaceRestoreExeption("The workspace '" + "/" + repositoryName + "/" + workspaceName
                + "' is already restoring.");
@@ -2810,30 +2811,12 @@ public class HTTPBackupAgent implements ResourceContainer
       for (JobRepositoryRestore job : backupManager.getRepositoryRestores())
       {
          if (repositoryName.equals(job.getRepositoryName())
-            && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
+            && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED 
+                     || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
          {
             throw new RepositoryRestoreExeption("The repository '" + "/" + repositoryName + "' is already restoring.");
          }
       }
-   }
-
-   /**
-    * validateOneRestoreInstants.
-    * 
-    * @param repositoryName
-    *          the repository name
-    * @throws WorkspaceRestoreExeption
-    *           will be generated WorkspaceRestoreExeption
-    */
-   private void validateOneRestoreInstants(String repositoryName) throws WorkspaceRestoreExeption
-   {
-
-      for (JobWorkspaceRestore job : backupManager.getRestores())
-         if (repositoryName.equals(job.getRepositoryName())
-            && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
-         {
-            throw new WorkspaceRestoreExeption("The workspace '" + "/" + repositoryName + "' is already restoring.");
-         }
    }
 
    /**

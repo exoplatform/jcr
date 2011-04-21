@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.ext.backup.impl;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -31,6 +33,11 @@ import java.util.Calendar;
  */
 public class FileNameProducer
 {
+   /**
+    * Logger.
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.FileNameProducer");
+
    class SkipBackupLogFilter
       implements FilenameFilter
    {
@@ -183,7 +190,7 @@ public class FileNameProducer
       }
       catch (IOException e)
       {
-         e.printStackTrace();
+         LOG.error("Can nit get next file : " + e.getLocalizedMessage(), e);
       }
 
       return nextFile;

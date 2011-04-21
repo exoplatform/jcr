@@ -35,6 +35,8 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,6 +51,11 @@ import javax.jcr.RepositoryException;
  */
 public class SharedFieldSortComparator extends SortComparator
 {
+
+   /**
+    * The logger 
+    */
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SharedFieldSortComparator");
 
    /**
     * The name of the shared field in the lucene index.
@@ -336,7 +343,7 @@ public class SharedFieldSortComparator extends SortComparator
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
             return null;
          }
       }

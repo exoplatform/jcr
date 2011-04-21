@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.exoplatform.services.jcr.core.lock.ExtendedLock;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -34,6 +36,11 @@ import javax.jcr.lock.LockException;
 
 public class LockImpl implements ExtendedLock
 {
+   /**
+    * Logger.
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LockImpl");
+
    private LockData lockData;
 
    private SessionImpl session;
@@ -79,14 +86,13 @@ public class LockImpl implements ExtendedLock
       }
       catch (RepositoryException e)
       {
-         e.printStackTrace();
+         LOG.error(e.getLocalizedMessage(), e);
       }
       return null;
    }
 
    public boolean isDeep()
    {
-
       return lockData.isDeep();
    }
 

@@ -192,10 +192,7 @@ public class SearchResultResponseEntity implements StreamingOutput
       }
       catch (Exception exc)
       {
-
-         System.out.println("Unhandled Exception. " + exc.getMessage());
          log.error(exc.getMessage(), exc);
-
          throw new IOException(exc.getMessage());
       }
    }

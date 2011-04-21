@@ -23,6 +23,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Similarity;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,6 +42,12 @@ import java.util.List;
  */
 public class OfflinePersistentIndex extends PersistentIndex
 {
+
+   /**
+    * The logger 
+    */
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.OfflinePersistentIndex");
+
    public static final String NAME = "offline";
 
    private List<String> processedIDs;
@@ -73,7 +81,7 @@ public class OfflinePersistentIndex extends PersistentIndex
    {
       int count = super.removeDocument(idTerm);
       processedIDs.add(idTerm.text());
-      System.out.println("RM: " + idTerm.text());
+      LOG.info("RM: " + idTerm.text());
       return count;
    }
 
@@ -83,7 +91,7 @@ public class OfflinePersistentIndex extends PersistentIndex
       super.addDocuments(docs);
       for (Document doc : docs)
       {
-         System.out.println("add: " + doc.get(FieldNames.UUID));
+         LOG.info("add: " + doc.get(FieldNames.UUID));
          processedIDs.add(doc.get(FieldNames.UUID));
       }
    }

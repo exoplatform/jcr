@@ -708,8 +708,7 @@ class RowIteratorImpl implements RowIterator
          }
          catch (RepositoryException e)
          {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error(e.getLocalizedMessage(), e);
             return false;
          }
       }

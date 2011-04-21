@@ -2457,7 +2457,7 @@ public class SessionDataManager implements ItemDataConsumer
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+            log.error(e.getLocalizedMessage(), e);
          }
 
          return str;

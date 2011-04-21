@@ -113,7 +113,7 @@ public class DocumentViewStreamExporter extends StreamExporter
             for (ValueData valueData : property.getValues())
             {
                String strVal = getValueAsStringForExport(valueData, property.getType());
-               if (strVal == "")
+               if (strVal.equals(""))
                {
                   continue;
                }
