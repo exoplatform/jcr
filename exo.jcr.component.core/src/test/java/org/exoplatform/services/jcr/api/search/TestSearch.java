@@ -71,6 +71,60 @@ public class TestSearch extends JcrAPIBaseTest
       return ntFile;
    }
 
+   public void testSpecialCharacters() throws Exception
+   {
+      Node queryNode = testNode.addNode("node-testSpecialCharacters");
+      String[] specialChar = {"a", "+", "-", "&&", "||", "!", "(", ")", "{", "}", "[", "]", "^","\"", "~", "*", "?", ":", "\\", "&", "$", "@", "%", "|", "(1+1):2", "\\(1\\+1\\)\\:2"};
+      StringBuilder buffer = new StringBuilder();
+      for (String sChar : specialChar)
+      {
+         buffer.append(' ').append(sChar);
+      }
+      queryNode.setProperty("full-content", buffer.toString());
+      session.save();
+      for (String sChar : specialChar)
+      {
+         QueryManager manager = session.getWorkspace().getQueryManager();
+         String sqlQuery = "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testNode.getPath() + "/%' and contains(*, '" + sChar + "')";
+         Query query = manager.createQuery(sqlQuery, Query.SQL);
+
+         QueryResult queryResult;
+         try
+         {
+            queryResult = query.execute();
+            assertNotNull(queryResult.getNodes());
+            if (queryResult.getNodes().hasNext())
+               System.out.println("It works well with '" + sChar + "' path =" + queryResult.getNodes().nextNode().getPath());
+            else  
+               System.err.println("No results could be found for '" + sChar + "'");
+         }
+         catch (Exception e)
+         {
+            System.err.println("It fails with '" + sChar + "' let's escape it");
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < sChar.length(); i++)
+            {
+               sb.append('\\').append(sChar.charAt(i));
+            }
+            sChar = sb.toString();
+            sqlQuery = "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testNode.getPath() + "/%' and contains(*, '" + sChar + "')";
+            query = manager.createQuery(sqlQuery, Query.SQL);
+            try
+            {
+               queryResult = query.execute();
+               assertNotNull(queryResult.getNodes());
+               if (queryResult.getNodes().hasNext())
+                  System.out.println("It works well with '" + sChar + "' path =" + queryResult.getNodes().nextNode().getPath());
+               else  
+                  System.err.println("No results could be found for '" + sChar + "'");
+            }
+            catch (Exception e1)
+            {
+               System.out.println("It fails also with '" + sChar + "'");
+            }
+         }
+      }      
+   }
    public void testAllofNodeType() throws Exception
    {
 
