@@ -1,0 +1,451 @@
+Index: exo.jcr.component.core/src/test/resources/conf/test/wcm-nodetypes.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/test/wcm-nodetypes.xml	(revision 4266)
++++ exo.jcr.component.core/src/test/resources/conf/test/wcm-nodetypes.xml	(working copy)
+@@ -253,4 +253,90 @@
+     </propertyDefinitions>
+   </nodeType>
+ 
++  <nodeType name="exo:newsletterEntry" isMixin="true" hasOrderableChildNodes="true" primaryItemName="">
++    <propertyDefinitions>
++      <propertyDefinition name="exo:newsletterEntryCategoryName" requiredType="String" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++      <propertyDefinition name="exo:newsletterEntrySubscriptionName" requiredType="String" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++      <propertyDefinition name="exo:newsletterEntryType" requiredType="String" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++      <propertyDefinition name="exo:newsletterEntryDate" requiredType="Date" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++      <propertyDefinition name="exo:newsletterEntryStatus" requiredType="String" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++    </propertyDefinitions>
++  </nodeType>
++  
++  <nodeType name="exo:newsletterSubscription" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">
++    <supertypes>
++      <supertype>nt:unstructured</supertype>
++      <supertype>mix:referenceable</supertype>
++    </supertypes>
++    <propertyDefinitions>
++      <propertyDefinition name="exo:newsletterSubscribedUser" requiredType="Reference" autoCreated="true" mandatory="false" onParentVersion="COPY" protected="false" multiple="true">
++        <valueConstraints/>
++      </propertyDefinition>
++    </propertyDefinitions>
++    <childNodeDefinitions>
++      <childNodeDefinition name="*" defaultPrimaryType="nt:base" autoCreated="false" mandatory="false" onParentVersion="VERSION" protected="false" sameNameSiblings="false">
++        <requiredPrimaryTypes>
++          <requiredPrimaryType>nt:base</requiredPrimaryType>
++        </requiredPrimaryTypes>
++      </childNodeDefinition>
++    </childNodeDefinitions>
++  </nodeType>
++  
++  <nodeType name="exo:newsletterCategory" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">
++    <supertypes>
++      <supertype>nt:unstructured</supertype>
++    </supertypes>
++    <propertyDefinitions>
++      <propertyDefinition name="exo:newsletterCategoryTitle" requiredType="String" autoCreated="false" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++      <propertyDefinition name="exo:newsletterCategoryDescription" requiredType="String" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++    </propertyDefinitions>
++    <childNodeDefinitions>
++      <childNodeDefinition name="*" defaultPrimaryType="nt:unstructured" autoCreated="false" mandatory="false" onParentVersion="VERSION" protected="false" sameNameSiblings="false">
++        <requiredPrimaryTypes>
++          <requiredPrimaryType>nt:base</requiredPrimaryType>
++        </requiredPrimaryTypes>
++      </childNodeDefinition>
++      <childNodeDefinition name="*" defaultPrimaryType="exo:newsletterSubscription" autoCreated="false" mandatory="false" onParentVersion="VERSION" protected="false" sameNameSiblings="true">
++        <requiredPrimaryTypes>
++          <requiredPrimaryType>exo:newsletterSubscription</requiredPrimaryType>
++        </requiredPrimaryTypes>
++      </childNodeDefinition>
++    </childNodeDefinitions>
++  </nodeType>
++  
++  <nodeType name="exo:newsletterUser" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">
++    <supertypes>
++      <supertype>nt:unstructured</supertype>
++      <supertype>mix:referenceable</supertype>
++    </supertypes>
++    <propertyDefinitions>
++      <propertyDefinition name="exo:newsletterUserMail" requiredType="String" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++      <propertyDefinition name="exo:newsletterUserConfirm" requiredType="Boolean" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++      <propertyDefinition name="exo:newsletterUserBanned" requiredType="Boolean" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++      <propertyDefinition name="exo:newsletterUserValidationCode" requiredType="String" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
++        <valueConstraints/>
++      </propertyDefinition>
++    </propertyDefinitions>
++  </nodeType>
++
+ </nodeTypes>
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(revision 4266)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(working copy)
+@@ -275,7 +275,7 @@
+ 
+          primaryTypeName = nodeDef.getDefaultPrimaryType();
+       // try to make new node
+-      return doAddNode(parent, name, primaryTypeName);
++      return doAddNode(parent, name, primaryTypeName, nodeDef);
+ 
+    }
+ 
+@@ -313,7 +313,7 @@
+       InternalQName ptName = locationFactory.parseJCRName(nodeTypeName).getInternalName();
+ 
+       // try to make new node
+-      return doAddNode(parent, name, ptName);
++      return doAddNode(parent, name, ptName, null);
+    }
+ 
+    /**
+@@ -832,8 +832,8 @@
+             NodeData parent = (NodeData)dataManager.getItemData(getParentIdentifier());
+ 
+             this.definition =
+-               nodeTypesHolder.getChildNodeDefinition(getInternalName(), parent.getPrimaryTypeName(),
+-                  parent.getMixinTypeNames());
++               nodeTypesHolder.getChildNodeDefinition(getInternalName(), nodeData().getPrimaryTypeName(),
++                  parent.getPrimaryTypeName(), parent.getMixinTypeNames());
+ 
+             if (definition == null)
+             {
+@@ -1513,8 +1513,11 @@
+       }
+ 
+       this.definition =
+-         session.getWorkspace().getNodeTypesHolder()
+-            .getChildNodeDefinition(getInternalName(), parent.getPrimaryTypeName(), parent.getMixinTypeNames());
++         session
++            .getWorkspace()
++            .getNodeTypesHolder()
++            .getChildNodeDefinition(getInternalName(), nodeData().getPrimaryTypeName(), parent.getPrimaryTypeName(),
++               parent.getMixinTypeNames());
+ 
+       if (definition == null)
+       {
+@@ -2371,8 +2374,12 @@
+       }
+       // Check if node is not protected
+       NodeDefinitionData childNodeDefinition =
+-         session.getWorkspace().getNodeTypesHolder()
+-            .getChildNodeDefinition(name, nodeData().getPrimaryTypeName(), nodeData().getMixinTypeNames());
++         session
++            .getWorkspace()
++            .getNodeTypesHolder()
++            .getChildNodeDefinition(name, primaryTypeName, nodeData().getPrimaryTypeName(),
++               nodeData().getMixinTypeNames());
++
+       if (childNodeDefinition == null)
+          throw new ConstraintViolationException("Can't find child node definition for "
+             + sysLocFactory.createJCRName(name).getAsString() + " in " + getPath());
+@@ -2827,14 +2834,23 @@
+       return dataManager.getChildNodesCount(nodeData());
+    }
+ 
+-   private int getNextChildIndex(InternalQName nameToAdd, NodeData parentNode) throws RepositoryException,
+-      ItemExistsException
++   /**
++     * Calculates next child node index. Is used existed node definition, if no - get one based on node name
++     * and node type. 
++     */
++   private int getNextChildIndex(InternalQName nameToAdd, InternalQName primaryTypeName, NodeData parentNode,
++      NodeDefinitionData def) throws RepositoryException, ItemExistsException
+    {
++      if (def == null)
++      {
++         def =
++            session
++               .getWorkspace()
++               .getNodeTypesHolder()
++               .getChildNodeDefinition(nameToAdd, primaryTypeName, parentNode.getPrimaryTypeName(),
++                  parentNode.getMixinTypeNames());
++      }
+ 
+-      NodeDefinitionData def =
+-         session.getWorkspace().getNodeTypesHolder()
+-            .getChildNodeDefinition(nameToAdd, parentNode.getPrimaryTypeName(), parentNode.getMixinTypeNames());
+-
+       boolean allowSns = def.isAllowsSameNameSiblings();
+ 
+       int ind = 1;
+@@ -2855,27 +2871,16 @@
+       };
+ 
+       return ind;
+-
+-      //      int ind = 0;
+-      //      for (NodeData sibling : siblings)
+-      //      {
+-      //         if (sibling.getQPath().getName().equals(nameToAdd))
+-      //         {
+-      //            if (allowSns)
+-      //               ind++;
+-      //            else
+-      //               throw new ItemExistsException("The node " + nameToAdd + " already exists in " + getPath()
+-      //                  + " and same name sibling is not allowed ");
+-      //         }
+-      //      }
+-      //      return ind + 1;
+-
+    }
+ 
+-   private NodeImpl doAddNode(NodeImpl parentNode, InternalQName name, InternalQName primaryTypeName)
+-      throws ItemExistsException, RepositoryException, ConstraintViolationException, VersionException, LockException
++   /**
++    * Do add node internally. If nodeDef not null it is used in getNextChildIndex() method to
++    * avoid double calculation.
++    */
++   private NodeImpl doAddNode(NodeImpl parentNode, InternalQName name, InternalQName primaryTypeName,
++      NodeDefinitionData nodeDef) throws ItemExistsException, RepositoryException, ConstraintViolationException,
++      VersionException, LockException
+    {
+-
+       validateChildNode(name, primaryTypeName);
+ 
+       // Initialize data
+@@ -2883,7 +2888,7 @@
+       String identifier = IdGenerator.generate();
+ 
+       int orderNum = parentNode.getNextChildOrderNum();
+-      int index = parentNode.getNextChildIndex(name, parentNode.nodeData());
++      int index = parentNode.getNextChildIndex(name, primaryTypeName, parentNode.nodeData(), nodeDef);
+ 
+       QPath path = QPath.makeChildPath(parentNode.getInternalPath(), name, index);
+ 
+@@ -2907,7 +2912,6 @@
+       {
+          dataManager.updateItemState(autoCreatedState);
+       }
+-      // addAutoCreatedItems(node.nodeData(), primaryTypeName);
+ 
+       if (LOG.isDebugEnabled())
+          LOG.debug("new node : " + node.getPath() + " name: " + " primaryType: " + node.getPrimaryNodeType().getName()
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataCopyIgnoredVisitor.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataCopyIgnoredVisitor.java	(revision 4266)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataCopyIgnoredVisitor.java	(working copy)
+@@ -57,6 +57,7 @@
+       this.restoredChanges = changes;
+    }
+ 
++   @Override
+    protected void entering(PropertyData property, int level) throws RepositoryException
+    {
+ 
+@@ -108,6 +109,7 @@
+       }
+    }
+ 
++   @Override
+    protected void entering(NodeData node, int level) throws RepositoryException
+    {
+ 
+@@ -122,8 +124,8 @@
+          {
+             NodeData existedParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
+             NodeDefinitionData ndef =
+-               ntManager.getChildNodeDefinition(node.getQPath().getName(), existedParent.getPrimaryTypeName(),
+-                  existedParent.getMixinTypeNames());
++               ntManager.getChildNodeDefinition(node.getQPath().getName(), node.getPrimaryTypeName(),
++                  existedParent.getPrimaryTypeName(), existedParent.getMixinTypeNames());
+ 
+             // the node can be stored as IGNOREd in restore set, check an action
+             if (ndef.getOnParentVersion() == OnParentVersionAction.IGNORE)
+@@ -164,6 +166,7 @@
+       parents.push(null); // skip this node as we hasn't parent in restore result
+    }
+ 
++   @Override
+    protected void leaving(NodeData node, int level) throws RepositoryException
+    {
+       if (parents.size() > 0)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataRestoreVisitor.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataRestoreVisitor.java	(revision 4266)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataRestoreVisitor.java	(working copy)
+@@ -536,7 +536,8 @@
+          // current C in the workspace will be left unchanged.
+ 
+          int action =
+-            nodeTypeDataManager.getChildNodeDefinition(qname, currentNode().getPrimaryTypeName(),
++            nodeTypeDataManager.getChildNodeDefinition(qname, frozen.getPrimaryTypeName(),
++               currentNode().getPrimaryTypeName(),
+                currentNode().getMixinTypeNames()).getOnParentVersion();
+ 
+          if (log.isDebugEnabled())
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/FrozenNodeInitializer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/FrozenNodeInitializer.java	(revision 4266)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/FrozenNodeInitializer.java	(working copy)
+@@ -228,7 +228,8 @@
+ 
+       NodeData parent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
+       NodeDefinitionData ndef =
+-         ntManager.getChildNodeDefinition(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames());
++         ntManager.getChildNodeDefinition(qname, node.getPrimaryTypeName(), parent.getPrimaryTypeName(),
++            parent.getMixinTypeNames());
+       if (ndef == null)
+       {
+          throw new ConstraintViolationException("Definition not found for " + qname.getAsString());
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/nodetype/NodeTypeDataManagerImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/nodetype/NodeTypeDataManagerImpl.java	(revision 4266)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/nodetype/NodeTypeDataManagerImpl.java	(working copy)
+@@ -184,7 +184,6 @@
+     * @throws RepositoryException 
+     */
+    public NodeDefinitionData[] getAllChildNodeDefinitions(final InternalQName... nodeTypeNames)
+-
+    {
+       final Collection<NodeDefinitionData> defsAny = new ArrayList<NodeDefinitionData>();
+       final HashMap<InternalQName, NodeDefinitionData> defs = new HashMap<InternalQName, NodeDefinitionData>();
+@@ -224,6 +223,7 @@
+       defsAny.addAll(defs.values());
+ 
+       return defsAny.toArray(new NodeDefinitionData[defsAny.size()]);
++
+    }
+ 
+    /**
+@@ -299,16 +299,7 @@
+    public NodeDefinitionData getChildNodeDefinition(final InternalQName nodeName, final InternalQName... nodeTypeNames)
+       throws RepositoryException
+    {
+-
+-      NodeDefinitionData ndResidual = this.nodeTypeRepository.getDefaultChildNodeDefinition(nodeName, nodeTypeNames);
+-
+-      if (ndResidual == null && !Constants.JCR_ANY_NAME.equals(nodeName))
+-      {
+-         ndResidual = getChildNodeDefinition(Constants.JCR_ANY_NAME, nodeTypeNames);
+-      }
+-
+-      return ndResidual;
+-
++      return this.nodeTypeRepository.getDefaultChildNodeDefinition(nodeName, nodeTypeNames);
+    }
+ 
+    /**
+@@ -318,19 +309,53 @@
+    public NodeDefinitionData getChildNodeDefinition(final InternalQName nodeName, final InternalQName primaryNodeType,
+       final InternalQName[] mixinTypes) throws RepositoryException
+    {
++      return getChildNodeDefinition(nodeName, getNodeTypeNames(primaryNodeType, mixinTypes));
++   }
+ 
+-      if (mixinTypes != null)
++   /**
++    * {@inheritDoc}
++    */
++   public NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName nodeType,
++      InternalQName parentNodeType, InternalQName[] parentMixinTypes) throws RepositoryException
++   {
++      NodeDefinitionData[] defs = getAllChildNodeDefinitions(getNodeTypeNames(parentNodeType, parentMixinTypes));
++
++      NodeDefinitionData residualDef = null;
++      NodeDefinitionData firstResidualDef = null;
++
++      outer : for (NodeDefinitionData nodeDef : defs)
+       {
+-         final InternalQName[] nts = new InternalQName[mixinTypes.length + 1];
+-         nts[0] = primaryNodeType;
+-         for (int i = 0; i < mixinTypes.length; i++)
++         if (nodeDef.getName().equals(nodeName))
+          {
+-            nts[i + 1] = mixinTypes[i];
++            return nodeDef;
+          }
+-         return getChildNodeDefinition(nodeName, nts);
++         else if (nodeDef.isResidualSet())
++         {
++            // store first residual definition to be able to return
++            if (firstResidualDef == null)
++            {
++               firstResidualDef = nodeDef;
++            }
++
++            // check required primary types
++            for (InternalQName requiredPrimaryType : nodeDef.getRequiredPrimaryTypes())
++            {
++               if (!isNodeType(requiredPrimaryType, nodeType))
++               {
++                  continue outer;
++               }
++            }
++
++            // when there are several suitable definitions take the most older
++            if (residualDef == null
++               || isNodeType(residualDef.getRequiredPrimaryTypes()[0], nodeDef.getRequiredPrimaryTypes()[0]))
++            {
++               residualDef = nodeDef;
++            }
++         }
+       }
+ 
+-      return getChildNodeDefinition(nodeName, primaryNodeType);
++      return residualDef != null ? residualDef : firstResidualDef;
+    }
+ 
+    /**
+@@ -1009,4 +1034,21 @@
+ 
+       return changesLog;
+    }
++
++   private InternalQName[] getNodeTypeNames(final InternalQName primaryNodeType, final InternalQName[] mixinTypes)
++      throws RepositoryException
++   {
++      InternalQName[] ntn = new InternalQName[1 + (mixinTypes == null ? 0 : mixinTypes.length)];
++      ntn[0] = primaryNodeType;
++
++      if (mixinTypes != null)
++      {
++         for (int i = 0; i < mixinTypes.length; i++)
++         {
++            System.arraycopy(mixinTypes, 0, ntn, 1, mixinTypes.length);
++         }
++      }
++
++      return ntn;
++   }
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/nodetype/NodeTypeDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/nodetype/NodeTypeDataManager.java	(revision 4266)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/nodetype/NodeTypeDataManager.java	(working copy)
+@@ -100,6 +100,19 @@
+       InternalQName[] mixinTypes) throws RepositoryException;
+ 
+    /**
++    * Found node definition based on node name and node type. In case when
++    * suitable node definition not found first occurred residual definition will
++    * be returned.
++    *  
++    * @param nodeName
++    * @param parentNodeType
++    * @param parentMixinTypes
++    * @return
++    */
++   NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName nodeType,
++      InternalQName parentNodeType, InternalQName[] parentMixinTypes) throws RepositoryException;
++
++   /**
+     * Returns the <i>direct</i> subtypes of this node type in the node type
+     * inheritance hierarchy, that is, those which actually declared this node
+     * type in their list of supertypes.
