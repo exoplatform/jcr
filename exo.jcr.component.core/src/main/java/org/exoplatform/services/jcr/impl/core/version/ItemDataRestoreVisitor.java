@@ -199,8 +199,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          {
             NodeData parent = parents.peek();
             int onParentVersion =
-               nodeTypeDataManager.getChildNodeDefinition(node.getQPath().getName(), parent.getPrimaryTypeName(),
-                  parent.getMixinTypeNames()).getOnParentVersion();
+               nodeTypeDataManager.getChildNodeDefinition(node.getQPath().getName(), node.getPrimaryTypeName(),
+                  parent.getPrimaryTypeName(), parent.getMixinTypeNames()).getOnParentVersion();
 
             if (onParentVersion == OnParentVersionAction.VERSION
                && nodeTypeDataManager.isNodeType(Constants.MIX_VERSIONABLE, node.getPrimaryTypeName(),
@@ -675,7 +675,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          // current C in the workspace will be left unchanged.
 
          int action =
-            nodeTypeDataManager.getChildNodeDefinition(qname, currentNode().getPrimaryTypeName(),
+            nodeTypeDataManager.getChildNodeDefinition(qname, frozen.getPrimaryTypeName(),
+               currentNode().getPrimaryTypeName(),
                currentNode().getMixinTypeNames()).getOnParentVersion();
 
          if (log.isDebugEnabled())
