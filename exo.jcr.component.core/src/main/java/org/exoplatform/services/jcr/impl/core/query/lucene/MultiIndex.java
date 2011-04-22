@@ -60,6 +60,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -113,7 +114,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * Names of index directories that can be deleted.
     */
-   private final Set deletable = new HashSet();
+   private final Set<String> deletable = new HashSet<String>();
 
    /**
     * List of open persistent indexes. This list may also contain an open
@@ -121,7 +122,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * registered with indexNames and <b>must not</b> be used in regular index
     * operations (delete node, etc.)!
     */
-   private final List indexes = new ArrayList();
+   private final List<PersistentIndex> indexes = new ArrayList<PersistentIndex>();
+
+   /**
+    * Contains list of open persistent indexes in case when hot async reindexing launched. 
+    */
+   private final List<PersistentIndex> staleIndexes = new ArrayList<PersistentIndex>();
 
    /**
     * The internal namespace mappings of the query manager.
@@ -255,8 +261,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * The unique id of the workspace corresponding to this multi index
     */
-    final String workspaceId;
-   
+   final String workspaceId;
+
    /**
     * Creates a new MultiIndex.
     * 
@@ -535,6 +541,51 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    }
 
    /**
+    * Recreates index by reindexing in runtime.
+    * 
+    * @param stateMgr
+    * @throws RepositoryException 
+    */
+   public void reindex(ItemDataConsumer stateMgr) throws IOException, RepositoryException
+   {
+      if (stopped)
+      {
+         throw new IllegalStateException("Can't invoke reindexing on closed index.");
+      }
+
+      if (online)
+      {
+         throw new IllegalStateException("Can't invoke reindexing while index still online.");
+      }
+
+      // traverse and index workspace
+      executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+
+      long count;
+
+      // check if we have deal with RDBMS reindexing mechanism
+      Reindexable rdbmsReindexableComponent =
+         (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
+
+      if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
+         && rdbmsReindexableComponent.isReindexingSupport())
+      {
+         count =
+            createIndex(rdbmsReindexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
+               indexingTree.getIndexingRoot());
+      }
+      else
+      {
+         count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
+      }
+
+      executeAndLog(new Commit(getTransactionId()));
+      log.info("Created initial index for {} nodes", new Long(count));
+      releaseMultiReader();
+
+   }
+
+   /**
     * Atomically updates the index by removing some documents and adding
     * others.
     * 
@@ -548,7 +599,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IOException
     *             if an error occurs while updating the index.
     */
-   synchronized void update(final Collection remove, final Collection add) throws IOException
+   synchronized void update(final Collection<String> remove, final Collection<Document> add) throws IOException
    {
       if (!online)
       {
@@ -572,7 +623,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @param add
     * @throws IOException
     */
-   private void doUpdateRO(final Collection remove, final Collection add) throws IOException
+   private void doUpdateRO(final Collection<String> remove, final Collection<Document> add) throws IOException
    {
       SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
@@ -594,9 +645,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             ReadOnlyIndexReader lastIndexReader = null;
             try
             {
-               for (Iterator it = remove.iterator(); it.hasNext();)
+               for (Iterator<String> it = remove.iterator(); it.hasNext();)
                {
-                  Term idTerm = new Term(FieldNames.UUID, (String)it.next());
+                  Term idTerm = new Term(FieldNames.UUID, it.next());
                   volatileIndex.removeDocument(idTerm);
                }
 
@@ -606,17 +657,16 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                try
                {
                   lastIndexReader =
-                     (lastIndexReaderId >= 0) ? ((PersistentIndex)indexes.get(lastIndexReaderId))
-                        .getReadOnlyIndexReader() : null;
+                     (lastIndexReaderId >= 0) ? (indexes.get(lastIndexReaderId)).getReadOnlyIndexReader() : null;
                }
                catch (Throwable e)
                {
                   // this is safe index reader retrieval. The last index already closed, possibly merged or any other exception that occurs here
                }
 
-               for (Iterator it = add.iterator(); it.hasNext();)
+               for (Iterator<Document> it = add.iterator(); it.hasNext();)
                {
-                  Document doc = (Document)it.next();
+                  Document doc = it.next();
                   if (doc != null)
                   {
                      // check if this item should be placed in own volatile index
@@ -642,8 +692,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                            lastIndexReaderId = indexes.size() - 1;
                            try
                            {
-                              lastIndexReader =
-                                 ((PersistentIndex)indexes.get(lastIndexReaderId)).getReadOnlyIndexReader();
+                              lastIndexReader = (indexes.get(lastIndexReaderId)).getReadOnlyIndexReader();
                            }
                            catch (Throwable e)
                            {
@@ -706,7 +755,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @param add
     * @throws IOException
     */
-   private void doUpdateRW(final Collection remove, final Collection add) throws IOException
+   private void doUpdateRW(final Collection<String> remove, final Collection<Document> add) throws IOException
    {
       SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
@@ -737,13 +786,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                long transactionId = nextTransactionId++;
                executeAndLog(new Start(transactionId));
 
-               for (Iterator it = remove.iterator(); it.hasNext();)
+               for (Iterator<String> it = remove.iterator(); it.hasNext();)
                {
-                  executeAndLog(new DeleteNode(transactionId, (String)it.next()));
+                  executeAndLog(new DeleteNode(transactionId, it.next()));
                }
-               for (Iterator it = add.iterator(); it.hasNext();)
+               for (Iterator<Document> it = add.iterator(); it.hasNext();)
                {
-                  Document doc = (Document)it.next();
+                  Document doc = it.next();
                   if (doc != null)
                   {
                      executeAndLog(new AddNode(transactionId, doc));
@@ -784,7 +833,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       List<String> processedIDs = offlineIndex.getProcessedIDs();
       // remove all nodes placed in offline index
-      update(processedIDs, Collections.EMPTY_LIST);
+      update(processedIDs, Collections.<Document> emptyList());
 
       executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
 
@@ -815,21 +864,21 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @param add
     * @throws IOException
     */
-   private void doUpdateOffline(final Collection remove, final Collection add) throws IOException
+   private void doUpdateOffline(final Collection<String> remove, final Collection<Document> add) throws IOException
    {
       SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
-            for (Iterator it = remove.iterator(); it.hasNext();)
+            for (Iterator<String> it = remove.iterator(); it.hasNext();)
             {
-               Term idTerm = new Term(FieldNames.UUID, (String)it.next());
+               Term idTerm = new Term(FieldNames.UUID, it.next());
                offlineIndex.removeDocument(idTerm);
             }
 
-            for (Iterator it = add.iterator(); it.hasNext();)
+            for (Iterator<Document> it = add.iterator(); it.hasNext();)
             {
-               Document doc = (Document)it.next();
+               Document doc = it.next();
                if (doc != null)
                {
                   offlineIndex.addDocuments(new Document[]{doc});
@@ -855,7 +904,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void addDocument(Document doc) throws IOException
    {
-      update(Collections.EMPTY_LIST, Arrays.asList(new Document[]{doc}));
+      update(Collections.<String> emptyList(), Arrays.asList(new Document[]{doc}));
    }
 
    /**
@@ -868,7 +917,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void removeDocument(String uuid) throws IOException
    {
-      update(Arrays.asList(new String[]{uuid}), Collections.EMPTY_LIST);
+      update(Arrays.asList(new String[]{uuid}), Collections.<Document> emptyList());
    }
 
    /**
@@ -899,7 +948,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          for (int i = 0; i < indexes.size(); i++)
          {
-            PersistentIndex index = (PersistentIndex)indexes.get(i);
+            PersistentIndex index = indexes.get(i);
             // only remove documents from registered indexes
             if (indexNames.contains(index.getName()))
             {
@@ -946,14 +995,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    synchronized IndexReader[] getIndexReaders(String[] indexNames, IndexListener listener) throws IOException
    {
-      Set names = new HashSet(Arrays.asList(indexNames));
-      Map indexReaders = new HashMap();
+      Set<String> names = new HashSet<String>(Arrays.asList(indexNames));
+      Map<ReadOnlyIndexReader, PersistentIndex> indexReaders = new HashMap<ReadOnlyIndexReader, PersistentIndex>();
 
       try
       {
-         for (Iterator it = indexes.iterator(); it.hasNext();)
+         for (Iterator<PersistentIndex> it = indexes.iterator(); it.hasNext();)
          {
-            PersistentIndex index = (PersistentIndex)it.next();
+            PersistentIndex index = it.next();
             if (names.contains(index.getName()))
             {
                indexReaders.put(index.getReadOnlyIndexReader(listener), index);
@@ -963,10 +1012,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       catch (IOException e)
       {
          // release readers obtained so far
-         for (Iterator it = indexReaders.entrySet().iterator(); it.hasNext();)
+         for (Iterator<Entry<ReadOnlyIndexReader, PersistentIndex>> it = indexReaders.entrySet().iterator(); it
+            .hasNext();)
          {
-            Map.Entry entry = (Map.Entry)it.next();
-            final ReadOnlyIndexReader reader = (ReadOnlyIndexReader)entry.getKey();
+            Map.Entry<ReadOnlyIndexReader, PersistentIndex> entry = it.next();
+            final ReadOnlyIndexReader reader = entry.getKey();
             try
             {
                SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
@@ -982,12 +1032,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             {
                log.warn("Exception releasing index reader: " + ex);
             }
-            ((PersistentIndex)entry.getValue()).resetListener();
+            (entry.getValue()).resetListener();
          }
          throw e;
       }
 
-      return (IndexReader[])indexReaders.keySet().toArray(new IndexReader[indexReaders.size()]);
+      return indexReaders.keySet().toArray(new IndexReader[indexReaders.size()]);
    }
 
    /**
@@ -1004,9 +1054,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    synchronized PersistentIndex getOrCreateIndex(String indexName) throws IOException
    {
       // check existing
-      for (Iterator it = indexes.iterator(); it.hasNext();)
+      for (Iterator<PersistentIndex> it = indexes.iterator(); it.hasNext();)
       {
-         PersistentIndex idx = (PersistentIndex)it.next();
+         PersistentIndex idx = it.next();
          if (idx.getName().equals(indexName))
          {
             return idx;
@@ -1066,9 +1116,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    synchronized boolean hasIndex(String indexName) throws IOException
    {
       // check existing
-      for (Iterator it = indexes.iterator(); it.hasNext();)
+      for (Iterator<PersistentIndex> it = indexes.iterator(); it.hasNext();)
       {
-         PersistentIndex idx = (PersistentIndex)it.next();
+         PersistentIndex idx = it.next();
          if (idx.getName().equals(indexName))
          {
             return true;
@@ -1094,7 +1144,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IOException
     *             if an exception occurs while replacing the indexes.
     */
-   void replaceIndexes(String[] obsoleteIndexes, final PersistentIndex index, Collection deleted) throws IOException
+   void replaceIndexes(String[] obsoleteIndexes, final PersistentIndex index, Collection<Term> deleted)
+      throws IOException
    {
 
       if (handler.isInitializeHierarchyCache())
@@ -1128,11 +1179,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                executeAndLog(new Start(Action.INTERNAL_TRANS_REPL_INDEXES));
             }
             // delete obsolete indexes
-            Set names = new HashSet(Arrays.asList(obsoleteIndexes));
-            for (Iterator it = names.iterator(); it.hasNext();)
+            Set<String> names = new HashSet<String>(Arrays.asList(obsoleteIndexes));
+            for (Iterator<String> it = names.iterator(); it.hasNext();)
             {
                // do not try to delete indexes that are already gone
-               String indexName = (String)it.next();
+               String indexName = it.next();
                if (indexNames.contains(indexName))
                {
                   executeAndLog(new DeleteIndex(getTransactionId(), indexName));
@@ -1147,9 +1198,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             executeAndLog(new AddIndex(getTransactionId(), index.getName()));
 
             // delete documents in index
-            for (Iterator it = deleted.iterator(); it.hasNext();)
+            for (Iterator<Term> it = deleted.iterator(); it.hasNext();)
             {
-               Term id = (Term)it.next();
+               Term id = it.next();
                index.removeDocument(id);
             }
             index.commit();
@@ -1240,10 +1291,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                // meantime -> check again
                if (multiReader == null)
                {
-                  List readerList = new ArrayList();
-                  for (int i = 0; i < indexes.size(); i++)
+                  // if index in offline mode, due to hot async reindexing,
+                  // need to return the reader containing only stale indexes (old),
+                  // without newly created.
+                  List<PersistentIndex> persistedIndexesList = online ? indexes : staleIndexes;
+                  List<ReadOnlyIndexReader> readerList = new ArrayList<ReadOnlyIndexReader>();
+                  for (int i = 0; i < persistedIndexesList.size(); i++)
                   {
-                     PersistentIndex pIdx = (PersistentIndex)indexes.get(i);
+                     PersistentIndex pIdx = persistedIndexesList.get(i);
 
                      if (indexNames.contains(pIdx.getName()))
                      {
@@ -1261,8 +1316,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                      }
                   }
                   readerList.add(volatileIndex.getReadOnlyIndexReader());
-                  ReadOnlyIndexReader[] readers =
-                     (ReadOnlyIndexReader[])readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
+                  ReadOnlyIndexReader[] readers = readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
                   multiReader = new CachingMultiIndexReader(readers, cache);
                }
                multiReader.acquire();
@@ -1330,7 +1384,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          volatileIndex.close();
          for (int i = 0; i < indexes.size(); i++)
          {
-            ((PersistentIndex)indexes.get(i)).close();
+            (indexes.get(i)).close();
          }
 
          // close indexing queue
@@ -1476,7 +1530,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // commit persistent indexes
          for (int i = indexes.size() - 1; i >= 0; i--)
          {
-            PersistentIndex index = (PersistentIndex)indexes.get(i);
+            PersistentIndex index = indexes.get(i);
             // only commit indexes we own
             // index merger also places PersistentIndex instances in
             // indexes,
@@ -1961,9 +2015,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       synchronized (deletable)
       {
-         for (Iterator it = deletable.iterator(); it.hasNext();)
+         for (Iterator<String> it = deletable.iterator(); it.hasNext();)
          {
-            String indexName = (String)it.next();
+            String indexName = it.next();
             if (directoryManager.delete(indexName))
             {
                it.remove();
@@ -2011,7 +2065,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private synchronized void checkFlush()
    {
-      long idleTime = System.currentTimeMillis() - lastFlushTime;
+      // avoid frequent flushes during reindexing;
+      long idleTime = online ? System.currentTimeMillis() - lastFlushTime : 0;
       long volatileTime = System.currentTimeMillis() - lastFileSystemFlushTime;
       // do not flush if volatileIdleTime is zero or negative
       if ((handler.getVolatileIdleTime() > 0 && idleTime > handler.getVolatileIdleTime() * 1000)
@@ -2075,7 +2130,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private void checkIndexingQueue(boolean transactionPresent)
    {
       Document[] docs = indexingQueue.getFinishedDocuments();
-      Map finished = new HashMap();
+      Map<String, Document> finished = new HashMap<String, Document>();
       for (int i = 0; i < docs.length; i++)
       {
          String uuid = docs[i].get(FieldNames.UUID);
@@ -2088,7 +2143,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          log.info("updating index with {} nodes from indexing queue.", new Long(finished.size()));
 
          // remove documents from the queue
-         for (Iterator it = finished.keySet().iterator(); it.hasNext();)
+         for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
          {
             indexingQueue.removeDocument(it.next().toString());
          }
@@ -2097,13 +2152,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             if (transactionPresent)
             {
-               for (Iterator it = finished.keySet().iterator(); it.hasNext();)
+               for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
                {
-                  executeAndLog(new DeleteNode(getTransactionId(), (String)it.next()));
+                  executeAndLog(new DeleteNode(getTransactionId(), it.next()));
                }
-               for (Iterator it = finished.values().iterator(); it.hasNext();)
+               for (Iterator<Document> it = finished.values().iterator(); it.hasNext();)
                {
-                  executeAndLog(new AddNode(getTransactionId(), (Document)it.next()));
+                  executeAndLog(new AddNode(getTransactionId(), it.next()));
                }
             }
             else
@@ -2839,9 +2894,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       public void execute(MultiIndex index) throws IOException
       {
          // get index if it exists
-         for (Iterator it = index.indexes.iterator(); it.hasNext();)
+         for (Iterator<PersistentIndex> it = index.indexes.iterator(); it.hasNext();)
          {
-            PersistentIndex idx = (PersistentIndex)it.next();
+            PersistentIndex idx = it.next();
             if (idx.getName().equals(indexName))
             {
                idx.close();
@@ -2944,7 +2999,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             for (int i = index.indexes.size() - 1; i >= 0; i--)
             {
                // only look in registered indexes
-               PersistentIndex idx = (PersistentIndex)index.indexes.get(i);
+               PersistentIndex idx = index.indexes.get(i);
                if (index.indexNames.contains(idx.getName()))
                {
                   num = idx.removeDocument(idTerm);
@@ -3353,18 +3408,32 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             log.info("Setting index back online");
             offlineIndex.commit(true);
             online = true;
+            // cleaning stale indexes
+            for (PersistentIndex staleIndex : staleIndexes)
+            {
+               deleteIndex(staleIndex);
+            }
             //invoking offline index
             invokeOfflineIndex();
+            staleIndexes.clear();
+            doInitIndexMerger();
+            merger.start();
          }
          // switching to OFFLINE
          else
          {
             log.info("Setting index offline");
+            merger.dispose();
             offlineIndex =
                new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
                   directoryManager);
+            if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+            {
+               flush();
+            }
+            releaseMultiReader();
+            staleIndexes.addAll(indexes);
             online = false;
-            flush();
          }
       }
       else if (!online)

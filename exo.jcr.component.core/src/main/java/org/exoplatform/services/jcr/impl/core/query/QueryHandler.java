@@ -155,6 +155,8 @@ public interface QueryHandler
 
    void setIndexerIoModeHandler(IndexerIoModeHandler handler) throws IOException;
 
+   IndexerIoModeHandler getIndexerIoModeHandler();
+
    /**
     * @return the name of the query class to use.
     */
@@ -198,11 +200,26 @@ public interface QueryHandler
 
    /**
     * Switches index into corresponding ONLINE or OFFLINE mode. Offline mode means that new indexing data is
-    * collected but index is guaranteed to be unmodified during offline state.
+    * collected but index is guaranteed to be unmodified during offline state. Queries are denied in offline
+    * mode. Please refer to {{@link #setOnline(boolean, boolean)}} if queries must be allowed while index is
+    * offline. 
     * 
     * @param isOnline
+    * @throws IOException
     */
    void setOnline(boolean isOnline) throws IOException;
+
+   /**
+    * Switches index into corresponding ONLINE or OFFLINE mode. Offline mode means that new indexing data is
+    * collected but index is guaranteed to be unmodified during offline state. Passing the allowQuery flag, can
+    * allow or deny performing queries on index during offline mode. AllowQuery is not used when setting index
+    * back online.
+    * 
+    * @param isOnline
+    * @param allowQuery
+    * @throws IOException
+    */
+   void setOnline(boolean isOnline, boolean allowQuery) throws IOException;
 
    /**
     * Offline mode means that new indexing data is collected but index is guaranteed to be unmodified during

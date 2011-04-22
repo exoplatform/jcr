@@ -125,9 +125,9 @@ class RedoLog
     *         redo log.
     * @throws IOException if an error occurs while reading from the redo log.
     */
-   List getActions() throws IOException
+   List<MultiIndex.Action> getActions() throws IOException
    {
-      final List actions = new ArrayList();
+      final List<MultiIndex.Action> actions = new ArrayList<MultiIndex.Action>();
       read(new ActionCollector()
       {
          public void collect(MultiIndex.Action a)
@@ -182,7 +182,7 @@ class RedoLog
     * Clears the redo log.
     * @throws IOException if the redo log cannot be cleared.
     */
-   void clear() throws IOException
+   synchronized void clear() throws IOException
    {
       SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
@@ -193,7 +193,15 @@ class RedoLog
                out.close();
                out = null;
             }
-            dir.deleteFile(REDO_LOG);
+            try
+            {
+               dir.deleteFile(REDO_LOG);
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+               throw e;
+            }
             entryCount = 0;
             return null;
          }
@@ -205,20 +213,20 @@ class RedoLog
     * @throws IOException if an error occurs while creating the
     * output stream.
     */
-   private void initOut() throws IOException
+   private synchronized void initOut() throws IOException
    {
       SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
          {
-            public Object run() throws Exception
-            {
             if (out == null)
             {
                OutputStream os = new IndexOutputStream(dir.createOutput(REDO_LOG));
                out = new BufferedWriter(new OutputStreamWriter(os));
             }
-               return null;
-            }
-         });
+            return null;
+         }
+      });
    }
 
    /**
@@ -231,9 +239,9 @@ class RedoLog
    private void read(final ActionCollector collector) throws IOException
    {
       SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
          {
-            public Object run() throws Exception
-            {
             if (!dir.fileExists(REDO_LOG))
             {
                return null;
@@ -269,9 +277,9 @@ class RedoLog
                   }
                }
             }
-               return null;
-            }
-         });
+            return null;
+         }
+      });
    }
 
    //-----------------------< internal >---------------------------------------

@@ -215,4 +215,12 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
          log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
       }
    }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter#isShared()
+    */
+   public boolean isShared()
+   {
+      return true;
+   }
 }

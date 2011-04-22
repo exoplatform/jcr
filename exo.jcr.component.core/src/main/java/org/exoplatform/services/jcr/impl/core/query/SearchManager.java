@@ -18,12 +18,16 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -83,7 +87,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -109,6 +115,8 @@ import javax.jcr.query.Query;
  * @version $Id: SearchManager.java 1008 2009-12-11 15:14:51Z nzamosenchuk $
  */
 @NonVolatile
+@Managed
+@NameTemplate(@Property(key = "service", value = "SearchManager"))
 public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable, Backupable,
    TopologyChangeListener
 {
@@ -117,6 +125,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * Logger instance for this class
     */
    private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.SearchManager");
+
+   /**
+    * Used to display date and time for JMX components 
+    */
+   private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
    protected final QueryHandlerEntry config;
 
@@ -220,8 +233,15 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    private RemoteCommand requestForResponsibleForResuming;
 
-   public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
-      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   /**
+    * Switches index between online and offline modes
+    */
+   private RemoteCommand changeIndexState;
+
+   private String hotReindexingState = "not stated";
+
+   public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry,
+      RepositoryService rService, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
       throws RepositoryException, RepositoryConfigurationException
@@ -261,8 +281,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     *             if the search manager cannot be initialized
     * @throws RepositoryConfigurationException
     */
-   public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
-      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry,
+      RepositoryService rService, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm,
       final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
@@ -378,7 +398,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          try
          {
             reader = ((SearchIndex)handler).getIndexReader();
-            final Collection fields = reader.getFieldNames(IndexReader.FieldOption.ALL);
+            final Collection<?> fields = reader.getFieldNames(IndexReader.FieldOption.ALL);
             for (final Object field : fields)
             {
                fildsSet.add((String)field);
@@ -871,17 +891,18 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
       try
       {
-         Class qHandlerClass = Class.forName(className, true, this.getClass().getClassLoader());
+         Class<?> qHandlerClass = Class.forName(className, true, this.getClass().getClassLoader());
          try
          {
             // We first try a constructor with the workspace id
-            Constructor constuctor = qHandlerClass.getConstructor(String.class, QueryHandlerEntry.class, ConfigurationManager.class);
+            Constructor<?> constuctor =
+               qHandlerClass.getConstructor(String.class, QueryHandlerEntry.class, ConfigurationManager.class);
             handler = (QueryHandler)constuctor.newInstance(wsContainerId, config, cfm);
          }
          catch (NoSuchMethodException e)
          {
             // No constructor with the workspace id can be found so we use the default constructor
-            Constructor constuctor = qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
+            Constructor<?> constuctor = qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
             handler = (QueryHandler)constuctor.newInstance(config, cfm);
          }
          QueryHandler parentHandler = (this.parentSearchManager != null) ? parentSearchManager.getHandler() : null;
@@ -1071,7 +1092,21 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void setOnline(boolean isOnline) throws IOException
    {
-      handler.setOnline(isOnline);
+      // deny queries
+      handler.setOnline(isOnline, false);
+   }
+
+   /**
+    * Switches index into online or offline modes. Passing the allowQuery flag, can
+    * allow or deny performing queries on index during offline mode
+    * 
+    * @param isOnline
+    * @param allowQuery
+    * @throws IOException
+    */
+   public void setOnline(boolean isOnline, boolean allowQuery) throws IOException
+   {
+      handler.setOnline(isOnline, allowQuery);
    }
 
    public boolean isOnline()
@@ -1105,6 +1140,186 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
 
       isResponsibleForResuming = false;
+   }
+
+   /**
+    * Public method, designed to be called via JMX, to perform "HOT" reindexing of the workspace
+    * 
+    * @throws IOException
+    * @throws IllegalStateException
+    */
+   @Managed
+   @ManagedDescription("Starts hot async reindexing")
+   public void reindex(final boolean dropExisting) throws IllegalStateException
+   {
+      // checks
+      if (handler == null || handler.getIndexerIoModeHandler() == null || changesFilter == null)
+      {
+         throw new IllegalStateException("Index might have not been initialized yet.");
+      }
+      if (handler.getIndexerIoModeHandler().getMode() != IndexerIoMode.READ_WRITE)
+      {
+         throw new IllegalStateException(
+            "Index is not in READ_WRITE mode and reindexing can't be launched. Please start reindexing on coordinator node.");
+      }
+      if (isSuspended || !handler.isOnline())
+      {
+         throw new IllegalStateException("Can't start reindexing while index is "
+            + ((isSuspended) ? "SUSPENDED." : "already OFFLINE (it means that reindexing is in progress).") + ".");
+      }
+
+      log.info("Starting hot reindexing on the " + handler.getContext().getRepositoryName() + "/"
+         + handler.getContext().getContainer().getWorkspaceName() + ", with" + (dropExisting ? "" : "out")
+         + " dropping the existing indexes.");
+      // starting new thread, releasing JMX call
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            boolean successful = false;
+            hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
+            try
+            {
+               isResponsibleForResuming = true;
+               // set offline cluster wide (will make merger disposed and volatile flushed)
+               if (rpcService != null && changesFilter.isShared())
+               {
+                  rpcService.executeCommandOnAllNodes(changeIndexState, true, false, !dropExisting);
+               }
+               else
+               {
+                  handler.setOnline(false, !dropExisting);
+               }
+               // launch reindexing thread safely, resume nodes if any exception occurs
+               if (handler instanceof SearchIndex)
+               {
+                  ((SearchIndex)handler).getIndex().reindex(itemMgr);
+                  successful = true;
+               }
+               else
+               {
+                  log.error("This kind of QuerHandler class doesn't support hot reindxing.");
+               }
+            }
+            catch (RepositoryException e)
+            {
+               log.error("Error while reindexing the workspace", e);
+            }
+            catch (SecurityException e)
+            {
+               log.error("Can't change state to offline.", e);
+            }
+            catch (RPCException e)
+            {
+               log.error("Can't change state to offline.", e);
+            }
+            catch (IOException e)
+            {
+               log.error("Erroe while reindexing the workspace", e);
+            }
+            // safely change state back
+            finally
+            {
+               // finish, setting indexes back online
+               if (rpcService != null && changesFilter.isShared())
+               {
+                  try
+                  {
+                     // if dropExisting, then queries are no allowed
+                     rpcService.executeCommandOnAllNodes(changeIndexState, true, true, true);
+                  }
+                  catch (SecurityException e)
+                  {
+                     log.error("Error setting index back online in a cluster", e);
+                  }
+                  catch (RPCException e)
+                  {
+                     log.error("Error setting index back online in a cluster", e);
+                  }
+               }
+               else
+               {
+                  try
+                  {
+                     handler.setOnline(true, true);
+                  }
+                  catch (IOException e)
+                  {
+                     log.error("Error setting index back online locally");
+                  }
+               }
+               if (successful)
+               {
+                  hotReindexingState = "Finished at " + sdf.format(Calendar.getInstance().getTime());
+                  log.info("Reindexing finished successfully.");
+               }
+               else
+               {
+                  hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
+                  log.info("Reindexing halted with errors.");
+               }
+               isResponsibleForResuming = false;
+            }
+         }
+      }, "HotReindexing-" + handler.getContext().getRepositoryName() + "-"
+         + handler.getContext().getContainer().getWorkspaceName()).start();
+   }
+
+   @Managed
+   @ManagedDescription("Hot async reindexing state")
+   public String getHotReindexingState()
+   {
+      return hotReindexingState;
+   }
+
+   @Managed
+   @ManagedDescription("Index IO mode (READ_ONLY/READ_WRITE)")
+   public String getIOMode()
+   {
+      if (handler == null || handler.getIndexerIoModeHandler() == null)
+      {
+         return "not initialized";
+      }
+      return (handler.getIndexerIoModeHandler().getMode() == IndexerIoMode.READ_WRITE) ? "READ_WRITE" : "READ_ONLY";
+   }
+
+   @Managed
+   @ManagedDescription("Index state (Online/Offline(indexing))")
+   public String getState()
+   {
+      if (handler == null)
+      {
+         return "not initialized";
+      }
+      return handler.isOnline() ? "Online" : "Offline (indexing)";
+   }
+
+   @Managed
+   @ManagedDescription("QueryHandler class")
+   public String getQuerHandlerClass()
+   {
+      if (handler != null)
+      {
+         return handler.getClass().getCanonicalName();
+      }
+      else
+      {
+         return "not initialized";
+      }
+   }
+
+   @Managed
+   @ManagedDescription("ChangesFilter class")
+   public String getChangesFilterClass()
+   {
+      if (changesFilter != null)
+      {
+         return changesFilter.getClass().getCanonicalName();
+      }
+      else
+      {
+         return "not initialized";
+      }
    }
 
    /**
@@ -1159,10 +1374,32 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             return isResponsibleForResuming;
          }
       });
+
+      changeIndexState = rpcService.registerCommand(new RemoteCommand()
+      {
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-changeIndexerState-" + wsId + "-"
+               + (parentSearchManager == null);
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            boolean isOnline = (Boolean)args[0];
+            boolean allowQuery = (args.length == 2) ? (Boolean)args[1] : false;
+            SearchManager.this.setOnline(isOnline, allowQuery);
+            return null;
+         }
+      });
+
    }
 
    protected void suspendLocally() throws SuspendException
    {
+      if (!handler.isOnline())
+      {
+         throw new SuspendException("Can't suspend index, while reindexing in progeress.");
+      }
       if (isSuspended)
       {
          throw new SuspendException("Component already suspended.");

@@ -224,4 +224,17 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    {
       return true;
    }
+
+   /**
+    * If index is shared across the cluster, which means that all modifications or state changes must be
+    * replicated along cluster. I.e. when hot reindexing is started, the index marked as "shared" will be
+    * set in offline mode within whole cluster. But non-shared index, will only be switched to offline 
+    * locally  
+    * 
+    * @return
+    */
+   public boolean isShared()
+   {
+      return false;
+   }
 }

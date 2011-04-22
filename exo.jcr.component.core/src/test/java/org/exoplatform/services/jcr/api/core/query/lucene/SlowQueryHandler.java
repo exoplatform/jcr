@@ -108,19 +108,19 @@ public class SlowQueryHandler extends AbstractQueryHandler
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean)
-    */
-   public void setOnline(boolean isOnline)
-   {
-      // TODO Auto-generated method stub
-      
-   }
-
-   /**
     * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#isOnline()
     */
    public boolean isOnline()
    {
       return true;
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean, boolean)
+    */
+   public void setOnline(boolean isOnline, boolean allowQuery) throws IOException
+   {
+      // TODO Auto-generated method stub
+      
    }
 }

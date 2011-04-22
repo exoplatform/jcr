@@ -468,6 +468,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private boolean closed = false;
 
    /**
+    * Allows or denies queries while index is offline.
+    */
+   private boolean allowQuery = true;
+
+   /**
     * Text extractor for extracting text content of binary properties.
     */
    private DocumentReaderService extractor;
@@ -486,7 +491,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * The unique id of the workspace corresponding to current instance of {@link SearchIndex}
     */
    private final String wsId;
-   
+
    private final ConfigurationManager cfm;
 
    /**
@@ -721,8 +726,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
 
       modeHandler.addIndexerIoModeListener(this);
-   }   
-   
+   }
+
    /**
     * @return the wsId
     */
@@ -1299,9 +1304,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    protected IndexReader getIndexReader(boolean includeSystemIndex) throws IOException
    {
-      // deny query execution if index in offline mode
-      // TODO Replace with special Exception Type
-      if (!index.isOnline())
+      // deny query execution if index in offline mode and allowQuery is false
+      if (!index.isOnline() && !allowQuery)
       {
          throw new IndexOfflineIOException("Index is offline");
       }
@@ -2133,7 +2137,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class analyzerClass = Class.forName(analyzerClassName);
+         Class<?> analyzerClass = Class.forName(analyzerClassName);
          analyzer.setDefaultAnalyzer((Analyzer)analyzerClass.newInstance());
       }
       catch (Exception e)
@@ -2723,7 +2727,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class similarityClass = Class.forName(className);
+         Class<?> similarityClass = Class.forName(className);
          similarity = (Similarity)similarityClass.newInstance();
       }
       catch (Exception e)
@@ -3072,11 +3076,19 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean)
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean, boolean)
     */
-   public void setOnline(boolean isOnline) throws IOException
+   public void setOnline(boolean isOnline, boolean allowQuery) throws IOException
    {
       checkOpen();
+      if (isOnline)
+      {
+         this.allowQuery = true;
+      }
+      else
+      {
+         this.allowQuery = allowQuery;
+      }
       index.setOnline(isOnline);
    }
 

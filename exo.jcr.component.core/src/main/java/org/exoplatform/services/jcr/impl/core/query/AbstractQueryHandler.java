@@ -90,6 +90,14 @@ public abstract class AbstractQueryHandler implements QueryHandler
    }
 
    /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#getIndexerIoModeHandler()
+    */
+   public IndexerIoModeHandler getIndexerIoModeHandler()
+   {
+      return modeHandler;
+   }
+
+   /**
     * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setContext(org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext)
     */
    public void setContext(QueryHandlerContext context)
@@ -255,5 +263,13 @@ public abstract class AbstractQueryHandler implements QueryHandler
    public void setIndexUpdateMonitor(IndexUpdateMonitor indexUpdateMonitor)
    {
       this.indexUpdateMonitor = indexUpdateMonitor;
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean)
+    */
+   public void setOnline(boolean isOnline) throws IOException
+   {
+      setOnline(isOnline, false);
    }
 }

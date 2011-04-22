@@ -53,7 +53,7 @@ public class IndexingQueue
    /**
     * Maps UUID {@link String}s to {@link Document}s.
     */
-   private final Map pendingDocuments = new HashMap();
+   private final Map pendingDocuments = new HashMap(1);
 
    /**
     * Flag that indicates whether this indexing queue had been
@@ -143,7 +143,7 @@ public class IndexingQueue
    public Document[] getFinishedDocuments()
    {
       checkInitialized();
-      List finished = new ArrayList();
+      List finished = new ArrayList(1);
       synchronized (this)
       {
          finished.addAll(pendingDocuments.values());
