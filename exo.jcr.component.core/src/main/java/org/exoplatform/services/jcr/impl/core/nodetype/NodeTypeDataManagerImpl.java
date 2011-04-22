@@ -1050,10 +1050,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
       if (mixinTypes != null)
       {
-         for (int i = 0; i < mixinTypes.length; i++)
-         {
-            System.arraycopy(mixinTypes, 0, ntn, 1, mixinTypes.length);
-         }
+         System.arraycopy(mixinTypes, 0, ntn, 1, mixinTypes.length);
       }
 
       return ntn;
