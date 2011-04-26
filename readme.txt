@@ -9,7 +9,7 @@ Features of 1.14.0-CR2
 - JCR configuration update doesn't require dropping JCR_CONFIG table
 - All threads have its own understandable name
 - Support RDBMS restore without dump of lock tables
-- Data desitribution service
+- Data distribution service
 - Allow to set a default value when we use variables in configuration files
 - Allow to create custom sessions from ACLs
 - Allow to use external backup tools in a secure manner
