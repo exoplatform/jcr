@@ -196,6 +196,11 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I"
             + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID  order by J.ID";
+
+      FIND_PROPERTY_BY_ID =
+         "select I.P_TYPE, V.STORAGE_DESC from JCR_SITEM I, JCR_SVALUE V where I.CONTAINER_NAME=? and I.ID = ? and V.PROPERTY_ID = I.ID";
+      DELETE_VALUE_BY_ORDER_NUM = "delete from JCR_SVALUE where PROPERTY_ID=? and ORDER_NUM >= ?";
+      UPDATE_VALUE = "update JCR_SVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=? and ORDER_NUM=?";
    }
 
    /**
@@ -673,4 +678,57 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       return findNodesAndProperties.executeQuery();
    }
+    
+   @Override
+   protected int deleteValueDataByOrderNum(String id, int orderNum) throws SQLException
+   {
+      if (deleteValueDataByOrderNum == null)
+         deleteValueDataByOrderNum = dbConnection.prepareStatement(DELETE_VALUE_BY_ORDER_NUM);
+      else
+         deleteValueDataByOrderNum.clearParameters();
+
+      deleteValueDataByOrderNum.setString(1, id);
+      deleteValueDataByOrderNum.setInt(2, orderNum);
+      return deleteValueDataByOrderNum.executeUpdate();
+   }
+   
+   @Override
+   protected ResultSet findPropertyById(String id) throws SQLException
+   {
+      if (findPropertyById == null)
+         findPropertyById = dbConnection.prepareStatement(FIND_PROPERTY_BY_ID);
+      else
+         findPropertyById.clearParameters();
+
+      findPropertyById.setString(1, containerName);
+      findPropertyById.setString(2, id);
+      return findPropertyById.executeQuery();
+   }
+   
+   @Override
+   protected int updateValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc)
+      throws SQLException
+   {
+
+      if (updateValue == null)
+         updateValue = dbConnection.prepareStatement(UPDATE_VALUE);
+      else
+         updateValue.clearParameters();
+
+      if (stream == null)
+      {
+         // [PN] store vd reference to external storage etc.
+         updateValue.setNull(1, Types.BINARY);
+         updateValue.setString(2, storageDesc);
+      }
+      else
+      {
+         updateValue.setBinaryStream(1, stream, streamLength);
+         updateValue.setNull(2, Types.VARCHAR);
+      }
+
+      updateValue.setString(3, cid);
+      updateValue.setInt(4, orderNumber);
+      return updateValue.executeUpdate();
+   }  
 }

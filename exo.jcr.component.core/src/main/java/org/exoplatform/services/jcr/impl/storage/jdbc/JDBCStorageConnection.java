@@ -85,7 +85,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * Helper.
     */
-   class WriteValueHelper extends ValueFileIOHelper
+   protected class WriteValueHelper extends ValueFileIOHelper
    {
       /**
        * {@inheritDoc}

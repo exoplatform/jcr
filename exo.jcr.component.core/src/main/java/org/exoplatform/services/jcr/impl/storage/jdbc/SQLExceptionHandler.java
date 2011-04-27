@@ -352,7 +352,7 @@ public class SQLExceptionHandler
     * @throws InvalidItemStateException
     *           if <code>InvalidItemStateException</code> should be thrown
     */
-   protected String handleUpdateException(SQLException e, ItemData item) throws RepositoryException,
+   public String handleUpdateException(SQLException e, ItemData item) throws RepositoryException,
       InvalidItemStateException
    {
       String message = "[" + containerName + "] EDIT " + (item.isNode() ? "NODE. " : "PROPERTY. ");

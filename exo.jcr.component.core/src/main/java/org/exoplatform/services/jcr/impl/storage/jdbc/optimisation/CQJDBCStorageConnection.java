@@ -18,8 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.IllegalACLException;
@@ -31,15 +33,22 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
+import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.PrimaryTypeNotFoundException;
+import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.SwapFile;
+import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -47,6 +56,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,6 +65,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.jcr.InvalidItemStateException;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
 /**
@@ -91,6 +102,21 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     */
    protected String FIND_ITEM_QPATH_BY_ID_CQ;
 
+   /**
+    * FIND_PROPERTY_BY_ID.
+    */
+   protected String FIND_PROPERTY_BY_ID;
+
+   /**
+    * DELETE_VALUE_BY_ORDER_NUM.
+    */
+   protected String DELETE_VALUE_BY_ORDER_NUM;
+
+   /**
+    * UPDATE_VALUE.
+    */
+   protected String UPDATE_VALUE;
+   
    protected PreparedStatement findNodesByParentIdCQ;
 
    protected PreparedStatement findPropertiesByParentIdCQ;
@@ -98,6 +124,12 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected PreparedStatement findNodeMainPropertiesByParentIdentifierCQ;
 
    protected PreparedStatement findItemQPathByIdentifierCQ;
+
+   protected PreparedStatement findPropertyById;
+   
+   protected PreparedStatement deleteValueDataByOrderNum;
+   
+   protected PreparedStatement updateValue;
 
    /**
      * JDBCStorageConnection constructor.
@@ -190,7 +222,194 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          }
       }
    }
+   
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+      InvalidItemStateException, IllegalStateException
+   {
+      checkIfOpened();
+      ResultSet rs = null;
+      try
+      {
+         String cid = getInternalId(data.getIdentifier());
+         // update type
+         if (updatePropertyByIdentifier(data.getPersistedVersion(), data.getType(), cid) <= 0)
+            throw new JCRInvalidItemStateException("(update) Property not found " + data.getQPath().getAsString() + " "
+               + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+               ItemState.UPDATED);
+
+         rs = findPropertyById(cid);
+         Set<String> storageDescs = new HashSet<String>();
+         int totalOldValues = 0;
+         int prevType = -1;
+         while (rs.next())
+         {
+            if (prevType == -1)
+            {
+               prevType = rs.getInt(COLUMN_PTYPE);
+            }
+            totalOldValues++;
+            final String storageId = rs.getString(COLUMN_VSTORAGE_DESC);
+            if (!rs.wasNull())
+            {
+               storageDescs.add(storageId);
+            }
+         }
+         // update reference
+         try
+         {
+            if (prevType == PropertyType.REFERENCE)
+            {
+               deleteReference(cid);
+            }
+
+            if (data.getType() == PropertyType.REFERENCE)
+            {
+               addReference(data);
+            }
+         }
+         catch (IOException e)
+         {
+            throw new RepositoryException("Can't update REFERENCE property (" + data.getQPath() + " "
+               + data.getIdentifier() + ") value: " + e.getMessage(), e);
+         }
+
+         deleteValues(cid, data, storageDescs, totalOldValues);
+         addOrUpdateValues(cid, data, totalOldValues);
+      }
+      catch (IOException e)
+      {
+         if (LOG.isDebugEnabled())
+            LOG.error("Property update. IO error: " + e, e);
+         throw new RepositoryException("Error of Property Value update " + e, e);
+      }
+      catch (SQLException e)
+      {
+         if (LOG.isDebugEnabled())
+            LOG.error("Property update. Database error: " + e, e);
+         exceptionHandler.handleUpdateException(e, data);
+      }
+      finally
+      {
+         if (rs != null)
+         {
+            try
+            {
+               rs.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void addValues(String cid, PropertyData data) throws IOException, SQLException, RepositoryException
+   {
+      addOrUpdateValues(cid, data, 0);
+   }
+
+   protected void addOrUpdateValues(String cid, PropertyData data, int totalOldValues) throws IOException,
+      RepositoryException, SQLException
+   {
+      List<ValueData> vdata = data.getValues();
+
+      for (int i = 0; i < vdata.size(); i++)
+      {
+         ValueData vd = vdata.get(i);
+         ValueIOChannel channel = valueStorageProvider.getApplicableChannel(data, i);
+         InputStream stream;
+         int streamLength;
+         String storageId;
+         if (channel == null)
+         {
+            // prepare write of Value in database
+            if (vd.isByteArray())
+            {
+               byte[] dataBytes = vd.getAsByteArray();
+               stream = new ByteArrayInputStream(dataBytes);
+               streamLength = dataBytes.length;
+            }
+            else
+            {
+               StreamPersistedValueData streamData = (StreamPersistedValueData)vd;
+
+               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion());
+               try
+               {
+                  writeValueHelper.writeStreamedValue(swapFile, streamData);
+               }
+               finally
+               {
+                  swapFile.spoolDone();
+               }
+
+               long vlen = PrivilegedFileHelper.length(swapFile);
+               if (vlen <= Integer.MAX_VALUE)
+               {
+                  streamLength = (int)vlen;
+               }
+               else
+               {
+                  throw new RepositoryException("Value data large of allowed by JDBC (Integer.MAX_VALUE) " + vlen
+                     + ". Property " + data.getQPath().getAsString());
+               }
+
+               stream = streamData.getAsStream();
+            }
+            storageId = null;
+         }
+         else
+         {
+            // write Value in external VS
+            channel.write(data.getIdentifier(), vd);
+            valueChanges.add(channel);
+            storageId = channel.getStorageId();
+            stream = null;
+            streamLength = 0;
+         }
+         if (i < totalOldValues)
+         {
+            updateValueData(cid, i, stream, streamLength, storageId);
+         }
+         else
+         {
+            addValueData(cid, i, stream, streamLength, storageId);
+         }
+      }
+   }
+
+   private void deleteValues(String cid, PropertyData pdata, Set<String> storageDescs, int totalOldValues) throws ValueStorageNotFoundException, IOException, SQLException
+   {
+      for (String storageId : storageDescs)
+      {
+         final ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
+         try
+         {
+            channel.delete(pdata.getIdentifier());
+            valueChanges.add(channel);
+         }
+         finally
+         {
+            channel.close();
+         }            
+      }
+      if (pdata.getValues().size() < totalOldValues)
+      {
+         // Remove the extra values
+         deleteValueDataByOrderNum(cid, pdata.getValues().size());
+      }
+   }
+   
    /**
     * {@inheritDoc}
     */
@@ -666,6 +885,21 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          {
             findItemQPathByIdentifierCQ.close();
          }
+         
+         if (findPropertyById != null)
+         {
+            findPropertyById.close();
+         }
+
+         if (deleteValueDataByOrderNum != null)
+         {
+            deleteValueDataByOrderNum.close();
+         }
+
+         if (updateValue != null)
+         {
+            updateValue.close();
+         }
       }
       catch (SQLException e)
       {
@@ -680,4 +914,11 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected abstract ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findNodeMainPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
+   
+   protected abstract ResultSet findPropertyById(String id) throws SQLException;
+   
+   protected abstract int deleteValueDataByOrderNum(String id, int orderNum) throws SQLException;
+
+   protected abstract int updateValueData(String cid, int i, InputStream stream, int streamLength, String storageId)
+      throws SQLException;
 }
