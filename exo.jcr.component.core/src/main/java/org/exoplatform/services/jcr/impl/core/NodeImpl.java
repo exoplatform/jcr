@@ -480,7 +480,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new VersionException("Node has jcr:mergeFailed " + getPath());
       }
 
-      if (!parent().checkLocking())
+      if (!checkLocking())
       {
          throw new LockException("Node " + parent().getPath() + " is locked ");
       }
