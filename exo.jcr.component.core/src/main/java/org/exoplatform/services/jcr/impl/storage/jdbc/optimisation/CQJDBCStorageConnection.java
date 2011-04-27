@@ -116,7 +116,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * UPDATE_VALUE.
     */
    protected String UPDATE_VALUE;
-   
+
    protected PreparedStatement findNodesByParentIdCQ;
 
    protected PreparedStatement findPropertiesByParentIdCQ;
@@ -126,9 +126,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected PreparedStatement findItemQPathByIdentifierCQ;
 
    protected PreparedStatement findPropertyById;
-   
+
    protected PreparedStatement deleteValueDataByOrderNum;
-   
+
    protected PreparedStatement updateValue;
 
    /**
@@ -222,7 +222,6 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          }
       }
    }
-   
 
    /**
     * {@inheritDoc}
@@ -236,12 +235,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       try
       {
          String cid = getInternalId(data.getIdentifier());
-         // update type
-         if (updatePropertyByIdentifier(data.getPersistedVersion(), data.getType(), cid) <= 0)
-            throw new JCRInvalidItemStateException("(update) Property not found " + data.getQPath().getAsString() + " "
-               + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
-               ItemState.UPDATED);
 
+         // get existing definition first
          rs = findPropertyById(cid);
          Set<String> storageDescs = new HashSet<String>();
          int totalOldValues = 0;
@@ -259,6 +254,15 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                storageDescs.add(storageId);
             }
          }
+
+         // then update type
+         if (updatePropertyByIdentifier(data.getPersistedVersion(), data.getType(), cid) <= 0)
+         {
+            throw new JCRInvalidItemStateException("(update) Property not found " + data.getQPath().getAsString() + " "
+               + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+               ItemState.UPDATED);
+         }
+         
          // update reference
          try
          {
@@ -284,13 +288,17 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       catch (IOException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property update. IO error: " + e, e);
+         }
          throw new RepositoryException("Error of Property Value update " + e, e);
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property update. Database error: " + e, e);
+         }
          exceptionHandler.handleUpdateException(e, data);
       }
       finally
@@ -388,7 +396,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       }
    }
 
-   private void deleteValues(String cid, PropertyData pdata, Set<String> storageDescs, int totalOldValues) throws ValueStorageNotFoundException, IOException, SQLException
+   private void deleteValues(String cid, PropertyData pdata, Set<String> storageDescs, int totalOldValues)
+      throws ValueStorageNotFoundException, IOException, SQLException
    {
       for (String storageId : storageDescs)
       {
@@ -401,7 +410,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          finally
          {
             channel.close();
-         }            
+         }
       }
       if (pdata.getValues().size() < totalOldValues)
       {
@@ -409,7 +418,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          deleteValueDataByOrderNum(cid, pdata.getValues().size());
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -539,7 +548,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          return naPermissions;
       }
       else
+      {
          throw new IllegalACLException("Property exo:permissions is not found for node with id: " + getIdentifier(cid));
+      }
    }
 
    /**
@@ -556,9 +567,13 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    {
       SortedSet<TempPropertyData> ownerValues = properties.get(Constants.EXO_OWNER.getAsString());
       if (ownerValues != null)
+      {
          return new String(ownerValues.first().data);
+      }
       else
+      {
          throw new IllegalACLException("Property exo:owner is not found for node with id: " + getIdentifier(cid));
+      }
    }
 
    /**
@@ -682,9 +697,13 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                mNames.add(mxn);
 
                if (!privilegeable && Constants.EXO_PRIVILEGEABLE.equals(mxn))
+               {
                   privilegeable = true;
+               }
                else if (!owneable && Constants.EXO_OWNEABLE.equals(mxn))
+               {
                   owneable = true;
+               }
             }
             mts = new InternalQName[mNames.size()];
             mNames.toArray(mts);
@@ -743,14 +762,18 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             else
             {
                if (parentACL != null)
+               {
                   // construct ACL from existed parent ACL
                   acl =
                      new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
                         .getPermissionEntries() : null);
+               }
                else
+               {
                   // have to search nearest ancestor owner and permissions in ACL manager
                   // acl = traverseACL(cpid);
                   acl = null;
+               }
             }
 
             return new PersistedNodeData(getIdentifier(cid), qpath, getIdentifier(parentCid), cversion, cnordernumb,
@@ -791,7 +814,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          {
             result = findItemQPathByIdentifierCQ(caid);
             if (!result.next())
+            {
                throw new InvalidItemStateException("Parent not found, uuid: " + getIdentifier(caid));
+            }
 
             QPathEntry qpe1 =
                new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX));
@@ -885,7 +910,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          {
             findItemQPathByIdentifierCQ.close();
          }
-         
+
          if (findPropertyById != null)
          {
             findPropertyById.close();
@@ -914,9 +939,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected abstract ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findNodeMainPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
-   
+
    protected abstract ResultSet findPropertyById(String id) throws SQLException;
-   
+
    protected abstract int deleteValueDataByOrderNum(String id, int orderNum) throws SQLException;
 
    protected abstract int updateValueData(String cid, int i, InputStream stream, int streamLength, String storageId)
