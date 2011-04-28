@@ -53,7 +53,7 @@ import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RdbmsWorkspaceInitiali
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
-import org.exoplatform.services.jcr.impl.backup.JCRRestor;
+import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -995,7 +995,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          (WorkspacePersistentDataManager)repoService.getRepository(repositoryName).getWorkspaceContainer(workspaceName)
             .getComponent(WorkspacePersistentDataManager.class);
 
-      JCRRestor restorer = new JCRRestor(dataManager, fileCleaner);
+      JCRRestore restorer = new JCRRestore(dataManager, fileCleaner);
       restorer.incrementalRestore(new File(pathBackupFile));
    }
 

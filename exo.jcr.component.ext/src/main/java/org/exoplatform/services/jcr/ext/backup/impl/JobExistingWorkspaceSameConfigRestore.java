@@ -26,8 +26,8 @@ import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.WorkspaceRestoreException;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
-import org.exoplatform.services.jcr.impl.backup.DataRestor;
-import org.exoplatform.services.jcr.impl.backup.JCRRestor;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
@@ -70,7 +70,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
    protected void restore() throws WorkspaceRestoreException
    {
       // list of data restorers
-      List<DataRestor> dataRestorer = new ArrayList<DataRestor>();
+      List<DataRestore> dataRestorer = new ArrayList<DataRestore>();
 
       try
       {
@@ -86,21 +86,21 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
 
          for (Backupable component : backupable)
          {
-            File fullBackupDir = JCRRestor.getFullBackupFile(storageDir);
+            File fullBackupDir = JCRRestore.getFullBackupFile(storageDir);
             dataRestorer.add(component.getDataRestorer(fullBackupDir));
          }
 
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             restorer.clean();
          }
 
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             restorer.restore();
          }
          
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             restorer.commit();
          }
@@ -117,8 +117,8 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
             (FileCleanerHolder)repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
                .getComponent(FileCleanerHolder.class);
 
-         JCRRestor restorer = new JCRRestor(dataManager, fileCleanHolder.getFileCleaner());
-         for (File incrBackupFile : JCRRestor.getIncrementalFiles(storageDir))
+         JCRRestore restorer = new JCRRestore(dataManager, fileCleanHolder.getFileCleaner());
+         for (File incrBackupFile : JCRRestore.getIncrementalFiles(storageDir))
          {
             restorer.incrementalRestore(incrBackupFile);
          }
@@ -126,7 +126,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
       catch (Throwable t)
       {
          // rollback
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             try
             {
@@ -143,7 +143,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
       finally
       {
          // close
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             try
             {

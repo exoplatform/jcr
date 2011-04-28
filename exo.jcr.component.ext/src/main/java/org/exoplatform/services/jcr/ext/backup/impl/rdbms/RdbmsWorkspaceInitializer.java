@@ -28,7 +28,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
-import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
@@ -115,7 +115,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
     */
    protected void fullRdbmsRestore() throws RepositoryException
    {
-      List<DataRestor> dataRestorers = new ArrayList<DataRestor>();
+      List<DataRestore> dataRestorers = new ArrayList<DataRestore>();
 
       ManageableRepository repository = null;
       try
@@ -138,24 +138,24 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             dataRestorers.add(component.getDataRestorer(new File(restorePath)));
          }
 
-         for (DataRestor restorer : dataRestorers)
+         for (DataRestore restorer : dataRestorers)
          {
             restorer.clean();
          }
 
-         for (DataRestor restorer : dataRestorers)
+         for (DataRestore restorer : dataRestorers)
          {
             restorer.restore();
          }
 
-         for (DataRestor restorer : dataRestorers)
+         for (DataRestore restorer : dataRestorers)
          {
             restorer.commit();
          }
       }
       catch (Throwable e)
       {
-         for (DataRestor restorer : dataRestorers)
+         for (DataRestore restorer : dataRestorers)
          {
             try
             {
@@ -171,7 +171,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       }
       finally
       {
-         for (DataRestor restorer : dataRestorers)
+         for (DataRestore restorer : dataRestorers)
          {
             try
             {

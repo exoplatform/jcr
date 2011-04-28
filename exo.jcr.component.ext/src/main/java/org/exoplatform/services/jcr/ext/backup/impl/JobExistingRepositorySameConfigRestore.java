@@ -28,8 +28,8 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
-import org.exoplatform.services.jcr.impl.backup.DataRestor;
-import org.exoplatform.services.jcr.impl.backup.JCRRestor;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.backup.JdbcBackupable;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -75,7 +75,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
    protected void restoreRepository() throws RepositoryRestoreExeption
    {
       // list of data restorers
-      List<DataRestor> dataRestorer = new ArrayList<DataRestor>();
+      List<DataRestore> dataRestorer = new ArrayList<DataRestore>();
 
       try
       {
@@ -115,7 +115,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                   .getComponentInstancesOfType(Backupable.class);
 
             File fullBackupDir =
-               JCRRestor.getFullBackupFile(workspacesMapping.get(wEntry.getName()).getBackupConfig().getBackupDir());
+               JCRRestore.getFullBackupFile(workspacesMapping.get(wEntry.getName()).getBackupConfig().getBackupDir());
 
             for (Backupable component : backupable)
             {
@@ -130,17 +130,17 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             }
          }
 
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             restorer.clean();
          }
 
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             restorer.restore();
          }
 
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             restorer.commit();
          }
@@ -163,10 +163,10 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                   .getWorkspaceContainer(wEntry.getName()).getComponent(FileCleanerHolder.class);
 
             File storageDir =
-               JCRRestor.getFullBackupFile(workspacesMapping.get(wEntry.getName()).getBackupConfig().getBackupDir());
+               JCRRestore.getFullBackupFile(workspacesMapping.get(wEntry.getName()).getBackupConfig().getBackupDir());
 
-            JCRRestor restorer = new JCRRestor(dataManager, fileCleanHolder.getFileCleaner());
-            for (File incrBackupFile : JCRRestor.getIncrementalFiles(storageDir))
+            JCRRestore restorer = new JCRRestore(dataManager, fileCleanHolder.getFileCleaner());
+            for (File incrBackupFile : JCRRestore.getIncrementalFiles(storageDir))
             {
                restorer.incrementalRestore(incrBackupFile);
             }
@@ -175,7 +175,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
       catch (Throwable t)
       {
          // rollback
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             try
             {
@@ -192,7 +192,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
       finally
       {
          // close
-         for (DataRestor restorer : dataRestorer)
+         for (DataRestore restorer : dataRestorer)
          {
             try
             {

@@ -21,7 +21,7 @@ import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.impl.backup.JCRRestor;
+import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
@@ -76,8 +76,8 @@ public class RdbmsBackupWorkspaceInitializer extends RdbmsWorkspaceInitializer
       fullRdbmsRestore();
 
       // restore from incremental backup
-      JCRRestor restorer = new JCRRestor(dataManager, fileCleaner);
-      for (File incrBackupFile : JCRRestor.getIncrementalFiles(new File(restoreDir)))
+      JCRRestore restorer = new JCRRestore(dataManager, fileCleaner);
+      for (File incrBackupFile : JCRRestore.getIncrementalFiles(new File(restoreDir)))
       {
          try
          {
