@@ -22,9 +22,9 @@ package org.exoplatform.services.jcr.impl.backup;
  * Date: 21 01 2011
  * 
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: DummyDataRestor.java 34360 2010-11-11 11:11:11Z tolusha $
+ * @version $Id: DummyDataRestore.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class DummyDataRestor implements DataRestor
+public class DummyDataRestore implements DataRestore
 {
    /**
     * {@inheritDoc}

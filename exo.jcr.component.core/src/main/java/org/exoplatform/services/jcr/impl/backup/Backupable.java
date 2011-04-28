@@ -52,6 +52,6 @@ public interface Backupable
     * @throws RestoreException
     *          if any exception occurred
     */
-   DataRestor getDataRestorer(File storageDir) throws BackupException;
+   DataRestore getDataRestorer(File storageDir) throws BackupException;
 
 }

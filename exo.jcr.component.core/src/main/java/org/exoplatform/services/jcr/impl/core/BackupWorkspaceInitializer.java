@@ -28,7 +28,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.backup.JCRRestor;
+import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
@@ -63,7 +63,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 
       restoreDir = restorePath;
 
-      String fullBackupPath = PrivilegedFileHelper.getAbsolutePath(JCRRestor.getFullBackupFile(new File(restoreDir)));
+      String fullBackupPath = PrivilegedFileHelper.getAbsolutePath(JCRRestore.getFullBackupFile(new File(restoreDir)));
 
       if (fullBackupPath == null)
       {
@@ -97,8 +97,8 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
          dataManager.save(tLog);
 
          // restore from incremental backup
-         JCRRestor restorer = new JCRRestor(dataManager, fileCleaner);
-         for (File incrBackupFile : JCRRestor.getIncrementalFiles(new File(restoreDir)))
+         JCRRestore restorer = new JCRRestore(dataManager, fileCleaner);
+         for (File incrBackupFile : JCRRestore.getIncrementalFiles(new File(restoreDir)))
          {
             restorer.incrementalRestore(incrBackupFile);
          }

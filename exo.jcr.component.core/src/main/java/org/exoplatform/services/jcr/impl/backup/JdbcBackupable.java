@@ -38,6 +38,6 @@ public interface JdbcBackupable extends Backupable
     * @throws RestoreException
     *          if any exception occurred
     */
-   DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException;
+   DataRestore getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException;
 
 }

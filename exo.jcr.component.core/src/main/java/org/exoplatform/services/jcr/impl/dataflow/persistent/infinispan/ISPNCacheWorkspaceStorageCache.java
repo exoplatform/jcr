@@ -42,7 +42,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
-import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
@@ -535,7 +535,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
          // order children by orderNumber, as HashSet returns children in other order
          Collections.sort(childs, new NodesOrderComparator<NodeData>());
-
          return childs;
       }
       else
@@ -898,7 +897,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
       while (keys.hasNext())
       {
-         CacheKey key = (CacheKey)keys.next();
+         CacheKey key = keys.next();
          if (key instanceof CacheId)
          {
             ItemData data = (ItemData)cache.get(key);
@@ -1188,9 +1187,9 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    /**
     * {@inheritDoc}
     */
-   public DataRestor getDataRestorer(File storageDir) throws BackupException
+   public DataRestore getDataRestorer(File storageDir) throws BackupException
    {
-      return new DataRestor()
+      return new DataRestore()
       {
          /**
           * {@inheritDoc}

@@ -25,22 +25,22 @@ import java.util.List;
  * Date: 21 01 2011
  * 
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: ComplexDataRestor.java 34360 2010-11-11 11:11:11Z tolusha $
+ * @version $Id: ComplexDataRestore.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class ComplexDataRestor implements DataRestor
+public class ComplexDataRestore implements DataRestore
 {
 
    /**
     * List of restorers.
     */
-   private List<DataRestor> restorers = new ArrayList<DataRestor>();
+   private List<DataRestore> restorers = new ArrayList<DataRestore>();
 
    /**
     * Constructor ComplexDataRestor.
     * 
     * @param restorers
     */
-   public ComplexDataRestor(List<DataRestor> restorers)
+   public ComplexDataRestore(List<DataRestore> restorers)
    {
       this.restorers.addAll(restorers);
    }
@@ -50,7 +50,7 @@ public class ComplexDataRestor implements DataRestor
     */
    public void clean() throws BackupException
    {
-      for (DataRestor restorer : restorers)
+      for (DataRestore restorer : restorers)
       {
          restorer.clean();
       }
@@ -61,7 +61,7 @@ public class ComplexDataRestor implements DataRestor
     */
    public void restore() throws BackupException
    {
-      for (DataRestor restorer : restorers)
+      for (DataRestore restorer : restorers)
       {
          restorer.restore();
       }
@@ -72,7 +72,7 @@ public class ComplexDataRestor implements DataRestor
     */
    public void commit() throws BackupException
    {
-      for (DataRestor restorer : restorers)
+      for (DataRestore restorer : restorers)
       {
          restorer.commit();
       }
@@ -83,7 +83,7 @@ public class ComplexDataRestor implements DataRestor
     */
    public void rollback() throws BackupException
    {
-      for (DataRestor restorer : restorers)
+      for (DataRestore restorer : restorers)
       {
          restorer.rollback();
       }
@@ -96,7 +96,7 @@ public class ComplexDataRestor implements DataRestor
    {
       try
       {
-         for (DataRestor restorer : restorers)
+         for (DataRestore restorer : restorers)
          {
             restorer.close();
          }

@@ -38,8 +38,8 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
-import org.exoplatform.services.jcr.impl.backup.DataRestor;
-import org.exoplatform.services.jcr.impl.backup.DummyDataRestor;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.backup.DummyDataRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
@@ -864,7 +864,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    /**
     * {@inheritDoc}
     */
-   public DataRestor getDataRestorer(File storageDir) throws BackupException
+   public DataRestore getDataRestorer(File storageDir) throws BackupException
    {
       List<LockData> locks = new ArrayList<LockData>();
 
@@ -876,7 +876,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
          // it is possible that backup was created on configuration without Backupable WorkspaceLockManager class
          if (!PrivilegedFileHelper.exists(contentFile))
          {
-            return new DummyDataRestor();
+            return new DummyDataRestore();
          }
 
          in = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(contentFile));
@@ -917,20 +917,20 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
          }
       }
 
-      return new CacheLocksRestor(locks);
+      return new CacheLocksRestore(locks);
    }
 
    /**
     * Cache restorer.
     */
-   protected class CacheLocksRestor implements DataRestor
+   protected class CacheLocksRestore implements DataRestore
    {
 
       final private List<LockData> backupLocks = new ArrayList<LockData>();
 
       private List<LockData> actualLocks = new ArrayList<LockData>();
 
-      CacheLocksRestor(final List<LockData> backupLocks)
+      CacheLocksRestore(final List<LockData> backupLocks)
       {
          this.backupLocks.addAll(backupLocks);
       }

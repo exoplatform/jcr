@@ -19,7 +19,7 @@ package org.exoplatform.services.jcr.impl.backup.rdbms;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
-import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -32,9 +32,9 @@ import java.util.List;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
- * @version $Id: DirectoryRestorer.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: DirectoryRestorere.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class DirectoryRestor implements DataRestor
+public class DirectoryRestore implements DataRestore
 {
 
    /**
@@ -73,7 +73,7 @@ public class DirectoryRestor implements DataRestor
     * @param dataDirs
     * @param backupDirs
     */
-   public DirectoryRestor(List<File> dataDirs, List<File> backupDirs)
+   public DirectoryRestore(List<File> dataDirs, List<File> backupDirs)
    {
       this.dataDirs.addAll(dataDirs);
       this.backupDirs.addAll(backupDirs);
@@ -85,7 +85,7 @@ public class DirectoryRestor implements DataRestor
     * @param dataDir
     * @param backupDir
     */
-   public DirectoryRestor(File dataDir, File backupDir)
+   public DirectoryRestore(File dataDir, File backupDir)
    {
       this.dataDirs.add(dataDir);
       this.backupDirs.add(backupDir);

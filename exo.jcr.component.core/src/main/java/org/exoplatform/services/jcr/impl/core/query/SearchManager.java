@@ -50,11 +50,11 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
-import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
-import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestor;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
@@ -1548,7 +1548,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}}
     */
-   public DataRestor getDataRestorer(File storageDir) throws BackupException
+   public DataRestore getDataRestorer(File storageDir) throws BackupException
    {
       try
       {
@@ -1561,7 +1561,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          }
          else
          {
-            return new DirectoryRestor(getIndexDirectory(), backupDir);
+            return new DirectoryRestore(getIndexDirectory(), backupDir);
          }
       }
       catch (RepositoryConfigurationException e)

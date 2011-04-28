@@ -65,9 +65,9 @@ import javax.jcr.RepositoryException;
  * - perform incremental restore function<br>
  * 
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: JCRRestorerHelper.java 34360 2010-11-11 11:11:11Z tolusha $
+ * @version $Id: JCRRestore.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class JCRRestor
+public class JCRRestore
 {
 
    private final DataManager dataManager;
@@ -76,7 +76,7 @@ public class JCRRestor
 
    private final File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
 
-   public JCRRestor(DataManager dataManager, FileCleaner fileCleaner)
+   public JCRRestore(DataManager dataManager, FileCleaner fileCleaner)
    {
       this.dataManager = dataManager;
       this.fileCleaner = fileCleaner;

@@ -29,12 +29,12 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
-import org.exoplatform.services.jcr.impl.backup.ComplexDataRestor;
-import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.ComplexDataRestore;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.JdbcBackupable;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
-import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestor;
-import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestor;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
@@ -1164,10 +1164,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public DataRestor getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
+   public DataRestore getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
    {
 
-      List<DataRestor> restorers = new ArrayList<DataRestor>();
+      List<DataRestore> restorers = new ArrayList<DataRestore>();
 
       ObjectReader backupInfo = null;
       try
@@ -1280,7 +1280,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          tables.put(dstTableName, restoreTableRule);
          
-         restorers.add(new DBRestor(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
+         restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
 
          // prepare value storage restorer
          File backupValueStorageDir = new File(storageDir, "values");
@@ -1316,7 +1316,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                }
             }
 
-            restorers.add(new DirectoryRestor(dataDirs, backupDirs));
+            restorers.add(new DirectoryRestore(dataDirs, backupDirs));
          }
          else
          {
@@ -1327,7 +1327,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             }
          }
 
-         return new ComplexDataRestor(restorers);
+         return new ComplexDataRestore(restorers);
       }
       catch (FileNotFoundException e)
       {
@@ -1368,7 +1368,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public DataRestor getDataRestorer(File storageDir) throws BackupException
+   public DataRestore getDataRestorer(File storageDir) throws BackupException
    {
       try
       {

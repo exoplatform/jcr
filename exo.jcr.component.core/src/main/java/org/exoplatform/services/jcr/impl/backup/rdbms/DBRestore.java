@@ -26,7 +26,7 @@ import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
-import org.exoplatform.services.jcr.impl.backup.DataRestor;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBClean;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderImpl;
@@ -63,7 +63,7 @@ import javax.naming.NamingException;
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: DBRestor.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class DBRestor implements DataRestor
+public class DBRestore implements DataRestore
 {
    /**
     * The maximum possible batch size.
@@ -122,7 +122,7 @@ public class DBRestor implements DataRestor
     * @throws SQLException 
     * @throws RepositoryConfigurationException 
     */
-   public DBRestor(File storageDir, Connection jdbcConn, Map<String, RestoreTableRule> tables,
+   public DBRestore(File storageDir, Connection jdbcConn, Map<String, RestoreTableRule> tables,
       WorkspaceEntry wsConfig, FileCleaner fileCleaner) throws NamingException, SQLException,
       RepositoryConfigurationException
    {

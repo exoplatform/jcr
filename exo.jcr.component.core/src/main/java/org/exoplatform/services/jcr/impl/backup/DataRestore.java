@@ -22,9 +22,9 @@ package org.exoplatform.services.jcr.impl.backup;
  * Date: 22 01 2011
  * 
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: DataRestor.java.java 34360 2010-11-11 11:11:11Z tolusha $
+ * @version $Id: DataRestore.java.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public interface DataRestor
+public interface DataRestore
 {
 
    /**
