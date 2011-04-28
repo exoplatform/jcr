@@ -543,4 +543,37 @@ public class TestLock extends JcrAPIBaseTest
       session1.logout();
 
    }
+
+   public void testCheckOutWhenParentLocked() throws RepositoryException
+   {
+      // creating node that is going to be locked, adding a child also.
+
+      Session session1 = repository.login(new CredentialsImpl("root", "exo".toCharArray()), "ws");
+      Node lockedNodeSession1 = session1.getRootNode().addNode("testCheckOutWhenParentLocked");
+      lockedNodeSession1.addMixin("mix:lockable");
+      lockedNodeSession1.addMixin("mix:versionable");
+      session1.save();
+      lockedNodeSession1.checkin();
+      // locking it    
+      lockedNodeSession1.lock(false, false);
+      session1.save();
+      assertTrue(lockedNodeSession1.isLocked());
+
+      Node lockedNode = session.getRootNode().getNode("testCheckOutWhenParentLocked");
+
+      try
+      {
+         lockedNode.checkout();
+         fail("Lock exeption should be thrown");
+      }
+      catch (LockException e)
+      {
+         // it's okey
+      }
+
+      lockedNodeSession1.checkout();
+      session1.save();
+
+      session1.logout();
+   }
 }

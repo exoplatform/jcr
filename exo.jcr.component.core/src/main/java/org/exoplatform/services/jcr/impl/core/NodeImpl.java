@@ -482,7 +482,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       if (!checkLocking())
       {
-         throw new LockException("Node " + parent().getPath() + " is locked ");
+         throw new LockException("Node " + getPath() + " is locked ");
       }
 
       // the new version identifier
@@ -531,6 +531,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             "Node.checkout() is not supported for not mix:versionable node ");
       }
 
+      if (!checkLocking())
+      {
+         throw new LockException("Node " + getPath() + " is locked ");
+      }
+      
       if (checkedOut())
       {
          return;
