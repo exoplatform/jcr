@@ -81,12 +81,12 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/loc
 +
 +   }
 +   
-+   public void testCheckOutWhenParentLocked() throws RepositoryException
++   public void testCheckOutWhenLocked() throws RepositoryException
 +   {
 +      // creating node that is going to be locked, adding a child also.
 +
 +      Session session1 = repository.login(new CredentialsImpl("root", "exo".toCharArray()), "ws");
-+      Node lockedNodeSession1 = session1.getRootNode().addNode("testCheckOutWhenParentLocked");
++      Node lockedNodeSession1 = session1.getRootNode().addNode("testCheckOutWhenLocked");
 +      lockedNodeSession1.addMixin("mix:lockable");
 +      lockedNodeSession1.addMixin("mix:versionable");
 +      session1.save();
@@ -96,7 +96,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/loc
 +      session1.save();
 +      assertTrue(lockedNodeSession1.isLocked());
 +
-+      Node lockedNode = session.getRootNode().getNode("testCheckOutWhenParentLocked");
++      Node lockedNode = session.getRootNode().getNode("testCheckOutWhenLocked");
 +
 +      try
 +      {
