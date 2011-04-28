@@ -44,7 +44,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/loc
        session1.save();
        Lock lock = nodeToCopyLock.lock(true, false);// boolean isSessionScoped
        // in ECM we are using lock(true, true) without saving lockToken
-@@ -503,4 +511,37 @@
+@@ -503,4 +511,70 @@
        }
     }
  
@@ -81,17 +81,62 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/loc
 +
 +   }
 +   
++   public void testCheckOutWhenParentLocked() throws RepositoryException
++   {
++      // creating node that is going to be locked, adding a child also.
++
++      Session session1 = repository.login(new CredentialsImpl("root", "exo".toCharArray()), "ws");
++      Node lockedNodeSession1 = session1.getRootNode().addNode("testCheckOutWhenParentLocked");
++      lockedNodeSession1.addMixin("mix:lockable");
++      lockedNodeSession1.addMixin("mix:versionable");
++      session1.save();
++      lockedNodeSession1.checkin();
++      // locking it    
++      lockedNodeSession1.lock(false, false);
++      session1.save();
++      assertTrue(lockedNodeSession1.isLocked());
++
++      Node lockedNode = session.getRootNode().getNode("testCheckOutWhenParentLocked");
++
++      try
++      {
++         lockedNode.checkout();
++         fail("Lock exeption should be thrown");
++      }
++      catch (LockException e)
++      {
++         // it's okey
++      }
++
++      lockedNodeSession1.checkout();
++      session1.save();
++
++      session1.logout();
++   }
++   
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(revision 4306)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(working copy)
-@@ -433,7 +433,7 @@
+@@ -433,8 +433,8 @@
        if (hasProperty(Constants.JCR_MERGEFAILED))
           throw new VersionException("Node has jcr:mergeFailed " + getPath());
  
 -      if (!parent().checkLocking())
+-         throw new LockException("Node " + parent().getPath() + " is locked ");
 +      if (!checkLocking())
-          throw new LockException("Node " + parent().getPath() + " is locked ");
++         throw new LockException("Node " + getPath() + " is locked ");
  
        // the new version identifier
+       String verIdentifier = IdGenerator.generate();
+@@ -480,6 +480,9 @@
+          throw new UnsupportedRepositoryOperationException(
+             "Node.checkout() is not supported for not mix:versionable node ");
+ 
++      if (!checkLocking())
++         throw new LockException("Node " + getPath() + " is locked ");
++      
+       if (checkedOut())
+          return;
+ 
