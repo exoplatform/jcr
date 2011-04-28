@@ -1,0 +1,208 @@
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/writing/TestOrderBefore.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/writing/TestOrderBefore.java	(revision 4266)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/writing/TestOrderBefore.java	(working copy)
+@@ -19,6 +19,9 @@
+ package org.exoplatform.services.jcr.api.writing;
+ 
+ import org.exoplatform.services.jcr.JcrAPIBaseTest;
++import org.exoplatform.services.jcr.datamodel.NodeData;
++import org.exoplatform.services.jcr.impl.core.NodeImpl;
++import org.exoplatform.services.jcr.impl.core.SessionImpl;
+ import org.exoplatform.services.jcr.impl.util.EntityCollection;
+ 
+ import java.util.ArrayList;
+@@ -1032,6 +1035,76 @@
+       }
+    }
+ 
++   public void testOrderBeforeAfterMove() throws Exception
++   {
++      SessionImpl session = (SessionImpl)repository.login(credentials, WORKSPACE);
++      Node list = session.getRootNode().addNode("list2", "list");
++      assertEquals("list", list.getPrimaryNodeType().getName());
++      assertTrue(list.getPrimaryNodeType().hasOrderableChildNodes());
++
++      String path = list.addNode("1").getPath();
++      list.addNode("2");
++      session.save();
++      session.logout();
++
++      session = (SessionImpl)repository.login(credentials, WORKSPACE);
++      list = session.getRootNode().getNode("list2");
++      session.move(path, list.getPath() + "/3");
++      list.orderBefore("3", "2");
++      session.save();
++      session.logout();
++
++      session = (SessionImpl)repository.login(credentials, WORKSPACE);
++      NodeIterator it = session.getRootNode().getNode("list2").getNodes();
++      NodeImpl node1 = (NodeImpl)it.nextNode();
++      NodeImpl node2 = (NodeImpl)it.nextNode();
++      assertEquals("3", node1.getName());
++      assertEquals("2", node2.getName());
++      assertTrue(((NodeData)node1.getData()).getOrderNumber() < ((NodeData)node2.getData()).getOrderNumber());
++
++      session.logout();
++   }
++
++   public void testOrderBeforeAfterMove2() throws Exception
++   {
++      SessionImpl session = (SessionImpl)repository.login(credentials, WORKSPACE);
++      Node list = session.getRootNode().addNode("list2", "list");
++      assertEquals("list", list.getPrimaryNodeType().getName());
++      assertTrue(list.getPrimaryNodeType().hasOrderableChildNodes());
++
++      list.addNode("1");
++      list.addNode("2");
++      list.addNode("3");
++      list.addNode("4");
++      session.save();
++      session.logout();
++
++      session = (SessionImpl)repository.login(credentials, WORKSPACE);
++      list = session.getRootNode().getNode("list2");
++      session.move(list.getPath() + "/2", list.getPath() + "/5");
++      list.orderBefore("5", "1");
++      session.save();
++      session.logout();
++
++      session = (SessionImpl)repository.login(credentials, WORKSPACE);
++      NodeIterator it = session.getRootNode().getNode("list2").getNodes();
++      NodeImpl node1 = (NodeImpl)it.nextNode();
++      NodeImpl node2 = (NodeImpl)it.nextNode();
++      NodeImpl node3 = (NodeImpl)it.nextNode();
++      NodeImpl node4 = (NodeImpl)it.nextNode();
++
++      assertEquals("5", node1.getName());
++      assertEquals("1", node2.getName());
++      assertEquals("3", node3.getName());
++      assertEquals("4", node4.getName());
++
++      assertTrue(((NodeData)node1.getData()).getOrderNumber() < ((NodeData)node2.getData()).getOrderNumber());
++      assertTrue(((NodeData)node2.getData()).getOrderNumber() < ((NodeData)node3.getData()).getOrderNumber());
++      assertTrue(((NodeData)node3.getData()).getOrderNumber() < ((NodeData)node4.getData()).getOrderNumber());
++      
++      session.logout();
++   }
++
+    private EntityCollection getEntityCollection(NodeIterator nodes)
+    {
+       List result = new ArrayList();
+Index: exo.jcr.component.core/src/test/resources/conf/test/nodetypes-usecase.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/test/nodetypes-usecase.xml	(revision 4266)
++++ exo.jcr.component.core/src/test/resources/conf/test/nodetypes-usecase.xml	(working copy)
+@@ -253,4 +253,18 @@
+       </propertyDefinitions>
+    </nodeType>
+ 
++  <nodeType name="list" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">
++    <supertypes>
++      <supertype>nt:base</supertype>
++    </supertypes>
++    <childNodeDefinitions>
++      <childNodeDefinition name="*" defaultPrimaryType="nt:unstructured" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" sameNameSiblings="false">
++        <requiredPrimaryTypes>
++          <requiredPrimaryType>nt:unstructured</requiredPrimaryType>
++        </requiredPrimaryTypes>
++      </childNodeDefinition>
++    </childNodeDefinitions>
++  </nodeType>
++
++
+ </nodeTypes>
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(revision 4266)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(working copy)
+@@ -2441,11 +2441,6 @@
+ 
+    protected void doOrderBefore(QPath srcPath, QPath destPath) throws RepositoryException
+    {
+-      if (!getPrimaryNodeType().hasOrderableChildNodes())
+-      {
+-         throw new UnsupportedRepositoryOperationException("child node ordering not supported on node " + getPath());
+-      }
+-
+       if (srcPath.equals(destPath))
+       {
+          return;
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/ItemDataMoveVisitor.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/ItemDataMoveVisitor.java	(revision 4266)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/ItemDataMoveVisitor.java	(working copy)
+@@ -133,18 +133,23 @@
+          NodeData srcParent;
+ 
+          destIndex = 1;
++
++         // If ordering is supported by the node
++         // type of the parent node of the new location, then the
++         // newly moved node is appended to the end of the child
++         // node list.
+          destOrderNum = destChilds.size() > 0 ? destChilds.get(destChilds.size() - 1).getOrderNumber() + 1 : 0;
+ 
+          if (parent.getIdentifier().equals(node.getParentIdentifier()))
+          {
+-            // move to another dest
++            // move to same parent
+             srcChilds = destChilds;
+             srcParent = parent;
+          }
+          else
+          {
+-            // move of SNSes on same parent
+-            // find index and orederNum on destination
++            // move to another parent
++            // find index on destination
+             for (NodeData dchild : destChilds)
+             {
+                if (dchild.getQPath().getName().equals(qname))
+@@ -154,16 +159,17 @@
+             // for fix SNSes on source
+             srcParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
+             if (srcParent == null)
++            {
+                throw new RepositoryException("FATAL: parent Node not for " + node.getQPath().getAsString()
+                   + ", parent id: " + node.getParentIdentifier());
++            }
+ 
+             srcChilds = dataManager.getChildNodesData(srcParent);
+          }
+ 
+-         int srcOrderNum = 0;
+          int srcIndex = 1;
+ 
+-         // Calculate SNS index on source
++         // Fix SNS on source
+          for (int i = 0; i < srcChilds.size(); i++)
+          {
+             NodeData child = srcChilds.get(i);
+@@ -173,22 +179,21 @@
+                {
+                   QPath siblingPath = QPath.makeChildPath(srcParent.getQPath(), child.getQPath().getName(), srcIndex);
+                   TransientNodeData sibling =
+-                     new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1, child
+-                        .getPrimaryTypeName(), child.getMixinTypeNames(), srcOrderNum, // orderNum
++                     new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1,
++                        child.getPrimaryTypeName(), child.getMixinTypeNames(), child.getOrderNumber(),
+                         child.getParentIdentifier(), child.getACL());
++
+                   addStates.add(new ItemState(sibling, ItemState.UPDATED, true, ancestorToSave, false, true));
+ 
+                   srcIndex++;
+                }
+-
+-               srcOrderNum++;
+             }
+          }
+ 
++         // in case of moving to the same parent destination index is calculated above
+          if (srcChilds == destChilds)
+          {
+             destIndex = srcIndex;
+-            destOrderNum = srcOrderNum;
+          }
+       }
+       else
