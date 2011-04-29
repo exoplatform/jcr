@@ -130,7 +130,7 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
    public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeTypeDataManager nodeTypeManager,
       SessionDataManager srcDataManager, boolean keepIdentifiers)
    {
-      this(parent, dstNodeName, nodeTypeManager, srcDataManager, keepIdentifiers, false);
+      this(parent, dstNodeName, nodeTypeManager, srcDataManager, keepIdentifiers, true);
    }
 
    @Override
