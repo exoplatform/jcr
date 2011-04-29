@@ -197,6 +197,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     */
    private static final String ALLOW;
 
+   private final MimeTypeResolver mimeTypeResolver;
+
    static
    {
       StringBuffer sb = new StringBuffer();
@@ -300,7 +302,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
 
       }
-
+      this.mimeTypeResolver = new MimeTypeResolver();
+      this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
    }
 
    /**
@@ -382,6 +385,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
 
       }
+      this.mimeTypeResolver = new MimeTypeResolver();
+      this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
    }
 
    /**
@@ -396,6 +401,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       this.sessionProviderService = sessionProviderService;
       this.repositoryService = repositoryService;
       this.nullResourceLocks = new NullResourceLocksHolder();
+      this.mimeTypeResolver = new MimeTypeResolver();
+      this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
    }
 
    /**
@@ -1135,8 +1142,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          if (mediatype == null)
          {
-            MimeTypeResolver mimeTypeResolver = new MimeTypeResolver();
-            mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
             mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
          }
          else
