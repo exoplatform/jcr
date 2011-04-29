@@ -133,14 +133,8 @@ public class TransactionableDataManager implements TransactionResource, DataMana
          }
 
          int lastOrderNumber = storageDataManager.getLastOrderNumber(parent);
-         if (lastOrderNumber > txLastOrderNumber)
-         {
-            return lastOrderNumber;
-         }
-         else
-         {
-            return txLastOrderNumber;
-         }
+
+         return Math.max(lastOrderNumber, txLastOrderNumber);
       }
       else
       {

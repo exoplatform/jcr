@@ -968,14 +968,7 @@ public class SessionDataManager implements ItemDataConsumer
       int lastOrderNumber = changesLog.getLastChildOrderNumber(parent.getIdentifier());
       int lastPersistedNodeOrderNumber = transactionableManager.getLastOrderNumber(parent);
 
-      if (lastPersistedNodeOrderNumber < lastOrderNumber)
-      {
-         return lastOrderNumber;
-      }
-      else
-      {
-         return lastPersistedNodeOrderNumber;
-      }
+      return Math.max(lastPersistedNodeOrderNumber, lastOrderNumber);
    }
 
    /**

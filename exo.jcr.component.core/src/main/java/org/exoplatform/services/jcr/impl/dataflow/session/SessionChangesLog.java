@@ -62,9 +62,22 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       new HashMap<String, Map<String, ItemState>>();
 
    /**
-    * Stores persisted child nodes count.  
+    * Stores info for persisted child nodes by parent identifier. 
+    * <br>Index in array points to: 
+    * <br>0 - child nodes count. 
+    * <br>1 - last child order number 
     */
-   protected Map<String, int[]> childNodesCount = new HashMap<String, int[]>();
+   protected Map<String, int[]> childNodesInfo = new HashMap<String, int[]>();
+
+   /** 
+    * Index in <code>childNodesInfo<code> value array to store child nodes count. 
+   */
+   protected final int CHILD_NODES_COUNT_INDEX = 0;
+
+   /** 
+    * Index in <code>childNodesInfo<code> value array to store last child order number. 
+    */
+   protected final int CHILD_NODES_LAST_ORDER_NUMBER_INDEX = 1;
 
    /**
     * Create empty ChangesLog.
@@ -129,7 +142,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       index.clear();
       lastChildNodeStates.clear();
       lastChildPropertyStates.clear();
-      childNodesCount.clear();
+      childNodesInfo.clear();
    }
 
    /**
@@ -153,21 +166,21 @@ public final class SessionChangesLog extends PlainChangesLogImpl
             index.remove(item.getData().getQPath());
             index.remove(new ParentIDQPathBasedKey(item));
             index.remove(new IDStateBasedKey(item.getData().getIdentifier(), item.getState()));
-            childNodesCount.remove(item.getData().getIdentifier());
+            childNodesInfo.remove(item.getData().getIdentifier());
             lastChildNodeStates.remove(item.getData().getIdentifier());
             lastChildPropertyStates.remove(item.getData().getIdentifier());
 
             if (item.isNode() && item.isPersisted())
             {
-               int childCount[] = childNodesCount.get(item.getData().getParentIdentifier());
-               if (childCount != null)
+               int childInfo[] = childNodesInfo.get(item.getData().getParentIdentifier());
+               if (childInfo != null)
                {
                   if (item.isDeleted())
-                     ++childCount[0];
+                     ++childInfo[CHILD_NODES_COUNT_INDEX];
                   else if (item.isAdded())
-                     --childCount[0];
+                     --childInfo[CHILD_NODES_COUNT_INDEX];
 
-                  childNodesCount.put(item.getData().getParentIdentifier(), childCount);
+                  childNodesInfo.put(item.getData().getParentIdentifier(), childInfo);
                }
             }
 
@@ -412,15 +425,15 @@ public final class SessionChangesLog extends PlainChangesLogImpl
 
    public int getChildNodesCount(String rootIdentifier)
    {
-      int[] childCount = childNodesCount.get(rootIdentifier);
-      return childCount == null ? 0 : childCount[0];
+      int[] childInfo = childNodesInfo.get(rootIdentifier);
+      return childInfo == null ? 0 : childInfo[CHILD_NODES_COUNT_INDEX];
    }
 
    public int getLastChildOrderNumber(String rootIdentifier)
    {
 
-      int[] childInfo = childNodesCount.get(rootIdentifier);
-      return childInfo == null ? -1 : childInfo[1];
+      int[] childInfo = childNodesInfo.get(rootIdentifier);
+      return childInfo == null ? -1 : childInfo[CHILD_NODES_LAST_ORDER_NUMBER_INDEX];
    }
 
    /**
@@ -671,20 +684,20 @@ public final class SessionChangesLog extends PlainChangesLogImpl
 
       if (item.isNode() && item.isPersisted())
       {
-         int[] childCount = childNodesCount.get(item.getData().getParentIdentifier());
-         if (childCount == null)
-            childCount = new int[2];
+         int[] childInfo = childNodesInfo.get(item.getData().getParentIdentifier());
+         if (childInfo == null)
+            childInfo = new int[2];
 
          if (item.isDeleted())
          {
-            --childCount[0];
+            --childInfo[CHILD_NODES_COUNT_INDEX];
          }
          else if (item.isAdded())
          {
-            ++childCount[0];
-            childCount[1] = ((NodeData)item.getData()).getOrderNumber();
+            ++childInfo[CHILD_NODES_COUNT_INDEX];
+            childInfo[CHILD_NODES_LAST_ORDER_NUMBER_INDEX] = ((NodeData)item.getData()).getOrderNumber();
          }
-         childNodesCount.put(item.getData().getParentIdentifier(), childCount);
+         childNodesInfo.put(item.getData().getParentIdentifier(), childInfo);
       }
    }
 
