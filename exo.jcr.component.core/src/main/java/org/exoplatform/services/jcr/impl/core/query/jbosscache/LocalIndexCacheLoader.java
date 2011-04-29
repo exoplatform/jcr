@@ -51,7 +51,8 @@ public class LocalIndexCacheLoader extends IndexerCacheLoader
       if (ioMode == IndexerIoMode.READ_ONLY)
       {
          throw new UnsupportedOperationException(
-            "Can't set ReadOnly on this type of CacheLoader. It is designed to provide local index for each cluster instance. Make sure you are using Index properly.");
+                  "Can't set ReadOnly on this type of CacheLoader. It is designed to provide local index "
+                           + "for each cluster instance. Make sure you are using Index properly.");
       }
    }
 

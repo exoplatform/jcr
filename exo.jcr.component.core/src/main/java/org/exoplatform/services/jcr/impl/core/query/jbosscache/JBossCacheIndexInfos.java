@@ -124,7 +124,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener#onChangeMode(org.exoplatform.services.jcr.impl.core.query.IndexerIoMode)
+    * {@inheritDoc}
     */
    public void onChangeMode(IndexerIoMode mode)
    {

@@ -1396,7 +1396,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          return new JdbcNodeDataIndexingIterator(connFactory, pageSize);         
       }
-      throw new UnsupportedOperationException("The method getNodeDataIndexingIterator is not supported for this type of connection use the complex queries instead");
+      throw new UnsupportedOperationException(
+               "The method getNodeDataIndexingIterator is not supported for this type of connection "
+                        + "use the complex queries instead");
    }
 
    /**

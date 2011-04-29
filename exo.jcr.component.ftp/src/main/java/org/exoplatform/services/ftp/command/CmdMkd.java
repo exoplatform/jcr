@@ -80,7 +80,9 @@ public class CmdMkd extends FtpCommandImpl
 
             if (replaceForbiddenChars)
             {
-              curPathName = FtpTextUtils.replaceForbiddenChars(curPathName, ftpConfig.getForbiddenChars(), ftpConfig.getReplaceChar());
+               curPathName =
+                        FtpTextUtils.replaceForbiddenChars(curPathName, ftpConfig.getForbiddenChars(), ftpConfig
+                                 .getReplaceChar());
             }
 
             if (parentNode.hasNode(curPathName))

@@ -811,7 +811,8 @@ public final class MoreLikeThis {
         ArrayList al = new ArrayList(maxQueryTerms);
         PriorityQueue pq = retrieveTerms(docNum);
         Object cur;
-        int lim = maxQueryTerms; // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
+        // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
+        int lim = maxQueryTerms; 
         // we just want to return the top words
         while (((cur = pq.pop()) != null) && lim-- > 0) {
             Object[] ar = (Object[]) cur;
@@ -834,7 +835,8 @@ public final class MoreLikeThis {
         ArrayList al = new ArrayList(maxQueryTerms);
         PriorityQueue pq = retrieveTerms(r);
         Object cur;
-        int lim = maxQueryTerms; // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
+        // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
+        int lim = maxQueryTerms; 
         // we just want to return the top words
         while (((cur = pq.pop()) != null) && lim-- > 0) {
             Object[] ar = (Object[]) cur;

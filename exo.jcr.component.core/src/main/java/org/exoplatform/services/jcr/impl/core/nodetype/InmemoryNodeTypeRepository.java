@@ -220,7 +220,7 @@ public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeRepository#removeNodeType(org.exoplatform.services.jcr.datamodel.InternalQName, org.exoplatform.services.jcr.core.nodetype.NodeTypeData)
+    * {@inheritDoc}
     */
    public void removeNodeType(NodeTypeData nodeType)
    {

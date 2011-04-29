@@ -105,7 +105,8 @@ public class PropFindResponseEntity implements StreamingOutput
     * @param propertyNames the list of properties requested
     * @param propertyNamesOnly if only property names a requested
     */
-   public PropFindResponseEntity(int depth, Resource rootResource, Set<QName> propertyNames, boolean propertyNamesOnly, Session session)
+   public PropFindResponseEntity(int depth, Resource rootResource, Set<QName> propertyNames, boolean propertyNamesOnly,
+            Session session)
    {
       this.rootResource = rootResource;
       this.namespaceContext = rootResource.getNamespaceContext();

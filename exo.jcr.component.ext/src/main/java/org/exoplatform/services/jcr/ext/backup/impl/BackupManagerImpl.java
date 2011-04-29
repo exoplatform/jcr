@@ -460,7 +460,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     * @param registryService
     *          RegistryService, the registry service
     */
-   public BackupManagerImpl(ExoContainerContext ctx, InitParams initParams, RepositoryService repoService, RegistryService registryService)
+   public BackupManagerImpl(ExoContainerContext ctx, InitParams initParams, RepositoryService repoService,
+            RegistryService registryService)
    {
       this.messagesListener = new MessagesListener();
       this.repoService = repoService;
@@ -1297,7 +1298,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          
          if (log.getOriginalWorkspaceEntry() == null)
          {
-            throw new RepositoryRestoreExeption("The backup log is not contains original repository log : " + log.getLogFilePath());
+            throw new RepositoryRestoreExeption("The backup log is not contains original repository log : "
+                     + log.getLogFilePath());
          }
            
 
@@ -1685,7 +1687,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          // workspace should be existed
          if (!workspaceAlreadyExist(repositoryName, workspaceEntry.getName()))
          {
-            throw new WorkspaceRestoreException("Workspace \"" + workspaceEntry.getName() + "\" should be existed in repository \"" + repositoryName + "\".");
+            throw new WorkspaceRestoreException("Workspace \"" + workspaceEntry.getName()
+                     + "\" should be existed in repository \"" + repositoryName + "\".");
          }
       } 
       catch (RepositoryException e)

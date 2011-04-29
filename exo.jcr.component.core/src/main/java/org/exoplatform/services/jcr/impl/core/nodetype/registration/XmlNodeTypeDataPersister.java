@@ -184,7 +184,7 @@ public class XmlNodeTypeDataPersister implements NodeTypeDataPersister
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister#getNodeType(org.exoplatform.services.jcr.datamodel.InternalQName)
+    * {@inheritDoc}
     */
    public NodeTypeData getNodeType(InternalQName nodeTypeName) throws RepositoryException
    {

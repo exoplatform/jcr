@@ -288,7 +288,9 @@ public class RepositoryBackupChainLog
       public LogReader(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
          this.logFile = logFile;
-         reader = XMLInputFactory.newInstance().createXMLStreamReader(PrivilegedFileHelper.fileInputStream(logFile), Constants.DEFAULT_ENCODING);
+         reader =
+                  XMLInputFactory.newInstance().createXMLStreamReader(PrivilegedFileHelper.fileInputStream(logFile),
+                           Constants.DEFAULT_ENCODING);
       }
 
       public void readLogFile() throws UnsupportedEncodingException, Exception
@@ -367,7 +369,8 @@ public class RepositoryBackupChainLog
                      + PrivilegedFileHelper.getCanonicalPath(configFile));
          }
 
-         if (!conf.getRepositoryConfiguration(getBackupConfig().getRepository()).getName().equals(getBackupConfig().getRepository()))
+         if (!conf.getRepositoryConfiguration(getBackupConfig().getRepository()).getName().equals(
+                  getBackupConfig().getRepository()))
          {
             throw new RepositoryRestoreExeption(
                      "The oririginal configuration should be contains only one repository entry with name \""
@@ -585,8 +588,9 @@ public class RepositoryBackupChainLog
     * @throws BackupOperationException
     */
    public RepositoryBackupChainLog(File logDirectory, RepositoryBackupConfig config, String fullBackupType,
-      String incrementalBackupType, String systemWorkspace, List<String> wsLogFilePathList, String backupId,
-            Calendar startTime, RepositoryEntry rEntry, RepositoryServiceConfiguration repositoryServiceConfiguration) throws BackupOperationException
+            String incrementalBackupType, String systemWorkspace, List<String> wsLogFilePathList, String backupId,
+            Calendar startTime, RepositoryEntry rEntry, RepositoryServiceConfiguration repositoryServiceConfiguration)
+            throws BackupOperationException
    {
       try
       {

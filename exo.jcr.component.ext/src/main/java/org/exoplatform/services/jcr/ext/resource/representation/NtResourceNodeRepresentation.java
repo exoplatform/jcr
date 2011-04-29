@@ -213,8 +213,8 @@ public class NtResourceNodeRepresentation implements NodeRepresentation
       this.properties.addAll(properties);
    }
 
-   /* (non-Javadoc)
-    * @see org.exoplatform.services.jcr.ext.resource.NodeRepresentation#addProperty(java.lang.String, org.exoplatform.common.util.HierarchicalProperty)
+   /**
+    * {@inheritDoc}
     */
    public void addProperty(HierarchicalProperty property) throws UnsupportedRepositoryOperationException
    {
@@ -222,8 +222,8 @@ public class NtResourceNodeRepresentation implements NodeRepresentation
       this.properties.add(property);
    }
 
-   /* (non-Javadoc)
-    * @see org.exoplatform.services.jcr.ext.resource.NodeRepresentation#removeProperty(java.lang.String)
+   /**
+    * {@inheritDoc}
     */
    public void removeProperty(String name) throws UnsupportedRepositoryOperationException
    {

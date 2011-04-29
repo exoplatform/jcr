@@ -105,7 +105,7 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    }
 
    /**
-    * @see org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener#onSaveItems(org.exoplatform.services.jcr.dataflow.ItemStateChangesLog)
+    * {@inheritDoc}
     */
    public void onSaveItems(ItemStateChangesLog itemStates)
    {

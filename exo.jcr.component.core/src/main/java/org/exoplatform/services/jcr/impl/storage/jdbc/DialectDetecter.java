@@ -36,7 +36,8 @@ public class DialectDetecter
 
    /**
     * Detect databse dialect using JDBC metadata. Based on code of 
-    * http://svn.jboss.org/repos/hibernate/core/trunk/core/src/main/java/org/hibernate/dialect/resolver/StandardDialectResolver.java 
+    * http://svn.jboss.org/repos/hibernate/core/trunk/core/src/main/java/org/hibernate/
+    * dialect/resolver/StandardDialectResolver.java 
     * 
     * @param jdbcConn Connection 
     * @return String

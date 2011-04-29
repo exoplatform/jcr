@@ -31,8 +31,8 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -291,7 +291,8 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    {
       String dataSourceName = parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_DATASOURCE, null);
       // if data source is defined, then inject correct data-types.
-      // Also it cans be not defined and nothing should be injected (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
+      // Also it cans be not defined and nothing should be injected 
+      // (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
          String dialect;
@@ -399,8 +400,10 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          // else GENERIC, DB2 etc
 
          // set parameters if not defined
-         // if parameter is missing in configuration, then getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, JBOSSCACHE_JDBC_CL_AUTO) 
-         // will return JBOSSCACHE_JDBC_CL_AUTO. If parameter is present in configuration and equals to "auto", then it should be replaced 
+         // if parameter is missing in configuration, then 
+         // getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, JBOSSCACHE_JDBC_CL_AUTO) 
+         // will return JBOSSCACHE_JDBC_CL_AUTO. If parameter is present in configuration and 
+         // equals to "auto", then it should be replaced 
          // with correct value for given database
          if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, JBOSSCACHE_JDBC_CL_AUTO)
             .equalsIgnoreCase(JBOSSCACHE_JDBC_CL_AUTO))

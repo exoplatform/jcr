@@ -904,10 +904,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
          // warn in debug mode only
          else if (PropertyManager.isDevelopping())
          {
-            log
-               .warn(
-                  "This kind of operation is forbidden after a session.logout(), please note that an exception will be raised in the next jcr version.",
-                  new Exception(closedByCallStack));
+            log.warn("This kind of operation is forbidden after a session.logout(), "
+                     + "please note that an exception will be raised in the next jcr version.", new Exception(
+                     closedByCallStack));
          }
       }
    }

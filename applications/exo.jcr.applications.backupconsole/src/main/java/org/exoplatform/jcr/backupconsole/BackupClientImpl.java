@@ -771,9 +771,9 @@ public class BackupClientImpl
                               + shortInfo.getRepositoryName()
                               + "\n"
                               + "\t\tbackup type                : "
-                  + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
-                                       : "full only") + "\n" + "\t\tfull backups state         : " + getRepositoryBackupToFullState(shortInfo
-                              .getState()))
+                              + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
+                                       : "full only") + "\n" + "\t\tfull backups state         : " 
+                                       + getRepositoryBackupToFullState(shortInfo.getState()))
                               + "\n"
                               + (shortInfo.getBackupType() == BackupManager.FULL_BACKUP_ONLY ? ""
                                        : "\t\tincremental backups state  : " + "working" + "\n")

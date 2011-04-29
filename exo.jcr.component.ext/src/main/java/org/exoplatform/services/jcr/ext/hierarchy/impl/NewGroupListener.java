@@ -163,8 +163,8 @@ public class NewGroupListener extends GroupEventListener
       }
    }
 
-   private void createNode(Node groupNode, String path, String nodeType, List<String> mixinTypes, Map<String, String[]> permissions)
-      throws Exception
+   private void createNode(Node groupNode, String path, String nodeType, List<String> mixinTypes,
+            Map<String, String[]> permissions) throws Exception
    {
       dataDistributionType_.getOrCreateDataNode(groupNode, path, nodeType, mixinTypes, permissions);
    }

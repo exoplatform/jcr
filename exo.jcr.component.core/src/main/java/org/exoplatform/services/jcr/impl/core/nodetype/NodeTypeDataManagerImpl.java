@@ -87,7 +87,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    private static final String NODETYPES_FILE = "nodetypes.xml";
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataManagerImpl");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataManagerImpl");
 
    protected final String accessControlPolicy;
 
@@ -465,10 +465,9 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       {
          final InternalQName[] nts = new InternalQName[mixinTypes.length + 1];
          nts[0] = primaryNodeType;
-         for (int i = 0; i < mixinTypes.length; i++)
-         {
-            nts[i + 1] = mixinTypes[i];
-         }
+
+         System.arraycopy(mixinTypes, 0, nts, 1, mixinTypes.length);
+
          return getPropertyDefinitions(propertyName, nts);
       }
 
@@ -889,9 +888,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    }
 
    /**
-    * @throws RepositoryException 
-    * @throws ConstraintViolationException 
-    * @see org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager#updateNodeType(org.exoplatform.services.jcr.core.nodetype.NodeTypeData, org.exoplatform.services.jcr.core.nodetype.NodeTypeData, java.util.Map)
+    * {@inheritDoc}
     */
    public PlainChangesLog updateNodeType(NodeTypeData ancestorDefinition, NodeTypeData recipientDefinition,
       Map<InternalQName, NodeTypeData> volatileNodeTypes) throws ConstraintViolationException, RepositoryException

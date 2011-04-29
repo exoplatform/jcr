@@ -34,8 +34,8 @@ import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -218,7 +218,8 @@ public class AclCommand
                   if (denyPermission.equals(grantPermission))
                   {
                      throw new IllegalArgumentException(
-                        "Malformed ace element (seems that a client is trying to grant and denay the same privilege in a single ace)");
+                              "Malformed ace element (seems that a client is trying to grant and denay the same privilege in "
+                                       + "a single ace)");
 
                   }
                }

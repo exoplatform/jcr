@@ -575,7 +575,7 @@ public class NodeIndexer
          }
          catch (RepositoryException e)
          {
-            e.printStackTrace();
+            log.error("Index of property value error. " + prop.getQPath().getAsString() + ".", e);
             throw new RepositoryException("Index of property value error. " + prop.getQPath().getAsString() + ". " + e,
                e);
          }

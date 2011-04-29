@@ -41,8 +41,6 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig.SingletonStoreConfig;
-import org.jboss.cache.config.Configuration.CacheMode;
-import org.jboss.cache.loader.SingletonStoreCacheLoader.PushStateException;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -170,9 +168,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter#doUpdateIndex(java.util.Set, java.util.Set, java.util.Set, java.util.Set)
+    * {@inheritDoc}
     */
-   @Override
    protected void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes, Set<String> parentRemovedNodes,
       Set<String> parentAddedNodes)
    {

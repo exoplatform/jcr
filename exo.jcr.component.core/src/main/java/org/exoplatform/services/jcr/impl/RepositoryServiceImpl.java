@@ -46,8 +46,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 import javax.jcr.RepositoryException;
 
@@ -95,7 +95,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
     * be started before the {@link RepositoryServiceImpl} so we have to enforce the dependency
     * with this component by adding it to the constructor
     */
-   public RepositoryServiceImpl(RepositoryServiceConfiguration configuration, ExoContainerContext context, RepositoryCreationSynchronizer synchronizer)
+   public RepositoryServiceImpl(RepositoryServiceConfiguration configuration, ExoContainerContext context,
+            RepositoryCreationSynchronizer synchronizer)
    {
       this.config = configuration;
       addNodeTypePlugins = new ArrayList<ComponentPlugin>();

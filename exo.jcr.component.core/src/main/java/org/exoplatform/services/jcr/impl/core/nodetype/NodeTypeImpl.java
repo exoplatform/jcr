@@ -453,9 +453,10 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
          return checkValueConstraints(requiredType, constraints, value);
       }
       else if (requiredType == PropertyType.BINARY
-         && (value.getType() == PropertyType.STRING || value.getType() == PropertyType.DATE
-            || value.getType() == PropertyType.LONG || value.getType() == PropertyType.DOUBLE
-            || value.getType() == PropertyType.NAME || value.getType() == PropertyType.PATH || value.getType() == PropertyType.BOOLEAN))
+               && (value.getType() == PropertyType.STRING || value.getType() == PropertyType.DATE
+                        || value.getType() == PropertyType.LONG || value.getType() == PropertyType.DOUBLE
+                        || value.getType() == PropertyType.NAME || value.getType() == PropertyType.PATH || value
+                        .getType() == PropertyType.BOOLEAN))
       {
          return checkValueConstraints(requiredType, constraints, value);
       }

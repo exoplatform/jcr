@@ -664,11 +664,12 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       {
          if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
          {
-            cache.putIfAbsent(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node.getIdentifier());            
+            cache.putIfAbsent(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node
+                     .getIdentifier());
          }
          else
          {
-            cache.put(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node.getIdentifier());            
+            cache.put(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node.getIdentifier());
          }
 
          // if MODIFY and List present OR FORCE_MODIFY, then write
@@ -1020,8 +1021,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    }
 
    /**
-    * <li>NOT_MODIFY - node(property) is not added to the parent's list (no persistent changes performed, cache used as cache)</li>
-    * <li>MODIFY - node(property) is added to the parent's list if parent in the cache (new item is added to persistent, add to list if it is present)</li>
+    * <li>NOT_MODIFY - node(property) is not added to the parent's list 
+    * (no persistent changes performed, cache used as cache)</li>
+    * <li>MODIFY - node(property) is added to the parent's list if parent in the cache 
+    * (new item is added to persistent, add to list if it is present)</li>
     * <li>FORCE_MODIFY - node(property) is added to the parent's list anyway (when list is read from DB, forcing write)</li>
     */
    private enum ModifyChildOption {
@@ -1084,7 +1087,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    }
 
    /**
-    * @see org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache#addReferencedProperties(java.lang.String, java.util.List)
+    * {@inheritDoc}
     */
    public void addReferencedProperties(String identifier, List<PropertyData> refProperties)
    {

@@ -757,7 +757,8 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    }
 
    /**
-    * Execute the given action outside a transaction. This is needed since the {@link Cache} used by implementation of {@link CacheableLockManager}
+    * Execute the given action outside a transaction. This is needed since the {@link Cache} used by implementation 
+    * of {@link CacheableLockManager}
     * to manage the persistence of its locks thanks to a {@link CacheLoader} and a {@link CacheLoader} lock the cache {@link Node}
     * even for read operations which cause deadlock issue when a XA {@link Transaction} is already opened
     * @throws LockException when a exception occurs

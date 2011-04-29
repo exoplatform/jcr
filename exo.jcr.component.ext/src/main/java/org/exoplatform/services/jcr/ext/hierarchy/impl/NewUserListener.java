@@ -115,7 +115,8 @@ public class NewUserListener extends UserEventListener
       }
    }
 
-   private void createNode(Node userNode, String path, String nodeType, List<String> mixinTypes, Map<String, String[]> permissions)
+   private void createNode(Node userNode, String path, String nodeType, List<String> mixinTypes,
+            Map<String, String[]> permissions)
       throws Exception
    {
       dataDistributionType_.getOrCreateDataNode(userNode, path, nodeType, mixinTypes, permissions);

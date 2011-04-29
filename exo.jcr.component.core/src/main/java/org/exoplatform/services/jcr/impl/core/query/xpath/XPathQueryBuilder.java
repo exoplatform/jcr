@@ -376,7 +376,8 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
             case JJTSTEPEXPR:
                 if (isAttributeAxis(node)) {
                     if (queryNode.getType() == QueryNode.TYPE_RELATION
-                            || (queryNode.getType() == QueryNode.TYPE_DEREF && ((DerefQueryNode) queryNode).getRefProperty() == null)
+                            || (queryNode.getType() == QueryNode.TYPE_DEREF 
+                                     && ((DerefQueryNode) queryNode).getRefProperty() == null)
                             || queryNode.getType() == QueryNode.TYPE_ORDER
                             || queryNode.getType() == QueryNode.TYPE_PATH
                             || queryNode.getType() == QueryNode.TYPE_TEXTSEARCH) {
@@ -823,7 +824,8 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
                             value = value.substring(1, value.length() - 1);
                             Calendar c = ISO8601.parse(value);
                             if (c == null) {
-                                exceptions.add(new InvalidQueryException("Unable to parse string literal for xs:dateTime: " + value));
+                                exceptions.add(new InvalidQueryException("Unable to parse string literal for xs:dateTime: " 
+                                         + value));
                             } else {
                                 rel.setDateValue(c.getTime());
                             }

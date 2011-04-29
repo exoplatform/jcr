@@ -509,7 +509,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    }
 
    /**
-    * @see org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener#onSaveItems(org.exoplatform.services.jcr.dataflow.ItemStateChangesLog)
+    * {@inheritDoc}
     */
    public void onSaveItems(ItemStateChangesLog itemStates)
    {

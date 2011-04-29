@@ -30,16 +30,16 @@ import javax.jcr.Node;
 public class DocumentViewNodeRepresentationFactory implements NodeRepresentationFactory
 {
 
-   /* (non-Javadoc)
-    * @see org.exoplatform.services.jcr.ext.resource.NodeRepresentationFactory#createNodeRepresentation(javax.jcr.Node, java.lang.String)
+   /**
+    * {@inheritDoc}
     */
    public NodeRepresentation createNodeRepresentation(Node node, String mediaTypeHint)
    {
       return new DocumentViewNodeRepresentation(node);
    }
 
-   /* (non-Javadoc)
-    * @see org.exoplatform.services.jcr.ext.resource.NodeRepresentationFactory#getNodeType()
+   /**
+    * {@inheritDoc}
     */
    public String getNodeType()
    {

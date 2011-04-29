@@ -59,7 +59,9 @@ public class WorkerService
          this.isDaemon = isDaemon;
          SecurityManager s = System.getSecurityManager();
          group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-         this.namePrefix = (namePrefix == null || namePrefix.isEmpty()) ? "pool-" + poolNumber.getAndIncrement() + "-thread-" : namePrefix + " ";
+         this.namePrefix =
+                  (namePrefix == null || namePrefix.isEmpty()) ? "pool-" + poolNumber.getAndIncrement() + "-thread-"
+                           : namePrefix + " ";
       }
 
       public Thread newThread(Runnable r)

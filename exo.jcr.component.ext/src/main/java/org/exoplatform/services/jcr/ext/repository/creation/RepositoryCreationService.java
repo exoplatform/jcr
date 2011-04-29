@@ -53,8 +53,8 @@ public interface RepositoryCreationService
    String reserveRepositoryName(String repositoryName) throws RepositoryCreationException;
 
    /**
-    * Creates  repository, using token of already reserved repository name. Good for cases, when repository creation should be delayed or 
-    * made asynchronously in dedicated thread. 
+    * Creates  repository, using token of already reserved repository name. Good for cases, 
+    * when repository creation should be delayed or made asynchronously in dedicated thread. 
     * 
     * @param rEntry - repository entry - note, that datasource must not exist
     * @param backupId - backup id

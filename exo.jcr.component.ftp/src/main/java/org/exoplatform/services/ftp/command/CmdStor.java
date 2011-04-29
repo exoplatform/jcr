@@ -94,7 +94,9 @@ public class CmdStor extends FtpCommandImpl
          if (ftpConfig.isReplaceForbiddenChars())
          {
             String fName = newPath.get(newPath.size()-1);
-            String newfName = FtpTextUtils.replaceForbiddenChars(fName, ftpConfig.getForbiddenChars(), ftpConfig.getReplaceChar());
+            String newfName =
+                     FtpTextUtils.replaceForbiddenChars(fName, ftpConfig.getForbiddenChars(), ftpConfig
+                              .getReplaceChar());
             
             fileName  = fileName.substring(0, fileName.indexOf(fName)) + newfName;
          }

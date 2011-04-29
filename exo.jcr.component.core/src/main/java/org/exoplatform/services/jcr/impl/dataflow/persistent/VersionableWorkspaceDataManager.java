@@ -49,7 +49,7 @@ import javax.jcr.RepositoryException;
  * mix:versionable
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
- * @version $Id$ * @version $Id: VersionableWorkspaceDataManager.java 1518 2010-01-20 23:33:30Z
+ * @version $Id$ 
  */
 
 public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWorkspaceDataManager

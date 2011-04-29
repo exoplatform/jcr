@@ -310,7 +310,8 @@ public class DocumentViewImporter extends BaseXmlImporter
 
                         if (ptVhdefs != null)
                         {
-                           pType = (ptVhdefs.getAnyDefinition().getRequiredType() > 0 ? ptVhdefs.getAnyDefinition().getRequiredType() : PropertyType.STRING);
+                           pType = (ptVhdefs.getAnyDefinition().getRequiredType() > 0 ? ptVhdefs.getAnyDefinition()
+                                             .getRequiredType() : PropertyType.STRING);
                         }
                      }
                   }
@@ -384,7 +385,8 @@ public class DocumentViewImporter extends BaseXmlImporter
                         if (nodeData.getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
                         {
                            // get primaryType
-                           InternalQName fptName = locationFactory.parseJCRName(atts.get("jcr:frozenPrimaryType")).getInternalName();
+                           InternalQName fptName =
+                                    locationFactory.parseJCRName(atts.get("jcr:frozenPrimaryType")).getInternalName();
    
                            // get mixin types
                            List<JCRName> mtNames = getJCRNames(atts.get("jcr:frozenMixinTypes"));

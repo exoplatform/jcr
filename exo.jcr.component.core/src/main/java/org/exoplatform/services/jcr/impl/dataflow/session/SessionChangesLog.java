@@ -230,7 +230,8 @@ public final class SessionChangesLog extends PlainChangesLogImpl
          children = lastChildNodeStates.get(identifier);
          if (children != null)
          {
-            // Recursively call the method traverseChangesByIdentifier(String identifier, List<ItemState> changesList) for each sub node
+            // Recursively call the method traverseChangesByIdentifier(String identifier, List<ItemState> changesList)
+            // for each sub node
             for (ItemState child : children.values())
             {
                traverseChangesByIdentifier(child.getData().getIdentifier(), changesList);

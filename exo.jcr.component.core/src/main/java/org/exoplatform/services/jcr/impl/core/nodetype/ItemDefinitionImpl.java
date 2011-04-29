@@ -66,7 +66,8 @@ public class ItemDefinitionImpl implements ExtendedItemDefinition
     * @param protectedItem
     */
    public ItemDefinitionImpl(ItemDefinitionData itemDefinitionData, NodeTypeDataManager nodeTypeDataManager,
-      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory, ItemDataConsumer dataManager)
+            ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory,
+            ItemDataConsumer dataManager)
    {
       this.itemDefinitionData = itemDefinitionData;
       this.nodeTypeDataManager = nodeTypeDataManager;

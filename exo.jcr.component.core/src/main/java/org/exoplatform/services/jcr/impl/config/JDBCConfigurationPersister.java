@@ -444,9 +444,8 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
 
                if (ps.executeUpdate() <= 0)
                {
-                  LOG
-                     .warn("Repository service configuration doesn't stored ok. No rows was affected in JDBC operation. Datasource "
-                        + sourceName + ". SQL: " + sql);
+                  LOG.warn("Repository service configuration doesn't stored ok. "
+                           + "No rows was affected in JDBC operation. Datasource " + sourceName + ". SQL: " + sql);
                }
             }
             else

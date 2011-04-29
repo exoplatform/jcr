@@ -69,7 +69,7 @@ public class DefaultIndexUpdateMonitor implements IndexUpdateMonitor
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#addIndexUpdateMonitorListener(org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener)
+    * {@inheritDoc}
     */
    public void addIndexUpdateMonitorListener(IndexUpdateMonitorListener listener)
    {
@@ -77,7 +77,7 @@ public class DefaultIndexUpdateMonitor implements IndexUpdateMonitor
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#removeIndexUpdateMonitorListener(org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener)
+    * {@inheritDoc}
     */
    public void removeIndexUpdateMonitorListener(IndexUpdateMonitorListener listener)
    {

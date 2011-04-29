@@ -211,7 +211,9 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
 
       public AcceptDataConnect()
       {
-         super("AcceptDataConnect" + (configuration.getPortalContainer() == null ? "" : " " + configuration.getPortalContainer().getName()));
+         super("AcceptDataConnect"
+                  + (configuration.getPortalContainer() == null ? "" : " "
+                           + configuration.getPortalContainer().getName()));
       }
       
       protected Log acceptLog = ExoLogger.getLogger("jcr.AcceptDataConnect");
@@ -244,7 +246,9 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
 
       public ConnectDataPort()
       {
-         super("ConnectDataPort" + (configuration.getPortalContainer() == null ? "" : " " + configuration.getPortalContainer().getName()));
+         super("ConnectDataPort"
+                  + (configuration.getPortalContainer() == null ? "" : " "
+                           + configuration.getPortalContainer().getName()));
       }
 
       protected Log connectLog = ExoLogger.getLogger("jcr.ConnectDataPort");

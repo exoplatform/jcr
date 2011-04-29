@@ -290,7 +290,8 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
                      // at
                      // org.exoplatform.services.jcr.impl.core.XASessionImpl.logout(XASessionImpl.java:254)
                      // at
-                     // org.exoplatform.services.jcr.impl.core.SessionRegistry$SessionCleaner.callPeriodically(SessionRegistry.java:165)
+                     // org.exoplatform.services.jcr.impl.core.SessionRegistry
+                     // $SessionCleaner.callPeriodically(SessionRegistry.java:165)
                      // at
                      // org.exoplatform.services.jcr.impl.proccess.WorkerThread.run(WorkerThread.java:46)
                      ((NodeImpl)sessionImpl.getTransientNodesManager().getItemByIdentifier(

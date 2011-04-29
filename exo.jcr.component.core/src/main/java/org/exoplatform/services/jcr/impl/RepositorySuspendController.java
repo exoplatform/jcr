@@ -59,12 +59,14 @@ public class RepositorySuspendController implements Startable
    }
 
    /**
-    * Suspend repository which means that allow only read operations. All writing threads will wait until resume operations invoked.
+    * Suspend repository which means that allow only read operations. 
+    * All writing threads will wait until resume operations invoked.
     * 
     * @return repository state
     */
    @Managed
-   @ManagedDescription("Suspend repository which means that allow only read operations. All writing threads will wait until resume operations invoked.")
+   @ManagedDescription("Suspend repository which means that allow only read operations. " +
+            "All writing threads will wait until resume operations invoked.")
    public String suspend()
    {
       // Need privileges to manage repository.

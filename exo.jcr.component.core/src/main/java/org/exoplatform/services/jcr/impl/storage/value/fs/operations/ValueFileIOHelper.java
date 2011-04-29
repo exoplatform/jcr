@@ -185,11 +185,9 @@ public class ValueFileIOHelper
                   // not succeeded - copy bytes, temp file will be deleted by transient ValueData
                   if (LOG.isDebugEnabled())
                   {
-                     LOG
-                        .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
-                           + PrivilegedFileHelper.getAbsolutePath(tempFile)
-                           + ". Destination: "
-                           + PrivilegedFileHelper.getAbsolutePath(file));
+                     LOG.debug("Value spool file move (rename) to Values Storage is not succeeded. "
+                              + "Trying bytes copy. Spool file: " + PrivilegedFileHelper.getAbsolutePath(tempFile)
+                              + ". Destination: " + PrivilegedFileHelper.getAbsolutePath(file));
                   }
 
                   copyClose(PrivilegedFileHelper.fileInputStream(tempFile), PrivilegedFileHelper.fileOutputStream(file));

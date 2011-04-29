@@ -390,7 +390,9 @@ public class SystemViewImporter extends BaseXmlImporter
             {
                if (propertyData.getQName().equals(Constants.JCR_FROZENPRIMARYTYPE))
                {
-                  fptName = InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING));
+                  fptName =
+                           InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray(),
+                                    Constants.DEFAULT_ENCODING));
                }
                else if (propertyData.getQName().equals(Constants.JCR_FROZENMIXINTYPES))
                {
@@ -419,7 +421,9 @@ public class SystemViewImporter extends BaseXmlImporter
 
          for (ImportPropertyData propertyData : currentNodePropertiesInfo.getProperties())
          {
-            PropertyDefinitionDatas defs = nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), nodePrimaryTypeName, nodeMixinTypeName);
+            PropertyDefinitionDatas defs =
+                     nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), nodePrimaryTypeName,
+                              nodeMixinTypeName);
             
             if (defs == null  || (defs != null && defs.getAnyDefinition().isResidualSet()))
             {

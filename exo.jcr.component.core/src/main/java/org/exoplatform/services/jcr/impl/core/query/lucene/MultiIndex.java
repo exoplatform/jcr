@@ -473,8 +473,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                }
                else
                {
-                  log
-                     .info("Index can'b be retrieved from coordinator now, because it is offline. Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
+                  log.info("Index can'b be retrieved from coordinator now, because it is offline. " +
+                        "Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
                }
             }
 
@@ -484,13 +484,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                {
                   if (handler.getContext().getRPCService() == null)
                   {
-                     log
-                        .error("RPC Service is not configured but required for copying the index from coordinator node. Index will be created by re-indexing.");
+                     log.error("RPC Service is not configured but required for copying the index " +
+                           "from coordinator node. Index will be created by re-indexing.");
                   }
                   else if (handler.getContext().getRPCService().isCoordinator() == true)
                   {
-                     log
-                        .info("Copying the index from coordinator configured, but this node is the only one in a cluster. Index will be created by re-indexing.");
+                     log.info("Copying the index from coordinator configured, but this node is the " +
+                           "only one in a cluster. Index will be created by re-indexing.");
                   }
                }
 
@@ -661,7 +661,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                }
                catch (Throwable e)
                {
-                  // this is safe index reader retrieval. The last index already closed, possibly merged or any other exception that occurs here
+                  // this is safe index reader retrieval. The last index already closed, possibly merged or 
+                  // any other exception that occurs here
                }
 
                for (Iterator<Document> it = add.iterator(); it.hasNext();)
@@ -696,7 +697,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                            }
                            catch (Throwable e)
                            {
-                              // this is safe index reader retrieval. The last index already closed, possibly merged or any other exception that occurs here
+                              // this is safe index reader retrieval. The last index already closed, 
+                              // possibly merged or any other exception that occurs here
                               lastIndexReader = null;
                               lastIndexReaderId = -1;
                            }
@@ -3211,7 +3213,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener#onChangeMode(org.exoplatform.services.jcr.impl.core.query.IndexerIoMode)
+    * {@inheritDoc}
     */
    public void onChangeMode(IndexerIoMode mode)
    {

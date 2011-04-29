@@ -177,7 +177,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       }
       catch (Throwable t)
       {
-         t.printStackTrace();
+         log.error(t.getLocalizedMessage(), t);
          // javacc parser may also throw an error in some cases
          throw new InvalidQueryException(t.getMessage(), t);
       }

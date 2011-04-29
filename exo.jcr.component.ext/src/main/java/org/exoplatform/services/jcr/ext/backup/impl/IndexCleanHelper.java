@@ -45,7 +45,8 @@ public class IndexCleanHelper
     * @throws RepositoryConfigurationException - exception on parsing workspace configuration
     * @throws IOException - exception on remove index folder
     */
-   public void removeWorkspaceIndex(WorkspaceEntry wsConfig, boolean isSystem) throws RepositoryConfigurationException, IOException
+   public void removeWorkspaceIndex(WorkspaceEntry wsConfig, boolean isSystem) throws RepositoryConfigurationException,
+            IOException
    {
       String indexDirName = wsConfig.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR);
       

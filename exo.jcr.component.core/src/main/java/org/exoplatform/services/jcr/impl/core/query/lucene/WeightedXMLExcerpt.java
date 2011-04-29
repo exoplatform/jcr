@@ -16,9 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.index.TermPositionVector;
+
+import java.io.IOException;
 
 /**
  * <code>WeightedXMLExcerpt</code> creates an XML excerpt of a matching node. In
@@ -31,8 +31,10 @@ import org.apache.lucene.index.TermPositionVector;
  * result for a node:
  * <pre>
  * &lt;excerpt>
- *     &lt;fragment>&lt;highlight>Jackrabbit&lt;/highlight> implements both the mandatory XPath and optional SQL &lt;highlight>query&lt;/highlight> syntax.&lt;/fragment>
- *     &lt;fragment>Before parsing the XPath &lt;highlight>query&lt;/highlight> in &lt;highlight>Jackrabbit&lt;/highlight>, the statement is surrounded&lt;/fragment>
+ *     &lt;fragment>&lt;highlight>Jackrabbit&lt;/highlight> implements both the mandatory XPath and optional SQL 
+ *     &lt;highlight>query&lt;/highlight> syntax.&lt;/fragment>
+ *     &lt;fragment>Before parsing the XPath &lt;highlight>query&lt;/highlight> in &lt;highlight>Jackrabbit&lt;/highlight>, 
+ *     the statement is surrounded&lt;/fragment>
  * &lt;/excerpt>
  * </pre>
  *

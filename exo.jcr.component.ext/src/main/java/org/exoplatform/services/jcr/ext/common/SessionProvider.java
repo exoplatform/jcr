@@ -171,7 +171,9 @@ public class SessionProvider implements SessionLifecycleListener
          ConversationState conversationState = ConversationState.getCurrent();
          if (conversationState != null && conversationState.getIdentity().getUserId().equals(DynamicIdentity.DYNAMIC))
          {
-            session = (ExtendedSession) repository.getDynamicSession(workspaceName, conversationState.getIdentity().getMemberships());
+            session =
+                     (ExtendedSession) repository.getDynamicSession(workspaceName, conversationState.getIdentity()
+                              .getMemberships());
          }
          else if (!isSystem)
          {

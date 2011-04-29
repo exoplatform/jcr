@@ -148,9 +148,8 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter#doUpdateIndex(java.util.Set, java.util.Set, java.util.Set, java.util.Set)
+    * {@inheritDoc}
     */
-   @Override
    protected void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes, Set<String> parentRemovedNodes,
       Set<String> parentAddedNodes)
    {

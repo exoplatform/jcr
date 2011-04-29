@@ -90,7 +90,8 @@ public interface DataDistributionType
     * @return the Node corresponding to the data to find
     * @throws RepositoryException if an error occurred while trying to get or create the expected data
     */
-   Node getOrCreateDataNode(Node rootNode, String dataId, String nodeType, List<String> mixinTypes, Map<String, String[]> permissions) throws RepositoryException;
+   Node getOrCreateDataNode(Node rootNode, String dataId, String nodeType, List<String> mixinTypes,
+            Map<String, String[]> permissions) throws RepositoryException;
    
    /**
     * Remove the node from the JCR if it exists

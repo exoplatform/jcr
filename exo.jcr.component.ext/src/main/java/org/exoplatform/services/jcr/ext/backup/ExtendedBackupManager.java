@@ -66,7 +66,8 @@ public interface ExtendedBackupManager extends BackupManager
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistingWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+   void restoreExistingWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry,
+            boolean asynchronous) throws BackupOperationException, BackupConfigurationException;
 
    /**
     * Restore existing repository. Previous data will be deleted.
@@ -84,7 +85,8 @@ public interface ExtendedBackupManager extends BackupManager
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistingRepository(String  repositoryBackupIdentifier, RepositoryEntry repositoryEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+   void restoreExistingRepository(String repositoryBackupIdentifier, RepositoryEntry repositoryEntry,
+            boolean asynchronous) throws BackupOperationException, BackupConfigurationException;
 
    /**
     * Restore existing repository. Previous data will be deleted.

@@ -151,7 +151,8 @@ public class RESTRegistryService implements ResourceContainer
    @Consumes(MediaType.APPLICATION_XML)
    @Deprecated
    public Response recreateEntry(InputStream entryStream, @PathParam("repository") String repository,
-      @PathParam("groupName") String groupName, @Context UriInfo uriInfo, @QueryParam("createIfNotExist") boolean createIfNotExist)
+            @PathParam("groupName") String groupName, @Context UriInfo uriInfo,
+            @QueryParam("createIfNotExist") boolean createIfNotExist)
    {
       try
       {
@@ -277,7 +278,8 @@ public class RESTRegistryService implements ResourceContainer
    @PUT
    @Path("/{groupName:.+}")
    @Consumes(MediaType.APPLICATION_XML)
-   public Response recreateEntry(InputStream entryStream, @PathParam("groupName") String groupName, @Context UriInfo uriInfo, @QueryParam("createIfNotExist") boolean createIfNotExist)
+   public Response recreateEntry(InputStream entryStream, @PathParam("groupName") String groupName,
+            @Context UriInfo uriInfo, @QueryParam("createIfNotExist") boolean createIfNotExist)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);

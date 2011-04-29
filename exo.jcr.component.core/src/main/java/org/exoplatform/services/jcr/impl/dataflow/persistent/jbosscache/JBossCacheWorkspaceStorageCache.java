@@ -52,8 +52,8 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionRegionConfig;
+import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.picocontainer.Startable;
 
@@ -1080,7 +1080,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       }
 
       // add in ITEMS
-      return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node, modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+      return (ItemData) cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node,
+               modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
    }
 
    /**
@@ -1198,8 +1199,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
       // add in ITEMS
       // NullItemData must never be returned inside internal cache operations. 
-      ItemData returnedData = (ItemData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop, modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
-      return (returnedData instanceof NullItemData) ? null : (PropertyData)returnedData;
+      ItemData returnedData =
+               (ItemData) cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
+                        modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+      return (returnedData instanceof NullItemData) ? null : (PropertyData) returnedData;
    }
 
    protected void removeItem(ItemData item)
@@ -1516,9 +1519,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    }
 
    /**
-    * <li>NOT_MODIFY - node(property) is not added to the parent's list (no persistent changes performed, cache used as cache)</li>
-    * <li>MODIFY - node(property) is added to the parent's list if parent in the cache (new item is added to persistent, add to list if it is present)</li>
-    * <li>FORCE_MODIFY - node(property) is added to the parent's list anyway (when list is read from DB, forcing write)</li>
+    * <li>NOT_MODIFY - node(property) is not added to the parent's list 
+    * (no persistent changes performed, cache used as cache)</li>
+    * <li>MODIFY - node(property) is added to the parent's list if parent in the cache 
+    * (new item is added to persistent, add to list if it is present)</li>
+    * <li>FORCE_MODIFY - node(property) is added to the parent's list anyway 
+    * (when list is read from DB, forcing write)</li>
     */
    private enum ModifyChildOption {
       NOT_MODIFY, MODIFY, FORCE_MODIFY

@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -38,9 +37,11 @@ public class JCRPathExt extends JCRPath
 
    private static PathElement[] EMPTY_PATH = new PathElement[0];
 
-   private static final PathElement THIS_ELEMENT = new PathElement(Constants.NS_DEFAULT_URI, THIS_RELPATH, Constants.NS_EMPTY_PREFIX, -1);
+   private static final PathElement THIS_ELEMENT =
+            new PathElement(Constants.NS_DEFAULT_URI, THIS_RELPATH, Constants.NS_EMPTY_PREFIX, -1);
 
-   private static final PathElement MOVE_UP_ELEMENT = new PathElement(Constants.NS_DEFAULT_URI, PARENT_RELPATH, Constants.NS_EMPTY_PREFIX, -1);
+   private static final PathElement MOVE_UP_ELEMENT =
+            new PathElement(Constants.NS_DEFAULT_URI, PARENT_RELPATH, Constants.NS_EMPTY_PREFIX, -1);
 
    protected final PathElement[] names;
 

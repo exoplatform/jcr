@@ -67,8 +67,7 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
       }
 
       /**
-       * @see org.exoplatform.services.rest.ext.groovy.ExtendedGroovyClassLoader#createCompilationUnit(org.codehaus.groovy.control.CompilerConfiguration,
-       *      java.security.CodeSource)
+       * {@inheritDoc}
        */
       protected CompilationUnit createCompilationUnit(CompilerConfiguration config, CodeSource cs)
       {
@@ -241,9 +240,8 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
    }
 
    /**
-    * @see org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider#getGroovyClassLoader(org.exoplatform.services.rest.ext.groovy.SourceFolder[])
+    * {@inheritDoc}
     */
-   @Override
    public ExtendedGroovyClassLoader getGroovyClassLoader(SourceFolder[] sources) throws MalformedURLException
    {
       if (sources == null || sources.length == 0)

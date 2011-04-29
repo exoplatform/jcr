@@ -799,7 +799,8 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                         }
                         else
                         {
-                           vdata = new TransientValueData(currentProperty.getValues().size(), propertyValue.getText()); // other like String
+                           // other like String
+                           vdata = new TransientValueData(currentProperty.getValues().size(), propertyValue.getText());
                         }
 
                         currentProperty.getValues().add(vdata);

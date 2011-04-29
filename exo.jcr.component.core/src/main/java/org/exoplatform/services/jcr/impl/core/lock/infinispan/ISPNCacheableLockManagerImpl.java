@@ -207,7 +207,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    {
       String dataSourceName = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DATASOURCE, null);
       // if data source is defined, then inject correct data-types.
-      // Also it cans be not defined and nothing should be injected (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
+      // Also it cans be not defined and nothing should be injected 
+      //(i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
          String dialect;
@@ -317,8 +318,10 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          // else GENERIC, DB2 etc
 
          // set parameters if not defined
-         // if parameter is missing in configuration, then getParameterValue(INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_AUTO) 
-         // will return INFINISPAN_JDBC_CL_AUTO. If parameter is present in configuration and equals to "auto", then it should be replaced 
+         // if parameter is missing in configuration, then 
+         // getParameterValue(INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_AUTO) 
+         // will return INFINISPAN_JDBC_CL_AUTO. If parameter is present in configuration and 
+         //equals to "auto", then it should be replaced 
          // with correct value for given database
          if (parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_AUTO)
             .equalsIgnoreCase(INFINISPAN_JDBC_CL_AUTO))

@@ -301,7 +301,8 @@ public class GenericTransactionService implements TransactionService
    }
 
    /**
-    * This class is used to enforce the {@link Transaction} timeout when a new transaction is created through the nested {@link TransactionManager}
+    * This class is used to enforce the {@link Transaction} timeout when a new transaction 
+    * is created through the nested {@link TransactionManager}
     * 
     * Created by The eXo Platform SAS
     * Author : Nicolas Filotto 

@@ -63,7 +63,9 @@ public class LockRemoverHolder
       {
          threadCount = entry.getLockRemoverThreadsCount();
       }
-      workerService = new WorkerService(threadCount, "Lock Remover " + (ctx != null ? ctx.getName() : (entry == null ? "" : entry.getName())));
+      workerService =
+               new WorkerService(threadCount, "Lock Remover "
+                        + (ctx != null ? ctx.getName() : (entry == null ? "" : entry.getName())));
    }
 
    /**

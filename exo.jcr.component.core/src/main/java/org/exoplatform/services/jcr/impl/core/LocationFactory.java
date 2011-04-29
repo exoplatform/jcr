@@ -314,8 +314,8 @@ public class LocationFactory
             char ch0 = str.charAt(0);
             char ch1 = str.charAt(1);
             return (((ch0 == '.') && (isNonspace(str, ch1) && (ch1 != '.')))
-               || ((isNonspace(str, ch0) && (ch0 != '.')) && (ch1 == '.')) || ((isNonspace(str, ch0) && (ch0 != '.')) && (isNonspace(
-               str, ch1) && (ch1 != '.'))));
+                     || ((isNonspace(str, ch0) && (ch0 != '.')) && (ch1 == '.')) || ((isNonspace(str, ch0) && (ch0 != '.')) 
+                              && (isNonspace(str, ch1) && (ch1 != '.'))));
          default :
             return isNonspace(str, str.charAt(0)) && isSimpleString(str.substring(1, strLen - 1))
                && isNonspace(str, str.charAt(strLen - 1));

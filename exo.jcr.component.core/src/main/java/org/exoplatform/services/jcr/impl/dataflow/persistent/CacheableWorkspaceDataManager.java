@@ -1035,7 +1035,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    }
 
    /**
-    * Fix Property BLOB Values if someone has null file (swap actually) by reading the content from the storage (VS or JDBC no matter).
+    * Fix Property BLOB Values if someone has null file (swap actually) 
+    * by reading the content from the storage (VS or JDBC no matter).
     * 
     * @param prop PropertyData
     * @throws RepositoryException
@@ -1282,8 +1283,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
             public String getId()
             {
-               return "org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager-requestForResponsibilityForResuming-"
-                  + dataContainer.getUniqueName();
+               return "org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager"
+                        + "-requestForResponsibilityForResuming-" + dataContainer.getUniqueName();
             }
 
             public Serializable execute(Serializable[] args) throws Throwable

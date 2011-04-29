@@ -126,7 +126,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.storage.jbosscache.AbstractWriteOnlyCacheLoader#put(org.jboss.cache.Fqn, java.util.Map)
+    * {@inheritDoc}
     */
    public void put(Fqn arg0, Map<Object, Object> arg1) throws Exception
    {

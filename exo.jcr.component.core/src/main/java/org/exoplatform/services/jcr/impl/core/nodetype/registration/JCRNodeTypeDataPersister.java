@@ -325,7 +325,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister#unmarshall(org.exoplatform.services.jcr.datamodel.InternalQName, java.util.Set)
+    * {@inheritDoc}
     */
    public NodeTypeData getNodeType(InternalQName nodeTypeName) throws RepositoryException, NoSuchNodeTypeException
    {

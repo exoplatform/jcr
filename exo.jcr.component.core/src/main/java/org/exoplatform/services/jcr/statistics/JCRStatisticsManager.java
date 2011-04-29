@@ -382,8 +382,10 @@ public class JCRStatisticsManager
    @Managed
    @ManagedDescription("The minimum value of the time spent for one call.")
    public static long getMin(
-      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
-      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
+      @ManagedDescription("The name of the category of the statistics") 
+      @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") 
+      @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getMin();
@@ -396,8 +398,10 @@ public class JCRStatisticsManager
    @Managed
    @ManagedDescription("The maximum value of the time spent for one call.")
    public static long getMax(
-      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
-      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
+      @ManagedDescription("The name of the category of the statistics") 
+      @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") 
+      @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getMax();
@@ -410,8 +414,10 @@ public class JCRStatisticsManager
    @Managed
    @ManagedDescription("The total time spent for all the calls.")
    public static long getTotal(
-      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
-      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
+      @ManagedDescription("The name of the category of the statistics") 
+      @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") 
+      @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getTotal();
@@ -424,8 +430,10 @@ public class JCRStatisticsManager
    @Managed
    @ManagedDescription("The total amount of calls.")
    public static long getTimes(
-      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
-      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
+      @ManagedDescription("The name of the category of the statistics") 
+      @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") 
+      @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getTimes();
@@ -438,8 +446,10 @@ public class JCRStatisticsManager
    @Managed
    @ManagedDescription("The average value of the time spent for one call.")
    public static float getAvg(
-      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
-      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
+      @ManagedDescription("The name of the category of the statistics") 
+      @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") 
+      @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getAvg();
@@ -453,8 +463,10 @@ public class JCRStatisticsManager
    @Managed
    @ManagedDescription("Reset the statistics.")
    public static void reset(
-      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
-      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
+      @ManagedDescription("The name of the category of the statistics") 
+      @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") 
+      @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       if (statistics != null)
@@ -470,7 +482,8 @@ public class JCRStatisticsManager
    @Managed
    @ManagedDescription("Reset all the statistics.")
    public static void resetAll(
-      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category)
+      @ManagedDescription("The name of the category of the statistics") 
+      @ManagedName("categoryName") String category)
    {
       StatisticsContext context = getContext(category);
       if (context != null)

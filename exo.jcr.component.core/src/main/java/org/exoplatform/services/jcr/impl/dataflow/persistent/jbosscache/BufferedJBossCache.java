@@ -539,10 +539,11 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
       return parentCache.get(fqn, key);
    }
-   
+
    /**
-    * in case putIfAbsent is set to <code>true</code> this method will call cache.putIfAbsent(Fqn fqn, Serializable key, Object value)
-    *  otherwise it will call cache.put(Fqn fqn, Serializable key, Object value)
+    * in case putIfAbsent is set to <code>true</code> this method will 
+    * call cache.putIfAbsent(Fqn fqn, Serializable key, Object value)
+    * otherwise it will call cache.put(Fqn fqn, Serializable key, Object value)
     */
    protected Object put(Fqn fqn, Serializable key, Object value, boolean putIfAbsent)
    {

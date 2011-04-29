@@ -175,7 +175,7 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#removeIndexUpdateMonitorListener(org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener)
+    * {@inheritDoc}
     */
    public void removeIndexUpdateMonitorListener(IndexUpdateMonitorListener listener)
    {

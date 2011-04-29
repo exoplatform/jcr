@@ -21,7 +21,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
@@ -724,7 +723,8 @@ class ChildAxisQuery extends Query implements JcrQuery
                Iterator<NodeData> entries;
                if (nameTest != null)
                {
-                  //NodeData childNodeData = (NodeData)itemMgr.getItemData(state, new QPathEntry(nameTest, 1));//state.getChildNodeEntries(nameTest).iterator();
+                  //NodeData childNodeData = (NodeData)itemMgr.getItemData(state, new QPathEntry(nameTest, 1));
+                  // //state.getChildNodeEntries(nameTest).iterator();
                   List<NodeData> childs = itemMgr.getChildNodesData(state);
 
                   List<NodeData> datas = new ArrayList<NodeData>();

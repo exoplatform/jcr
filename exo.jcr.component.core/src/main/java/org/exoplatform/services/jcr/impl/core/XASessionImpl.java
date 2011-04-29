@@ -75,7 +75,8 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
    private Object payload;
 
    /**
-    * TransactionException of a last commit in context of a transaction. Can be set on commit and will be restet on enlist/delist resource or rollback. 
+    * TransactionException of a last commit in context of a transaction. 
+    * Can be set on commit and will be restet on enlist/delist resource or rollback. 
     */
    private TransactionException commitException = null;
 

@@ -175,7 +175,9 @@ public class ChangesHolder implements Externalizable
       else
       {
          // The value is a String
-         field = new Field(name, (String)value, getStoreParameter(flags), getIndexParameter(flags), getTermVectorParameter(flags));
+         field =
+                  new Field(name, (String) value, getStoreParameter(flags), getIndexParameter(flags),
+                           getTermVectorParameter(flags));
       }
       field.setBoost(boost);
       field.setOmitNorms((flags & OMIT_NORMS_FLAG) > 0);
