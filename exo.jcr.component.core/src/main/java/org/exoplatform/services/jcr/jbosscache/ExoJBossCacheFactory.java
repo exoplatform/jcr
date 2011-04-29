@@ -39,7 +39,6 @@ import org.jgroups.JChannelFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
@@ -331,7 +330,7 @@ public class ExoJBossCacheFactory<K, V>
     */
    private static class ConfigurationKey
    {
-      private final URL jgroupsConfigFile;
+      private final String jgroupsConfigFile;
 
       private final Configuration conf;
 
@@ -339,7 +338,7 @@ public class ExoJBossCacheFactory<K, V>
       {
          // Clone it first since it will be modified
          this.conf = initialConf.clone();
-         this.jgroupsConfigFile = conf.getJGroupsConfigFile();
+         this.jgroupsConfigFile = (conf.getJGroupsConfigFile() == null ? null : conf.getJGroupsConfigFile().toString());
          // remove the jgroupsConfigFile from the conf
          conf.setJgroupsConfigFile(null);
          // remove the EvictionConfig to ignore it
