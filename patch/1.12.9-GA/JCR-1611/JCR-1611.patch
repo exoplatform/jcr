@@ -1,0 +1,1086 @@
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(revision 4327)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(working copy)
+@@ -96,6 +96,7 @@
+          // Test getChildNodesData
+          Action readAction = new Action(cwdmNode2)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                cwdm.getChildNodesData(parentNode);
+@@ -103,6 +104,7 @@
+          };
+          Action writeAction = new Action(cwdmNode1)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                PlainChangesLog chlog = new PlainChangesLogImpl();            
+@@ -127,6 +129,7 @@
+          // Test getChildPropertiesData
+          readAction = new Action(cwdmNode2)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                cwdm.getChildPropertiesData(parentNode);
+@@ -134,6 +137,7 @@
+          };
+          writeAction = new Action(cwdmNode1)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                PlainChangesLog chlog = new PlainChangesLogImpl();            
+@@ -161,6 +165,7 @@
+          // Test getReferencesData
+          readAction = new Action(cwdmNode2)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                cwdm.getReferencesData(parentNode.getIdentifier(), false);
+@@ -168,6 +173,7 @@
+          };
+          writeAction = new Action(cwdmNode1)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                PlainChangesLog chlog = new PlainChangesLogImpl();            
+@@ -196,6 +202,7 @@
+          // Test getItemData by Id
+          readAction = new Action(cwdmNode2)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                cwdm.getItemData(parentNode.getIdentifier());
+@@ -203,6 +210,7 @@
+          };
+          writeAction = new Action(cwdmNode1)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                PlainChangesLog chlog = new PlainChangesLogImpl();
+@@ -231,6 +239,7 @@
+          final QPathEntry qpe = new QPathEntry(null, "my-property", 1);
+          readAction = new Action(cwdmNode2)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                cwdm.getItemData(parentNode, qpe, ItemType.PROPERTY);
+@@ -238,6 +247,7 @@
+          };
+          writeAction = new Action(cwdmNode1)
+          {
++            @Override
+             public void execute(NodeData parentNode) throws Exception
+             {
+                PlainChangesLog chlog = new PlainChangesLogImpl();
+@@ -308,6 +318,7 @@
+       final CountDownLatch doneSignal = new CountDownLatch(2);
+       Thread writer = new Thread()
+       {
++         @Override
+          public void run()
+          {
+             try
+@@ -331,6 +342,7 @@
+       writer.start();
+       Thread reader = new Thread()
+       {
++         @Override
+          public void run()
+          {
+             try
+@@ -593,6 +605,11 @@
+          InvalidItemStateException, IllegalStateException
+       {
+       }
++
++      public int getLastOrderNumber(NodeData parent) throws RepositoryException
++      {
++         return -1;
++      }
+    };
+    
+    private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java	(revision 4327)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java	(working copy)
+@@ -526,6 +526,12 @@
+       {
+       }
+ 
++      @Override
++      public int getLastOrderNumber(NodeData parent) throws RepositoryException
++      {
++         return -1;
++      }
++
+    };
+ 
+    private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestNodeOrder.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestNodeOrder.java	(revision 4327)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestNodeOrder.java	(working copy)
+@@ -36,14 +36,14 @@
+  */
+ package org.exoplatform.services.jcr.impl.core;
+ 
++import org.exoplatform.services.jcr.JcrImplBaseTest;
++import org.exoplatform.services.jcr.datamodel.NodeData;
++
+ import javax.jcr.ItemExistsException;
+ import javax.jcr.Node;
+ import javax.jcr.NodeIterator;
+ import javax.jcr.Session;
+ 
+-import org.exoplatform.services.jcr.JcrImplBaseTest;
+-import org.exoplatform.services.jcr.datamodel.NodeData;
+-
+ /**
+  * Created by The eXo Platform SAS.
+  * 
+@@ -227,7 +227,7 @@
+          assertEquals(order++, orderNumb);
+       }
+    }
+-   
++
+    public void testOrderWithRefreshKeep() throws Exception
+    {
+       Node testNode = root.addNode("testNode");
+@@ -268,4 +268,41 @@
+       }
+    }
+ 
++   public void testRemoveOrder() throws Exception
++   {
++      Node list = session.getRootNode().addNode("list");
++      assertTrue(list.getPrimaryNodeType().hasOrderableChildNodes());
++      list.addNode("foo", "nt:unstructured");
++      list.addNode("bar", "nt:unstructured");
++      list.addNode("juu", "nt:unstructured");
++      session.save();
++
++      list = session.getRootNode().getNode("list");
++      list.getNode("bar").remove();
++      session.save();
++
++      list = session.getRootNode().getNode("list");
++      list.addNode("daa", "nt:unstructured");
++      session.save();
++
++      //check order numbers
++      NodeImpl foo = (NodeImpl)list.getNode("foo");
++      assertEquals(0, ((NodeData)foo.getData()).getOrderNumber());
++      NodeImpl juu = (NodeImpl)list.getNode("juu");
++      assertEquals(2, ((NodeData)juu.getData()).getOrderNumber());
++      NodeImpl daa = (NodeImpl)list.getNode("daa");
++      assertEquals(3, ((NodeData)daa.getData()).getOrderNumber());
++
++      //     list.orderBefore("daa", null);
++      NodeIterator it = list.getNodes();
++      foo = (NodeImpl)it.nextNode();
++      assertEquals("foo", foo.getName());
++      juu = (NodeImpl)it.nextNode();
++      assertEquals("juu", juu.getName());
++      daa = (NodeImpl)it.nextNode();
++      assertEquals("daa", daa.getName());
++      assertFalse(it.hasNext());
++      session.save();
++   }
++
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java	(working copy)
+@@ -91,6 +91,15 @@
+     * @return int, child nodes count
+     */
+    int getChildNodesCount(NodeData parent) throws RepositoryException;
++   
++   /**
++    * Get order number of parent's last child node.
++    * 
++    * @param parent node
++    * @return int Returns last child nodes order number or -1 if there is no subnodes.
++    * @throws RepositoryException
++    */
++   int getLastOrderNumber(NodeData parent) throws RepositoryException;
+ 
+    /**
+     * Get child Properties of the parent node.
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(working copy)
+@@ -2824,7 +2824,7 @@
+ 
+    private int getNextChildOrderNum() throws RepositoryException
+    {
+-      return dataManager.getChildNodesCount(nodeData());
++      return dataManager.getLastOrderNumber(nodeData()) + 1;
+    }
+ 
+    private int getNextChildIndex(InternalQName nameToAdd, NodeData parentNode) throws RepositoryException,
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java	(working copy)
+@@ -843,6 +843,17 @@
+    /**
+     * {@inheritDoc}
+     */
++   public int getLastOrderNumber(NodeData parent) throws RepositoryException
++   {
++      int lastOrderNumber = changesLog.getLastChildOrderNumber(parent.getIdentifier());
++      int lastPersistedNodeOrderNumber = transactionableManager.getLastOrderNumber(parent);
++
++      return Math.max(lastPersistedNodeOrderNumber, lastOrderNumber);
++   }
++
++   /**
++    * {@inheritDoc}
++    */
+    public int getChildNodesCount(NodeData parent) throws RepositoryException
+    {
+       int childsCount =
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java	(working copy)
+@@ -135,6 +135,14 @@
+    /**
+     * {@inheritDoc}
+     */
++   public int getLastOrderNumber(final NodeData parent) throws RepositoryException
++   {
++      return storageDataManager.getLastOrderNumber(parent);
++   }
++   
++   /**
++    * {@inheritDoc}
++    */
+    public int getChildNodesCount(final NodeData parent) throws RepositoryException
+    {
+       return storageDataManager.getChildNodesCount(parent);
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java	(working copy)
+@@ -62,11 +62,24 @@
+       new HashMap<String, Map<String, ItemState>>();
+ 
+    /**
+-    * Stores persisted child nodes count.  
++    * Stores info for persisted child nodes by parent identifier.
++    * <br>Index in array points to:
++    * <br>0 - child nodes count 
++    * <br>1 - last child order number
+     */
+-   protected Map<String, int[]> childNodesCount = new HashMap<String, int[]>();
++   protected Map<String, int[]> childNodesInfo = new HashMap<String, int[]>();
+ 
+    /**
++    * Index in <code>childNodesInfo<code> value array to store child nodes count.
++    */
++   protected final int CHILD_NODES_COUNT_INDEX = 0;
++
++   /**
++    * Index in <code>childNodesInfo<code> value array to store last child order number.
++    */
++   protected final int CHILD_NODES_LAST_ORDER_NUMBER_INDEX = 1;
++
++   /**
+     * Create empty ChangesLog.
+     * 
+     * @param sessionId
+@@ -129,7 +142,7 @@
+       index.clear();
+       lastChildNodeStates.clear();
+       lastChildPropertyStates.clear();
+-      childNodesCount.clear();
++      childNodesInfo.clear();
+    }
+ 
+    /**
+@@ -153,21 +166,25 @@
+             index.remove(item.getData().getQPath());
+             index.remove(new ParentIDQPathBasedKey(item));
+             index.remove(new IDStateBasedKey(item.getData().getIdentifier(), item.getState()));
+-            childNodesCount.remove(item.getData().getIdentifier());
++            childNodesInfo.remove(item.getData().getIdentifier());
+             lastChildNodeStates.remove(item.getData().getIdentifier());
+             lastChildPropertyStates.remove(item.getData().getIdentifier());
+ 
+             if (item.isNode() && item.isPersisted())
+             {
+-               int childCount[] = childNodesCount.get(item.getData().getParentIdentifier());
+-               if (childCount != null)
++               int childInfo[] = childNodesInfo.get(item.getData().getParentIdentifier());
++               if (childInfo != null)
+                {
+                   if (item.isDeleted())
+-                     ++childCount[0];
++                  {
++                     ++childInfo[CHILD_NODES_COUNT_INDEX];
++                  }
+                   else if (item.isAdded())
+-                     --childCount[0];
++                  {
++                     --childInfo[CHILD_NODES_COUNT_INDEX];
++                  }
+ 
+-                  childNodesCount.put(item.getData().getParentIdentifier(), childCount);
++                  childNodesInfo.put(item.getData().getParentIdentifier(), childInfo);
+                }
+             }
+ 
+@@ -412,10 +429,17 @@
+ 
+    public int getChildNodesCount(String rootIdentifier)
+    {
+-      int[] childCount = childNodesCount.get(rootIdentifier);
+-      return childCount == null ? 0 : childCount[0];
++      int[] childInfo = childNodesInfo.get(rootIdentifier);
++      return childInfo == null ? 0 : childInfo[CHILD_NODES_COUNT_INDEX];
+    }
+ 
++   public int getLastChildOrderNumber(String rootIdentifier)
++   {
++
++      int[] childInfo = childNodesInfo.get(rootIdentifier);
++      return childInfo == null ? -1 : childInfo[CHILD_NODES_LAST_ORDER_NUMBER_INDEX];
++   }
++
+    /**
+     * Collect last in ChangesLog order item child changes.
+     * 
+@@ -663,16 +687,22 @@
+ 
+       if (item.isNode() && item.isPersisted())
+       {
+-         int[] childCount = childNodesCount.get(item.getData().getParentIdentifier());
+-         if (childCount == null)
+-            childCount = new int[1];
++         int[] childInfo = childNodesInfo.get(item.getData().getParentIdentifier());
++         if (childInfo == null)
++         {
++            childInfo = new int[2];
++         }
+ 
+          if (item.isDeleted())
+-            --childCount[0];
++         {
++            --childInfo[CHILD_NODES_COUNT_INDEX];
++         }
+          else if (item.isAdded())
+-            ++childCount[0];
+-
+-         childNodesCount.put(item.getData().getParentIdentifier(), childCount);
++         {
++            ++childInfo[CHILD_NODES_COUNT_INDEX];
++            childInfo[CHILD_NODES_LAST_ORDER_NUMBER_INDEX] = ((NodeData)item.getData()).getOrderNumber();
++         }
++         childNodesInfo.put(item.getData().getParentIdentifier(), childInfo);
+       }
+    }
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java	(working copy)
+@@ -114,6 +114,37 @@
+    /**
+     * {@inheritDoc}
+     */
++   public int getLastOrderNumber(final NodeData parent) throws RepositoryException
++   {
++      if (txStarted())
++      {
++         int txLastOrderNumber = -1;
++         for (ItemState change : transactionLog.getAllStates())
++         {
++            if (change.isNode() && change.isPersisted() && change.isAdded()
++               && change.getData().getParentIdentifier().equals(parent.getIdentifier()))
++            {
++               int orderNumber = ((NodeData)change.getData()).getOrderNumber();
++               if (orderNumber > txLastOrderNumber)
++               {
++                  txLastOrderNumber = orderNumber;
++               }
++            }
++         }
++
++         int lastOrderNumber = storageDataManager.getLastOrderNumber(parent);
++
++         return Math.max(lastOrderNumber, txLastOrderNumber);
++      }
++      else
++      {
++         return storageDataManager.getLastOrderNumber(parent);
++      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
+    public int getChildNodesCount(final NodeData parent) throws RepositoryException
+    {
+       if (txStarted())
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/DefaultItemDataCopyVisitor.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/DefaultItemDataCopyVisitor.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/DefaultItemDataCopyVisitor.java	(working copy)
+@@ -264,7 +264,7 @@
+ 
+    protected int calculateNewNodeOrderNumber() throws RepositoryException
+    {
+-      return dataManager.getChildNodesCount(curParent());
++      return dataManager.getLastOrderNumber(curParent()) + 1;
+    }
+ 
+    protected QPath calculateNewNodePath(NodeData node, int level) throws RepositoryException
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java	(working copy)
+@@ -473,10 +473,27 @@
+          con.close();
+       }
+    }
+-
++   
+    /**
+     * {@inheritDoc}
+     */
++   @Override
++   public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
++   {
++      final WorkspaceStorageConnection con = dataContainer.openConnection();
++      try
++      {
++         return con.getLastOrderNumber(nodeData);
++      }
++      finally
++      {
++         con.close();
++      }
++   }
++   
++   /**
++    * {@inheritDoc}
++    */
+    public int getChildNodesCount(NodeData parent) throws RepositoryException
+    {
+       final WorkspaceStorageConnection con = dataContainer.openConnection();
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java	(working copy)
+@@ -158,6 +158,14 @@
+    /**
+     * {@inheritDoc}
+     */
++   public int getLastOrderNumber(final NodeData parent) throws RepositoryException
++   {
++      return persistentManager.getLastOrderNumber(parent);
++   }
++
++   /**
++    * {@inheritDoc}
++    */
+    public int getChildNodesCount(final NodeData parent) throws RepositoryException
+    {
+       return persistentManager.getChildNodesCount(parent);
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java	(working copy)
+@@ -126,6 +126,11 @@
+       return null;
+    }
+ 
++   public int getLastOrderNumber(NodeData nodeData) throws RepositoryException
++   {
++      return -1;
++   }
++   
+    public int getChildNodesCount(NodeData nodeData) throws RepositoryException
+    {
+       return 0;
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBMultiDbJDBCConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBMultiDbJDBCConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBMultiDbJDBCConnection.java	(working copy)
+@@ -78,6 +78,10 @@
+          "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
+             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
++
++      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
++         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where PARENT_ID=? and I_CLASS=1";
++
+       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1";
+       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
+       FIND_NODES_BY_PARENTID_CQ =
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/MultiDbJDBCConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/MultiDbJDBCConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/MultiDbJDBCConnection.java	(working copy)
+@@ -151,6 +151,9 @@
+             + " from JCR_MITEM I, (SELECT ID, PARENT_ID from JCR_MITEM where ID=?) J"
+             + " where I.ID = J.ID or I.ID = J.PARENT_ID";
+ 
++      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
++         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where I_CLASS=1 and PARENT_ID=?";
++
+       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?";
+ 
+       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by NAME";
+@@ -413,6 +416,21 @@
+     * {@inheritDoc}
+     */
+    @Override
++   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
++   {
++      if (findLastOrderNumberByParentId == null)
++         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
++      else
++         findLastOrderNumberByParentId.clearParameters();
++
++      findLastOrderNumberByParentId.setString(1, parentIdentifier);
++      return findLastOrderNumberByParentId.executeQuery();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   @Override
+    protected ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException
+    {
+       if (findNodesCountByParentId == null)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBSingleDbJDBCConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBSingleDbJDBCConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBSingleDbJDBCConnection.java	(working copy)
+@@ -85,6 +85,10 @@
+             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+       FIND_NODES_BY_PARENTID =
+          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
++
++      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
++         "select count(*), max(N_ORDER_NUM) from JCR_SITEM where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
++
+       FIND_NODES_COUNT_BY_PARENTID =
+          "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
+       FIND_PROPERTIES_BY_PARENTID =
+@@ -165,6 +169,23 @@
+     * {@inheritDoc}
+     */
+    @Override
++   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
++   {
++      if (findLastOrderNumberByParentId == null)
++         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
++      else
++         findLastOrderNumberByParentId.clearParameters();
++
++      findLastOrderNumberByParentId.setString(1, parentIdentifier);
++      findLastOrderNumberByParentId.setString(2, containerName);
++
++      return findLastOrderNumberByParentId.executeQuery();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   @Override
+    protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
+    {
+       if (findNodesCountByParentId == null)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/SingleDbJDBCConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/SingleDbJDBCConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/SingleDbJDBCConnection.java	(working copy)
+@@ -157,6 +157,9 @@
+             + " from JCR_SITEM I, (SELECT ID, PARENT_ID from JCR_SITEM where ID=?) J"
+             + " where I.ID = J.ID or I.ID = J.PARENT_ID";
+ 
++      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
++         "select count(*), max(N_ORDER_NUM) from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
++
+       FIND_NODES_COUNT_BY_PARENTID =
+          "select count(ID) from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
+ 
+@@ -308,6 +311,22 @@
+     * {@inheritDoc}
+     */
+    @Override
++   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
++   {
++      if (findLastOrderNumberByParentId == null)
++         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
++      else
++         findLastOrderNumberByParentId.clearParameters();
++
++      findLastOrderNumberByParentId.setString(1, containerName);
++      findLastOrderNumberByParentId.setString(2, parentIdentifier);
++      return findLastOrderNumberByParentId.executeQuery();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   @Override
+    protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
+    {
+       if (findNodesCountByParentId == null)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/DBConstants.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/DBConstants.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/DBConstants.java	(working copy)
+@@ -128,8 +128,13 @@
+     * FIND_NODES_BY_PARENTID.
+     */
+    protected String FIND_NODES_BY_PARENTID;
+-   
++
+    /**
++    * FIND_LAST_ORDER_NUMBER_BY_PARENTID.
++    */
++   protected String FIND_LAST_ORDER_NUMBER_BY_PARENTID;
++      
++   /**
+     * FIND_NODES_COUNT_BY_PARENTID.
+     */
+    protected String FIND_NODES_COUNT_BY_PARENTID;
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBMultiDbJDBCConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBMultiDbJDBCConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBMultiDbJDBCConnection.java	(working copy)
+@@ -74,6 +74,8 @@
+          "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
+             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
++      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
++         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where PARENT_ID=? and I_CLASS=1";
+       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1";
+       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
+    }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/MultiDbJDBCConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/MultiDbJDBCConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/MultiDbJDBCConnection.java	(working copy)
+@@ -127,6 +127,9 @@
+ 
+       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
+ 
++      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
++         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where I_CLASS=1 and PARENT_ID=?";
++
+       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?";
+ 
+       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by ID";
+@@ -371,6 +374,21 @@
+     * {@inheritDoc}
+     */
+    @Override
++   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
++   {
++      if (findLastOrderNumberByParentId == null)
++         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
++      else
++         findLastOrderNumberByParentId.clearParameters();
++
++      findLastOrderNumberByParentId.setString(1, parentIdentifier);
++      return findLastOrderNumberByParentId.executeQuery();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   @Override
+    protected ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException
+    {
+       if (findNodesCountByParentId == null)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBSingleDbJDBCConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBSingleDbJDBCConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBSingleDbJDBCConnection.java	(working copy)
+@@ -81,6 +81,8 @@
+             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+       FIND_NODES_BY_PARENTID =
+          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
++      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
++         "select count(*), max(N_ORDER_NUM) from JCR_SITEM where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
+       FIND_NODES_COUNT_BY_PARENTID =
+          "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
+       FIND_PROPERTIES_BY_PARENTID =
+@@ -142,6 +144,23 @@
+     * {@inheritDoc}
+     */
+    @Override
++   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
++   {
++      if (findLastOrderNumberByParentId == null)
++         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
++      else
++         findLastOrderNumberByParentId.clearParameters();
++
++      findLastOrderNumberByParentId.setString(1, parentIdentifier);
++      findLastOrderNumberByParentId.setString(2, containerName);
++
++      return findLastOrderNumberByParentId.executeQuery();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   @Override
+    protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
+    {
+       if (findNodesCountByParentId == null)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/SingleDbJDBCConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/SingleDbJDBCConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/SingleDbJDBCConnection.java	(working copy)
+@@ -133,6 +133,9 @@
+       FIND_NODES_BY_PARENTID =
+          "select * from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?" + " order by N_ORDER_NUM";
+ 
++      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
++         "select count(*), max(N_ORDER_NUM) from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
++
+       FIND_NODES_COUNT_BY_PARENTID =
+          "select count(ID) from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
+ 
+@@ -282,6 +285,22 @@
+     * {@inheritDoc}
+     */
+    @Override
++   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
++   {
++      if (findLastOrderNumberByParentId == null)
++         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
++      else
++         findLastOrderNumberByParentId.clearParameters();
++
++      findLastOrderNumberByParentId.setString(1, containerName);
++      findLastOrderNumberByParentId.setString(2, parentIdentifier);
++      return findLastOrderNumberByParentId.executeQuery();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   @Override
+    protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
+    {
+       if (findNodesCountByParentId == null)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java	(working copy)
+@@ -151,6 +151,8 @@
+ 
+    protected PreparedStatement findNodesByParentId;
+ 
++   protected PreparedStatement findLastOrderNumberByParentId;
++
+    protected PreparedStatement findNodesCountByParentId;
+ 
+    protected PreparedStatement findPropertiesByParentId;
+@@ -459,6 +461,11 @@
+             findNodesByParentId.close();
+          }
+ 
++         if (findLastOrderNumberByParentId != null)
++         {
++            findLastOrderNumberByParentId.close();
++         }
++
+          if (findNodesCountByParentId != null)
+          {
+             findNodesCountByParentId.close();
+@@ -921,6 +928,44 @@
+    /**
+     * {@inheritDoc}
+     */
++   public int getLastOrderNumber(NodeData parent) throws RepositoryException
++   {
++      checkIfOpened();
++      try
++      {
++         ResultSet count = findLastOrderNumberByParentIdentifier(getInternalId(parent.getIdentifier()));
++         try
++         {
++            if (count.next() && count.getInt(1) > 0)
++            {
++               return count.getInt(2);
++            }
++            else
++            {
++               return -1;
++            }
++         }
++         finally
++         {
++            try
++            {
++               count.close();
++            }
++            catch (SQLException e)
++            {
++               LOG.error("Can't close the ResultSet: " + e);
++            }
++         }
++      }
++      catch (SQLException e)
++      {
++         throw new RepositoryException(e);
++      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
+    public int getChildNodesCount(NodeData parent) throws RepositoryException
+    {
+       checkIfOpened();
+@@ -2454,6 +2499,8 @@
+ 
+    protected abstract ResultSet findChildNodesByParentIdentifier(String parentIdentifier) throws SQLException;
+ 
++   protected abstract ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException;
++
+    protected abstract ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException;
+ 
+    protected abstract ResultSet findChildPropertiesByParentIdentifier(String parentIdentifier) throws SQLException;
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java	(working copy)
+@@ -117,6 +117,12 @@
+     * <code>getChildNodesCount(NodeData parent)</code>
+     */
+    private static final String GET_CHILD_NODES_COUNT_DESCR = "getChildNodesCount";
++   
++   /**
++    * The description of the statistics corresponding to the method 
++    * <code>getLastOrderNumber(NodeData parent)</code>
++    */
++   private static final String GET_LAST_ORDER_NUMBER_DESCR = "getLastOrderNumber";
+ 
+    /**
+     * The description of the statistics corresponding to the method 
+@@ -171,6 +177,8 @@
+          GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR));
+       ALL_STATISTICS.put(GET_CHILD_NODES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_DATA_DESCR));
+       ALL_STATISTICS.put(GET_CHILD_NODES_COUNT_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_COUNT_DESCR));
++      ALL_STATISTICS.put(GET_LAST_ORDER_NUMBER_DESCR, new Statistics(GLOBAL_STATISTICS, GET_LAST_ORDER_NUMBER_DESCR));
++      
+       ALL_STATISTICS.put(GET_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
+          GET_CHILD_PROPERTIES_DATA_DESCR));
+       ALL_STATISTICS.put(LIST_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
+@@ -227,7 +235,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#add(org.exoplatform.services.jcr.datamodel.NodeData)
++    * {@inheritDoc}
+     */
+    public void add(NodeData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
+       IllegalStateException
+@@ -245,7 +253,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#add(org.exoplatform.services.jcr.datamodel.PropertyData)
++    * {@inheritDoc}
+     */
+    public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+       InvalidItemStateException, IllegalStateException
+@@ -263,7 +271,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#close()
++    * {@inheritDoc}
+     */
+    public void close() throws IllegalStateException, RepositoryException
+    {
+@@ -280,7 +288,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#commit()
++    * {@inheritDoc}
+     */
+    public void commit() throws IllegalStateException, RepositoryException
+    {
+@@ -297,7 +305,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#delete(org.exoplatform.services.jcr.datamodel.NodeData)
++    * {@inheritDoc}
+     */
+    public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
+       InvalidItemStateException, IllegalStateException
+@@ -315,7 +323,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#delete(org.exoplatform.services.jcr.datamodel.PropertyData)
++    * {@inheritDoc}
+     */
+    public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+       InvalidItemStateException, IllegalStateException
+@@ -333,8 +341,25 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildNodesCount(org.exoplatform.services.jcr.datamodel.NodeData)
++    * {@inheritDoc}
+     */
++   public int getLastOrderNumber(NodeData parent) throws RepositoryException
++   {
++      Statistics s = ALL_STATISTICS.get(GET_LAST_ORDER_NUMBER_DESCR);
++      try
++      {
++         s.begin();
++         return wcs.getLastOrderNumber(parent);
++      }
++      finally
++      {
++         s.end();
++      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
+    public int getChildNodesCount(NodeData parent) throws RepositoryException
+    {
+       Statistics s = ALL_STATISTICS.get(GET_CHILD_NODES_COUNT_DESCR);
+@@ -350,7 +375,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildNodesData(org.exoplatform.services.jcr.datamodel.NodeData)
++    * {@inheritDoc}
+     */
+    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException
+    {
+@@ -367,7 +392,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData)
++    * {@inheritDoc}
+     */
+    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException
+    {
+@@ -410,7 +435,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getItemData(java.lang.String)
++    * {@inheritDoc}
+     */
+    public ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException
+    {
+@@ -427,7 +452,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getReferencesData(java.lang.String)
++    * {@inheritDoc}
+     */
+    public List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException,
+       IllegalStateException, UnsupportedOperationException
+@@ -445,7 +470,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#isOpened()
++    * {@inheritDoc}
+     */
+    public boolean isOpened()
+    {
+@@ -462,7 +487,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#listChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData)
++    * {@inheritDoc}
+     */
+    public List<PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException
+    {
+@@ -479,7 +504,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#rename(org.exoplatform.services.jcr.datamodel.NodeData)
++    * {@inheritDoc}
+     */
+    public void rename(NodeData data) throws RepositoryException, UnsupportedOperationException,
+       InvalidItemStateException, IllegalStateException
+@@ -497,7 +522,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#rollback()
++    * {@inheritDoc}
+     */
+    public void rollback() throws IllegalStateException, RepositoryException
+    {
+@@ -514,7 +539,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#update(org.exoplatform.services.jcr.datamodel.NodeData)
++    * {@inheritDoc}
+     */
+    public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
+       InvalidItemStateException, IllegalStateException
+@@ -532,7 +557,7 @@
+    }
+ 
+    /**
+-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#update(org.exoplatform.services.jcr.datamodel.PropertyData)
++    * {@inheritDoc}
+     */
+    public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+       InvalidItemStateException, IllegalStateException
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java	(revision 4327)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java	(working copy)
+@@ -126,6 +126,15 @@
+    int getChildNodesCount(NodeData parent) throws RepositoryException;
+ 
+    /**
++    * Reads order number of last <code>parent<code/> child nodes.
++    *
++    * @param parent NodeData
++    * @return long, order number of last parent's child node.
++    * @throws RepositoryException if error occurs
++    */
++   int getLastOrderNumber(NodeData parent) throws RepositoryException;
++   
++   /**
+     * Reads <code>List</code> of <code>PropertyData</code> from the storage using item's parent
+     * location.
+     * 
