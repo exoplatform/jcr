@@ -63,6 +63,11 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    protected final RepositoryService repositoryService;
 
    /**
+    * Indicates if RDBMS restore in progress or not.
+    */
+   volatile private boolean isRestoreInProgress = false;
+
+   /**
     * Constructor RdbmsWorkspaceInitializer.
     */
    public RdbmsWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
@@ -81,6 +86,17 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
     * {@inheritDoc}
     */
    @Override
+   public boolean isWorkspaceInitialized()
+   {
+      // If someone invoke isWorkspaceInitialized() during restore then NullNodeData for root node will be pushed
+      // into the cache and will be there even restore is finished and data will be placed into DB. 
+      return isRestoreInProgress ? false : super.isWorkspaceInitialized();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public NodeData initWorkspace() throws RepositoryException
    {
       if (isWorkspaceInitialized())
@@ -90,7 +106,15 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
       long start = System.currentTimeMillis();
 
-      restoreAction();
+      isRestoreInProgress = true;
+      try
+      {
+         restoreAction();
+      }
+      finally
+      {
+         isRestoreInProgress = false;
+      }
 
       final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
 
