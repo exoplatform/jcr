@@ -36,12 +36,12 @@ public class Log
 
    public void info(String message)
    {
-      System.out.println(moduleName + ":" + message);
+      System.out.println(moduleName + ":" + message); //NOSONAR
    }
 
    public void info(String message, Throwable thr)
    {
-      System.out.println(moduleName + ":" + message);
+      System.out.println(moduleName + ":" + message); //NOSONAR
       thr.printStackTrace(System.out);
    }
 

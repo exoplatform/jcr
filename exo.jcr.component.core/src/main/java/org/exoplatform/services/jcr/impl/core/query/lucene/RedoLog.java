@@ -199,7 +199,7 @@ class RedoLog
             }
             catch (Exception e)
             {
-               e.printStackTrace();
+               log.error(e.getLocalizedMessage(), e);
                throw e;
             }
             entryCount = 0;

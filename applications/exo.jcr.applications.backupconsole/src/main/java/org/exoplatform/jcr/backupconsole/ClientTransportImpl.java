@@ -182,7 +182,7 @@ public class ClientTransportImpl implements ClientTransport
 
             if (Response.Status.OK.getStatusCode() != respLogin.getStatusCode())
             {
-               System.out.println("Form authentication is fail, status code : " + respLogin.getStatusCode());
+               System.out.println("Form authentication is fail, status code : " + respLogin.getStatusCode()); //NOSONAR
                System.exit(0);
             }
          }
@@ -268,7 +268,7 @@ public class ClientTransportImpl implements ClientTransport
 
             if (Response.Status.OK.getStatusCode() != respLogin.getStatusCode())
             {
-               System.out.println("Form authentication is fail, status code : " + respLogin.getStatusCode());
+               System.out.println("Form authentication is fail, status code : " + respLogin.getStatusCode()); //NOSONAR
                System.exit(0);
             }
          }

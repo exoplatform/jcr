@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 
+
 /**
  * Created by The eXo Platform SAS. <br/>Date:
  * 
@@ -109,14 +110,14 @@ public class BackupConsole
       int curArg = 0;
       if (curArg == args.length)
       {
-         System.out.println(INCORRECT_PARAM + "There is no any parameters.");
+         System.out.println(INCORRECT_PARAM + "There is no any parameters."); //NOSONAR
          return;
       }
 
       // help
       if (args[curArg].equalsIgnoreCase("help"))
       {
-         System.out.println(HELP_INFO);
+         System.out.println(HELP_INFO); //NOSONAR
          return;
       }
 
@@ -130,7 +131,7 @@ public class BackupConsole
       }
       catch (MalformedURLException e)
       {
-         System.out.println(INCORRECT_PARAM + "There is no url parameter.");
+         System.out.println(INCORRECT_PARAM + "There is no url parameter."); //NOSONAR
          return;
       }
 
@@ -149,7 +150,10 @@ public class BackupConsole
 
             if (url.getUserInfo() != null)
             {  
-               System.out.println(INCORRECT_PARAM + "Parameters Login:Password should not be specified in url parameter to form authentication - " + sUrl);
+               System.out
+                        .println(INCORRECT_PARAM
+                                 + "Parameters Login:Password should not be specified in url parameter to form authentication - "
+                                 + sUrl); //NOSONAR
                return;
             }
          }
@@ -164,28 +168,30 @@ public class BackupConsole
          //check POST or GET
          if (curArg == args.length)
          {
-            System.out.println(INCORRECT_PARAM + "No specified  POST or GET parameter to form parameter.");
+            System.out.println(INCORRECT_PARAM + "No specified  POST or GET parameter to form parameter."); //NOSONAR
             return;
          }
          String method = args[curArg++];
 
          if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("POST"))
          {
-            System.out.println(INCORRECT_PARAM + "Method to form authentication shulde be GET or POST to form parameter - " + method);
+            System.out.println(INCORRECT_PARAM
+                     + "Method to form authentication shulde be GET or POST to form parameter - " + method); //NOSONAR
             return;
          }
          
          //url to form authentication
          if (curArg == args.length)
          {
-            System.out.println(INCORRECT_PARAM + "No specified  url and form properties to form parameter.");
+            System.out.println(INCORRECT_PARAM + "No specified  url and form properties to form parameter."); //NOSONAR
             return;
          }
          String[] params = args[curArg++].split("[?]");
          
          if (params.length != 2)
          {
-            System.out.println(INCORRECT_PARAM + "From parameters is not spacified to form parameter - " + args[curArg]);
+            System.out
+                     .println(INCORRECT_PARAM + "From parameters is not spacified to form parameter - " + args[curArg]); //NOSONAR
             return;
          }
          String formUrl = params[0];
@@ -195,9 +201,9 @@ public class BackupConsole
 
          if (formParams.length < 2)
          {
-            System.out.println(INCORRECT_PARAM
-                     + "From parameters shoulde be conatains at least two (for login and for pasword) parameters - "
-                     + params[1]);
+            System.out.println(INCORRECT_PARAM //NOSONAR
+                     + "From parameters shoulde be conatains at least two (for login and for pasword) parameters - " //NOSONAR
+                     + params[1]); //NOSONAR
             return;
          }
          
@@ -209,7 +215,8 @@ public class BackupConsole
             
             if (para.length != 2)
             {
-               System.out.println(INCORRECT_PARAM + "From parameters is incorect, shoulde be as \"name=value\"  - " + fParam);
+               System.out.println(INCORRECT_PARAM + "From parameters is incorect, shoulde be as \"name=value\"  - "
+                        + fParam); //NOSONAR
                return;
             }
             
@@ -222,12 +229,12 @@ public class BackupConsole
       {
          if (login == null)
          {
-            System.out.println(INCORRECT_PARAM + "There is no specific Login:Password in url parameter - " + sUrl);
+            System.out.println(INCORRECT_PARAM + "There is no specific Login:Password in url parameter - " + sUrl); //NOSONAR
             return;
          }
          else if (!login.matches("[^:]+:[^:]+"))
          {
-            System.out.println(INCORRECT_PARAM + "There is incorrect Login:Password parameter - " + login);
+            System.out.println(INCORRECT_PARAM + "There is incorrect Login:Password parameter - " + login); //NOSONAR
             return;
          }
       }
@@ -253,7 +260,7 @@ public class BackupConsole
       // commands
       if (curArg == args.length)
       {
-         System.out.println(INCORRECT_PARAM + "There is no command parameter.");
+         System.out.println(INCORRECT_PARAM + "There is no command parameter."); //NOSONAR
          return;
       }
       String command = args[curArg++];
@@ -289,7 +296,7 @@ public class BackupConsole
 
             if (curArg == args.length)
             {
-               System.out.println(client.startBackUp(repositoryName, workspaceName, backupDir));
+               System.out.println(client.startBackUp(repositoryName, workspaceName, backupDir)); //NOSONAR
             }
             else
             {
@@ -302,40 +309,40 @@ public class BackupConsole
                }
                catch (NumberFormatException e)
                {
-                  System.out.println(INCORRECT_PARAM + "Incemental job period is not didgit - " + e.getMessage());
+                  System.out.println(INCORRECT_PARAM + "Incemental job period is not didgit - " + e.getMessage()); //NOSONAR
                   return;
                }
 
                if (curArg < args.length)
                {
-                  System.out.println(TOO_MANY_PARAMS);
+                  System.out.println(TOO_MANY_PARAMS); //NOSONAR
                   return;
                }
-               System.out.println(client.startIncrementalBackUp(repositoryName, workspaceName, backupDir, inc));
+               System.out.println(client.startIncrementalBackUp(repositoryName, workspaceName, backupDir, inc)); //NOSONAR
             }
          }
          else if (command.equalsIgnoreCase("stop"))
          {
             if (curArg == args.length)
             {
-               System.out.println(INCORRECT_PARAM + "There is no backup identifier parameter.");
+               System.out.println(INCORRECT_PARAM + "There is no backup identifier parameter."); //NOSONAR
                return;
             }
             String backupId = args[curArg++];
 
             if (curArg < args.length)
             {
-               System.out.println(TOO_MANY_PARAMS);
+               System.out.println(TOO_MANY_PARAMS); //NOSONAR
                return;
             }
-            System.out.println(client.stop(backupId));
+            System.out.println(client.stop(backupId)); //NOSONAR
          }
          else if (command.equalsIgnoreCase("drop"))
          {
 
             if (curArg == args.length)
             {
-               System.out.println(INCORRECT_PARAM + "There is no path to workspace or force-session-close parameter.");
+               System.out.println(INCORRECT_PARAM + "There is no path to workspace or force-session-close parameter."); //NOSONAR
                return;
             }
 
@@ -358,16 +365,16 @@ public class BackupConsole
 
             if (curArg < args.length)
             {
-               System.out.println(TOO_MANY_PARAMS);
+               System.out.println(TOO_MANY_PARAMS); //NOSONAR
                return;
             }
-            System.out.println(client.drop(isForce, repositoryName, workspaceName));
+            System.out.println(client.drop(isForce, repositoryName, workspaceName)); //NOSONAR
          }
          else if (command.equalsIgnoreCase("status"))
          {
             if (curArg == args.length)
             {
-               System.out.println(INCORRECT_PARAM + "There is no backup identifier parameter.");
+               System.out.println(INCORRECT_PARAM + "There is no backup identifier parameter."); //NOSONAR
                return;
             }
 
@@ -375,19 +382,19 @@ public class BackupConsole
 
             if (curArg < args.length)
             {
-               System.out.println(TOO_MANY_PARAMS);
+               System.out.println(TOO_MANY_PARAMS); //NOSONAR
                return;
             }
-            System.out.println(client.status(backupId));
+            System.out.println(client.status(backupId)); //NOSONAR
          }
          else if (command.equalsIgnoreCase("info"))
          {
             if (curArg < args.length)
             {
-               System.out.println(TOO_MANY_PARAMS);
+               System.out.println(TOO_MANY_PARAMS); //NOSONAR
                return;
             }
-            System.out.println(client.info());
+            System.out.println(client.info()); //NOSONAR
          }
          else if (command.equalsIgnoreCase("restores"))
          {
@@ -401,17 +408,17 @@ public class BackupConsole
 
             if (curArg < args.length)
             {
-               System.out.println(TOO_MANY_PARAMS);
+               System.out.println(TOO_MANY_PARAMS); //NOSONAR
                return;
             }
 
-            System.out.println(client.restores(repositoryName, workspaceName));
+            System.out.println(client.restores(repositoryName, workspaceName)); //NOSONAR
          }
          else if (command.equalsIgnoreCase("list"))
          {
             if (curArg == args.length)
             {
-               System.out.println(client.list());
+               System.out.println(client.list()); //NOSONAR
             }
             else
             {
@@ -421,14 +428,14 @@ public class BackupConsole
                {
                   if (curArg < args.length)
                   {
-                     System.out.println(TOO_MANY_PARAMS);
+                     System.out.println(TOO_MANY_PARAMS); //NOSONAR
                      return;
                   }
-                  System.out.println(client.listCompleted());
+                  System.out.println(client.listCompleted()); //NOSONAR
                }
                else
                {
-                  System.out.println(INCORRECT_PARAM + "There is no 'completed' parameter - " + complated);
+                  System.out.println(INCORRECT_PARAM + "There is no 'completed' parameter - " + complated); //NOSONAR
                   return;
                }
             }
@@ -469,7 +476,7 @@ public class BackupConsole
 
                if (curArg == args.length)
                {
-                  System.out.println(INCORRECT_PARAM + "Should be more parameters.");
+                  System.out.println(INCORRECT_PARAM + "Should be more parameters."); //NOSONAR
                   return;
                }
             }
@@ -487,14 +494,14 @@ public class BackupConsole
 
                if (curArg < args.length)
                {
-                  System.out.println(TOO_MANY_PARAMS);
+                  System.out.println(TOO_MANY_PARAMS); //NOSONAR
                   return;
                }
 
                //5. restore remove-exists <backup_id>
                //11. restore <backup_id>
-               System.out.println(client.restore(repositoryName, workspaceName, backupId, null,
-                        backupSetPath, removeExists));
+               System.out.println(client.restore(repositoryName, workspaceName, backupId, null, backupSetPath,
+                        removeExists)); //NOSONAR
                return;
             }
             //check /repo/ws or /repo
@@ -514,21 +521,21 @@ public class BackupConsole
 
                if (curArg < args.length)
                {
-                  System.out.println(INCORRECT_PARAM + "Should be less parameters : " + parameter);
+                  System.out.println(INCORRECT_PARAM + "Should be less parameters : " + parameter); //NOSONAR
                   return;
                }
 
                //6. restore remove-exists <backup_set_path>
                //12. restore <backup_set_path>
                System.out.println(client.restore(repositoryName, workspaceName, backupId, null, backupSetPath,
-                        removeExists));
+                        removeExists)); //NOSONAR
                return;
             }
 
             // check backup_id or backup_set_path
             if (curArg == args.length)
             {
-               System.out.println(INCORRECT_PARAM + "There is no backup identifier or backup set path parameter.");
+               System.out.println(INCORRECT_PARAM + "There is no backup identifier or backup set path parameter."); //NOSONAR
                return;
             }
             parameter = args[curArg++];
@@ -544,7 +551,7 @@ public class BackupConsole
 
             if (curArg == args.length)
             {
-               System.out.println(INCORRECT_PARAM + "There is no path to config file parameter.");
+               System.out.println(INCORRECT_PARAM + "There is no path to config file parameter."); //NOSONAR
                return;
             }
             String pathToConf = args[curArg++];
@@ -552,13 +559,13 @@ public class BackupConsole
             File conf = new File(pathToConf);
             if (!conf.exists())
             {
-               System.out.println(" File " + pathToConf + " do not exist. Check the path.");
+               System.out.println(" File " + pathToConf + " do not exist. Check the path."); //NOSONAR
                return;
             }
 
             if (curArg < args.length)
             {
-               System.out.println(TOO_MANY_PARAMS);
+               System.out.println(TOO_MANY_PARAMS); //NOSONAR
                return;
             }
 
@@ -572,23 +579,23 @@ public class BackupConsole
             9. restore <repo/ws> <backup_set_path> <pathToConfigFile>
             10. restore <repo>    <backup_set_path> <pathToConfigFile>
             */
-            System.out.println(client.restore(repositoryName, workspaceName, backupId, new FileInputStream(conf),
+            System.out.println(client.restore(repositoryName, workspaceName, backupId, new FileInputStream(conf), //NOSONAR
                      backupSetPath, removeExists));
          }
          else
          {
-            System.out.println("Unknown command <" + command + ">");
+            System.out.println("Unknown command <" + command + ">"); //NOSONAR
          }
 
       }
       catch (IOException e)
       {
-         System.out.println("ERROR: " + e.getMessage());
+         System.out.println("ERROR: " + e.getMessage()); //NOSONAR
          e.printStackTrace();
       }
       catch (BackupExecuteException e)
       {
-         System.out.println("ERROR: " + e.getMessage());
+         System.out.println("ERROR: " + e.getMessage()); //NOSONAR
          e.printStackTrace();
       }
 
@@ -669,7 +676,7 @@ public class BackupConsole
    {
       if (curArg == args.length)
       {
-         System.out.println(INCORRECT_PARAM + "There is no path to workspace parameter.");
+         System.out.println(INCORRECT_PARAM + "There is no path to workspace parameter."); //NOSONAR
          return null;
       }
       // make correct path
@@ -678,7 +685,7 @@ public class BackupConsole
 
       if ( !repWS.matches("[/][^/]+") && !repWS.matches("[/][^/]+[/][^/]+"))
       {
-         System.out.println(INCORRECT_PARAM + "There is incorrect path to workspace parameter: " + repWS);
+         System.out.println(INCORRECT_PARAM + "There is incorrect path to workspace parameter: " + repWS); //NOSONAR
          return null;
       }
       else
