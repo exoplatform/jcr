@@ -163,65 +163,35 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    private void acceptChanges(final Set<String> removedNodes, final Set<String> addedNodes,
       final Map<String, List<ItemState>> updatedNodes, ItemState itemState)
    {
-      {
-         String uuid =
-            itemState.isNode() ? itemState.getData().getIdentifier() : itemState.getData().getParentIdentifier();
+      String uuid =
+         itemState.isNode() ? itemState.getData().getIdentifier() : itemState.getData().getParentIdentifier();
 
+      if (itemState.isNode())
+      {
          if (itemState.isAdded())
          {
-            if (itemState.isNode())
-            {
-               addedNodes.add(uuid);
-            }
-            else
-            {
-               if (!addedNodes.contains(uuid))
-               {
-                  createNewOrAdd(uuid, itemState, updatedNodes);
-               }
-            }
+            addedNodes.add(uuid);
          }
-         else if (itemState.isRenamed())
-         {
-            if (itemState.isNode())
-            {
-               addedNodes.add(uuid);
-            }
-            else
-            {
-               createNewOrAdd(uuid, itemState, updatedNodes);
-            }
-         }
-         else if (itemState.isUpdated())
-         {
-            createNewOrAdd(uuid, itemState, updatedNodes);
-         }
-         else if (itemState.isMixinChanged())
+         else if (itemState.isRenamed() || itemState.isUpdated() || itemState.isMixinChanged())
          {
             createNewOrAdd(uuid, itemState, updatedNodes);
          }
          else if (itemState.isDeleted())
          {
-            if (itemState.isNode())
+            addedNodes.remove(uuid);
+            removedNodes.add(uuid);
+
+            // remove all changes after node remove
+            updatedNodes.remove(uuid);
+         }
+      }
+      else
+      {
+         if (itemState.isAdded() || itemState.isUpdated() || itemState.isDeleted())
+         {
+            if (!addedNodes.contains(uuid) && !removedNodes.contains(uuid) && !updatedNodes.containsKey(uuid))
             {
-               if (addedNodes.contains(uuid))
-               {
-                  addedNodes.remove(uuid);
-                  removedNodes.remove(uuid);
-               }
-               else
-               {
-                  removedNodes.add(uuid);
-               }
-               // remove all changes after node remove
-               updatedNodes.remove(uuid);
-            }
-            else
-            {
-               if (!removedNodes.contains(uuid) && !addedNodes.contains(uuid))
-               {
-                  createNewOrAdd(uuid, itemState, updatedNodes);
-               }
+               createNewOrAdd(uuid, itemState, updatedNodes);
             }
          }
       }
