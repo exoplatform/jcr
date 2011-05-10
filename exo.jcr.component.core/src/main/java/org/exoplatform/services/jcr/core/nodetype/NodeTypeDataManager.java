@@ -100,6 +100,19 @@ public interface NodeTypeDataManager
       InternalQName[] mixinTypes) throws RepositoryException;
 
    /**
+    * Found node definition based on node name and node type. In case when
+    * suitable node definition not found first occurred residual definition will
+    * be returned.
+    *  
+    * @param nodeName
+    * @param parentNodeType
+    * @param parentMixinTypes
+    * @return
+    */
+   NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName nodeType,
+      InternalQName parentNodeType, InternalQName[] parentMixinTypes) throws RepositoryException;
+
+   /**
     * Returns the <i>direct</i> subtypes of this node type in the node type
     * inheritance hierarchy, that is, those which actually declared this node
     * type in their list of supertypes.

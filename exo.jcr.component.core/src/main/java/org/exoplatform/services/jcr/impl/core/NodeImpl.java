@@ -275,7 +275,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
          primaryTypeName = nodeDef.getDefaultPrimaryType();
       // try to make new node
-      return doAddNode(parent, name, primaryTypeName);
+      return doAddNode(parent, name, primaryTypeName, nodeDef);
 
    }
 
@@ -313,7 +313,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       InternalQName ptName = locationFactory.parseJCRName(nodeTypeName).getInternalName();
 
       // try to make new node
-      return doAddNode(parent, name, ptName);
+      return doAddNode(parent, name, ptName, null);
    }
 
    /**
@@ -835,8 +835,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             NodeData parent = (NodeData)dataManager.getItemData(getParentIdentifier());
 
             this.definition =
-               nodeTypesHolder.getChildNodeDefinition(getInternalName(), parent.getPrimaryTypeName(),
-                  parent.getMixinTypeNames());
+               nodeTypesHolder.getChildNodeDefinition(getInternalName(), nodeData().getPrimaryTypeName(),
+                  parent.getPrimaryTypeName(), parent.getMixinTypeNames());
 
             if (definition == null)
             {
@@ -1516,8 +1516,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
 
       this.definition =
-         session.getWorkspace().getNodeTypesHolder()
-            .getChildNodeDefinition(getInternalName(), parent.getPrimaryTypeName(), parent.getMixinTypeNames());
+         session
+            .getWorkspace()
+            .getNodeTypesHolder()
+            .getChildNodeDefinition(getInternalName(), nodeData().getPrimaryTypeName(), parent.getPrimaryTypeName(),
+               parent.getMixinTypeNames());
 
       if (definition == null)
       {
@@ -2374,8 +2377,12 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
       // Check if node is not protected
       NodeDefinitionData childNodeDefinition =
-         session.getWorkspace().getNodeTypesHolder()
-            .getChildNodeDefinition(name, nodeData().getPrimaryTypeName(), nodeData().getMixinTypeNames());
+         session
+            .getWorkspace()
+            .getNodeTypesHolder()
+            .getChildNodeDefinition(name, primaryTypeName, nodeData().getPrimaryTypeName(),
+               nodeData().getMixinTypeNames());
+
       if (childNodeDefinition == null)
          throw new ConstraintViolationException("Can't find child node definition for "
             + sysLocFactory.createJCRName(name).getAsString() + " in " + getPath());
@@ -2825,13 +2832,22 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       return dataManager.getChildNodesCount(nodeData());
    }
 
-   private int getNextChildIndex(InternalQName nameToAdd, NodeData parentNode) throws RepositoryException,
-      ItemExistsException
+   /**
+     * Calculates next child node index. Is used existed node definition, if no - get one based on node name
+     * and node type. 
+     */
+   private int getNextChildIndex(InternalQName nameToAdd, InternalQName primaryTypeName, NodeData parentNode,
+      NodeDefinitionData def) throws RepositoryException, ItemExistsException
    {
-
-      NodeDefinitionData def =
-         session.getWorkspace().getNodeTypesHolder()
-            .getChildNodeDefinition(nameToAdd, parentNode.getPrimaryTypeName(), parentNode.getMixinTypeNames());
+      if (def == null)
+      {
+         def =
+            session
+               .getWorkspace()
+               .getNodeTypesHolder()
+               .getChildNodeDefinition(nameToAdd, primaryTypeName, parentNode.getPrimaryTypeName(),
+                  parentNode.getMixinTypeNames());
+      }
 
       boolean allowSns = def.isAllowsSameNameSiblings();
 
@@ -2853,27 +2869,16 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       };
 
       return ind;
-
-      //      int ind = 0;
-      //      for (NodeData sibling : siblings)
-      //      {
-      //         if (sibling.getQPath().getName().equals(nameToAdd))
-      //         {
-      //            if (allowSns)
-      //               ind++;
-      //            else
-      //               throw new ItemExistsException("The node " + nameToAdd + " already exists in " + getPath()
-      //                  + " and same name sibling is not allowed ");
-      //         }
-      //      }
-      //      return ind + 1;
-
    }
 
-   private NodeImpl doAddNode(NodeImpl parentNode, InternalQName name, InternalQName primaryTypeName)
-      throws ItemExistsException, RepositoryException, ConstraintViolationException, VersionException, LockException
+   /**
+    * Do add node internally. If nodeDef not null it is used in getNextChildIndex() method to
+    * avoid double calculation.
+    */
+   private NodeImpl doAddNode(NodeImpl parentNode, InternalQName name, InternalQName primaryTypeName,
+      NodeDefinitionData nodeDef) throws ItemExistsException, RepositoryException, ConstraintViolationException,
+      VersionException, LockException
    {
-
       validateChildNode(name, primaryTypeName);
 
       // Initialize data
@@ -2881,7 +2886,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       String identifier = IdGenerator.generate();
 
       int orderNum = parentNode.getNextChildOrderNum();
-      int index = parentNode.getNextChildIndex(name, parentNode.nodeData());
+      int index = parentNode.getNextChildIndex(name, primaryTypeName, parentNode.nodeData(), nodeDef);
 
       QPath path = QPath.makeChildPath(parentNode.getInternalPath(), name, index);
 
@@ -2905,7 +2910,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          dataManager.updateItemState(autoCreatedState);
       }
-      // addAutoCreatedItems(node.nodeData(), primaryTypeName);
 
       if (LOG.isDebugEnabled())
          LOG.debug("new node : " + node.getPath() + " name: " + " primaryType: " + node.getPrimaryNodeType().getName()

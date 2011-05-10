@@ -184,7 +184,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
     * @throws RepositoryException 
     */
    public NodeDefinitionData[] getAllChildNodeDefinitions(final InternalQName... nodeTypeNames)
-
    {
       final Collection<NodeDefinitionData> defsAny = new ArrayList<NodeDefinitionData>();
       final HashMap<InternalQName, NodeDefinitionData> defs = new HashMap<InternalQName, NodeDefinitionData>();
@@ -224,6 +223,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       defsAny.addAll(defs.values());
 
       return defsAny.toArray(new NodeDefinitionData[defsAny.size()]);
+
    }
 
    /**
@@ -299,16 +299,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public NodeDefinitionData getChildNodeDefinition(final InternalQName nodeName, final InternalQName... nodeTypeNames)
       throws RepositoryException
    {
-
-      NodeDefinitionData ndResidual = this.nodeTypeRepository.getDefaultChildNodeDefinition(nodeName, nodeTypeNames);
-
-      if (ndResidual == null && !Constants.JCR_ANY_NAME.equals(nodeName))
-      {
-         ndResidual = getChildNodeDefinition(Constants.JCR_ANY_NAME, nodeTypeNames);
-      }
-
-      return ndResidual;
-
+      return this.nodeTypeRepository.getDefaultChildNodeDefinition(nodeName, nodeTypeNames);
    }
 
    /**
@@ -318,19 +309,53 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public NodeDefinitionData getChildNodeDefinition(final InternalQName nodeName, final InternalQName primaryNodeType,
       final InternalQName[] mixinTypes) throws RepositoryException
    {
+      return getChildNodeDefinition(nodeName, getNodeTypeNames(primaryNodeType, mixinTypes));
+   }
 
-      if (mixinTypes != null)
+   /**
+    * {@inheritDoc}
+    */
+   public NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName nodeType,
+      InternalQName parentNodeType, InternalQName[] parentMixinTypes) throws RepositoryException
+   {
+      NodeDefinitionData[] defs = getAllChildNodeDefinitions(getNodeTypeNames(parentNodeType, parentMixinTypes));
+
+      NodeDefinitionData residualDef = null;
+      NodeDefinitionData firstResidualDef = null;
+
+      outer : for (NodeDefinitionData nodeDef : defs)
       {
-         final InternalQName[] nts = new InternalQName[mixinTypes.length + 1];
-         nts[0] = primaryNodeType;
-         for (int i = 0; i < mixinTypes.length; i++)
+         if (nodeDef.getName().equals(nodeName))
          {
-            nts[i + 1] = mixinTypes[i];
+            return nodeDef;
          }
-         return getChildNodeDefinition(nodeName, nts);
+         else if (nodeDef.isResidualSet())
+         {
+            // store first residual definition to be able to return
+            if (firstResidualDef == null)
+            {
+               firstResidualDef = nodeDef;
+            }
+
+            // check required primary types
+            for (InternalQName requiredPrimaryType : nodeDef.getRequiredPrimaryTypes())
+            {
+               if (!isNodeType(requiredPrimaryType, nodeType))
+               {
+                  continue outer;
+               }
+            }
+
+            // when there are several suitable definitions take the most older
+            if (residualDef == null
+               || isNodeType(residualDef.getRequiredPrimaryTypes()[0], nodeDef.getRequiredPrimaryTypes()[0]))
+            {
+               residualDef = nodeDef;
+            }
+         }
       }
 
-      return getChildNodeDefinition(nodeName, primaryNodeType);
+      return residualDef != null ? residualDef : firstResidualDef;
    }
 
    /**
@@ -1008,5 +1033,19 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.nodeTypeRepository.addNodeType(recipientDefinition, volatileNodeTypes);
 
       return changesLog;
+   }
+
+   private InternalQName[] getNodeTypeNames(final InternalQName primaryNodeType, final InternalQName[] mixinTypes)
+      throws RepositoryException
+   {
+      InternalQName[] ntn = new InternalQName[1 + (mixinTypes == null ? 0 : mixinTypes.length)];
+      ntn[0] = primaryNodeType;
+
+      if (mixinTypes != null)
+      {
+         System.arraycopy(mixinTypes, 0, ntn, 1, mixinTypes.length);
+      }
+
+      return ntn;
    }
 }

@@ -228,7 +228,8 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
 
       NodeData parent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
       NodeDefinitionData ndef =
-         ntManager.getChildNodeDefinition(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames());
+         ntManager.getChildNodeDefinition(qname, node.getPrimaryTypeName(), parent.getPrimaryTypeName(),
+            parent.getMixinTypeNames());
       if (ndef == null)
       {
          throw new ConstraintViolationException("Definition not found for " + qname.getAsString());

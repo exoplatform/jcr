@@ -536,7 +536,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          // current C in the workspace will be left unchanged.
 
          int action =
-            nodeTypeDataManager.getChildNodeDefinition(qname, currentNode().getPrimaryTypeName(),
+            nodeTypeDataManager.getChildNodeDefinition(qname, frozen.getPrimaryTypeName(),
+               currentNode().getPrimaryTypeName(),
                currentNode().getMixinTypeNames()).getOnParentVersion();
 
          if (log.isDebugEnabled())
