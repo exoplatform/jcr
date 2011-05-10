@@ -266,15 +266,17 @@ public class TestImportVersionedChild extends JcrAPIBaseTest
          assertTrue(vhPicture.isNodeType("nt:versionedChild"));
 
          PlainChangesLog changesLogDelete = new PlainChangesLogImpl();
-         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture.getProperty("jcr:primaryType"))
-            .getData()));
          changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture
             .getProperty("jcr:childVersionHistory")).getData()));
-         for (ItemState itemState : changesLogDelete.getAllStates())
-         {
-            dataManager.delete(itemState.getData(), itemState.getAncestorToSave());
-         }
-         session.save();
+         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture.getProperty("jcr:primaryType"))
+            .getData()));
+         changesLogDelete.add(ItemState.createDeletedState((vhPicture.getData())));
+
+         picture = wc1.getNode("medias").getNode("picture");
+         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)picture.getProperty("jcr:mixinTypes"))
+            .getData()));
+
+         dataManager.getTransactManager().save(changesLogDelete);
       }
    }
 
@@ -1039,13 +1041,13 @@ public class TestImportVersionedChild extends JcrAPIBaseTest
             .getData()));
          changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture
             .getProperty("jcr:childVersionHistory")).getData()));
+         changesLogDelete.add(ItemState.createDeletedState((vhPicture.getData())));
 
-         for (ItemState itemState : changesLogDelete.getAllStates())
-         {
-            dataManager.delete(itemState.getData(), itemState.getAncestorToSave());
-         }
+         picture = wc1.getNode("medias").getNode("picture");
+         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)picture.getProperty("jcr:mixinTypes"))
+            .getData()));
 
-         session.save();
+         dataManager.getTransactManager().save(changesLogDelete);
       }
    }
 
