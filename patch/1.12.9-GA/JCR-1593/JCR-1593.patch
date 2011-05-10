@@ -1,0 +1,560 @@
+Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestMove.java
+===================================================================
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestMove.java	(revision 4038)
++++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestMove.java	(working copy)
+@@ -40,6 +40,8 @@
+ public class TestMove extends BaseStandaloneTest
+ {
+ 
++   final static String host = "http://localhost:8080";
++
+    public void testMoveForNonCollectionSingleWorkspace() throws Exception
+    {
+       String content = TestUtils.getFileContent();
+@@ -48,8 +50,8 @@
+       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+       String destFilename = TestUtils.getFileName();
+       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+-      headers.add(ExtHttpHeaders.DESTINATION, getPathWS() + destFilename);
+-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, "", headers, null);
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
++      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+       assertEquals(HTTPStatus.CREATED, response.getStatus());
+       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
+       Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));
+@@ -71,8 +73,8 @@
+       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+       String destFilename = TestUtils.getFileName();
+       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+-      headers.add(ExtHttpHeaders.DESTINATION, getPathDestWS() + destFilename);
+-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, "", headers, null);
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathDestWS() + destFilename);
++      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+       assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
+       assertTrue(destSession.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
+       Node nodeDest = destSession.getRootNode().getNode(TextUtil.relativizePath(destFilename));
+@@ -85,6 +87,101 @@
+       assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(filename)));
+    }
+ 
++   /**
++    * Testing for correct destination header parsing in MOVE method.
++    * We pass a path which contains escaped space - "%20" 
++    * and escaped space with quote symbol "%20'"
++    * @throws Exception
++    */
++   public void testDestinationHeaderParsing() throws Exception
++   {
++      String content = TestUtils.getFileContent();
++      String filename = TestUtils.getFileName();
++      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
++      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
++
++      String destFilename = TestUtils.getFileName() + "%20test";
++
++      // prepare headers
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
++
++      // execute the query
++      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
++      // check if operation completed successfully, we expect a new resource to be created
++      assertEquals(HTTPStatus.CREATED, response.getStatus());
++
++      filename = destFilename;
++
++      destFilename = TestUtils.getFileName() + "%20'test";
++
++      // prepare headers
++      headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
++
++      // execute the query
++      response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
++      // check if operation completed successfully, we expect a new resource to be created
++      assertEquals(HTTPStatus.CREATED, response.getStatus());
++
++   }
++
++   /**
++    * Testing for correct response after MOVE a resource to the destination,
++    * where another resource already existed
++    * For more info see <a href=http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE>this</a>.
++    * @throws Exception
++    */
++   public void testNoContentResponses() throws Exception
++   {
++      String content = TestUtils.getFileContent();
++      String filename = TestUtils.getFileName();
++      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
++      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
++
++      String destFilename = TestUtils.getFileName();
++      inputStream = new ByteArrayInputStream(content.getBytes());
++      TestUtils.addContent(session, destFilename, inputStream, defaultFileNodeType, "");
++
++      // prepare headers
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
++      headers.add(ExtHttpHeaders.OVERWRITE, "T");
++
++      // execute the query
++      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
++      // check if operation completed successfully, we expect a new resource to be created
++      assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
++
++   }
++
++   /**
++    * Testing for correct destination header parsing using "https" 
++    * instead of usual "http" scheme.
++    * @throws Exception
++    */
++   public void testHttpsSchemeInDestinationHeaderParsing() throws Exception
++   {
++      String httpsHost = "https://localhost:8080";
++
++      String content = TestUtils.getFileContent();
++      String filename = TestUtils.getFileName();
++      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
++      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
++
++      String destFilename = TestUtils.getFileName();
++
++      // prepare headers
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.DESTINATION, httpsHost + getPathWS() + destFilename);
++
++      // execute the query
++      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
++      // check if operation completed successfully, we expect a new resource to be created
++      assertEquals(HTTPStatus.CREATED, response.getStatus());
++
++   }
++
+    @Override
+    protected String getRepositoryName()
+    {
+Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestCopy.java
+===================================================================
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestCopy.java	(revision 4038)
++++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestCopy.java	(working copy)
+@@ -39,6 +39,7 @@
+  */
+ public class TestCopy extends BaseStandaloneTest
+ {
++   static final String host = "http://localhost:8080";
+ 
+    public void testeCopyForNonCollectionSingleWorkSpace() throws Exception
+    {
+@@ -48,8 +49,8 @@
+       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+       String destFilename = TestUtils.getFileName();
+       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+-      headers.add(ExtHttpHeaders.DESTINATION, getPathWS() + destFilename);
+-      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, "", headers, null);
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
++      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
+       assertEquals(HTTPStatus.CREATED, response.getStatus());
+       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
+       Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));
+@@ -78,8 +79,8 @@
+       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+       String destFilename = TestUtils.getFileName();
+       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+-      headers.add(ExtHttpHeaders.DESTINATION, getPathDestWS() + destFilename);
+-      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, "", headers, null);
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathDestWS() + destFilename);
++      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
+       assertEquals(HTTPStatus.CREATED, response.getStatus());
+ 
+       assertTrue(destSession.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
+@@ -101,6 +102,101 @@
+ 
+    }
+ 
++   /**
++    * Testing for correct destination header parsing in COPY method.
++    * We pass a path which contains escaped space - "%20" 
++    * and escaped space with quote symbol "%20'"
++    * @throws Exception
++    */
++   public void testDestinationHeaderParsing() throws Exception
++   {
++      String content = TestUtils.getFileContent();
++      String filename = TestUtils.getFileName();
++      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
++      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
++
++      String destFilename = TestUtils.getFileName() + "%20test";
++
++      // prepare headers
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
++
++      // execute the query
++      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
++      // check if operation completed successfully, we expect a new resource to be created
++      assertEquals(HTTPStatus.CREATED, response.getStatus());
++
++      filename = destFilename;
++
++      destFilename = TestUtils.getFileName() + "%20'test";
++
++      // prepare headers
++      headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
++
++      // execute the query
++      response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
++      // check if operation completed successfully, we expect a new resource to be created
++      assertEquals(HTTPStatus.CREATED, response.getStatus());
++
++   }
++
++   /**
++    * Testing for correct response after COPY a resource to the destination,
++    * where another resource already existed
++    * For more info see <a href=http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE>this</a>.
++    * @throws Exception
++    */
++   public void testNoContentResponses() throws Exception
++   {
++      String content = TestUtils.getFileContent();
++      String filename = TestUtils.getFileName();
++      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
++      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
++
++      String destFilename = TestUtils.getFileName();
++      inputStream = new ByteArrayInputStream(content.getBytes());
++      TestUtils.addContent(session, destFilename, inputStream, defaultFileNodeType, "");
++
++      // prepare headers
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
++      headers.add(ExtHttpHeaders.OVERWRITE, "T");
++
++      // execute the query
++      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
++      // check if operation completed successfully, we expect a new resource to be created
++      assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
++
++   }
++
++   /**
++    * Testing for correct destination header parsing using "https" 
++    * instead of usual "http" scheme.
++    * @throws Exception
++    */
++   public void testHttpsSchemeInDestinationHeaderParsing() throws Exception
++   {
++      String httpsHost = "https://localhost:8080";
++
++      String content = TestUtils.getFileContent();
++      String filename = TestUtils.getFileName();
++      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
++      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
++
++      String destFilename = TestUtils.getFileName();
++
++      // prepare headers
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(ExtHttpHeaders.DESTINATION, httpsHost + getPathWS() + destFilename);
++
++      // execute the query
++      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
++      // check if operation completed successfully, we expect a new resource to be created
++      assertEquals(HTTPStatus.CREATED, response.getStatus());
++
++   }
++
+    @Override
+    protected String getRepositoryName()
+    {
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 4038)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(working copy)
+@@ -71,6 +71,7 @@
+ import java.io.InputStream;
+ import java.lang.annotation.Annotation;
+ import java.lang.reflect.Method;
++import java.net.URI;
+ import java.net.URLEncoder;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+@@ -370,6 +371,9 @@
+       @HeaderParam(ExtHttpHeaders.OVERWRITE) String overwriteHeader, @Context UriInfo uriInfo, HierarchicalProperty body)
+    {
+ 
++      // to trace if an item on destination path exists
++      boolean itemExisted = false;
++
+       if (log.isDebugEnabled())
+       {
+          log.debug("COPY " + repoName + "/" + repoPath);
+@@ -380,18 +384,27 @@
+       try
+       {
+          String serverURI = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).build().toString();
++         URI dest = new URI(destinationHeader);
++         URI base = new URI(serverURI);
+ 
+-         destinationHeader = TextUtil.unescape(destinationHeader, '%');
++         String destPath = dest.getPath();
++         int repoIndex = destPath.indexOf(repoName);
+ 
+-         if (!destinationHeader.startsWith(serverURI))
++         // check if destination corresponds to base uri
++         // if the destination is on another server
++         // or destination header is malformed
++         // we return BAD_GATEWAY(502) HTTP status
++         // more info here http://www.webdav.org/specs/rfc2518.html#METHOD_COPY
++         if (!base.getHost().equals(dest.getHost()) || repoIndex == -1)
+          {
+             return Response.status(HTTPStatus.BAD_GATEWAY).entity("Bad Gateway").build();
+          }
+ 
++         destPath = normalizePath(dest.getPath().substring(repoIndex + repoName.length() + 1));
++
+          String srcWorkspace = workspaceName(repoPath);
+          String srcNodePath = path(repoPath);
+ 
+-         String destPath = destinationHeader.substring(serverURI.length() + 1);
+          String destWorkspace = workspaceName(destPath);
+          String destNodePath = path(destPath);
+ 
+@@ -403,7 +416,8 @@
+ 
+          if (overwrite)
+          {
+-            delete(repoName, destPath, lockTokenHeader, ifHeader);
++            Response delResponse = delete(repoName, destPath, lockTokenHeader, ifHeader);
++            itemExisted = (delResponse.getStatus() == HTTPStatus.NO_CONTENT);
+          }
+          else
+          {
+@@ -422,11 +436,11 @@
+             if (srcWorkspace.equals(destWorkspace))
+             {
+                Session session = session(repoName, destWorkspace, lockTokens);
+-               return new CopyCommand().copy(session, srcNodePath, destNodePath);
++               return new CopyCommand(itemExisted).copy(session, srcNodePath, destNodePath);
+             }
+ 
+             Session destSession = session(repoName, destWorkspace, lockTokens);
+-            return new CopyCommand().copy(destSession, srcWorkspace, srcNodePath, destNodePath);
++            return new CopyCommand(itemExisted).copy(destSession, srcWorkspace, srcNodePath, destNodePath);
+ 
+          }
+          else if (depth.getIntValue() == 0)
+@@ -748,6 +762,9 @@
+       @HeaderParam(ExtHttpHeaders.OVERWRITE) String overwriteHeader, @Context UriInfo uriInfo, HierarchicalProperty body)
+    {
+ 
++      // to trace if an item on destination path exists
++      boolean itemExisted = false;
++
+       if (log.isDebugEnabled())
+       {
+          log.debug("MOVE " + repoName + "/" + repoPath);
+@@ -759,14 +776,26 @@
+       {
+          String serverURI = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).build().toString();
+ 
+-         destinationHeader = TextUtil.unescape(destinationHeader, '%');
++         URI dest = new URI(destinationHeader);
++         URI base = new URI(serverURI);
+ 
++         String destPath = dest.getPath();
++         int repoIndex = destPath.indexOf(repoName);
++
++         // check if destination corresponds to base uri
++         // if the destination is on another server
++         // or destination header is malformed
++         // we return BAD_GATEWAY(502) HTTP status
++         // more info here http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE
++         if (!base.getHost().equals(dest.getHost()) || repoIndex == -1)
++
+          if (!destinationHeader.startsWith(serverURI))
+          {
+             return Response.status(HTTPStatus.BAD_GATEWAY).entity("Bad Gateway").build();
+          }
+ 
+-         String destPath = destinationHeader.substring(serverURI.length() + 1);
++         destPath = normalizePath(dest.getPath().substring(repoIndex + repoName.length() + 1));
++
+          String destWorkspace = workspaceName(destPath);
+          String destNodePath = path(destPath);
+ 
+@@ -781,7 +810,8 @@
+ 
+          if (overwrite)
+          {
+-            delete(repoName, destPath, lockTokenHeader, ifHeader);
++            Response delResponse = delete(repoName, destPath, lockTokenHeader, ifHeader);
++            itemExisted = (delResponse.getStatus() == HTTPStatus.NO_CONTENT);
+          }
+          else
+          {
+@@ -801,12 +831,12 @@
+             if (srcWorkspace.equals(destWorkspace))
+             {
+                Session session = session(repoName, srcWorkspace, lockTokens);
+-               return new MoveCommand().move(session, srcNodePath, destNodePath);
++               return new MoveCommand(itemExisted).move(session, srcNodePath, destNodePath);
+             }
+ 
+             Session srcSession = session(repoName, srcWorkspace, lockTokens);
+             Session destSession = session(repoName, destWorkspace, lockTokens);
+-            return new MoveCommand().move(srcSession, destSession, srcNodePath, destNodePath);
++            return new MoveCommand(itemExisted).move(srcSession, destSession, srcNodePath, destNodePath);
+          }
+          else
+          {
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/MoveCommand.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/MoveCommand.java	(revision 4038)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/MoveCommand.java	(working copy)
+@@ -44,6 +44,12 @@
+    private static CacheControl cacheControl = new CacheControl();
+ 
+    /**
++    * To trace if an item on destination path existed. 
++    */
++
++   final private boolean itemExisted;
++
++   /**
+     * Logger.
+     */
+    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.MoveCommand");
+@@ -54,7 +60,27 @@
+       cacheControl.setNoCache(true);
+    }
+ 
++   public MoveCommand()
++   {
++      this.itemExisted = false;
++   }
++
+    /**
++    * Here we pass info about pre-existence of item on the move
++    * destination path If an item existed, we must respond with NO_CONTENT (204)
++    * HTTP status.
++    * If an item did not exist, we must respond with CREATED (201) HTTP status
++    * More info can be found <a
++    * href=http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE>here</a>.
++    * @param uriBuilder - provide data used in 'location' header
++    * @param itemExisted - indicates if an item existed on copy destination
++    */
++   public MoveCommand(boolean itemExisted)
++   {
++      this.itemExisted = itemExisted;
++   }
++
++   /**
+     * Webdav Move method implementation.
+     * 
+     * @param session current session.
+@@ -66,20 +92,17 @@
+    {
+       try
+       {
+-
+-         boolean itemExisted = session.itemExists(destPath);
+-         if (itemExisted)
+-         {
+-            session.getItem(destPath).remove();
+-         }
+-
+          session.move(srcPath, destPath);
+          session.save();
+ 
++         // If the source resource was successfully moved
++         // to a pre-existing destination resource.
+          if (itemExisted)
+          {
+             return Response.status(HTTPStatus.NO_CONTENT).cacheControl(cacheControl).build();
+          }
++         // If the source resource was successfully moved,
++         // and a new resource was created at the destination.
+          else
+          {
+             return Response.status(HTTPStatus.CREATED).cacheControl(cacheControl).build();
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/CopyCommand.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/CopyCommand.java	(revision 4038)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/CopyCommand.java	(working copy)
+@@ -46,6 +46,31 @@
+    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.CopyCommand");
+ 
+    /**
++    * To trace if an item on destination path existed. 
++    */
++
++   final private boolean itemExisted;
++
++   public CopyCommand()
++   {
++      this.itemExisted = false;
++   }
++
++   /**
++    * Here we pass info about pre-existence of item on the move
++    * destination path If an item existed, we must respond with NO_CONTENT (204)
++    * HTTP status.
++    * If an item did not exist, we must respond with CREATED (201) HTTP status
++    * More info can be found <a
++    * href=http://www.webdav.org/specs/rfc2518.html#METHOD_COPY>here</a>.
++     * 
++    */
++   public CopyCommand(boolean itemExisted)
++   {
++      this.itemExisted = itemExisted;
++   }
++
++   /**
+     * Webdav COPY method implementation for the same workspace.
+     * 
+     * @param destSession destination session
+@@ -58,7 +83,18 @@
+       try
+       {
+          destSession.getWorkspace().copy(sourcePath, destPath);
+-         return Response.status(HTTPStatus.CREATED).build();
++         // If the source resource was successfully moved
++         // to a pre-existing destination resource.
++         if (itemExisted)
++         {
++            return Response.status(HTTPStatus.NO_CONTENT).build();
++         }
++         // If the source resource was successfully moved,
++         // and a new resource was created at the destination.
++         else
++         {
++            return Response.status(HTTPStatus.CREATED).build();
++         }
+       }
+       catch (ItemExistsException e)
+       {
+@@ -97,7 +133,18 @@
+       try
+       {
+          destSession.getWorkspace().copy(sourceWorkspace, sourcePath, destPath);
+-         return Response.status(HTTPStatus.CREATED).build();
++         // If the source resource was successfully moved
++         // to a pre-existing destination resource.
++         if (itemExisted)
++         {
++            return Response.status(HTTPStatus.NO_CONTENT).build();
++         }
++         // If the source resource was successfully moved,
++         // and a new resource was created at the destination.
++         else
++         {
++            return Response.status(HTTPStatus.CREATED).build();
++         }
+       }
+       catch (ItemExistsException e)
+       {

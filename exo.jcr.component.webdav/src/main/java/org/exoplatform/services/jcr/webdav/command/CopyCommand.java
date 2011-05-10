@@ -46,6 +46,31 @@ public class CopyCommand
    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.CopyCommand");
 
    /**
+    * To trace if an item on destination path existed. 
+    */
+
+   final private boolean itemExisted;
+
+   public CopyCommand()
+   {
+      this.itemExisted = false;
+   }
+
+   /**
+    * Here we pass info about pre-existence of item on the move
+    * destination path If an item existed, we must respond with NO_CONTENT (204)
+    * HTTP status.
+    * If an item did not exist, we must respond with CREATED (201) HTTP status
+    * More info can be found <a
+    * href=http://www.webdav.org/specs/rfc2518.html#METHOD_COPY>here</a>.
+     * 
+    */
+   public CopyCommand(boolean itemExisted)
+   {
+      this.itemExisted = itemExisted;
+   }
+
+   /**
     * Webdav COPY method implementation for the same workspace.
     * 
     * @param destSession destination session
@@ -58,7 +83,18 @@ public class CopyCommand
       try
       {
          destSession.getWorkspace().copy(sourcePath, destPath);
-         return Response.status(HTTPStatus.CREATED).build();
+         // If the source resource was successfully moved
+         // to a pre-existing destination resource.
+         if (itemExisted)
+         {
+            return Response.status(HTTPStatus.NO_CONTENT).build();
+         }
+         // If the source resource was successfully moved,
+         // and a new resource was created at the destination.
+         else
+         {
+            return Response.status(HTTPStatus.CREATED).build();
+         }
       }
       catch (ItemExistsException e)
       {
@@ -97,7 +133,18 @@ public class CopyCommand
       try
       {
          destSession.getWorkspace().copy(sourceWorkspace, sourcePath, destPath);
-         return Response.status(HTTPStatus.CREATED).build();
+         // If the source resource was successfully moved
+         // to a pre-existing destination resource.
+         if (itemExisted)
+         {
+            return Response.status(HTTPStatus.NO_CONTENT).build();
+         }
+         // If the source resource was successfully moved,
+         // and a new resource was created at the destination.
+         else
+         {
+            return Response.status(HTTPStatus.CREATED).build();
+         }
       }
       catch (ItemExistsException e)
       {
