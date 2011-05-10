@@ -133,18 +133,23 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
          NodeData srcParent;
 
          destIndex = 1;
+
+         // If ordering is supported by the node
+         // type of the parent node of the new location, then the
+         // newly moved node is appended to the end of the child
+         // node list.
          destOrderNum = destChilds.size() > 0 ? destChilds.get(destChilds.size() - 1).getOrderNumber() + 1 : 0;
 
          if (parent.getIdentifier().equals(node.getParentIdentifier()))
          {
-            // move to another dest
+            // move to same parent
             srcChilds = destChilds;
             srcParent = parent;
          }
          else
          {
-            // move of SNSes on same parent
-            // find index and orederNum on destination
+            // move to another parent
+            // find index on destination
             for (NodeData dchild : destChilds)
             {
                if (dchild.getQPath().getName().equals(qname))
@@ -154,16 +159,17 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
             // for fix SNSes on source
             srcParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
             if (srcParent == null)
+            {
                throw new RepositoryException("FATAL: parent Node not for " + node.getQPath().getAsString()
                   + ", parent id: " + node.getParentIdentifier());
+            }
 
             srcChilds = dataManager.getChildNodesData(srcParent);
          }
 
-         int srcOrderNum = 0;
          int srcIndex = 1;
 
-         // Calculate SNS index on source
+         // Fix SNS on source
          for (int i = 0; i < srcChilds.size(); i++)
          {
             NodeData child = srcChilds.get(i);
@@ -173,22 +179,21 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
                {
                   QPath siblingPath = QPath.makeChildPath(srcParent.getQPath(), child.getQPath().getName(), srcIndex);
                   TransientNodeData sibling =
-                     new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1, child
-                        .getPrimaryTypeName(), child.getMixinTypeNames(), srcOrderNum, // orderNum
+                     new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1,
+                        child.getPrimaryTypeName(), child.getMixinTypeNames(), child.getOrderNumber(),
                         child.getParentIdentifier(), child.getACL());
+
                   addStates.add(new ItemState(sibling, ItemState.UPDATED, true, ancestorToSave, false, true));
 
                   srcIndex++;
                }
-
-               srcOrderNum++;
             }
          }
 
+         // in case of moving to the same parent destination index is calculated above
          if (srcChilds == destChilds)
          {
             destIndex = srcIndex;
-            destOrderNum = srcOrderNum;
          }
       }
       else

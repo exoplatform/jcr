@@ -2441,11 +2441,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
    protected void doOrderBefore(QPath srcPath, QPath destPath) throws RepositoryException
    {
-      if (!getPrimaryNodeType().hasOrderableChildNodes())
-      {
-         throw new UnsupportedRepositoryOperationException("child node ordering not supported on node " + getPath());
-      }
-
       if (srcPath.equals(destPath))
       {
          return;
