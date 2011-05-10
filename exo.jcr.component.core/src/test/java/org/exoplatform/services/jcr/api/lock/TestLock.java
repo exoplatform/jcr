@@ -50,17 +50,21 @@ public class TestLock extends JcrAPIBaseTest
       super.setUp();
 
       if (lockedNode == null)
+      {
          try
          {
             lockedNode = root.addNode("locked node");
             if (lockedNode.canAddMixin("mix:lockable"))
+            {
                lockedNode.addMixin("mix:lockable");
+            }
             root.save();
          }
          catch (RepositoryException e)
          {
             fail("Child node must be accessible and readable. But error occurs: " + e);
          }
+      }
    }
 
    /**
@@ -223,7 +227,9 @@ public class TestLock extends JcrAPIBaseTest
       Session session1 = repository.login(new CredentialsImpl("admin", "admin".toCharArray()), "ws");
       Node nodeToLockSession1 = session1.getRootNode().addNode("nodeToLockSession1");
       if (nodeToLockSession1.canAddMixin("mix:lockable"))
+      {
          nodeToLockSession1.addMixin("mix:lockable");
+      }
       session1.save();
       Lock lock = nodeToLockSession1.lock(true, false);// boolean isSessionScoped
       // in ECM we are using lock(true, true) without saving lockToken
@@ -317,7 +323,9 @@ public class TestLock extends JcrAPIBaseTest
       Session session1 = repository.login(new CredentialsImpl("admin", "admin".toCharArray()), "ws");
       Node nodeToCopyLock = session1.getRootNode().addNode("node2testCopyLockedNode");
       if (nodeToCopyLock.canAddMixin("mix:lockable"))
+      {
          nodeToCopyLock.addMixin("mix:lockable");
+      }
       session1.save();
       Lock lock = nodeToCopyLock.lock(true, false);// boolean isSessionScoped
       // in ECM we are using lock(true, true) without saving lockToken
@@ -503,4 +511,70 @@ public class TestLock extends JcrAPIBaseTest
       }
    }
 
+
+   public void testCheckInWhenParentLocked() throws RepositoryException
+   {
+      // creating node that is going to be locked, adding a child also.
+
+      Session session1 = repository.login(new CredentialsImpl("root", "exo".toCharArray()), "ws");
+      Node parentLockedNodeSession1 = session1.getRootNode().addNode("testCheckInWhenParentLocked");
+      parentLockedNodeSession1.addMixin("mix:lockable");
+      parentLockedNodeSession1.addMixin("mix:versionable");
+      Node childNodeSession1 = parentLockedNodeSession1.addNode("child");
+      childNodeSession1.addMixin("mix:versionable");
+      childNodeSession1.setProperty("property", "value");
+      session1.save();
+      // locking it    
+      parentLockedNodeSession1.lock(false, false);
+      session1.save();
+      assertTrue(parentLockedNodeSession1.isLocked());
+      Node parentLockedNode = session.getRootNode().getNode("testCheckInWhenParentLocked");
+      Node childNode = parentLockedNode.getNode("child");
+
+      try
+      {
+         childNode.checkin();
+      }
+      catch (LockException e)
+      {
+         fail("CheckIn shouldn't throw a lockException if parent node locked with isDeep=false");
+      }
+
+      session1.logout();
+
+   }
+   
+   public void testCheckOutWhenLocked() throws RepositoryException
+   {
+      // creating node that is going to be locked, adding a child also.
+
+      Session session1 = repository.login(new CredentialsImpl("root", "exo".toCharArray()), "ws");
+      Node lockedNodeSession1 = session1.getRootNode().addNode("testCheckOutWhenLocked");
+      lockedNodeSession1.addMixin("mix:lockable");
+      lockedNodeSession1.addMixin("mix:versionable");
+      session1.save();
+      lockedNodeSession1.checkin();
+      // locking it    
+      lockedNodeSession1.lock(false, false);
+      session1.save();
+      assertTrue(lockedNodeSession1.isLocked());
+
+      Node lockedNode = session.getRootNode().getNode("testCheckOutWhenLocked");
+
+      try
+      {
+         lockedNode.checkout();
+         fail("Lock exeption should be thrown");
+      }
+      catch (LockException e)
+      {
+         // it's okey
+      }
+
+      lockedNodeSession1.checkout();
+      session1.save();
+
+      session1.logout();
+   }
+   
 }

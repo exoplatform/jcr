@@ -433,8 +433,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       if (hasProperty(Constants.JCR_MERGEFAILED))
          throw new VersionException("Node has jcr:mergeFailed " + getPath());
 
-      if (!parent().checkLocking())
-         throw new LockException("Node " + parent().getPath() + " is locked ");
+      if (!checkLocking())
+         throw new LockException("Node " + getPath() + " is locked ");
 
       // the new version identifier
       String verIdentifier = IdGenerator.generate();
@@ -480,6 +480,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new UnsupportedRepositoryOperationException(
             "Node.checkout() is not supported for not mix:versionable node ");
 
+      if (!checkLocking())
+         throw new LockException("Node " + getPath() + " is locked ");
+      
       if (checkedOut())
          return;
 
