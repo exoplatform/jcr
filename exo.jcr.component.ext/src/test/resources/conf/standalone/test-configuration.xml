@@ -399,7 +399,7 @@
       </init-params>
    </component>
 
-  <component>
+  <!--component>
     <key>org.exoplatform.services.rpc.RPCService</key>
     <type>org.exoplatform.services.rpc.impl.RPCServiceImpl</type>
     <init-params>
@@ -416,7 +416,7 @@
         <value>0</value>
       </value-param>
     </init-params>
-  </component>  
+  </component-->  
 
    <component>
       <key>org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationService</key>
