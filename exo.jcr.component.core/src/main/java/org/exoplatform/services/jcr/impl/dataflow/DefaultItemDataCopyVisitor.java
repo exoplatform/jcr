@@ -154,7 +154,8 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
       // If ordering is supported by the node type of the parent node of the new
       // location, then the newly moved node is appended to the end of the child node list.
       int orderNum = 0;
-      if (ntManager.isOrderableChildNodesSupported(parent.getPrimaryTypeName(), parent.getMixinTypeNames()))
+      if (level == 0
+         && ntManager.isOrderableChildNodesSupported(parent.getPrimaryTypeName(), parent.getMixinTypeNames()))
       {
          orderNum = calculateNewNodeOrderNumber();
       }
@@ -162,7 +163,6 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
       {
          orderNum = node.getOrderNumber(); // has no matter
       }
-
       String id = keepIdentifiers ? node.getIdentifier() : IdGenerator.generate();
 
       AccessControlList acl = parent.getACL();
