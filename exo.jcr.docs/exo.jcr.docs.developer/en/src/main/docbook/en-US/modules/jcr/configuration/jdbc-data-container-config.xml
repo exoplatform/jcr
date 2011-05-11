@@ -56,11 +56,16 @@
         </listitem>
       </itemizedlist></para>
 
-    <para>Each database software supports ANSI SQL standards but also has its
-    own specifics. So, each database has its own configuration in eXo JCR as a
-    database dialect parameter. If you need a more detailed configuration of
-    the database, it's possible to do that by editing the metadata SQL-script
-    files.</para>
+    <para><note>
+        <para>Please note, that JCR supports only READ_COMMITED isolation
+        level and any other RDBMS configurations can cause some side-effects
+        and issues. So, please, make sure proper isolation level is configured
+        on database server side.</para>
+      </note>Each database software supports ANSI SQL standards but also has
+    its own specifics. So, each database has its own configuration in eXo JCR
+    as a database dialect parameter. If you need a more detailed configuration
+    of the database, it's possible to do that by editing the metadata
+    SQL-script files.</para>
 
     <para>In case the non-ANSI node name is used, it's necessary to use a
     database with MultiLanguage support[TODO link to MultiLanguage]. Some JDBC
