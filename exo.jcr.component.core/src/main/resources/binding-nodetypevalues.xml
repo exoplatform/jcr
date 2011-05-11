@@ -1,0 +1,56 @@
+<binding>
+  <!-- the default deserializer to use for String -->
+  <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.cleanString"/>
+
+   <mapping name="nodeTypes" class="org.exoplatform.services.jcr.core.nodetype.NodeTypeValuesList">
+      <collection field="nodeTypeValuesList" item-type="org.exoplatform.services.jcr.core.nodetype.NodeTypeValue" type="java.util.ArrayList" />
+   </mapping>
+
+   <mapping name="nodeType" class="org.exoplatform.services.jcr.core.nodetype.NodeTypeValue">
+      <value name="name" field="name" style="attribute" />
+      <value name="isMixin" field="mixin" style="attribute" />
+      <value name="hasOrderableChildNodes" field="orderableChild" style="attribute" usage="optional" />
+      <value name="primaryItemName" field="primaryItemName" style="attribute" serializer="org.exoplatform.services.jcr.core.nodetype.DefaulStringConversion.serializeString"
+         usage="optional" />
+      <collection name="supertypes" field="declaredSupertypeNames" item-type="java.lang.String" type="java.util.ArrayList" usage="optional">
+         <value name="supertype" serializer="org.exoplatform.services.jcr.core.nodetype.DefaulStringConversion.serializeString" deserializer="org.exoplatform.services.jcr.core.nodetype.DefaulStringConversion.deserializeString" />
+      </collection>
+      <collection name="propertyDefinitions" field="declaredPropertyDefinitionValues" item-type="org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue"
+         type="java.util.ArrayList" usage="optional" />
+      <collection name="childNodeDefinitions" field="declaredChildNodeDefinitionValues" item-type="org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue"
+         type="java.util.ArrayList" usage="optional" />
+   </mapping>
+
+   <mapping name="propertyDefinition" class="org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue">
+      <value name="name" field="name" style="attribute" />
+      <value name="requiredType" field="requiredType" style="attribute" serializer="org.exoplatform.services.jcr.core.nodetype.PropertyTypeConversion.serializeType"
+         deserializer="org.exoplatform.services.jcr.core.nodetype.PropertyTypeConversion.deserializeType" />
+      <value name="autoCreated" field="autoCreate" style="attribute" />
+      <value name="mandatory" field="mandatory" style="attribute" />
+      <value name="onParentVersion" field="onVersion" style="attribute" serializer="org.exoplatform.services.jcr.core.nodetype.OnParentVersionActionConversion.serializeType"
+         deserializer="org.exoplatform.services.jcr.core.nodetype.OnParentVersionActionConversion.deserializeType" />
+      <value name="protected" field="readOnly" style="attribute" />
+      <value name="multiple" field="multiple" style="attribute" />
+      <collection name="valueConstraints" field="valueConstraints" item-type="java.lang.String" type="java.util.ArrayList" usage="optional">
+         <value name="valueConstraint" serializer="org.exoplatform.services.jcr.core.nodetype.DefaulStringConversion.serializeString" deserializer="org.exoplatform.services.jcr.core.nodetype.DefaulStringConversion.deserializeString" />
+      </collection>
+      <collection name="defaultValues" field="defaultValueStrings" item-type="java.lang.String" type="java.util.ArrayList" usage="optional">
+         <value name="defaultValue" serializer="org.exoplatform.services.jcr.core.nodetype.DefaulStringConversion.serializeString" deserializer="org.exoplatform.services.jcr.core.nodetype.DefaulStringConversion.deserializeString" />
+      </collection>
+   </mapping>
+
+   <mapping name="childNodeDefinition" class="org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue">
+      <value name="name" field="name" style="attribute" />
+      <value name="defaultPrimaryType" field="defaultNodeTypeName" style="attribute" usage="optional" />
+      <value name="autoCreated" field="autoCreate" style="attribute" />
+      <value name="mandatory" field="mandatory" style="attribute" />
+      <value name="onParentVersion" field="onVersion" style="attribute" serializer="org.exoplatform.services.jcr.core.nodetype.OnParentVersionActionConversion.serializeType"
+         deserializer="org.exoplatform.services.jcr.core.nodetype.OnParentVersionActionConversion.deserializeType" />
+      <value name="protected" field="readOnly" style="attribute" />
+      <value name="sameNameSiblings" field="sameNameSiblings" style="attribute" />
+      <collection name="requiredPrimaryTypes" field="requiredNodeTypeNames" item-type="java.lang.String" type="java.util.ArrayList">
+         <value name="requiredPrimaryType" serializer="org.exoplatform.services.jcr.core.nodetype.DefaulStringConversion.serializeString" deserializer="org.exoplatform.services.jcr.core.nodetype.DefaulStringConversion.deserializeString" />
+      </collection>
+   </mapping>
+
+</binding>

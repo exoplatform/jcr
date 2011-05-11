@@ -1,0 +1,164 @@
+<nodeTypes xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
+
+   <!-- 
+    HOW-TO:
+    It's not simply to run this test, as we need differents in nodes UUIDs in data container. 
+    
+    Testing with source distribution.
+    Run test once (like 'mvn clean test') its create repository and register node types.
+    Change source file MultiDbJDBCConnection.java in FIND_NODES_BY_PARENTID variable use 
+    " order by I.ID DESC" instead " order by I.ID ". Be careful to revert changes back after test.
+    And run the repository software again on existed and initialized database (like 'mvn test').
+    On the second phase you'll see repository startup printout with messages like: 
+    '>>> Node types registration cycle X started'
+    '<<< Node types registration cycle X finished'
+    where X is cycle number of node types registration.
+    More one cycle can be. 
+    It's depends on nodetypes count referenced one-by-one with forward declaration of dependent type.
+    
+    Another way to perform test it's change order of nodes returned by data container on getChildNodesData().
+    This can be done by direct change of UUIDs in the data storage (database).
+    -->
+
+   <!-- testing super dependecy -->
+   <nodeType name="jcr:testValueConstraints" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">
+      <supertypes>
+         <supertype>nt:unstructured</supertype>
+      </supertypes>
+      <propertyDefinitions>
+         <propertyDefinition name="jcr:testSTRING1" requiredType="STRING" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>abc</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testSTRING2" requiredType="STRING" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>.*</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testPATH" requiredType="PATH" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false"
+            multiple="false">
+            <valueConstraints>
+               <valueConstraint>/abc</valueConstraint>
+               <!--<valueConstraint>/exojcrtest/*</valueConstraint>-->
+               <valueConstraint>../exojcrtest:def/*</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testNAME" requiredType="NAME" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false"
+            multiple="false">
+            <valueConstraints>
+               <valueConstraint>abc:</valueConstraint>
+               <valueConstraint>abc:def</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testREFERENCE" requiredType="REFERENCE" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>nt:unstructured</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testBINARYINCLUSIVE" requiredType="BINARY" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>(,16384]</valueConstraint>
+               <valueConstraint>[16777216,)</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testBINARYEXCLUSIVE" requiredType="BINARY" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>(,16384)</valueConstraint>
+               <valueConstraint>(16777216,)</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testDATEINCLUSIVE" requiredType="DATE" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>(,1111-11-11T11:11:11.111Z]</valueConstraint>
+               <valueConstraint>[1222-11-11T11:11:11.111Z,)</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testDATEEXCLUSIVE" requiredType="DATE" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>(,1111-11-11T11:11:11.111Z)</valueConstraint>
+               <valueConstraint>(1222-11-11T11:11:11.111Z,)</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testLONGINCLUSIVE" requiredType="LONG" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>(,100]</valueConstraint>
+               <valueConstraint>[200,)</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testLONGEXCLUSIVE" requiredType="LONG" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>(,100)</valueConstraint>
+               <valueConstraint>(200,)</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testDOUBLEINCLUSIVE" requiredType="LONG" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>(,100]</valueConstraint>
+               <valueConstraint>[200,)</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testDOUBLEEXCLUSIVE" requiredType="LONG" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>(,100)</valueConstraint>
+               <valueConstraint>(200,)</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+         <propertyDefinition name="jcr:testBOOLEAN" requiredType="BOOLEAN" autoCreated="false" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints>
+               <valueConstraint>true</valueConstraint>
+            </valueConstraints>
+         </propertyDefinition>
+      </propertyDefinitions>
+   </nodeType>
+
+   <nodeType name="exo:refRoot" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+      <supertypes>
+         <supertype>nt:unstructured</supertype>
+         <supertype>mix:referenceable</supertype>
+      </supertypes>
+   </nodeType>
+
+   <nodeType name="exo:autoCreate" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+      <supertypes>
+         <supertype>nt:unstructured</supertype>
+      </supertypes>
+      <propertyDefinitions>
+         <propertyDefinition name="jcr:autoCreateProperty" requiredType="String" autoCreated="true" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints />
+            <!-- defaultValues>
+          <defaultValue></defaultValue>
+        </defaultValues -->
+         </propertyDefinition>
+      </propertyDefinitions>
+   </nodeType>
+
+   <nodeType name="exo:autoCreate2" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+      <supertypes>
+         <supertype>nt:unstructured</supertype>
+      </supertypes>
+      <propertyDefinitions>
+         <propertyDefinition name="jcr:autoCreateProperty" requiredType="String" autoCreated="true" mandatory="false" onParentVersion="COPY"
+            protected="false" multiple="false">
+            <valueConstraints />
+            <defaultValues>
+               <defaultValue></defaultValue>
+            </defaultValues>
+         </propertyDefinition>
+      </propertyDefinitions>
+   </nodeType>
+
+</nodeTypes>

@@ -1,0 +1,109 @@
+<binding>
+  <!-- the default deserializer to use for String -->
+  <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
+
+  <mapping name="repository-service" class="org.exoplatform.services.jcr.config.RepositoryServiceConfiguration">
+    <value name="default-repository" field="defaultRepositoryName" style="attribute" />
+    <collection name="repositories" field="repositoryConfigurations"
+      item-type="org.exoplatform.services.jcr.config.RepositoryEntry"
+      factory="org.jibx.runtime.Utility.arrayListFactory" />
+  </mapping>
+
+  <mapping name="repository" class="org.exoplatform.services.jcr.config.RepositoryEntry">
+    <value name="name" field="name" style="attribute" />
+    <value name="system-workspace" field="systemWorkspaceName" style="attribute" />
+    <value name="default-workspace" field="defaultWorkspaceName" style="attribute" />
+    <value name="security-domain" field="securityDomain" />
+    <value name="access-control" field="accessControl" usage="optional" />
+    <value name="session-max-age" field="sessionTimeOut" 
+		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" usage="optional" />
+    <value name="lock-remover-max-threads" field="lockRemoverMaxThreadCount" 
+ 		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" usage="optional" />
+    <value name="authentication-policy" field="authenticationPolicy" />
+    <collection name="workspaces" field="workspaces" item-type="org.exoplatform.services.jcr.config.WorkspaceEntry" />
+  </mapping>
+
+  <mapping name="workspace" class="org.exoplatform.services.jcr.config.WorkspaceEntry">
+    <value name="name" field="name" style="attribute" />
+    <value name="lazy-read-threshold" field="lazyReadThreshold"  
+        deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" style="attribute" usage="optional" />
+    <value name="auto-init-root-nodetype" field="autoInitializedRootNt" style="attribute" usage="optional" />
+    <value name="auto-init-permissions" field="autoInitPermissions" style="attribute" usage="optional" />
+    <structure name="container" field="container">
+      <value name="class" field="type" style="attribute" />
+      <collection name="properties" field="parameters" usage="optional"
+        item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
+        factory="org.jibx.runtime.Utility.arrayListFactory" />
+      <collection name="value-storages" field="valueStorages" usage="optional"
+        item-type="org.exoplatform.services.jcr.config.ValueStorageEntry" />
+    </structure>
+    
+    <structure name="initializer" field="initializer" usage="optional">
+      <value name="class" field="type" style="attribute" usage="optional" />
+      <collection name="properties" field="parameters" usage="optional"
+        item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
+        factory="org.jibx.runtime.Utility.arrayListFactory" />
+    </structure>
+
+    <structure name="cache" field="cache" usage="optional">
+      <value name="enabled" field="enabled" style="attribute" />
+			<value name="class" field="type" style="attribute" usage="optional" />
+      <collection name="properties" field="parameters" usage="optional"
+        item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
+        factory="org.jibx.runtime.Utility.arrayListFactory" />
+    </structure>
+
+    <structure name="query-handler" field="queryHandler" 
+    usage="optional">
+      <value name="class" field="type" style="attribute" />
+      <collection name="properties" field="parameters" usage="optional"
+        item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
+        factory="org.jibx.runtime.Utility.arrayListFactory" />
+    </structure>
+
+    <structure name="access-manager" field="accessManager" usage="optional">
+      <value name="class" field="type" style="attribute" />
+      <collection name="properties" field="parameters" usage="optional"
+        item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
+        factory="org.jibx.runtime.Utility.arrayListFactory" />
+    </structure>
+
+    <structure name="lock-manager" field="lockManager" usage="optional">
+      <value name="class" field="type" style="attribute" usage="optional" />
+      <collection name="properties" field="parameters" usage="optional"
+        item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
+        factory="org.jibx.runtime.Utility.arrayListFactory" />
+      <value name="time-out" field="timeout" usage="optional" 
+			  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" />
+      
+      <structure name="persister" field="persister" usage="optional">
+        <value name="class" field="type" style="attribute" />
+        <collection name="properties" field="parameters" usage="optional"
+          item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
+          factory="org.jibx.runtime.Utility.arrayListFactory" />
+      </structure>
+    </structure>
+  </mapping>
+
+  <mapping name="property" class="org.exoplatform.services.jcr.config.SimpleParameterEntry">
+    <value name="name" field="name" style="attribute" />
+    <value name="value" field="value" style="attribute" />	
+  </mapping>
+
+  <mapping name="value-storage" class="org.exoplatform.services.jcr.config.ValueStorageEntry">
+    <value name="class" field="type" style="attribute" />
+    <value name="id" field="id" style="attribute" />
+    <collection name="properties" field="parameters" usage="optional"
+      item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
+      factory="org.jibx.runtime.Utility.arrayListFactory" />
+    <collection name="filters" field="filters" item-type="org.exoplatform.services.jcr.config.ValueStorageFilterEntry" />
+  </mapping>
+  <mapping name="filter" class="org.exoplatform.services.jcr.config.ValueStorageFilterEntry">
+    <value name="property-type" field="propertyType" style="attribute" usage="optional" />
+    <value name="min-value-size" field="minValueSize" style="attribute" 
+		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseLong" usage="optional" />
+    <value name="ancestor-path" field="ancestorPath" style="attribute" usage="optional" />
+    <value name="property-name" field="propertyName" style="attribute" usage="optional" />
+  </mapping>
+
+</binding>

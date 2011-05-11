@@ -1,0 +1,148 @@
+<nodeTypes xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:mix="http://www.jcp.org/jcr/mix/1.0"
+  xmlns:jcr="http://www.jcp.org/jcr/1.0">
+
+   <!-- 
+    HOW-TO:
+    It's not simply to run this test, as we need differents in nodes UUIDs in data container. 
+    
+    Testing with source distribution.
+    Run test once (like 'mvn clean test') its create repository and register node types.
+    Change source file MultiDbJDBCConnection.java in FIND_NODES_BY_PARENTID variable use 
+    " order by I.ID DESC" instead " order by I.ID ". Be careful to revert changes back after test.
+    And run the repository software again on existed and initialized database (like 'mvn test').
+    On the second phase you'll see repository startup printout with messages like: 
+    '>>> Node types registration cycle X started'
+    '<<< Node types registration cycle X finished'
+    where X is cycle number of node types registration.
+    More one cycle can be. 
+    It's depends on nodetypes count referenced one-by-one with forward declaration of dependent type.
+    
+    Another way to perform test it's change order of nodes returned by data container on getChildNodesData().
+    This can be done by direct change of UUIDs in the data storage (database).
+    -->
+  
+  <!-- testing super dependecy -->
+  <nodeType name="exojcrtest:testNodeType_super_1" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">
+    <supertypes>
+      <supertype>nt:unstructured</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="prop1" requiredType="undefined" autoCreated="false" mandatory="false" onParentVersion="COPY"
+        protected="false" multiple="true">
+        <valueConstraints/>
+      </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType>
+
+  <nodeType name="exojcrtest:testNodeType__1" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>exojcrtest:testNodeType_super_1</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="property_1" requiredType="String" autoCreated="false" mandatory="false"
+        onParentVersion="COPY" protected="false" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="property_2" requiredType="String" autoCreated="false" mandatory="false"
+        onParentVersion="COPY" protected="false" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType>   
+  
+  <!-- testing super dependecy for forward nodetype and for unregistered before -->
+  <nodeType name="exojcrtest:testNodeType_super_2" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">
+    <supertypes>
+      <supertype>nt:unstructured</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="prop_2_1" requiredType="undefined" autoCreated="false" mandatory="false" onParentVersion="COPY"
+        protected="false" multiple="true">
+        <valueConstraints/>
+      </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType>
+    
+  <nodeType name="exojcrtest:testNodeType__2" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>exojcrtest:testNodeType_super_2</supertype>
+      <supertype>exojcrtest:testNodeType__1</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="property_2_1" requiredType="String" autoCreated="false" mandatory="false"
+        onParentVersion="COPY" protected="false" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="property_2_2" requiredType="String" autoCreated="false" mandatory="false"
+        onParentVersion="COPY" protected="false" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType>
+
+  <!-- testing requiredPrimaryType dependecy -->
+  <nodeType name="exojcrtest:testNodeType_required" isMixin="false" hasOrderableChildNodes="true" primaryItemName="somePromaryItem">
+    <supertypes>
+      <supertype>nt:unstructured</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="prop__1" requiredType="undefined" autoCreated="false" mandatory="false" onParentVersion="COPY"
+        protected="false" multiple="true">
+        <valueConstraints/>
+      </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType>  
+  
+  <nodeType name="exojcrtest:testNodeType__3" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>nt:base</supertype>
+      <supertype>exojcrtest:testNodeType_super_2</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="property_3_1" requiredType="String" autoCreated="false" mandatory="false"
+        onParentVersion="COPY" protected="false" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="property_3_2" requiredType="String" autoCreated="false" mandatory="false"
+        onParentVersion="COPY" protected="false" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+    </propertyDefinitions>
+    <childNodeDefinitions>
+      <childNodeDefinition name="somePrimaryItem" defaultPrimaryType="" autoCreated="false" mandatory="true"
+        onParentVersion="COPY" protected="false" sameNameSiblings="false">
+        <requiredPrimaryTypes>
+          <requiredPrimaryType>exojcrtest:testNodeType_required</requiredPrimaryType>
+        </requiredPrimaryTypes>
+      </childNodeDefinition>
+    </childNodeDefinitions>    
+  </nodeType>
+      
+  <!-- testing super dependecy for forward nodetype and for unregistered before
+    plus requiredPrimaryType dependecy -->    
+  <nodeType name="exojcrtest:testNodeType__4" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>nt:base</supertype>
+      <supertype>exojcrtest:testNodeType_super_2</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="property_4_1" requiredType="String" autoCreated="false" mandatory="false"
+        onParentVersion="COPY" protected="false" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="property_4_2" requiredType="String" autoCreated="false" mandatory="false"
+        onParentVersion="COPY" protected="false" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+    </propertyDefinitions>
+    <childNodeDefinitions>
+      <childNodeDefinition name="somePrimaryItem" defaultPrimaryType="" autoCreated="false" mandatory="true"
+        onParentVersion="COPY" protected="false" sameNameSiblings="false">
+        <requiredPrimaryTypes>
+          <requiredPrimaryType>exojcrtest:testNodeType_required</requiredPrimaryType>
+        </requiredPrimaryTypes>
+      </childNodeDefinition>
+    </childNodeDefinitions>    
+  </nodeType>
+  
+</nodeTypes>
