@@ -22,6 +22,7 @@ import org.apache.commons.chain.Context;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.command.action.Action;
+import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.HandlerNotFoundException;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
@@ -123,6 +124,10 @@ public class AddMetadataAction implements Action
          catch (HandlerNotFoundException e)
          {
             log.debug(e.getMessage());
+         }
+         catch (DocumentReadException e)
+         {
+            log.warn(e.getMessage(), e);
          }
 
          Iterator entries = props.entrySet().iterator();

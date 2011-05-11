@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 
 import java.io.InputStream;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import javax.jcr.Node;
 
@@ -161,4 +162,19 @@ public class MetaDataActionTest extends BaseStandaloneTest
       assertFalse(testNode.hasProperty("dc:title"));
       assertFalse(testNode.hasProperty("dc:creator"));
    }
+
+   public void testJcrSetPropertyTestCase() throws Exception
+   {
+      Node rootNode = session.getRootNode().addNode("MetaDataActionTest");
+      Node contentNode = rootNode.addNode("testAddContent", "nt:resource");
+      contentNode.setProperty("jcr:mimeType", "");
+      contentNode.setProperty("jcr:data", "");
+      contentNode.setProperty("jcr:lastModified", new GregorianCalendar());
+      session.save();
+
+      //try set property
+      contentNode.setProperty("jcr:mimeType", "image/jpeg");
+      session.save();
+   }
+
 }
