@@ -1,6 +1,6 @@
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(revision 4327)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(revision 4354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(working copy)
 @@ -96,6 +96,7 @@
           // Test getChildNodesData
@@ -112,7 +112,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/da
     private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java	(revision 4327)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java	(revision 4354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java	(working copy)
 @@ -526,6 +526,12 @@
        {
@@ -129,7 +129,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/da
     private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestNodeOrder.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestNodeOrder.java	(revision 4327)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestNodeOrder.java	(revision 4354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestNodeOrder.java	(working copy)
 @@ -36,14 +36,14 @@
   */
@@ -202,7 +202,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/co
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java	(working copy)
 @@ -91,6 +91,15 @@
      * @return int, child nodes count
@@ -222,7 +222,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflo
      * Get child Properties of the parent node.
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(working copy)
 @@ -2824,7 +2824,7 @@
  
@@ -235,7 +235,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     private int getNextChildIndex(InternalQName nameToAdd, NodeData parentNode) throws RepositoryException,
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java	(working copy)
 @@ -843,6 +843,17 @@
     /**
@@ -257,7 +257,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        int childsCount =
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java	(working copy)
 @@ -135,6 +135,14 @@
     /**
@@ -276,7 +276,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
        return storageDataManager.getChildNodesCount(parent);
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java	(working copy)
 @@ -62,11 +62,24 @@
        new HashMap<String, Map<String, ItemState>>();
@@ -398,7 +398,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
  
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java	(working copy)
 @@ -114,6 +114,37 @@
     /**
@@ -440,9 +440,19 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
        if (txStarted())
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/DefaultItemDataCopyVisitor.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/DefaultItemDataCopyVisitor.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/DefaultItemDataCopyVisitor.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/DefaultItemDataCopyVisitor.java	(working copy)
-@@ -264,7 +264,7 @@
+@@ -154,7 +154,8 @@
+       // If ordering is supported by the node type of the parent node of the new
+       // location, then the newly moved node is appended to the end of the child node list.
+       int orderNum = 0;
+-      if (ntManager.isOrderableChildNodesSupported(parent.getPrimaryTypeName(), parent.getMixinTypeNames()))
++      if (level == 0
++         && ntManager.isOrderableChildNodesSupported(parent.getPrimaryTypeName(), parent.getMixinTypeNames()))
+       {
+          orderNum = calculateNewNodeOrderNumber();
+       }
+@@ -264,7 +265,7 @@
  
     protected int calculateNewNodeOrderNumber() throws RepositoryException
     {
@@ -453,7 +463,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
     protected QPath calculateNewNodePath(NodeData node, int level) throws RepositoryException
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java	(working copy)
 @@ -473,10 +473,27 @@
           con.close();
@@ -486,7 +496,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
        final WorkspaceStorageConnection con = dataContainer.openConnection();
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java	(working copy)
 @@ -158,6 +158,14 @@
     /**
@@ -505,7 +515,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
        return persistentManager.getChildNodesCount(parent);
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java	(working copy)
 @@ -126,6 +126,11 @@
        return null;
@@ -521,7 +531,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        return 0;
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBMultiDbJDBCConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBMultiDbJDBCConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBMultiDbJDBCConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBMultiDbJDBCConnection.java	(working copy)
 @@ -78,6 +78,10 @@
           "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
@@ -536,7 +546,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        FIND_NODES_BY_PARENTID_CQ =
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/MultiDbJDBCConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/MultiDbJDBCConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/MultiDbJDBCConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/MultiDbJDBCConnection.java	(working copy)
 @@ -151,6 +151,9 @@
              + " from JCR_MITEM I, (SELECT ID, PARENT_ID from JCR_MITEM where ID=?) J"
@@ -572,7 +582,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        if (findNodesCountByParentId == null)
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBSingleDbJDBCConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBSingleDbJDBCConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBSingleDbJDBCConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/HSQLDBSingleDbJDBCConnection.java	(working copy)
 @@ -85,6 +85,10 @@
              + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
@@ -611,7 +621,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        if (findNodesCountByParentId == null)
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/SingleDbJDBCConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/SingleDbJDBCConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/SingleDbJDBCConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/db/SingleDbJDBCConnection.java	(working copy)
 @@ -157,6 +157,9 @@
              + " from JCR_SITEM I, (SELECT ID, PARENT_ID from JCR_SITEM where ID=?) J"
@@ -648,7 +658,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        if (findNodesCountByParentId == null)
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/DBConstants.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/DBConstants.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/DBConstants.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/DBConstants.java	(working copy)
 @@ -128,8 +128,13 @@
      * FIND_NODES_BY_PARENTID.
@@ -667,7 +677,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
     protected String FIND_NODES_COUNT_BY_PARENTID;
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBMultiDbJDBCConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBMultiDbJDBCConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBMultiDbJDBCConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBMultiDbJDBCConnection.java	(working copy)
 @@ -74,6 +74,8 @@
           "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
@@ -680,7 +690,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
     }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/MultiDbJDBCConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/MultiDbJDBCConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/MultiDbJDBCConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/MultiDbJDBCConnection.java	(working copy)
 @@ -127,6 +127,9 @@
  
@@ -716,7 +726,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        if (findNodesCountByParentId == null)
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBSingleDbJDBCConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBSingleDbJDBCConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBSingleDbJDBCConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/HSQLDBSingleDbJDBCConnection.java	(working copy)
 @@ -81,6 +81,8 @@
              + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
@@ -753,7 +763,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        if (findNodesCountByParentId == null)
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/SingleDbJDBCConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/SingleDbJDBCConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/SingleDbJDBCConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/db/SingleDbJDBCConnection.java	(working copy)
 @@ -133,6 +133,9 @@
        FIND_NODES_BY_PARENTID =
@@ -790,7 +800,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        if (findNodesCountByParentId == null)
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java	(working copy)
 @@ -151,6 +151,8 @@
  
@@ -869,7 +879,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
     protected abstract ResultSet findChildPropertiesByParentIdentifier(String parentIdentifier) throws SQLException;
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java	(working copy)
 @@ -117,6 +117,12 @@
      * <code>getChildNodesCount(NodeData parent)</code>
@@ -1066,7 +1076,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        InvalidItemStateException, IllegalStateException
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java	(revision 4327)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java	(revision 4354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java	(working copy)
 @@ -126,6 +126,15 @@
     int getChildNodesCount(NodeData parent) throws RepositoryException;
