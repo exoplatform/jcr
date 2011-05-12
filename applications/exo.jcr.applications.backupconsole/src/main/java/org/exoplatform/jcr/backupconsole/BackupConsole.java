@@ -150,10 +150,10 @@ public class BackupConsole
 
             if (url.getUserInfo() != null)
             {  
-               System.out
-                        .println(INCORRECT_PARAM
-                                 + "Parameters Login:Password should not be specified in url parameter to form authentication - "
-                                 + sUrl); //NOSONAR
+               System.out //NOSONAR
+                  .println(INCORRECT_PARAM
+                     + "Parameters Login:Password should not be specified in url parameter to form authentication - "
+                     + sUrl);
                return;
             }
          }
@@ -175,8 +175,8 @@ public class BackupConsole
 
          if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("POST"))
          {
-            System.out.println(INCORRECT_PARAM
-                     + "Method to form authentication shulde be GET or POST to form parameter - " + method); //NOSONAR
+            System.out.println(INCORRECT_PARAM //NOSONAR
+               + "Method to form authentication shulde be GET or POST to form parameter - " + method);
             return;
          }
          
@@ -190,8 +190,8 @@ public class BackupConsole
          
          if (params.length != 2)
          {
-            System.out
-                     .println(INCORRECT_PARAM + "From parameters is not spacified to form parameter - " + args[curArg]); //NOSONAR
+            System.out //NOSONAR
+               .println(INCORRECT_PARAM + "From parameters is not spacified to form parameter - " + args[curArg]);
             return;
          }
          String formUrl = params[0];
@@ -215,8 +215,8 @@ public class BackupConsole
             
             if (para.length != 2)
             {
-               System.out.println(INCORRECT_PARAM + "From parameters is incorect, shoulde be as \"name=value\"  - "
-                        + fParam); //NOSONAR
+               System.out.println(INCORRECT_PARAM + "From parameters is incorect, shoulde be as \"name=value\"  - " //NOSONAR
+                  + fParam);
                return;
             }
             
@@ -500,8 +500,8 @@ public class BackupConsole
 
                //5. restore remove-exists <backup_id>
                //11. restore <backup_id>
-               System.out.println(client.restore(repositoryName, workspaceName, backupId, null, backupSetPath,
-                        removeExists)); //NOSONAR
+               System.out.println(client.restore(repositoryName, workspaceName, backupId, null, backupSetPath, //NOSONAR
+                  removeExists));
                return;
             }
             //check /repo/ws or /repo
@@ -527,8 +527,8 @@ public class BackupConsole
 
                //6. restore remove-exists <backup_set_path>
                //12. restore <backup_set_path>
-               System.out.println(client.restore(repositoryName, workspaceName, backupId, null, backupSetPath,
-                        removeExists)); //NOSONAR
+               System.out.println(client.restore(repositoryName, workspaceName, backupId, null, backupSetPath, //NOSONAR
+                  removeExists));
                return;
             }
 
@@ -591,12 +591,12 @@ public class BackupConsole
       catch (IOException e)
       {
          System.out.println("ERROR: " + e.getMessage()); //NOSONAR
-         e.printStackTrace();
+         e.printStackTrace(); //NOSONAR
       }
       catch (BackupExecuteException e)
       {
          System.out.println("ERROR: " + e.getMessage()); //NOSONAR
-         e.printStackTrace();
+         e.printStackTrace(); //NOSONAR
       }
 
       System.exit(0);
