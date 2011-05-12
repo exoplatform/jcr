@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core.lock;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.impl.proccess.WorkerService;
+import org.picocontainer.Startable;
 
 /**
  * LockRemoverHolder holds is a single per-repository LockRemover container.
@@ -28,7 +29,7 @@ import org.exoplatform.services.jcr.impl.proccess.WorkerService;
  * @author <a href="mailto:karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z aheritier $
  */
-public class LockRemoverHolder
+public class LockRemoverHolder implements Startable
 {
    /**
     * Default amount of thread that may be used by WorkerService to serve LockRemovers.
@@ -91,4 +92,18 @@ public class LockRemoverHolder
       return new LockRemover(workerService, lockManager, timeout);
    }
 
+   /**
+    * @see org.picocontainer.Startable#start()
+    */
+   public void start()
+   {
+   }
+
+   /**
+    * @see org.picocontainer.Startable#stop()
+    */
+   public void stop()
+   {
+      workerService.stop();
+   }
 }

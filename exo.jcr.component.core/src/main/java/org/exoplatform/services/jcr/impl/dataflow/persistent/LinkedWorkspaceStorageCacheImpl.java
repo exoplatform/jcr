@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -45,10 +46,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
-import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -62,7 +63,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: LinkedWorkspaceStorageCacheImpl.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
+public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, Startable
 {
 
    /**
@@ -784,28 +785,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          LOG.info(this.name + " Create per-users-group blocking cache map.");
          return new GroupBlockingCacheMap<CacheKey, CacheValue>(maxSize, LOAD_FACTOR, blockingUsers);
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected void finalize() throws Throwable
-   {
-      try
-      {
-         workerTimer.cancel();
-      }
-      catch (Throwable e)
-      {
-         LOG.error(this.name + " cache, finalyze error " + e, e);
-      }
-
-      nodesCache.clear();
-      propertiesCache.clear();
-      cache.clear();
-
-      super.finalize();
    }
 
    private void scheduleTask(TimerTask task, int start, long period)
@@ -2163,5 +2142,34 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    public boolean isTXAware()
    {
       return true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void start()
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void stop()
+   {
+      if (workerTimer != null)
+      {
+         try
+         {
+            workerTimer.cancel();
+         }
+         catch (Throwable e)
+         {
+            LOG.warn(this.name + " cache, stop error " + e);
+         }
+      }
+
+      nodesCache.clear();
+      propertiesCache.clear();
+      cache.clear();
    }
 }
