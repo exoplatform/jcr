@@ -1,0 +1,34 @@
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-indexer.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-indexer.xml	(revision 4375)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-indexer.xml	(working copy)
+@@ -11,12 +11,4 @@
+       <jgroupsConfig multiplexerStack="jcr.stack" />
+       <sync />
+    </clustering>
+-   <!-- Eviction configuration -->
+-   <eviction wakeUpInterval="5000">
+-      <default algorithmClass="org.jboss.cache.eviction.FIFOAlgorithm" eventQueueSize="1000000">
+-         <property name="maxNodes" value="10000" />
+-         <property name="minTimeToLive" value="60000" />
+-      </default>
+-   </eviction>
+-
+ </jbosscache>
+Index: exo.jcr.component.core/src/main/resources/conf/portal/cluster/jbosscache-indexer.xml
+===================================================================
+--- exo.jcr.component.core/src/main/resources/conf/portal/cluster/jbosscache-indexer.xml	(revision 4375)
++++ exo.jcr.component.core/src/main/resources/conf/portal/cluster/jbosscache-indexer.xml	(working copy)
+@@ -9,12 +9,4 @@
+       <jgroupsConfig multiplexerStack="jcr.stack" />
+       <sync />
+    </clustering>
+-   <!-- Eviction configuration -->
+-   <eviction wakeUpInterval="5000">
+-      <default algorithmClass="org.jboss.cache.eviction.FIFOAlgorithm" eventQueueSize="1000000">
+-         <property name="maxNodes" value="10000" />
+-         <property name="minTimeToLive" value="60000" />
+-      </default>
+-   </eviction>
+-
+ </jbosscache>
