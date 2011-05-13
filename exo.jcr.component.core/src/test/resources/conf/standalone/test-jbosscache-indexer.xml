@@ -5,13 +5,4 @@
       lockAcquisitionTimeout="20000" />
    <!-- Configure the TransactionManager -->
    <transaction transactionManagerLookupClass="org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup" />
-
-   <!-- Eviction configuration -->
-   <eviction wakeUpInterval="5000">
-      <default algorithmClass="org.jboss.cache.eviction.FIFOAlgorithm" eventQueueSize="1000000">
-         <property name="maxNodes" value="10000" />
-         <property name="minTimeToLive" value="60000" />
-      </default>
-   </eviction>
-
 </jbosscache>
