@@ -19,12 +19,12 @@
 package org.exoplatform.services.jcr.impl.core.query.ispn;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.Indexer;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
-import org.exoplatform.services.jcr.impl.core.query.jbosscache.ChangesFilterListsWrapper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.container.entries.InternalCacheEntry;

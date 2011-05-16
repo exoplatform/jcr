@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.Indexer;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;

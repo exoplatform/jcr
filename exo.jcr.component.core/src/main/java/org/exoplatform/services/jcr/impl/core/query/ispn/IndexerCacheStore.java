@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.ispn;
 
+import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
-import org.exoplatform.services.jcr.impl.core.query.jbosscache.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration.CacheMode;

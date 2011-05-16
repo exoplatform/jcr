@@ -21,21 +21,20 @@ package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
-import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
-import org.jboss.cache.CacheException;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.config.CacheLoaderConfig;
@@ -45,7 +44,6 @@ import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig.Sing
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.jcr.RepositoryException;
 
@@ -132,8 +130,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       initCache.getConfiguration().setCacheLoaderConfig(cacheLoaderConfig);
       this.rootFqn = Fqn.fromElements(searchManager.getWsId());
       this.cache =
-         ExoJBossCacheFactory.getUniqueInstance(CacheType.INDEX_CACHE, rootFqn, initCache, config.getParameterBoolean(
-            PARAM_JBOSSCACHE_SHAREABLE, PARAM_JBOSSCACHE_SHAREABLE_DEFAULT));
+         ExoJBossCacheFactory.getUniqueInstance(CacheType.INDEX_CACHE, rootFqn, initCache,
+            config.getParameterBoolean(PARAM_JBOSSCACHE_SHAREABLE, PARAM_JBOSSCACHE_SHAREABLE_DEFAULT));
 
       PrivilegedJBossCacheHelper.create(cache);
       PrivilegedJBossCacheHelper.start(cache);
@@ -167,50 +165,15 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       }
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   protected void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes, Set<String> parentRemovedNodes,
-      Set<String> parentAddedNodes)
+   protected Log getLogger()
    {
-      ChangesHolder changes = searchManager.getChanges(removedNodes, addedNodes);
-      ChangesHolder parentChanges = parentSearchManager.getChanges(parentRemovedNodes, parentAddedNodes);
-
-      if (changes == null && parentChanges == null)
-      {
-         return;
-      }
-      String id = IdGenerator.generate();
-      try
-      {
-         PrivilegedJBossCacheHelper.put(cache, Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER,
-            new ChangesFilterListsWrapper(changes, parentChanges));
-      }
-      catch (CacheException e)
-      {
-         log.error(e.getLocalizedMessage(), e);
-         logErrorChanges(handler, removedNodes, addedNodes);
-         logErrorChanges(parentHandler, parentRemovedNodes, parentAddedNodes);
-      }
+      return log;
    }
 
-   /**
-    * Log errors
-    * @param logHandler
-    * @param removedNodes
-    * @param addedNodes
-    */
-   private void logErrorChanges(QueryHandler logHandler, Set<String> removedNodes, Set<String> addedNodes)
+   protected void doUpdateIndex(ChangesFilterListsWrapper changes)
    {
-      try
-      {
-
-         logHandler.logErrorChanges(addedNodes, removedNodes);
-      }
-      catch (IOException ioe)
-      {
-         log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
-      }
+      String id = IdGenerator.generate();
+      PrivilegedJBossCacheHelper.put(cache, Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER, changes);
    }
 
    /**

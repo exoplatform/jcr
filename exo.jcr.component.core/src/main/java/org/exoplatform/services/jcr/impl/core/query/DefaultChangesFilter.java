@@ -94,14 +94,7 @@ public class DefaultChangesFilter extends IndexerChangesFilter
       catch (IOException e)
       {
          log.error("Error indexing changes " + e, e);
-         try
-         {
-            handler.logErrorChanges(removedNodes, addedNodes);
-         }
-         catch (IOException ioe)
-         {
-            log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
-         }
+         logErrorChanges(handler, removedNodes, addedNodes);
       }
 
       try
@@ -115,16 +108,12 @@ public class DefaultChangesFilter extends IndexerChangesFilter
       catch (IOException e)
       {
          log.error("Error indexing changes " + e, e);
-         try
-         {
-            parentHandler.logErrorChanges(parentRemovedNodes, parentAddedNodes);
-         }
-         catch (IOException ioe)
-         {
-            log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
-         }
+         logErrorChanges(parentHandler, parentRemovedNodes, parentAddedNodes);
       }
-
    }
-
+   
+   protected Log getLogger()
+   {
+      return log;
+   }
 }

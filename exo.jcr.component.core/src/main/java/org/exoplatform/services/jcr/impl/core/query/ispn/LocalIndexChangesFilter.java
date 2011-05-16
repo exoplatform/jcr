@@ -21,26 +21,23 @@ package org.exoplatform.services.jcr.impl.core.query.ispn;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
-import org.exoplatform.services.jcr.impl.core.query.jbosscache.ChangesFilterListsWrapper;
-import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
-import org.infinispan.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.loaders.CacheLoaderManager;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.jcr.RepositoryException;
 
@@ -103,53 +100,16 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
          handler.init();
       }
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes, Set<String> parentRemovedNodes,
-      Set<String> parentAddedNodes)
+   
+   protected Log getLogger()
    {
-
-      ChangesHolder changes = searchManager.getChanges(removedNodes, addedNodes);
-      ChangesHolder parentChanges = parentSearchManager.getChanges(parentRemovedNodes, parentAddedNodes);
-
-      if (changes == null && parentChanges == null)
-      {
-         return;
-      }
-
-      ChangesKey changesKey = new ChangesKey(wsId, IdGenerator.generate());
-      try
-      {
-         cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING);
-         PrivilegedISPNCacheHelper.put(cache, changesKey, new ChangesFilterListsWrapper(changes, parentChanges));
-      }
-      catch (CacheException e)
-      {
-         log.error(e.getLocalizedMessage(), e);
-         logErrorChanges(handler, removedNodes, addedNodes);
-         logErrorChanges(parentHandler, parentRemovedNodes, parentAddedNodes);
-      }
+      return log;
    }
 
-   /**
-    * Log errors.
-    * 
-    * @param logHandler
-    * @param removedNodes
-    * @param addedNodes
-    */
-   private void logErrorChanges(QueryHandler logHandler, Set<String> removedNodes, Set<String> addedNodes)
+   protected void doUpdateIndex(ChangesFilterListsWrapper changes)
    {
-      try
-      {
-         logHandler.logErrorChanges(addedNodes, removedNodes);
-      }
-      catch (IOException ioe)
-      {
-         log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
-      }
+      ChangesKey changesKey = new ChangesKey(wsId, IdGenerator.generate());
+      cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING);
+      PrivilegedISPNCacheHelper.put(cache, changesKey, changes);
    }
 }

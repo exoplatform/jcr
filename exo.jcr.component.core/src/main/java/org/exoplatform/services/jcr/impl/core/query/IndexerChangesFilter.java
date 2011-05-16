@@ -23,9 +23,11 @@ import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +46,7 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    /**
     * Logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.DefaultChangesFilter");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerChangesFilter");
 
    protected final SearchManager searchManager;
 
@@ -78,6 +80,10 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
       this.indexingTree = indexingTree;
       this.handler = handler;
       this.parentHandler = parentHandler;
+      if (log.isDebugEnabled())
+      {
+         log.debug("Will the indexing being enrolled in global transactions : " + isTXAware());
+      }
    }
 
    /**
@@ -202,8 +208,55 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
     * @param removedNodes
     * @param addedNodes
     */
-   protected abstract void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes,
-      Set<String> parentRemovedNodes, Set<String> parentAddedNodes);
+   protected void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes, Set<String> parentRemovedNodes,
+      Set<String> parentAddedNodes)
+   {
+      ChangesHolder changes = searchManager.getChanges(removedNodes, addedNodes);
+      ChangesHolder parentChanges = parentSearchManager.getChanges(parentRemovedNodes, parentAddedNodes);
+
+      if (changes == null && parentChanges == null)
+      {
+         return;
+      }
+
+      try
+      {
+         doUpdateIndex(new ChangesFilterListsWrapper(changes, parentChanges));
+      }
+      catch (RuntimeException e)
+      {
+         if (isTXAware())
+         {
+            // The indexing is part of the global tx so the error needs to be thrown to
+            // allow to roll back other resources
+            throw e;
+         }
+         getLogger().error(e.getLocalizedMessage(), e);
+         logErrorChanges(handler, removedNodes, addedNodes);
+         logErrorChanges(parentHandler, parentRemovedNodes, parentAddedNodes);
+      }
+   }
+
+   protected void doUpdateIndex(ChangesFilterListsWrapper changes)
+   {
+   }
+
+   protected Log getLogger()
+   {
+      return log;
+   }
+   
+   protected void logErrorChanges(QueryHandler logHandler, Set<String> removedNodes, Set<String> addedNodes)
+   {
+      try
+      {
+         logHandler.logErrorChanges(addedNodes, removedNodes);
+      }
+      catch (IOException ioe)
+      {
+         getLogger().warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
+      }
+   }
 
    private void createNewOrAdd(String key, ItemState state, Map<String, List<ItemState>> updatedNodes)
    {
@@ -222,7 +275,7 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
     */
    public boolean isTXAware()
    {
-      return true;
+      return false;
    }
 
    /**
