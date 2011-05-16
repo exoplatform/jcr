@@ -70,9 +70,6 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="changesfilter-class"
-                        value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1/ws" />
                   </properties>
                </query-handler>
@@ -124,9 +121,6 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="changesfilter-class"
-                        value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1/ws1" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -186,9 +180,6 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="changesfilter-class"
-                        value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1/ws2" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -271,9 +262,6 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="changesfilter-class"
-                        value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1/ws3" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -351,9 +339,6 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="changesfilter-class"
-                        value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db2/ws" />
                   </properties>
                </query-handler>
@@ -411,9 +396,6 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="changesfilter-class"
-                        value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db2/ws1" />
                   </properties>
                </query-handler>
@@ -482,9 +464,6 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="changesfilter-class"
-                        value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1tck/ws" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -552,9 +531,6 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="changesfilter-class"
-                        value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1tck/ws1" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -621,9 +597,6 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="changesfilter-class"
-                        value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-indexer.xml" />
                      <property name="index-dir" value="target/temp/index/db1tck/ws2" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
