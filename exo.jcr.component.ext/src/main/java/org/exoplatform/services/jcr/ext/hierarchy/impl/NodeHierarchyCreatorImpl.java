@@ -129,7 +129,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
     */
    public void init(String repository) throws Exception
    {
-      init();
+      initBasePath(repository);
    }
 
    /**
@@ -137,7 +137,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
     */
    public void init() throws Exception
    {
-      initBasePath();
+      initBasePath(null);
    }
 
    private void createNode(Node rootNode, String path, String nodeType, List<String> mixinTypes,
@@ -150,14 +150,13 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
    private void processAddPathPlugin() throws Exception
    {
       Session session = null;
-      ManageableRepository currentRepo = jcrService_.getCurrentRepository();
       for (AddPathPlugin pathPlugin : pathPlugins_)
       {
          HierarchyConfig hierarchyConfig = pathPlugin.getPaths();
          if (hierarchyConfig == null)
          {
             continue;
-         }
+         }         
          List<JcrPath> jcrPaths = hierarchyConfig.getJcrPaths();
          if (jcrPaths == null)
          {
@@ -168,13 +167,17 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
          {
             workspaceNames.addAll(hierarchyConfig.getWorkspaces());
          }
-         workspaceNames.add(currentRepo.getConfiguration().getDefaultWorkspaceName());
+         String repositoryName = hierarchyConfig.getRepository();
+         ManageableRepository repository = repositoryName == null || repositoryName.isEmpty() ? 
+               jcrService_.getCurrentRepository() : 
+               jcrService_.getRepository(repositoryName);
+         
          for (String workspaceName : workspaceNames)
          {
             JcrPath currentjcrPath = null;
             try
             {
-               session = currentRepo.getSystemSession(workspaceName);
+               session = repository.getSystemSession(workspaceName);
                Node rootNode = session.getRootNode();
                for (JcrPath jcrPath : jcrPaths)
                {
@@ -205,13 +208,15 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       }
    }
 
-   private void initBasePath() throws Exception
+   private void initBasePath(String repositoryName) throws Exception
    {
       Session session = null;
-      ManageableRepository manageableRepository = jcrService_.getCurrentRepository();
+      ManageableRepository manageableRepository =
+         repositoryName == null || repositoryName.isEmpty() ? jcrService_.getCurrentRepository() : jcrService_
+            .getRepository(repositoryName);
       String defaultWorkspace = manageableRepository.getConfiguration().getDefaultWorkspaceName();
       String systemWorkspace = manageableRepository.getConfiguration().getSystemWorkspaceName();
-      boolean isSameWorksapce = defaultWorkspace.equalsIgnoreCase(systemWorkspace);
+      boolean isSameWorkspace = defaultWorkspace.equalsIgnoreCase(systemWorkspace);
       String[] workspaceNames = manageableRepository.getWorkspaceNames();
       for (AddPathPlugin pathPlugin : pathPlugins_)
       {
@@ -227,7 +232,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
          }
          for (String workspaceName : workspaceNames)
          {
-            if (!isSameWorksapce && workspaceName.equalsIgnoreCase(systemWorkspace))
+            if (!isSameWorkspace && workspaceName.equalsIgnoreCase(systemWorkspace))
                continue;
             JcrPath currentjcrPath = null;
             try
