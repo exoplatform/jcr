@@ -420,9 +420,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       catch (RepositoryConfigurationException e)
       {
-         this.checkSNSNewConnection =
-            DBConstants.DB_DIALECT_SYBASE.equals(this.dbDialect)
-               || DBConstants.DB_DIALECT_HSQLDB.equals(this.dbDialect) ? false : true;
+         // don't use new connection by default
+         this.checkSNSNewConnection = false;
       }
 
       // ------------- Values swap config ------------------
@@ -890,7 +889,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    {
       return containerName;
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -926,6 +925,22 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void start()
    {
+      // if isolation level lesser then TRANSACTION_READ_COMMITTED, print a warning
+      try
+      {
+         if (getConnectionFactory().getJdbcConnection().getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
+         {
+            LOG.warn("Wrong RDBMS configuration, please check and set READ_COMMITTED or higher isolation level.");
+         }
+      }
+      catch (SQLException e)
+      {
+         LOG.error("Error checking isolation level configuration.", e);
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error("Error checking isolation level configuration.", e);
+      }
    }
 
    /**
@@ -1279,7 +1294,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             restoreTableRule.setConvertColumnIndex(convertColumnIndex);
          }
          tables.put(dstTableName, restoreTableRule);
-         
+
          restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
 
          // prepare value storage restorer
@@ -1394,11 +1409,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    {
       if (isReindexingSupport())
       {
-         return new JdbcNodeDataIndexingIterator(connFactory, pageSize);         
+         return new JdbcNodeDataIndexingIterator(connFactory, pageSize);
       }
       throw new UnsupportedOperationException(
-               "The method getNodeDataIndexingIterator is not supported for this type of connection "
-                        + "use the complex queries instead");
+         "The method getNodeDataIndexingIterator is not supported for this type of connection "
+            + "use the complex queries instead");
    }
 
    /**

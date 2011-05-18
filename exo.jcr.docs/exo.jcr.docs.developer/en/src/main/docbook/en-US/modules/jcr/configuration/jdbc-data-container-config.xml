@@ -57,10 +57,10 @@
       </itemizedlist></para>
 
     <para><note>
-        <para>Please note, that JCR supports only READ_COMMITED isolation
-        level and any other RDBMS configurations can cause some side-effects
-        and issues. So, please, make sure proper isolation level is configured
-        on database server side.</para>
+        <para>Please note, that JCR requires at least READ_COMMITED isolation
+        level and other RDBMS configurations can cause some side-effects and
+        issues. So, please, make sure proper isolation level is configured on
+        database server side.</para>
       </note>Each database software supports ANSI SQL standards but also has
     its own specifics. So, each database has its own configuration in eXo JCR
     as a database dialect parameter. If you need a more detailed configuration
