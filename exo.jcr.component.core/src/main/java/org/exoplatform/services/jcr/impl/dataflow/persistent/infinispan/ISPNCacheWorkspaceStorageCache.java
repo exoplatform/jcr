@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -1179,6 +1181,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    /**
     * {@inheritDoc}
     */
+   @Managed
+   @ManagedDescription("Remove all the existing items from the cache")   
    public void clean() throws BackupException
    {
       if (cache.getStatus() == ComponentStatus.RUNNING)

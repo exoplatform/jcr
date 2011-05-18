@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.dataflow.persistent;
 
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -34,6 +38,8 @@ import java.util.List;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: WorkspaceStorageCache.java 13869 2008-05-05 08:40:10Z pnedonosko $
  */
+@Managed
+@NameTemplate(@Property(key = "service", value = "Cache"))
 public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
 {
 
@@ -172,6 +178,8 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * 
     * @return enabled status flag, if true then cache is enabled
     */
+   @Managed
+   @ManagedDescription("Indicates whether the cache is enabled or not")   
    boolean isEnabled();
 
    /**
@@ -179,6 +187,8 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * 
     * @return long value
     */
+   @Managed
+   @ManagedDescription("Indicates the total amount of items into the cache")   
    long getSize();
 
    /**

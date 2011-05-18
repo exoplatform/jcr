@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -52,8 +54,8 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.config.Configuration.CacheMode;
+import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.picocontainer.Startable;
 
@@ -1581,6 +1583,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    /**
     * {@inheritDoc}
     */
+   @Managed
+   @ManagedDescription("Remove all the existing items from the cache")   
    public void clean() throws BackupException
    {
       cleanCache();
