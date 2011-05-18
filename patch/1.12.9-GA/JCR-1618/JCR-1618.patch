@@ -1,26 +1,77 @@
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/data-container.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/data-container.xml	(revision 4390)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/data-container.xml	(working copy)
+@@ -96,18 +96,6 @@
+       <programlisting>boolean isCheckSNSNewConnection();
+ </programlisting>
+ 
+-      <important>
+-        <title>New connection for SNS</title>
+-
+-        <para>It is neccessary to check the name of nodes when they have the
+-        same names. Usually, new Workspace Storage Connection is used for this
+-        purpose. The improvement came from JDBC Workspace Data Container,
+-        which shows a better performance on Oracle RDBMS when using new
+-        connection for checking SNS existence. But later, this causes to
+-        deadlocks on Sybase RDBMS, so this feature is made as an optional and
+-        configurable one.</para>
+-      </important>
+-
+       <para>Container initialization is only based on a configuration. After
+       the container has been created, it's not possible to change parameters.
+       Configuration consists of implementation class and set of properties and
 Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/jdbc-data-container-config.xml
 ===================================================================
---- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/jdbc-data-container-config.xml	(revision 4367)
-+++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/jdbc-data-container-config.xml	(revision 4368)
-@@ -56,11 +56,16 @@
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/jdbc-data-container-config.xml	(revision 4390)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/jdbc-data-container-config.xml	(working copy)
+@@ -56,6 +56,13 @@
          </listitem>
        </itemizedlist></para>
  
--    <para>Each database software supports ANSI SQL standards but also has its
--    own specifics. So, each database has its own configuration in eXo JCR as a
--    database dialect parameter. If you need a more detailed configuration of
--    the database, it's possible to do that by editing the metadata SQL-script
--    files.</para>
-+    <para><note>
-+        <para>Please note, that JCR supports only READ_COMMITED isolation
-+        level and any other RDBMS configurations can cause some side-effects
-+        and issues. So, please, make sure proper isolation level is configured
-+        on database server side.</para>
-+      </note>Each database software supports ANSI SQL standards but also has
-+    its own specifics. So, each database has its own configuration in eXo JCR
-+    as a database dialect parameter. If you need a more detailed configuration
-+    of the database, it's possible to do that by editing the metadata
-+    SQL-script files.</para>
++    <note>
++      <para>Please note, that JCR requires at least READ_COMMITED isolation
++      level and other RDBMS configurations can cause some side-effects and
++      issues. So, please, make sure proper isolation level is configured on
++      database server side.</para>
++    </note>
++
+     <para>Each database software supports ANSI SQL standards but also has its
+     own specifics. So, each database has its own configuration in eXo JCR as a
+     database dialect parameter. If you need a more detailed configuration of
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(revision 4390)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(working copy)
+@@ -370,7 +370,7 @@
+       }
+       catch (RepositoryConfigurationException e)
+       {
+-         this.checkSNSNewConnection = DBConstants.DB_DIALECT_SYBASE.equals(this.dbDialect) ? false : true;
++         this.checkSNSNewConnection = false;
+       }
  
-     <para>In case the non-ANSI node name is used, it's necessary to use a
-     database with MultiLanguage support[TODO link to MultiLanguage]. Some JDBC
+       // ------------- Values swap config ------------------
+@@ -836,6 +836,22 @@
+     */
+    public void start()
+    {
++      // if isolation level lesser then TRANSACTION_READ_COMMITTED, print a warning
++      try
++      {
++         if (getConnectionFactory().getJdbcConnection().getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
++         {
++            LOG.warn("Wrong RDBMS configuration, please check and set READ_COMMITTED or higher isolation level.");
++         }
++      }
++      catch (SQLException e)
++      {
++         LOG.error("Error checking isolation level configuration.", e);
++      }
++      catch (RepositoryException e)
++      {
++         LOG.error("Error checking isolation level configuration.", e);
++      }
+    }
+ 
+    /**
