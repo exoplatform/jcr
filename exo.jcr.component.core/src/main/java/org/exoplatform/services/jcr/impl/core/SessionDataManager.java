@@ -966,7 +966,7 @@ public class SessionDataManager implements ItemDataConsumer
    public int getLastOrderNumber(NodeData parent) throws RepositoryException
    {
       int lastOrderNumber = changesLog.getLastChildOrderNumber(parent.getIdentifier());
-      int lastPersistedNodeOrderNumber = transactionableManager.getLastOrderNumber(parent);
+      int lastPersistedNodeOrderNumber = isNew(parent.getIdentifier()) ? -1 : transactionableManager.getLastOrderNumber(parent);
 
       return Math.max(lastPersistedNodeOrderNumber, lastOrderNumber);
    }
@@ -977,7 +977,7 @@ public class SessionDataManager implements ItemDataConsumer
    public int getChildNodesCount(NodeData parent) throws RepositoryException
    {
       int childsCount =
-         changesLog.getChildNodesCount(parent.getIdentifier()) + transactionableManager.getChildNodesCount(parent);
+         changesLog.getChildNodesCount(parent.getIdentifier()) + (isNew(parent.getIdentifier()) ? 0 : transactionableManager.getChildNodesCount(parent));
       if (childsCount < 0)
       {
          throw new InvalidItemStateException("Node's child nodes were changed in another Session "
@@ -1992,6 +1992,10 @@ public class SessionDataManager implements ItemDataConsumer
       }
       else
       {
+         if (isNew(rootData.getIdentifier()))
+         {
+            return Collections.emptyList();
+         }
          return dataManager.getChildNodesData((NodeData)rootData);
       }
    }
@@ -2121,7 +2125,7 @@ public class SessionDataManager implements ItemDataConsumer
       throws RepositoryException
    {
 
-      if (parent.isNode())
+      if (parent.isNode() && !isNew(parent.getIdentifier()))
       {
          if (action != MERGE_PROPS)
          {
