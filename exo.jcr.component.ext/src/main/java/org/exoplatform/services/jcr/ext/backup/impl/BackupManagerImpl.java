@@ -473,21 +473,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       currentRepositoryBackups = Collections.synchronizedSet(new HashSet<RepositoryBackupChain>());
 
-      // get FileCleaner from container's component FileCleanerHolder
-      try
-      {
-         ManageableRepository repository = repoService.getCurrentRepository();
-         String workspaceName = repository.getConfiguration().getSystemWorkspaceName();
-
-         this.fileCleaner =
-            ((FileCleanerHolder)repository.getWorkspaceContainer(workspaceName).getComponent(FileCleanerHolder.class))
-               .getFileCleaner();
-      }
-      catch (RepositoryException e)
-      {
-         // do nothing. should not happens
-      }
-
       messages = new BackupMessagesLog(MESSAGES_MAXSIZE);
 
       scheduler = new BackupScheduler(this, messages);
@@ -848,6 +833,21 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public void start()
    {
+      // get FileCleaner from container's component FileCleanerHolder
+      try
+      {
+         ManageableRepository repository = repoService.getCurrentRepository();
+         String workspaceName = repository.getConfiguration().getSystemWorkspaceName();
+
+         this.fileCleaner =
+            ((FileCleanerHolder)repository.getWorkspaceContainer(workspaceName).getComponent(FileCleanerHolder.class))
+               .getFileCleaner();
+      }
+      catch (RepositoryException e)
+      {
+         // do nothing. should not happens
+      }
+
       //remove if exists all old jcrrestorewi*.tmp files.
       File[] files = PrivilegedFileHelper.listFiles(tempDir, new JcrRestoreWiFilter());
       for (int i = 0; i < files.length; i++)
@@ -856,7 +856,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
       
       // start all scheduled before tasks
-
       if (registryService != null && !registryService.getForceXMLConfigurationValue(initParams))
       {
          SessionProvider sessionProvider = SessionProvider.createSystemProvider();
