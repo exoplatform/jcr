@@ -930,7 +930,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          if (getConnectionFactory().getJdbcConnection().getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
          {
-            LOG.warn("Wrong RDBMS configuration, please check and set READ_COMMITTED or higher isolation level.");
+            LOG.warn("Wrong default isolation level, please set the default isolation level to READ_COMMITTED or higher. Other default isolation levels are not supported.");
          }
       }
       catch (SQLException e)
