@@ -1,3 +1,15 @@
+Index: exo.jcr.component.webdav/pom.xml
+===================================================================
+--- exo.jcr.component.webdav/pom.xml	(revision 4403)
++++ exo.jcr.component.webdav/pom.xml	(working copy)
+@@ -107,6 +107,7 @@
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-surefire-plugin</artifactId>
+           <configuration>
++            <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory}</argLine>
+             <excludes>
+               <exclude>**/TestUtils.java</exclude>
+               <exclude>**/OrderPatchTest.java</exclude>
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/util/TesterConfigurationHelper.java
 ===================================================================
 --- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/util/TesterConfigurationHelper.java	(revision 4403)
