@@ -22,6 +22,9 @@ import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -38,6 +41,13 @@ public class TestMultipleListenersNotifying extends TestCase
       public TestDataManager()
       {
          super(null, new SystemDataContainerHolder(null));
+      }
+
+      @Override
+      public void save(ItemStateChangesLog changes) throws InvalidItemStateException, UnsupportedOperationException,
+         RepositoryException
+      {
+         super.save(new ChangesLogWrapper(changes));
       }
    }
 

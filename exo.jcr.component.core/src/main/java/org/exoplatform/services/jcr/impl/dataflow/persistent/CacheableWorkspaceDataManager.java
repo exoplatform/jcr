@@ -713,19 +713,21 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private void doSave(final ItemStateChangesLog changesLog) throws RepositoryException
    {
+      ChangesLogWrapper logWrapper = new ChangesLogWrapper(changesLog);
+
       if (isTxAware())
       {
          if (txResourceManager != null && txResourceManager.isGlobalTxActive())
          {
-            super.save(changesLog);
-            registerListener(changesLog);
+            super.save(logWrapper);
+            registerListener(logWrapper);
          }
          else
          {
             doBegin();
             try
             {
-               super.save(changesLog);
+               super.save(logWrapper);
             }
             catch (Exception e)
             {
@@ -741,16 +743,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             }
             doCommit();
             // notify listeners after storage commit
-            notifySaveItems(changesLog, false);
+            notifySaveItems(logWrapper.getChangesLog(), false);
          }
       }
       else
       {
          // save normally 
-         super.save(changesLog);
+         super.save(logWrapper);
 
          // notify listeners after storage commit
-         notifySaveItems(changesLog, false);
+         notifySaveItems(logWrapper.getChangesLog(), false);
       }      
    }
    
@@ -800,13 +802,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          LOG.error("Rollback error ", e);
       }
    }
-   
+
    /**
     * This will allow to notify listeners that are not TxAware once the Tx is committed
-    * @param changesLog
+    * @param logWrapper
     * @throws RepositoryException if any error occurs
     */
-   private void registerListener(final ItemStateChangesLog changesLog) throws RepositoryException
+   private void registerListener(final ChangesLogWrapper logWrapper) throws RepositoryException
    {
       try
       {
@@ -842,7 +844,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   // The listeners will need to be executed outside the current tx so we suspend
                   // the current tx we can face enlistment issues on product like ISPN
                   transactionManager.suspend();
-                  notifySaveItems(changesLog, false);
+                  notifySaveItems(logWrapper.getChangesLog(), false);
                   // Since the resume method could cause issue with some TM at this stage, we don't resume the tx
                }
             }

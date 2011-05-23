@@ -99,7 +99,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    protected final List<MandatoryItemsPersistenceListener> mandatoryListeners;
 
    /**
-    * Persistent level liesteners filters.
+    * Persistent level listeners filters.
     */
    protected final List<ItemsPersistenceListenerFilter> liestenerFilters;
 
@@ -112,7 +112,59 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * The resource manager
     */
    private final TransactionableResourceManager txResourceManager;
-   
+
+   /**
+    * Changes log wrapper adds possibility to replace changes log.
+    * Changes log contains transient data on save but listeners should be notifyed
+    * with persisted data only.
+    */
+   protected class ChangesLogWrapper implements ItemStateChangesLog
+   {
+      private ItemStateChangesLog log;
+
+      ChangesLogWrapper(ItemStateChangesLog log)
+      {
+         this.log = log;
+      }
+
+      /**
+       * Replace log with persisted data only.
+       */
+      protected void setLog(ItemStateChangesLog log)
+      {
+         this.log = log;
+      }
+      
+      protected ItemStateChangesLog getChangesLog()
+      {
+         return log;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public List<ItemState> getAllStates()
+      {
+         return log.getAllStates();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public int getSize()
+      {
+         return log.getSize();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public String dump()
+      {
+         return log.dump();
+      }
+   }
+
    /**
     * WorkspacePersistentDataManager constructor.
     * 
@@ -152,8 +204,10 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public void save(final ItemStateChangesLog changesLog) throws RepositoryException
+   public void save(final ChangesLogWrapper logWrapper) throws RepositoryException
    {
+      final ItemStateChangesLog changesLog = logWrapper.getChangesLog();
+
       // check if this workspace container is not read-only
       if (readOnly && !(changesLog instanceof ReadOnlyThroughChanges))
       {
@@ -191,6 +245,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // we don't support other types now... i.e. add else-if for that type here
             throw new RepositoryException("Unsupported changes log class " + changesLog.getClass());
          }
+         // replace log with persisted data only
+         logWrapper.setLog(persistedLog);
+
          notifySaveItems(persistedLog, true);
          onCommit(persister, mode);
          failed = false;
