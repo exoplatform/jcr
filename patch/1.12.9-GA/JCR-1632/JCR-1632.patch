@@ -1,0 +1,76 @@
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/util/TesterConfigurationHelper.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/util/TesterConfigurationHelper.java	(revision 4403)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/util/TesterConfigurationHelper.java	(working copy)
+@@ -187,7 +187,7 @@
+ 
+       // Indexer
+       ArrayList qParams = new ArrayList();
+-      qParams.add(new SimpleParameterEntry("indexDir", "../temp/index/" + IdGenerator.generate()));
++      qParams.add(new SimpleParameterEntry("indexDir", "target/temp/index/" + IdGenerator.generate()));
+       QueryHandlerEntry qEntry =
+          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
+ 
+@@ -211,7 +211,7 @@
+       LockPersisterEntry persisterEntry = new LockPersisterEntry();
+       persisterEntry.setType("org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister");
+       ArrayList lpParams = new ArrayList();
+-      lpParams.add(new SimpleParameterEntry("path", "../temp/lock"));
++      lpParams.add(new SimpleParameterEntry("path", "target/temp/lock"));
+       persisterEntry.setParameters(lpParams);
+       lockManagerEntry.setPersister(persisterEntry);
+       workspaceEntry.setLockManager(lockManagerEntry);
+Index: exo.jcr.component.core/src/test/resources/log4j.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/log4j.properties	(revision 4403)
++++ exo.jcr.component.core/src/test/resources/log4j.properties	(working copy)
+@@ -17,8 +17,7 @@
+ 
+ # 'file' is set to be a FileAppender.
+ log4j.appender.file=org.apache.log4j.FileAppender
+-#log4j.appender.file.File=jcr.log
+-log4j.appender.file.File=nul
++log4j.appender.file.File=target/jcr.log
+ 
+ # 'file' uses PatternLayout.
+ log4j.appender.file.layout=org.apache.log4j.PatternLayout
+Index: exo.jcr.component.core/pom.xml
+===================================================================
+--- exo.jcr.component.core/pom.xml	(revision 4403)
++++ exo.jcr.component.core/pom.xml	(working copy)
+@@ -364,7 +364,7 @@
+                            <overWrite>false</overWrite>
+                         </artifactItem>
+                      </artifactItems>
+-                     <outputDirectory>${project.build.testSourceDirectory}</outputDirectory>
++                     <outputDirectory>${project.build.directory}/jackrabbit-jcr-tests</outputDirectory>
+                   </configuration>
+                </execution>
+             </executions>
+@@ -373,7 +373,7 @@
+             <groupId>org.apache.maven.plugins</groupId>
+             <artifactId>maven-surefire-plugin</artifactId>
+             <configuration>
+-               <argLine>${env.MAVEN_OPTS}</argLine>
++               <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory}</argLine>
+                <systemProperties>
+                   <property>
+                      <name>jcr.test.configuration.file</name>
+@@ -558,7 +558,7 @@
+                   <artifactId>maven-surefire-plugin</artifactId>
+                   <configuration>
+                      <!-- TAKE CARE TO UPDATE ALSO run-all PROFILE -->
+-                     <argLine>${env.MAVEN_OPTS}</argLine>
++                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory}</argLine>
+                      <systemProperties>
+                         <property>
+                            <name>jcr.test.configuration.file</name>
+@@ -645,7 +645,7 @@
+                   <artifactId>maven-surefire-plugin</artifactId>
+                   <configuration>
+                      <!-- TAKE CARE TO UPDATE ALSO run-tck PROFILE -->
+-                     <argLine>${env.MAVEN_OPTS}</argLine>
++                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory}</argLine>
+                      <systemProperties>
+                         <property>
+                            <name>jcr.test.configuration.file</name>
