@@ -235,7 +235,7 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
     */
    public boolean isTXAware()
    {
-      return true;
+      return false;
    }
 
 }
