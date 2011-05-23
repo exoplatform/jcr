@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<connector xmlns="http://java.sun.com/xml/ns/j2ee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+           http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
+           version="1.5">
+
+   <description>Resource Adapter for eXo JCR</description>
+   <display-name>eXo JCR ResourceAdapter</display-name>
+
+   <vendor-name>eXo Platform SAS</vendor-name>
+   <eis-type />
+   <resourceadapter-version>${project.version}</resourceadapter-version>
+   <license>
+      <license-required>false</license-required>
+   </license>
+   
+   <resourceadapter>
+      <resourceadapter-class>org.exoplatform.connectors.jcr.impl.adapter.RepositoryResourceAdapter</resourceadapter-class>
+      <outbound-resourceadapter>
+         <connection-definition>
+            <managedconnectionfactory-class>org.exoplatform.connectors.jcr.impl.adapter.ManagedSessionFactory</managedconnectionfactory-class>
+            <config-property>
+               <description>In case of the portal mode, if no portal container can be found in the context of the request, the adapter will use the value of this parameter to get the name of the expected portal container to create the JCR sessions. In case of a standalone mode, this parameter is not used. This parameter is optional, by default the default portal container will be used.</description>
+               <config-property-name>PortalContainer</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            <config-property>
+               <description>The repository name used to create JCR sessions. This parameter is optional, by default the current repository will be used.</description>
+               <config-property-name>Repository</config-property-name>
+               <config-property-type>java.lang.String</config-property-type>
+            </config-property>
+            <connectionfactory-interface>org.exoplatform.connectors.jcr.adapter.SessionFactory</connectionfactory-interface>
+            <connectionfactory-impl-class>org.exoplatform.connectors.jcr.impl.adapter.SessionFactoryImpl</connectionfactory-impl-class>
+            <connection-interface>javax.jcr.Session</connection-interface>
+            <connection-impl-class>org.exoplatform.services.jcr.impl.core.SessionImpl</connection-impl-class>
+         </connection-definition>
+         <transaction-support>XATransaction</transaction-support>
+         <authentication-mechanism>
+            <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>
+            <credential-interface>javax.resource.spi.security.PasswordCredential</credential-interface>
+         </authentication-mechanism>
+         <reauthentication-support>false</reauthentication-support>
+      </outbound-resourceadapter>
+   </resourceadapter>
+</connector>

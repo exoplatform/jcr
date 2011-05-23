@@ -191,7 +191,7 @@
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
-        <artifactId>exo.jcr.connectors.localadapter</artifactId>
+        <artifactId>exo.jcr.connectors.jca</artifactId>
         <type>rar</type>
         <version>${project.version}</version>
       </dependency>
@@ -473,7 +473,7 @@
     <module>exo.jcr.component.ext</module>
     <module>exo.jcr.component.ftp</module>
     <module>exo.jcr.component.webdav</module>
-    <module>exo.jcr.connectors.localadapter</module>
+    <module>exo.jcr.connectors.jca</module>
     <module>exo.jcr.framework.command</module>
     <module>exo.jcr.framework.web</module>
     <module>exo.jcr.framework.ftpclient</module>

@@ -140,10 +140,6 @@
          <artifactId>picocontainer</artifactId>
       </dependency>
       <dependency>
-         <groupId>javax.resource</groupId>
-         <artifactId>connector-api</artifactId>
-      </dependency>
-      <dependency>
          <groupId>javax.transaction</groupId>
          <artifactId>jta</artifactId>
       </dependency>

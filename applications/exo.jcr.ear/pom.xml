@@ -35,16 +35,66 @@
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
-      <artifactId>exo.jcr.connectors.localadapter</artifactId>
+      <artifactId>exo.jcr.connectors.jca</artifactId>
       <scope>runtime</scope>
       <type>rar</type>
     </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.component.core</artifactId>
+      <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.xml.parsers</groupId>
+          <artifactId>jaxp-ri</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.component.ext</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.component.ftp</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.framework.command</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.framework.ftpclient</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.framework.web</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.ws</groupId>
+      <artifactId>exo.ws.frameworks.servlet</artifactId>
+      <scope>runtime</scope>
+    </dependency>    
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.rest</artifactId>
       <scope>runtime</scope>
       <type>war</type>
     </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <scope>runtime</scope>
+    </dependency>    
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.browser</artifactId>
@@ -79,8 +129,7 @@
               <role-name>administrators</role-name>
             </security-role>
           </security>
-          <!-- all deps jars inside the rar, so copy all jars in-self -->
-          <defaultLibBundleDir>../APP-INF/lib</defaultLibBundleDir>
+          <defaultLibBundleDir>APP-INF/lib</defaultLibBundleDir>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
@@ -89,7 +138,7 @@
           <modules>
             <rarModule>
               <groupId>org.exoplatform.jcr</groupId>
-              <artifactId>exo.jcr.connectors.localadapter</artifactId>
+              <artifactId>exo.jcr.connectors.jca</artifactId>
               <bundleFileName>exo-jcr.rar</bundleFileName>
             </rarModule>
             <webModule>
