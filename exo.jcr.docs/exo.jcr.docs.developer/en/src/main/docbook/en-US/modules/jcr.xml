@@ -129,6 +129,9 @@
   <xi:include href="jcr/statistics.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
               
+  <xi:include href="jcr/jta.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="jcr/other/acl.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />                            
               

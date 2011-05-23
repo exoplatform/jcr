@@ -49,6 +49,7 @@ import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.transaction.ActionNonTxAware;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheStatus;
@@ -73,7 +74,6 @@ import java.util.Set;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -165,7 +165,234 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    protected final Fqn<String> childPropsList;
 
    protected final Fqn<String> rootFqn;
+   
+   private final CacheActionNonTxAware<Void, Void> commitTransaction = new CacheActionNonTxAware<Void, Void>()
+   {
+      @Override
+      protected Void execute(Void arg) throws RuntimeException
+      {
+         cache.commitTransaction();
+         return null;
+      }
+   };
 
+   private final CacheActionNonTxAware<ItemData, String> getFromCacheById =
+      new CacheActionNonTxAware<ItemData, String>()
+      {
+         @Override
+         protected ItemData execute(String id) throws RuntimeException
+         {
+            return getFromCacheById(id);
+         }
+      };
+
+   private final CacheActionNonTxAware<List<NodeData>, NodeData> getChildNodes =
+      new CacheActionNonTxAware<List<NodeData>, NodeData>()
+      {
+         @Override
+         protected List<NodeData> execute(NodeData parent) throws RuntimeException
+         {
+            // empty Set<Object> marks that there is no child nodes
+            // get list of children uuids
+            final Set<Object> set =
+               (Set<Object>)cache.get(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST);
+            if (set != null)
+            {
+               final List<NodeData> childs = new ArrayList<NodeData>();
+
+               for (Object child : set)
+               {
+                  NodeData node = (NodeData)cache.get(makeItemFqn((String)child), ITEM_DATA);
+
+                  if (node == null || node instanceof NullItemData)
+                  {
+                     return null;
+                  }
+
+                  childs.add(node);
+               }
+
+               // order children by orderNumber, as HashSet returns children in other order
+               Collections.sort(childs, new NodesOrderComparator<NodeData>());
+
+               return childs;
+            }
+            else
+            {
+               return null;
+            }
+         }
+      };
+
+   private final CacheActionNonTxAware<ItemData, Object> getFromCacheByPath =
+      new CacheActionNonTxAware<ItemData, Object>()
+      {
+         @Override
+         protected ItemData execute(Object... args) throws RuntimeException
+         {
+            String parentId = (String)args[0];
+            QPathEntry name = (QPathEntry)args[1];
+            ItemType itemType = (ItemType)args[2];
+            String itemId = null;
+
+            if (itemType == ItemType.UNKNOWN)
+            {
+               // Try as node first.
+               itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
+
+               if (itemId == null || itemId.equals(NullItemData.NULL_ID))
+               {
+                  // node with such a name is not found or marked as not-exist, so check the properties
+                  String propId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
+                  if (propId != null)
+                  {
+                     itemId = propId;
+                  }
+               }
+            }
+            else if (itemType == ItemType.NODE)
+            {
+               itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
+            }
+            else
+            {
+               itemId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
+            }
+
+            if (itemId != null)
+            {
+               if (itemId.equals(NullItemData.NULL_ID))
+               {
+                  if (itemType == ItemType.UNKNOWN || itemType == ItemType.NODE)
+                  {
+                     return new NullNodeData();
+                  }
+                  else
+                  {
+                     return new NullPropertyData();
+                  }
+               }
+               else
+               {
+                  return get(itemId);
+               }
+            }
+            return null;
+         }
+      };
+
+   private final CacheActionNonTxAware<Integer, NodeData> getChildNodesCount =
+      new CacheActionNonTxAware<Integer, NodeData>()
+      {
+         @Override
+         protected Integer execute(NodeData parent) throws RuntimeException
+         {
+            // get list of children uuids
+            final Set<Object> set =
+               (Set<Object>)cache.get(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST);
+
+            return set != null ? set.size() : -1;
+         }
+      };
+      
+   private final CacheActionNonTxAware<List<PropertyData>, Object> getChildProps =
+      new CacheActionNonTxAware<List<PropertyData>, Object>()
+      {
+         @Override
+         protected List<PropertyData> execute(Object... args) throws RuntimeException
+         {
+            String parentId = (String)args[0];
+            boolean withValue = (Boolean)args[1];
+            // get set of property uuids
+            final Set<Object> set = (Set<Object>)cache.get(makeChildListFqn(childPropsList, parentId), ITEM_LIST);
+            if (set != null)
+            {
+               final List<PropertyData> childs = new ArrayList<PropertyData>();
+
+               for (Object child : set)
+               {
+                  PropertyData prop = (PropertyData)cache.get(makeItemFqn((String)child), ITEM_DATA);
+                  if (prop == null || prop instanceof NullItemData)
+                  {
+                     return null;
+                  }
+                  if (withValue && prop.getValues().size() <= 0)
+                  {
+                     // don't return list of empty-valued props (but listChildProperties() can)
+                     return null;
+                  }
+                  childs.add(prop);
+               }
+               return childs;
+            }
+            else
+            {
+               return null;
+            }
+         }
+      };
+     
+   private final CacheActionNonTxAware<List<PropertyData>, String> getReferencedProperties =
+      new CacheActionNonTxAware<List<PropertyData>, String>()
+      {
+         @Override
+         protected List<PropertyData> execute(String identifier) throws RuntimeException
+         {
+            // get set of property uuids
+            final Set<String> set = (Set<String>)cache.get(makeRefFqn(identifier), ITEM_LIST);
+            if (set != null)
+            {
+               final List<PropertyData> props = new ArrayList<PropertyData>();
+
+               for (String propId : set)
+               {
+                  PropertyData prop = (PropertyData)cache.get(makeItemFqn(propId), ITEM_DATA);
+                  if (prop == null || prop instanceof NullItemData)
+                  {
+                     return null;
+                  }
+
+                  // add property as many times as has referenced values
+                  List<ValueData> lData = prop.getValues();
+                  for (int i = 0, length = lData.size(); i < length; i++)
+                  {
+                     ValueData vdata = lData.get(i);
+                     try
+                     {
+                        if (new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING).equals(identifier))
+                        {
+                           props.add(prop);
+                        }
+                     }
+                     catch (IllegalStateException e)
+                     {
+                        // Do not nothing.
+                     }
+                     catch (IOException e)
+                     {
+                        // Do not nothing.
+                     }
+                  }
+               }
+               return props;
+            }
+            else
+            {
+               return null;
+            }
+         }
+      };
+
+   private final CacheActionNonTxAware<Long, Void> getSize = new CacheActionNonTxAware<Long, Void>()
+   {
+      @Override
+      protected Long execute(Void arg) throws RuntimeException
+      {
+         // Total number of JBC nodes in the cache - the total amount of resident nodes
+         return numNodes(cache.getNode(rootFqn)) - 7;
+      }
+   };
+      
    /**
     * Indicates whether the cache has already been initialized or not
     */
@@ -683,60 +910,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    public ItemData get(String parentId, QPathEntry name, ItemType itemType)
    {
-      String itemId = null;
-
-      if (itemType == ItemType.UNKNOWN)
-      {
-         // Try as node first.
-         itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
-
-         if (itemId == null || itemId.equals(NullItemData.NULL_ID))
-         {
-            // node with such a name is not found or marked as not-exist, so check the properties
-            String propId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
-            if (propId != null)
-            {
-               itemId = propId;
-            }
-         }
-      }
-      else if (itemType == ItemType.NODE)
-      {
-         itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
-      }
-      else
-      {
-         itemId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
-      }
-
-      if (itemId != null)
-      {
-         if (itemId.equals(NullItemData.NULL_ID))
-         {
-            if (itemType == ItemType.UNKNOWN || itemType == ItemType.NODE)
-            {
-               return new NullNodeData();
-            }
-            else
-            {
-               return new NullPropertyData();
-            }
-         }
-         else
-         {
-            return get(itemId);
-         }
-      }
-
-      return null;
+      return getFromCacheByPath.run(parentId, name, itemType);
    }
-
+   
    /**
     * {@inheritDoc}
     */
    public ItemData get(String id)
    {
-      return getFromCacheById(id);
+      return getFromCacheById.run(id);
    }
 
    /**
@@ -744,47 +926,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    public List<NodeData> getChildNodes(final NodeData parent)
    {
-      // empty Set<Object> marks that there is no child nodes
-      // get list of children uuids
-      final Set<Object> set =
-         (Set<Object>)cache.get(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST);
-      if (set != null)
-      {
-         final List<NodeData> childs = new ArrayList<NodeData>();
-
-         for (Object child : set)
-         {
-            NodeData node = (NodeData)cache.get(makeItemFqn((String)child), ITEM_DATA);
-
-            if (node == null || node instanceof NullItemData)
-            {
-               return null;
-            }
-
-            childs.add(node);
-         }
-
-         // order children by orderNumber, as HashSet returns children in other order
-         Collections.sort(childs, new NodesOrderComparator<NodeData>());
-
-         return childs;
-      }
-      else
-      {
-         return null;
-      }
+      return getChildNodes.run(parent);
    }
-
+   
    /**
     * {@inheritDoc}
     */
    public int getChildNodesCount(NodeData parent)
    {
-      // get list of children uuids
-      final Set<Object> set =
-         (Set<Object>)cache.get(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST);
-
-      return set != null ? set.size() : -1;
+      return getChildNodesCount.run(parent);
    }
 
    /**
@@ -802,54 +952,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       return getChildProps(parent.getIdentifier(), false);
    }
-
+   
    /**
     * {@inheritDoc}
     */
    public List<PropertyData> getReferencedProperties(String identifier)
    {
-      // get set of property uuids
-      final Set<String> set = (Set<String>)cache.get(makeRefFqn(identifier), ITEM_LIST);
-      if (set != null)
-      {
-         final List<PropertyData> props = new ArrayList<PropertyData>();
-
-         for (String propId : set)
-         {
-            PropertyData prop = (PropertyData)cache.get(makeItemFqn(propId), ITEM_DATA);
-            if (prop == null || prop instanceof NullItemData)
-            {
-               return null;
-            }
-
-            // add property as many times as has referenced values
-            List<ValueData> lData = prop.getValues();
-            for (int i = 0, length = lData.size(); i < length; i++)
-            {
-               ValueData vdata = lData.get(i);
-               try
-               {
-                  if (new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING).equals(identifier))
-                  {
-                     props.add(prop);
-                  }
-               }
-               catch (IllegalStateException e)
-               {
-                  // Do not nothing.
-               }
-               catch (IOException e)
-               {
-                  // Do not nothing.
-               }
-            }
-         }
-         return props;
-      }
-      else
-      {
-         return null;
-      }
+      return getReferencedProperties.run(identifier);
    }
 
    /**
@@ -894,41 +1003,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    protected List<PropertyData> getChildProps(String parentId, boolean withValue)
    {
-      // get set of property uuids
-      final Set<Object> set = (Set<Object>)cache.get(makeChildListFqn(childPropsList, parentId), ITEM_LIST);
-      if (set != null)
-      {
-         final List<PropertyData> childs = new ArrayList<PropertyData>();
-
-         for (Object child : set)
-         {
-            PropertyData prop = (PropertyData)cache.get(makeItemFqn((String)child), ITEM_DATA);
-            if (prop == null || prop instanceof NullItemData)
-            {
-               return null;
-            }
-            if (withValue && prop.getValues().size() <= 0)
-            {
-               // don't return list of empty-valued props (but listChildProperties() can)
-               return null;
-            }
-            childs.add(prop);
-         }
-         return childs;
-      }
-      else
-      {
-         return null;
-      }
+      return getChildProps.run(parentId, withValue);
    }
-
+   
    /**
     * {@inheritDoc}
     */
    public long getSize()
    {
-      // Total number of JBC nodes in the cache - the total amount of resident nodes
-      return numNodes(cache.getNode(rootFqn)) - 7;
+      return getSize.run();
    }
 
    /**
@@ -1531,7 +1614,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    private enum ModifyChildOption {
       NOT_MODIFY, MODIFY, FORCE_MODIFY
    }
-
+   
    /**
     * Allows to commit the cache changes in a dedicated XA Tx in order to avoid potential
     * deadlocks
@@ -1540,37 +1623,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       // Ensure that the commit is done in a dedicated tx to avoid deadlock due
       // to global XA Tx
-      TransactionManager tm = getTransactionManager();
-      Transaction tx = null;
-      try
-      {
-         if (tm != null)
-         {
-            try
-            {
-               tx = tm.suspend();
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot suspend the current transaction", e);
-            }
-         }
-         cache.commitTransaction();
-      }
-      finally
-      {
-         if (tx != null)
-         {
-            try
-            {
-               tm.resume(tx);
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot resume the current transaction", e);
-            }
-         }
-      }
+      commitTransaction.run();
    }
 
    /**
@@ -1660,6 +1713,25 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          createResidentNode(childProps);
          createResidentNode(childPropsList);
          createResidentNode(itemsRoot);
+      }
+   }
+   
+   /**
+    * Actions that are not supposed to be called within a transaction
+    * 
+    * Created by The eXo Platform SAS
+    * Author : Nicolas Filotto 
+    *          nicolas.filotto@exoplatform.com
+    * 21 janv. 2010
+    */
+   protected abstract class CacheActionNonTxAware<R, A> extends ActionNonTxAware<R, A, RuntimeException>
+   {
+      /**
+       * @see org.exoplatform.services.transaction.ActionNonTxAware#getTransactionManager()
+       */
+      protected TransactionManager getTransactionManager()
+      {
+         return JBossCacheWorkspaceStorageCache.this.getTransactionManager();
       }
    }
 }

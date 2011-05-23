@@ -18,16 +18,10 @@
  */
 package org.exoplatform.services.transaction.jbosscache;
 
-import com.arjuna.ats.jta.xa.XidImple;
-
 import org.exoplatform.container.xml.InitParams;
 import org.jboss.cache.transaction.TransactionManagerLookup;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
 import javax.transaction.UserTransaction;
-import javax.transaction.xa.Xid;
 
 /**
  * Add the specific part for Arjuna
@@ -53,24 +47,8 @@ public class JBossTransactionsService extends GenericTransactionService
     * {@inheritDoc} 
     */
    @Override
-   public Xid createXid()
+   protected UserTransaction findUserTransaction() throws Exception
    {
-      return new XidImple();
-   }
-
-   /**
-    * {@inheritDoc} 
-    */
-   @Override
-   public UserTransaction getUserTransaction()
-   {
-      PrivilegedAction<UserTransaction> action = new PrivilegedAction<UserTransaction>()
-      {
-         public UserTransaction run()
-         {
-            return com.arjuna.ats.jta.UserTransaction.userTransaction();
-         }
-      };
-      return AccessController.doPrivileged(action);
+      return com.arjuna.ats.jta.UserTransaction.userTransaction();
    }
 }

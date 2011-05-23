@@ -53,9 +53,7 @@ import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.IdentityConstants;
-import org.jboss.cache.Cache;
-import org.jboss.cache.Node;
-import org.jboss.cache.loader.CacheLoader;
+import org.exoplatform.services.transaction.ActionNonTxAware;
 import org.picocontainer.Startable;
 
 import java.io.BufferedOutputStream;
@@ -76,7 +74,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -198,7 +195,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    {
       try
       {
-         return executeLockActionNonTxAware(getNumLocks, null);
+         return getNumLocks.run();
       }
       catch (LockException e)
       {
@@ -214,7 +211,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    {
       try
       {
-         return executeLockActionNonTxAware(hasLocks, null);
+         return hasLocks.run();
       }
       catch (LockException e)
       {
@@ -230,7 +227,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    {
       try
       {
-         return executeLockActionNonTxAware(isLockLive, nodeId);
+         return isLockLive.run(nodeId);
       }
       catch (LockException e)
       {
@@ -244,7 +241,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
     */
    public void refreshLockData(LockData newLockData) throws LockException
    {
-      executeLockActionNonTxAware(refresh, newLockData);
+      refresh.run(newLockData);
    }
 
    /**
@@ -254,7 +251,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    {
       try
       {
-         return executeLockActionNonTxAware(lockExist, nodeId);
+         return lockExist.run(nodeId);
       }
       catch (LockException e)
       {
@@ -270,7 +267,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    {
       try
       {
-         return executeLockActionNonTxAware(getLockDataById, nodeId);
+         return getLockDataById.run(nodeId);
       }
       catch (LockException e)
       {
@@ -286,7 +283,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    {
       try
       {
-         return executeLockActionNonTxAware(getLockList, null);
+         return getLockList.run();
       }
       catch (LockException e)
       {
@@ -757,47 +754,6 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    }
 
    /**
-    * Execute the given action outside a transaction. This is needed since the {@link Cache} used by implementation 
-    * of {@link CacheableLockManager}
-    * to manage the persistence of its locks thanks to a {@link CacheLoader} and a {@link CacheLoader} lock the cache {@link Node}
-    * even for read operations which cause deadlock issue when a XA {@link Transaction} is already opened
-    * @throws LockException when a exception occurs
-    */
-   private <R, A> R executeLockActionNonTxAware(LockActionNonTxAware<R, A> action, A arg) throws LockException
-   {
-      Transaction tx = null;
-      try
-      {
-         if (tm != null)
-         {
-            try
-            {
-               tx = tm.suspend();
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot suspend the current transaction", e);
-            }
-         }
-         return action.execute(arg);
-      }
-      finally
-      {
-         if (tx != null)
-         {
-            try
-            {
-               tm.resume(tx);
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot resume the current transaction", e);
-            }
-         }
-      }
-   }
-
-   /**
     * Actions that are not supposed to be called within a transaction
     * 
     * Created by The eXo Platform SAS
@@ -805,9 +761,15 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
     *          nicolas.filotto@exoplatform.com
     * 21 janv. 2010
     */
-   protected static interface LockActionNonTxAware<R, A>
+   protected abstract class LockActionNonTxAware<R, A> extends ActionNonTxAware<R, A, LockException>
    {
-      R execute(A arg) throws LockException;
+      /**
+       * @see org.exoplatform.services.transaction.ActionNonTxAware#getTransactionManager()
+       */
+      protected TransactionManager getTransactionManager()
+      {
+         return tm;
+      }
    }
 
    /**

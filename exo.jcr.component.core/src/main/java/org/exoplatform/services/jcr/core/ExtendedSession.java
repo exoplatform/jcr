@@ -33,6 +33,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.ConstraintViolationException;
+import javax.transaction.xa.XAResource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -147,4 +148,31 @@ public interface ExtendedSession extends Session
     */
    void registerLifecycleListener(SessionLifecycleListener listener);
 
+   /**
+    * Gives the local timeout of the session
+    * 
+    * @return the timeout the local timeout expressed in milliseconds
+    */
+   long getTimeout();
+
+   /**
+    * Sets the local timeout of the session
+    * 
+    * @param timeout the new local timeout any value lower or equals to 0 will disable the timeout,
+    * the expected value is expressed in milliseconds 
+    */
+   void setTimeout(long timeout);
+   
+   /**
+    * Indicates whether the session has expired or not. A session expired when it has not
+    * been modified since an amount of time bigger than the timeout
+    * @return <code>true</code> if it has expired, <code>false</code> otherwise.
+    */
+   boolean hasExpired();
+   
+   /**
+    * Gives the XA representation of the session
+    * @return the {@link XAResource} corresponding to the session
+    */
+   XAResource getXAResource();
 }

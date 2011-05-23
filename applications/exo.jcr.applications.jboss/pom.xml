@@ -115,10 +115,13 @@
                   </copy>
                   <!--copying exo-configuration.xml-->
                   <copy todir="${exo.projects.directory.working}/exo-jboss/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/jboss/" includes="*.xml" />
+                     <fileset dir="${basedir}/../product-patches/as/jboss/" includes="exo-*.*" />
                   </copy>
                   <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/conf/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/jboss/exoplatform.sar/META-INF/" includes="login*.xml" />
+                  </copy>
+                  <copy todir="${exo.projects.directory.working}/exo-jboss/bin/" verbose="true" overwrite="true">
+                     <fileset dir="${basedir}/../product-patches/as/jboss/bin/" includes="*.*" />
                   </copy>
                </tasks>
             </configuration>

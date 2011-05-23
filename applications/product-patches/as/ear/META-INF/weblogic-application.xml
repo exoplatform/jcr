@@ -24,7 +24,7 @@
   <classloader-structure> 
   <classloader-structure> 
   	<module-ref> 
-  		<module-uri>localadapter.rar</module-uri> 
+  		<module-uri>exo-jcr.rar</module-uri> 
   	</module-ref> 
   	<module-ref> 
   		<module-uri>browser.war</module-uri> 

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.MandatoryItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
@@ -34,7 +35,8 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
@@ -46,6 +48,8 @@ import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.transaction.TransactionService;
 
 import java.io.Serializable;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +58,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.RepositoryException;
+import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 /**
@@ -79,6 +84,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    protected final ConcurrentMap<Integer, DataRequest> requestCache;
 
+   /**
+    * The resource manager
+    */
+   private final TransactionableResourceManager txResourceManager;
+   
    private TransactionManager transactionManager;
 
    /**
@@ -300,40 +310,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
-   protected class SaveInTransaction extends TxIsolatedOperation
-   {
-      final ItemStateChangesLog changes;
-
-      SaveInTransaction(ItemStateChangesLog changes)
-      {
-         super(transactionManager);
-         this.changes = changes;
-      }
-
-      @Override
-      protected void action() throws RepositoryException
-      {
-         CacheableWorkspaceDataManager.super.save(changes);
-      }
-
-      @Override
-      protected void txAction() throws RepositoryException
-      {
-         super.txAction();
-
-         // notify listeners after transaction commit but before the current resume!
-         try
-         {
-            notifySaveItems(changes, false);
-         }
-         catch (Throwable th)
-         {
-            // TODO XA layer can throws runtime exceptions
-            throw new RepositoryException(th);
-         }
-      }
-   }
-
    /**
    * This class is a decorator on the top of the {@link WorkspaceStorageCache} to manage the case
    * where the cache is disabled at the beginning then potentially enabled later
@@ -369,15 +345,18 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          Items cache
     * @param systemDataContainerHolder
     *          System Workspace data container (persistent level)
+    * @param txResourceManager
+    *          the resource manager used to manage the whole tx
     * @param transactionService 
     *          TransactionService  
     * @param rpcService
     *          the service for executing commands on all nodes of cluster
     */
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionService transactionService, RPCService rpcService)
+      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager, 
+      TransactionService transactionService, RPCService rpcService)
    {
-      super(dataContainer, systemDataContainerHolder);
+      super(dataContainer, systemDataContainerHolder, txResourceManager);
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
@@ -386,6 +365,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       transactionManager = transactionService.getTransactionManager();
 
       this.rpcService = rpcService;
+      this.txResourceManager = txResourceManager;
       doInitRemoteCommands();
    }
 
@@ -398,12 +378,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          Items cache
     * @param systemDataContainerHolder
     *          System Workspace data container (persistent level)
+    * @param txResourceManager
+    *          the resource manager used to manage the whole tx
     * @param transactionService TransactionService         
     */
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionService transactionService)
+      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager,
+      TransactionService transactionService)
    {
-      this(dataContainer, cache, systemDataContainerHolder, transactionService, null);
+      this(dataContainer, cache, systemDataContainerHolder, txResourceManager, transactionService, null);
    }
 
    /**
@@ -415,26 +398,31 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          Items cache
     * @param systemDataContainerHolder
     *          System Workspace data container (persistent level)
+    * @param txResourceManager
+    *          the resource manager used to manage the whole tx
     */
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder, RPCService rpcService)
+      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager,
+      RPCService rpcService)
    {
-      super(dataContainer, systemDataContainerHolder);
+      super(dataContainer, systemDataContainerHolder, txResourceManager);
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
       addItemPersistenceListener(new CacheItemsPersistenceListener());
 
-      if (cache instanceof JBossCacheWorkspaceStorageCache)
+      try
       {
-         transactionManager = ((JBossCacheWorkspaceStorageCache)cache).getTransactionManager();
+         transactionManager = (TransactionManager)cache.getClass().getMethod("getTransactionManager", null).invoke(null, null);
       }
-      else
+      catch (Exception e)
       {
+         LOG.debug("Could not get the transaction manager from the cache", e);
          transactionManager = null;
       }
 
       this.rpcService = rpcService;
+      this.txResourceManager = txResourceManager;      
       doInitRemoteCommands();
    }
 
@@ -447,26 +435,29 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          Items cache
     * @param systemDataContainerHolder
     *          System Workspace data container (persistent level)
+    * @param txResourceManager
+    *          the resource manager used to manage the whole tx
     */
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
+      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager)
+   {
+      this(dataContainer, cache, systemDataContainerHolder, txResourceManager, (RPCService)null);
+   }
+
+   /**
+    * CacheableWorkspaceDataManager constructor.
+    * 
+    * @param dataContainer
+    *          Workspace data container (persistent level)
+    * @param cache
+    *          Items cache
+    * @param systemDataContainerHolder
+    *          System Workspace data container (persistent level)
+    */
+   protected CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
       SystemDataContainerHolder systemDataContainerHolder)
    {
-      super(dataContainer, systemDataContainerHolder);
-      this.cache = cache;
-
-      this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
-      addItemPersistenceListener(new CacheItemsPersistenceListener());
-
-      if (cache instanceof JBossCacheWorkspaceStorageCache)
-      {
-         transactionManager = ((JBossCacheWorkspaceStorageCache)cache).getTransactionManager();
-      }
-      else
-      {
-         transactionManager = null;
-      }
-
-      this.rpcService = null;
+      this(dataContainer, cache, systemDataContainerHolder, null, (RPCService)null);
    }
 
    /**
@@ -687,27 +678,183 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
 
       workingThreads.incrementAndGet();
-
       try
       {
-         if (isTxAware())
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            // save in dedicated XA transaction
-            new SaveInTransaction(changesLog).perform();
+            public Void run() throws Exception
+            {
+               doSave(changesLog);
+               return null;
+            }
+         });      
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof RepositoryException)
+         {
+            throw (RepositoryException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
          }
          else
          {
-
-            // save normaly 
-            super.save(changesLog);
-
-            // notify listeners after storage commit
-            notifySaveItems(changesLog, false);
+            throw new RuntimeException(cause);
          }
       }
       finally
       {
          workingThreads.decrementAndGet();
+      }
+   }
+
+   private void doSave(final ItemStateChangesLog changesLog) throws RepositoryException
+   {
+      if (isTxAware())
+      {
+         if (txResourceManager != null && txResourceManager.isGlobalTxActive())
+         {
+            super.save(changesLog);
+            registerListener(changesLog);
+         }
+         else
+         {
+            doBegin();
+            try
+            {
+               super.save(changesLog);
+            }
+            catch (Exception e)
+            {
+               doRollback();
+               if (e instanceof RepositoryException)
+               {
+                  throw (RepositoryException)e;
+               }
+               else
+               {
+                  throw new RepositoryException("Could not save the changes", e);
+               }
+            }
+            doCommit();
+            // notify listeners after storage commit
+            notifySaveItems(changesLog, false);
+         }
+      }
+      else
+      {
+         // save normally 
+         super.save(changesLog);
+
+         // notify listeners after storage commit
+         notifySaveItems(changesLog, false);
+      }      
+   }
+   
+   /**
+    * Commits the tx
+    * @throws RepositoryException if the tx could not be committed.
+    */
+   private void doCommit() throws RepositoryException
+   {
+      try
+      {
+         transactionManager.commit();
+      }
+      catch (Exception e)
+      {
+         throw new RepositoryException("Could not commit the changes", e);
+      }
+   }
+
+   /**
+    * Starts a new Tx
+    * @throws RepositoryException if the tx could not be created
+    */
+   private void doBegin() throws RepositoryException
+   {
+      try
+      {
+         transactionManager.begin();
+      }
+      catch (Exception e)
+      {
+         throw new RepositoryException("Could not create a new Tx", e);
+      }
+   }
+   
+   /**
+    * Performs rollback of the action.
+    */
+   private void doRollback()
+   {
+      try
+      {
+         transactionManager.rollback();
+      }
+      catch (Exception e)
+      {
+         LOG.error("Rollback error ", e);
+      }
+   }
+   
+   /**
+    * This will allow to notify listeners that are not TxAware once the Tx is committed
+    * @param changesLog
+    * @throws RepositoryException if any error occurs
+    */
+   private void registerListener(final ItemStateChangesLog changesLog) throws RepositoryException
+   {
+      try
+      {
+         // Why calling the listeners non tx aware has been done like this:
+         // 1. If we call them in the commit phase and we use Arjuna with ISPN, we get:
+         //       ActionStatus.COMMITTING > is not in a valid state to be invoking cache operations on.
+         //       at org.infinispan.interceptors.TxInterceptor.enlist(TxInterceptor.java:195)
+         //       at org.infinispan.interceptors.TxInterceptor.enlistReadAndInvokeNext(TxInterceptor.java:167)
+         //       at org.infinispan.interceptors.TxInterceptor.visitGetKeyValueCommand(TxInterceptor.java:162)
+         //       at org.infinispan.commands.read.GetKeyValueCommand.acceptVisitor(GetKeyValueCommand.java:64)
+         //    This is due to the fact that ISPN enlist the cache even for a read access and enlistments are not 
+         //    allowed in the commit phase
+         // 2. If we call them in the commit phase, we use Arjuna with ISPN and we suspend the current tx, we get deadlocks because we 
+         //    try to acquire locks on cache entries that have been locked by the main tx.
+         // 3. If we call them in the afterComplete, we use JOTM with ISPN and we suspend and resume the current tx, we get:
+         //       jotm: resume: Invalid Transaction Status:STATUS_COMMITTED (Current.java, line 743) 
+         //       javax.transaction.InvalidTransactionException: Invalid resume org.objectweb.jotm.TransactionImpl
+         //       at org.objectweb.jotm.Current.resume(Current.java:744)
+         //    This is due to the fact that it is not allowed to resume a tx when its status is STATUS_COMMITED
+
+         txResourceManager.addListener(new TransactionableResourceManagerListener()
+         {
+            public void onCommit(boolean onePhase) throws Exception
+            {
+            }
+
+            public void onAfterCompletion(int status) throws Exception
+            {
+               if (status == Status.STATUS_COMMITTED)
+               {
+                  // Since the tx is successfully committed we can call components non tx aware
+                  
+                  // The listeners will need to be executed outside the current tx so we suspend
+                  // the current tx we can face enlistment issues on product like ISPN
+                  transactionManager.suspend();
+                  notifySaveItems(changesLog, false);
+                  // Since the resume method could cause issue with some TM at this stage, we don't resume the tx
+               }
+            }
+
+            public void onAbort() throws Exception
+            {
+            }
+         });
+      }
+      catch (Exception e)
+      {
+         throw new RepositoryException("The listener for the components not tx aware could not be added", e);
       }
    }
 

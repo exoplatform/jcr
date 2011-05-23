@@ -39,15 +39,14 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseConn
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jdbc.DataSourceProvider;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
 
 import javax.jcr.RepositoryException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -64,7 +63,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
     * @param wsConfig
     *          Workspace configuration
     * @param valueStrorageProvider
-    *          External Value Stprages provider
+    *          External Value Storages provider
+    * @param dsProvider
+    *          The data source provider
     * @throws RepositoryConfigurationException
     *           if Repository configuration is wrong
     * @throws NamingException
@@ -72,12 +73,11 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
     */
    public CQJDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
       InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
-      FileCleanerHolder fileCleanerHolder) throws RepositoryConfigurationException, NamingException,
+      FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException, NamingException,
       RepositoryException, IOException
    {
-      super(wsConfig, repConfig, contextInit, valueStorageProvider, fileCleanerHolder);
+      super(wsConfig, repConfig, contextInit, valueStorageProvider, fileCleanerHolder, dsProvider);
    }
-
    /**
     * Init storage database.
     * 
@@ -100,13 +100,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          // sample of connection factory customization
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new DefaultOracleConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner, useQueryHints);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new DefaultOracleConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner, useQueryHints);
          }
          else
             this.connFactory =
@@ -123,13 +119,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
 
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new DefaultOracleConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner, useQueryHints);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new DefaultOracleConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner, useQueryHints);
          }
          else
             this.connFactory =
@@ -150,13 +142,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          // [PN] 28.06.07
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new MySQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new MySQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
             this.connFactory =
@@ -171,13 +159,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          // [PN] 13.07.08
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new MySQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new MySQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
             this.connFactory =
@@ -191,17 +175,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       {
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-            {
-               this.connFactory =
-                  new MSSQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-            }
+            this.connFactory =
+               new MSSQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
          {
@@ -223,17 +199,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       {
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-            {
-               this.connFactory =
-                  new DB2ConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-            }
+            this.connFactory =
+               new DB2ConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
          {
@@ -249,17 +217,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       {
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-            {
-               this.connFactory =
-                  new DB2ConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-            }
+            this.connFactory =
+               new DB2ConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
          {
@@ -275,17 +235,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       {
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-            {
-               this.connFactory =
-                  new SybaseConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-            }
+            this.connFactory =
+               new SybaseConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
          {
@@ -309,13 +261,9 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       {
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new HSQLDBConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new HSQLDBConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
             this.connFactory =
@@ -358,12 +306,8 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       // by default
       if (dbSourceName != null)
       {
-         DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-         if (ds != null)
-            return new GenericCQConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-               swapDirectory, swapCleaner);
-
-         throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+         return new GenericCQConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+            swapDirectory, swapCleaner);
       }
 
       return new GenericCQConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,

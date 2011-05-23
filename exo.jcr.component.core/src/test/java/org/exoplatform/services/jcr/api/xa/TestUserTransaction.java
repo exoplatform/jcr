@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.api.xa;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.XASession;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.transaction.TransactionService;
 
@@ -199,9 +198,6 @@ public class TestUserTransaction extends JcrAPIBaseTest
 
       ut.begin();
 
-      // In a case of reusing Have to enlist the resource once again!
-      ((XASession)s1).enlistResource();
-
       tx2.addNode("txcommit21");
       s1.save();
       ut.commit();
@@ -251,7 +247,6 @@ public class TestUserTransaction extends JcrAPIBaseTest
       catch (Exception e)
       {
          // ok
-         assertNotNull(((XASession) s1).getCommitException());
       }
 
       s1.logout();

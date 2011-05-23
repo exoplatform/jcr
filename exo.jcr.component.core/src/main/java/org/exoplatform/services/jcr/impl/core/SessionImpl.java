@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -41,6 +42,7 @@ import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerRegi
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataMoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog;
 import org.exoplatform.services.jcr.impl.ext.action.SessionActionInterceptor;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
@@ -92,6 +94,7 @@ import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.observation.ObservationManager;
 import javax.jcr.version.VersionException;
+import javax.transaction.xa.XAResource;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -150,6 +153,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    private boolean live;
    
+   private boolean expired;
+   
    private Exception closedByCallStack;
 
    private final List<SessionLifecycleListener> lifecycleListeners;
@@ -170,6 +175,16 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    protected final NodeTypeDataManager nodeTypeManager;
 
+   /**
+    * Transaction resources manager.
+    */
+   private final TransactionableResourceManager txResourceManager;
+   
+   /**
+    * The local timeout of the session, by default it will use the global timeout defined at repository configuration level
+    */
+   private long timeout;
+
    public SessionImpl(String workspaceName, ConversationState userState, ExoContainer container)
       throws RepositoryException
    {
@@ -178,6 +193,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.live = true;
       this.id = IdGenerator.generate();
       this.userState = userState;
+      this.txResourceManager = (TransactionableResourceManager)container.getComponentInstanceOfType(TransactionableResourceManager.class);
 
       this.repository = (RepositoryImpl)container.getComponentInstanceOfType(RepositoryImpl.class);
       this.systemLocationFactory = (LocationFactory)container.getComponentInstanceOfType(LocationFactory.class);
@@ -947,6 +963,16 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    }
 
    /**
+    * Makes the current session expired. This will automatically logout the session and set the expired
+    * flag to true.
+    */
+   public void expire()
+   {
+      this.expired = true;
+      logout();
+   }
+   
+   /**
     * {@inheritDoc}
     */
    public void move(String srcAbsPath, String destAbsPath) throws ItemExistsException, PathNotFoundException,
@@ -1097,4 +1123,51 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
          repository.getName(), workspaceName, live);
    }
 
+   /**
+    * Checks if a global Tx has been started if so the session and its change will be dynamically enrolled
+    * @param statesLog the changes to enlist in case a Global Tx has been started 
+    * @return <code>true</code> if a global Tx has been started and the session could
+    * be enrolled successfully, <code>false</code> otherwise
+    */
+   public boolean canEnrollChangeToGlobalTx(PlainChangesLog statesLog)
+   {
+      return txResourceManager.canEnrollChangeToGlobalTx(this, statesLog);
+   }
+
+   /**
+    * Gives the local timeout of the session
+    * 
+    * @return the timeout the local timeout expressed in milliseconds
+    */
+   public long getTimeout()
+   {
+      return timeout;
+   }
+
+   /**
+    * Sets the local timeout of the session
+    * 
+    * @param timeout the new local timeout any value lower or equals to 0 will disable the timeout,
+    * the expected value is expressed in milliseconds 
+    */
+   public void setTimeout(long timeout)
+   {
+      this.timeout = (timeout <= 0 ? 0 : timeout);
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public XAResource getXAResource()
+   {
+      return txResourceManager;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean hasExpired()
+   {
+      return expired;
+   }
 }

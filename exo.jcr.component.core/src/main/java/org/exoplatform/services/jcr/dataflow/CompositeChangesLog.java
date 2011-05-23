@@ -43,6 +43,13 @@ public interface CompositeChangesLog extends ItemStateChangesLog
    void addLog(PlainChangesLog log);
 
    /**
+    * Removes a given PlainChangesLog
+    * 
+    * @param log
+    */
+   void removeLog(PlainChangesLog log);
+
+   /**
     * @return systemId
     */
    String getSystemId();

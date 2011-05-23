@@ -62,6 +62,7 @@ import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jdbc.DataSourceProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -84,7 +85,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -153,6 +153,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected final String dbUserName;
 
    protected final String dbPassword;
+   
+   protected final DataSourceProvider dsProvider;
+
+   protected final boolean isManaged;
 
    protected final ValueStoragePluginProvider valueStorageProvider;
 
@@ -238,7 +242,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * @param wsConfig
     *          Workspace configuration
     * @param valueStrorageProvider
-    *          External Value Stprages provider
+    *          External Value Storages provider
+    * @param dsProvider
+    *          The data source provider
     * @throws RepositoryConfigurationException
     *           if Repository configuration is wrong
     * @throws NamingException
@@ -246,7 +252,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public JDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
       InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
-      FileCleanerHolder fileCleanerHolder) throws RepositoryConfigurationException, NamingException,
+      FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException, NamingException,
       RepositoryException, IOException
    {
 
@@ -260,7 +266,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       this.uniqueName = wsConfig.getUniqueName();
       this.multiDb = Boolean.parseBoolean(wsConfig.getContainer().getParameterValue(MULTIDB));
       this.valueStorageProvider = valueStorageProvider;
-
+      this.dsProvider = dsProvider;
+      
       // ------------- Database config ------------------
       String pDbDialect = null;
       try
@@ -304,6 +311,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          this.dbUserName = pDbUserName;
          this.dbPassword = pDbPassword;
          this.dbSourceName = null;
+         // A managed data source is only possible when the source name is not null
+         this.isManaged = false;
          LOG.info("Connect to JCR database as user '" + this.dbUserName + "'");
 
          if (pDbDialect == DBConstants.DB_DIALECT_GENERIC || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(pDbDialect))
@@ -360,48 +369,47 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             // remove in rel.2.0
          }
          this.dbSourceName = sn;
+         if (dsProvider == null)
+         {
+            throw new IllegalArgumentException("Since a data source has been defined, the DataSourceProvider cannot be null, add it in your configuration.");
+         }
+         // the data source cannot be managed if there is no transaction manager
+         this.isManaged = dsProvider.isManaged(dbSourceName);
 
          if (pDbDialect == DBConstants.DB_DIALECT_GENERIC)
          {
             // try to detect via JDBC metadata
-            final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
+            final DataSource ds = getDataSource();
+            Connection jdbcConn = null;
+            try
             {
-               Connection jdbcConn = null;
-               try
+               jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
                {
-                  jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+                  public Connection run() throws Exception
                   {
-                     public Connection run() throws Exception
-                     {
-                        return ds.getConnection();
-                     }
-                  });
+                     return ds.getConnection();
+                  }
+               });
 
-                  this.dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
-               }
-               catch (SQLException e)
+               this.dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
+            }
+            catch (SQLException e)
+            {
+               throw new RepositoryException(e);
+            }
+            finally
+            {
+               if (jdbcConn != null)
                {
-                  throw new RepositoryException(e);
-               }
-               finally
-               {
-                  if (jdbcConn != null)
+                  try
                   {
-                     try
-                     {
-                        jdbcConn.close();
-                     }
-                     catch (SQLException e)
-                     {
-                        throw new RepositoryException(e);
-                     }
+                     jdbcConn.close();
+                  }
+                  catch (SQLException e)
+                  {
+                     throw new RepositoryException(e);
                   }
                }
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
             }
          }
          else
@@ -475,7 +483,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    }
 
    /**
-    * Prepare sefault connection factory.
+    * Prepare default connection factory.
     * 
     * @return GenericConnectionFactory
     * @throws NamingException
@@ -488,14 +496,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       // by default
       if (dbSourceName != null)
       {
-         DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-         if (ds != null)
-         {
-            return new GenericConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-               swapDirectory, swapCleaner);
-         }
-
-         throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+         return new GenericConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+            swapDirectory, swapCleaner);
       }
 
       return new GenericConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
@@ -677,17 +679,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          // [PN] 28.06.07
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-            {
-               this.connFactory =
-                  new MySQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-            }
+            this.connFactory =
+               new MySQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
          {
@@ -704,17 +698,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          // [PN] 13.07.08
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-            {
-               this.connFactory =
-                  new MySQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-            }
+            this.connFactory =
+               new MySQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
          {
@@ -768,17 +754,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-            {
-               this.connFactory =
-                  new HSQLDBConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-            }
+            this.connFactory =
+               new HSQLDBConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
          {
@@ -905,7 +883,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    {
       String str =
          "JDBC based JCR Workspace Data container \n" + "container name: " + containerName + " \n"
-            + "data source JNDI name: " + dbSourceName + "\n" + "is multi database: " + multiDb + "\n"
+            + (isManaged ? "managed " : "") + "data source JNDI name: " + dbSourceName + "\n" + "is multi database: " + multiDb + "\n"
             + "storage version: " + storageVersion + "\n" + "value storage provider: " + valueStorageProvider + "\n"
             + "max buffer size (bytes): " + maxBufferSize + "\n" + "swap directory path: "
             + PrivilegedFileHelper.getAbsolutePath(swapDirectory);
@@ -1422,5 +1400,21 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    public boolean isReindexingSupport()
    {
       return connFactory.isReindexingSupport();
+   }
+   
+   /**
+    * Get the data source from the InitialContext and wraps it into a {@link ManagedDataSource}
+    * in case it has been configured as managed
+    */
+   protected DataSource getDataSource() throws RepositoryException
+   {
+      try
+      {
+         return dsProvider.getDataSource(dbSourceName);
+      }
+      catch (NamingException e)
+      {
+         throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.", e);
+      }
    }
 }

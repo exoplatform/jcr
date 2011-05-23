@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -50,12 +49,12 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.transaction.ActionNonTxAware;
 import org.infinispan.Cache;
 import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -67,7 +66,6 @@ import java.util.Set;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -99,6 +97,228 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    private final boolean enabled;
    
    protected final BufferedISPNCache cache;
+
+   private final CacheActionNonTxAware<Void, Void> commitTransaction = new CacheActionNonTxAware<Void, Void>()
+   {
+      @Override
+      protected Void execute(Void arg) throws RuntimeException
+      {
+         cache.commitTransaction();
+         return null;
+      }
+   };
+
+   private final CacheActionNonTxAware<ItemData, String> getFromCacheById =
+      new CacheActionNonTxAware<ItemData, String>()
+      {
+         @Override
+         protected ItemData execute(String id) throws RuntimeException
+         {
+            return id == null ? null : (ItemData)cache.get(new CacheId(id));
+         }
+      };
+
+   private final CacheActionNonTxAware<List<NodeData>, NodeData> getChildNodes =
+      new CacheActionNonTxAware<List<NodeData>, NodeData>()
+      {
+         @Override
+         protected List<NodeData> execute(NodeData parent) throws RuntimeException
+         {
+            // get list of children uuids
+            final Set<String> set = (Set<String>)cache.get(new CacheNodesId(parent.getIdentifier()));
+
+            if (set != null)
+            {
+               final List<NodeData> childs = new ArrayList<NodeData>();
+
+               for (String childId : set)
+               {
+                  NodeData child = (NodeData)cache.get(new CacheId(childId));
+                  if (child == null)
+                  {
+                     return null;
+                  }
+
+                  childs.add(child);
+               }
+
+               // order children by orderNumber, as HashSet returns children in other order
+               Collections.sort(childs, new NodesOrderComparator<NodeData>());
+               return childs;
+            }
+            else
+            {
+               return null;
+            }
+         }
+      };
+
+   private final CacheActionNonTxAware<ItemData, Object> getFromCacheByPath =
+      new CacheActionNonTxAware<ItemData, Object>()
+      {
+         @Override
+         protected ItemData execute(Object... args) throws RuntimeException
+         {
+            String parentIdentifier = (String)args[0];
+            QPathEntry name = (QPathEntry)args[1];
+            ItemType itemType = (ItemType)args[2];
+            String itemId = null;
+
+            if (itemType == ItemType.UNKNOWN)
+            {
+               // Try as node first.
+               itemId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.NODE));
+
+               if (itemId == null || itemId.equals(NullItemData.NULL_ID))
+               {
+                  // node with such a name is not found or marked as not-exist, so check the properties
+                  String propId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.PROPERTY));
+                  if (propId != null)
+                  {
+                     itemId = propId;
+                  }
+               }
+            }
+            else if (itemType == ItemType.NODE)
+            {
+               itemId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.NODE));;
+            }
+            else
+            {
+               itemId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.PROPERTY));;
+            }
+
+            if (itemId != null)
+            {
+               if (itemId.equals(NullItemData.NULL_ID))
+               {
+                  if (itemType == ItemType.UNKNOWN || itemType == ItemType.NODE)
+                  {
+                     return new NullNodeData();
+                  }
+                  else
+                  {
+                     return new NullPropertyData();
+                  }
+               }
+               else
+               {
+                  return get(itemId);
+               }
+            }
+            return null;
+         }
+      };
+
+   private final CacheActionNonTxAware<Integer, NodeData> getChildNodesCount =
+      new CacheActionNonTxAware<Integer, NodeData>()
+      {
+         @Override
+         protected Integer execute(NodeData parent) throws RuntimeException
+         {
+            Set<String> list = (Set<String>)cache.get(new CacheNodesId(parent.getIdentifier()));
+            return list != null ? list.size() : -1;
+         }
+      };
+
+   private final CacheActionNonTxAware<List<PropertyData>, Object> getChildProps =
+      new CacheActionNonTxAware<List<PropertyData>, Object>()
+      {
+         @Override
+         protected List<PropertyData> execute(Object... args) throws RuntimeException
+         {
+            String parentId = (String)args[0];
+            boolean withValue = (Boolean)args[1];
+            // get list of children uuids
+            final Set<String> set = (Set<String>)cache.get(new CachePropsId(parentId));
+            if (set != null)
+            {
+               final List<PropertyData> childs = new ArrayList<PropertyData>();
+
+               for (String childId : set)
+               {
+                  PropertyData child = (PropertyData)cache.get(new CacheId(childId));
+
+                  if (child == null)
+                  {
+                     return null;
+                  }
+                  if (withValue && child.getValues().size() <= 0)
+                  {
+                     return null;
+                  }
+                  childs.add(child);
+               }
+               return childs;
+            }
+            else
+            {
+               return null;
+            }
+         }
+      };
+
+   private final CacheActionNonTxAware<List<PropertyData>, String> getReferencedProperties =
+      new CacheActionNonTxAware<List<PropertyData>, String>()
+      {
+         @Override
+         protected List<PropertyData> execute(String identifier) throws RuntimeException
+         {
+            // get list of children uuids
+            final Set<String> set = (Set<String>)cache.get(new CacheRefsId(identifier));
+            if (set != null)
+            {
+               final List<PropertyData> props = new ArrayList<PropertyData>();
+
+               for (String childId : set)
+               {
+                  PropertyData prop = (PropertyData)cache.get(new CacheId(childId));
+
+                  if (prop == null || prop instanceof NullItemData)
+                  {
+                     return null;
+                  }
+                  // add property as many times as has referenced values 
+                  List<ValueData> lData = prop.getValues();
+                  for (int i = 0, length = lData.size(); i < length; i++)
+                  {
+                     ValueData vdata = lData.get(i);
+                     try
+                     {
+                        if (new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING).equals(identifier))
+                        {
+                           props.add(prop);
+                        }
+                     }
+                     catch (IllegalStateException e)
+                     {
+                        // property was not added, force read from lower layer
+                        return null;
+                     }
+                     catch (IOException e)
+                     {
+                        // property was not added, force read from lower layer
+                        return null;
+                     }
+                  }
+               }
+               return props;
+            }
+            else
+            {
+               return null;
+            }
+         }
+      };
+
+   private final CacheActionNonTxAware<Long, Void> getSize = new CacheActionNonTxAware<Long, Void>()
+   {
+      @Override
+      protected Long execute(Void arg) throws RuntimeException
+      {
+         return (long)cache.size();
+      }
+   };
 
    /**
     * Node order comparator for getChildNodes().
@@ -240,6 +460,16 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          // do n't nothing
       }
       this.cache = new BufferedISPNCache(parentCache, allowLocalChanges);
+   }
+
+   /**
+    * Return TransactionManager used by ISPN backing the JCR cache.
+    * 
+    * @return TransactionManager
+    */
+   public TransactionManager getTransactionManager()
+   {
+      return cache.getTransactionManager();
    }
 
    /**
@@ -457,51 +687,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public ItemData get(String parentIdentifier, QPathEntry name, ItemType itemType)
    {
-      String itemId = null;
-
-      if (itemType == ItemType.UNKNOWN)
-      {
-         // Try as node first.
-         itemId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.NODE));
-
-         if (itemId == null || itemId.equals(NullItemData.NULL_ID))
-         {
-            // node with such a name is not found or marked as not-exist, so check the properties
-            String propId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.PROPERTY));
-            if (propId != null)
-            {
-               itemId = propId;
-            }
-         }
-      }
-      else if (itemType == ItemType.NODE)
-      {
-         itemId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.NODE));;
-      }
-      else
-      {
-         itemId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.PROPERTY));;
-      }
-
-      if (itemId != null)
-      {
-         if (itemId.equals(NullItemData.NULL_ID))
-         {
-            if (itemType == ItemType.UNKNOWN || itemType == ItemType.NODE)
-            {
-               return new NullNodeData();
-            }
-            else
-            {
-               return new NullPropertyData();
-            }
-         }
-         else
-         {
-            return get(itemId);
-         }
-      }
-      return null;
+      return getFromCacheByPath.run(parentIdentifier, name, itemType);
    }
 
    /**
@@ -509,7 +695,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public ItemData get(String id)
    {
-      return id == null ? null : (ItemData)cache.get(new CacheId(id));
+      return getFromCacheById.run(id);
    }
 
    /**
@@ -517,32 +703,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public List<NodeData> getChildNodes(final NodeData parent)
    {
-      // get list of children uuids
-      final Set<String> set = (Set<String>)cache.get(new CacheNodesId(parent.getIdentifier()));
-
-      if (set != null)
-      {
-         final List<NodeData> childs = new ArrayList<NodeData>();
-
-         for (String childId : set)
-         {
-            NodeData child = (NodeData)cache.get(new CacheId(childId));
-            if (child == null)
-            {
-               return null;
-            }
-
-            childs.add(child);
-         }
-
-         // order children by orderNumber, as HashSet returns children in other order
-         Collections.sort(childs, new NodesOrderComparator<NodeData>());
-         return childs;
-      }
-      else
-      {
-         return null;
-      }
+      return getChildNodes.run(parent);
    }
 
    /**
@@ -550,8 +711,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public int getChildNodesCount(NodeData parent)
    {
-      Set<String> list = (Set<String>)cache.get(new CacheNodesId(parent.getIdentifier()));
-      return list != null ? list.size() : -1;
+      return getChildNodesCount.run(parent);
    }
 
    /**
@@ -579,32 +739,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    protected List<PropertyData> getChildProps(String parentId, boolean withValue)
    {
-      // get list of children uuids
-      final Set<String> set = (Set<String>)cache.get(new CachePropsId(parentId));
-      if (set != null)
-      {
-         final List<PropertyData> childs = new ArrayList<PropertyData>();
-
-         for (String childId : set)
-         {
-            PropertyData child = (PropertyData)cache.get(new CacheId(childId));
-
-            if (child == null)
-            {
-               return null;
-            }
-            if (withValue && child.getValues().size() <= 0)
-            {
-               return null;
-            }
-            childs.add(child);
-         }
-         return childs;
-      }
-      else
-      {
-         return null;
-      }
+      return getChildProps.run(parentId, withValue);
    }
 
    /**
@@ -612,7 +747,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public long getSize()
    {
-      return cache.size();
+      return getSize.run();
    }
 
    /**
@@ -1039,53 +1174,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    private void dedicatedTxCommit()
    {
-      // Ensure that the commit is done in a dedicated tx to avoid deadlock due
-      // to global XA Tx
-      final TransactionManager tm = cache.getTransactionManager();
-      Transaction tx = null;
-      try
-      {
-         if (tm != null)
-         {
-            try
-            {
-               tx = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Transaction>()
-               {
-                  public Transaction run() throws Exception
-                  {
-                     return tm.suspend();
-                  }
-               });
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot suspend the current transaction", e);
-            }
-         }
-         cache.commitTransaction();
-      }
-      finally
-      {
-         if (tx != null)
-         {
-            try
-            {
-               final Transaction privilegedTx = tx;
-               SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
-               {
-                  public Object run() throws Exception
-                  {
-                     tm.resume(privilegedTx);
-                     return null;
-                  }
-               });
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot resume the current transaction", e);
-            }
-         }
-      }
+      commitTransaction.run();
    }
 
    /**
@@ -1121,54 +1210,11 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    }
 
    /**
-    * @see org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache#getReferencedProperties(java.lang.String)
+    * {@inheritDoc}
     */
    public List<PropertyData> getReferencedProperties(String identifier)
    {
-      // get list of children uuids
-      final Set<String> set = (Set<String>)cache.get(new CacheRefsId(identifier));
-      if (set != null)
-      {
-         final List<PropertyData> props = new ArrayList<PropertyData>();
-
-         for (String childId : set)
-         {
-            PropertyData prop = (PropertyData)cache.get(new CacheId(childId));
-
-            if (prop == null || prop instanceof NullItemData)
-            {
-               return null;
-            }
-            // add property as many times as has referenced values 
-            List<ValueData> lData = prop.getValues();
-            for (int i = 0, length = lData.size(); i < length; i++)
-            {
-               ValueData vdata = lData.get(i);
-               try
-               {
-                  if (new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING).equals(identifier))
-                  {
-                     props.add(prop);
-                  }
-               }
-               catch (IllegalStateException e)
-               {
-                  // property was not added, force read from lower layer
-                  return null;
-               }
-               catch (IOException e)
-               {
-                  // property was not added, force read from lower layer
-                  return null;
-               }
-            }
-         }
-         return props;
-      }
-      else
-      {
-         return null;
-      }
+      return getReferencedProperties.run(identifier);
    }
    
    /**
@@ -1235,5 +1281,24 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          {
          }
       };
+   }
+
+   /**
+    * Actions that are not supposed to be called within a transaction
+    * 
+    * Created by The eXo Platform SAS
+    * Author : Nicolas Filotto 
+    *          nicolas.filotto@exoplatform.com
+    * 21 janv. 2010
+    */
+   protected abstract class CacheActionNonTxAware<R, A> extends ActionNonTxAware<R, A, RuntimeException>
+   {
+      /**
+       * {@inheritDoc}
+       */
+      protected TransactionManager getTransactionManager()
+      {
+         return ISPNCacheWorkspaceStorageCache.this.getTransactionManager();
+      }
    }
 }

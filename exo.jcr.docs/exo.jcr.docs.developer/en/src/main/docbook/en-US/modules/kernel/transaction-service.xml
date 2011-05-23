@@ -9,8 +9,8 @@
   <section>
     <title>Base information</title>
 
-    <para>TransactionServices provides acces to XA TransactionManager and
-    UserTransaction (See JTA specification for details).</para>
+    <para>TransactionServices provides access to the TransactionManager and
+    the UserTransaction (See JTA specification for details).</para>
 
     <table>
       <title>List methods</title>
@@ -42,24 +42,188 @@
           </row>
 
           <row>
-            <entry>enlistResource(ExoResource xares)</entry>
+            <entry>enlistResource(XAResource xares)</entry>
 
             <entry>Enlist XA resource in TransactionManager</entry>
           </row>
 
           <row>
-            <entry>delistResource(ExoResource xares)</entry>
+            <entry>delistResource(XAResource xares)</entry>
 
             <entry>Delist XA resource from TransactionManager</entry>
-          </row>
-
-          <row>
-            <entry>createXid()</entry>
-
-            <entry>Creates unique XA transaction identifier.</entry>
           </row>
         </tbody>
       </tgroup>
     </table>
+  </section>
+
+  <section>
+    <title>Existing TransactionService implementations</title>
+
+    <para>eXo JCR proposes out of the box several implementations, they all
+    implement the abstract class
+    <emphasis>org.exoplatform.services.transaction.impl.AbstractTransactionService</emphasis>.
+    This main class implement the biggest part of all the methods proposed by
+    the <emphasis>TransactionService</emphasis>. For each sub-class of
+    <emphasis>AbstractTransactionService</emphasis>, you can set the
+    transaction timeout by configuration using the value parameter
+    <emphasis>timeout</emphasis> that is expressed in seconds. </para>
+
+    <section>
+      <title>JOTM in standalone mode</title>
+
+      <para>To use JOTM as TransactionManager in standalone mode simply add
+      the following component configuration:</para>
+
+      <programlisting>   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.transaction.impl.jotm.TransactionServiceJotmImpl&lt;/type&gt;
+      &lt;!-- Uncomment the lines below if you want to set default transaction timeout that is expressed in seconds --&gt;
+      &lt;!--init-params&gt;
+         &lt;value-param&gt;
+            &lt;name&gt;timeout&lt;/name&gt;
+            &lt;value&gt;60&lt;/value&gt;
+         &lt;/value-param&gt;
+      &lt;/init-params--&gt;
+   &lt;/component&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Generic TransactionService based on the TransactionManagerLookup
+      of JBoss Cache</title>
+
+      <para>If you intend to use JBoss Cache, you can use a generic
+      TransactionService based on its TransactionManagerLookup which is able
+      to automatically find the TransactionManager of several Application
+      Servers thanks to a set of JNDI lookups. This generic TransactionService
+      covers mainly the TransactionManager lookups, the UserTransaction is
+      actually simply the TransactionManager instance that has been wrapped.
+      See below an example of configuration:</para>
+
+      <programlisting>   &lt;!-- Configuration of the TransactionManagerLookup --&gt;
+   &lt;component&gt;
+      &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
+      &lt;type&gt;org.jboss.cache.transaction.GenericTransactionManagerLookup&lt;/type&gt;
+   &lt;/component&gt;
+   &lt;!-- Configuration of the TransactionService --&gt;
+   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.transaction.jbosscache.GenericTransactionService&lt;/type&gt;
+      &lt;!-- Uncomment the lines below if you want to set default transaction timeout that is expressed in seconds --&gt;
+      &lt;!--init-params&gt;
+         &lt;value-param&gt;
+            &lt;name&gt;timeout&lt;/name&gt;
+            &lt;value&gt;60&lt;/value&gt;
+         &lt;/value-param&gt;
+      &lt;/init-params--&gt;
+   &lt;/component&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Specific GenericTransactionService for JBoss Cache and
+      Arjuna</title>
+
+      <para>If you intend to use JBoss Cache with Arjuna, you can use a more
+      specific GenericTransactionService, it is mostly interesting in case you
+      want to use the real UserTransaction. See below an example of
+      configuration:</para>
+
+      <programlisting>   &lt;!-- Configuration of the TransactionManagerLookup --&gt;
+   &lt;component&gt;
+      &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
+      &lt;type&gt;org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup&lt;/type&gt;
+   &lt;/component&gt;
+   &lt;!-- Configuration of the TransactionService --&gt;
+   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.transaction.jbosscache.JBossTransactionsService&lt;/type&gt;
+      &lt;!-- Uncomment the lines below if you want to set default transaction timeout that is expressed in seconds --&gt;
+      &lt;!--init-params&gt;
+         &lt;value-param&gt;
+            &lt;name&gt;timeout&lt;/name&gt;
+            &lt;value&gt;60&lt;/value&gt;
+         &lt;/value-param&gt;
+      &lt;/init-params--&gt;
+   &lt;/component&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Generic TransactionService based on the TransactionManagerLookup
+      of Infinispan</title>
+
+      <para>If you intend to use Infinispan, you can use a generic
+      TransactionService based on its TransactionManagerLookup which is able
+      to automatically find the TransactionManager of several Application
+      Servers thanks to a set of JNDI lookups. This generic TransactionService
+      covers mainly the TransactionManager lookups, the UserTransaction is
+      actually simply the TransactionManager instance that has been wrapped.
+      See below an example of configuration:</para>
+
+      <programlisting>   &lt;!-- Configuration of the TransactionManagerLookup --&gt;
+   &lt;component&gt;
+      &lt;key&gt;org.infinispan.transaction.lookup.TransactionManagerLookup&lt;/key&gt;
+      &lt;type&gt;org.infinispan.transaction.lookup.GenericTransactionManagerLookup&lt;/type&gt;
+   &lt;/component&gt;
+   &lt;!-- Configuration of the TransactionService --&gt;
+   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.transaction.infinispan.GenericTransactionService&lt;/type&gt;
+      &lt;!-- Uncomment the lines below if you want to set default transaction timeout that is expressed in seconds --&gt;
+      &lt;!--init-params&gt;
+         &lt;value-param&gt;
+            &lt;name&gt;timeout&lt;/name&gt;
+            &lt;value&gt;60&lt;/value&gt;
+         &lt;/value-param&gt;
+      &lt;/init-params--&gt;
+   &lt;/component&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Specific GenericTransactionService for Infinispan and
+      Arjuna</title>
+
+      <para>If you intend to use Infinispan with Arjuna, you can use a more
+      specific GenericTransactionService, it is mostly interesting in case you
+      want to use the real UserTransaction. See below an example of
+      configuration:</para>
+
+      <programlisting>   &lt;!-- Configuration of the TransactionManagerLookup --&gt;
+   &lt;component&gt;
+      &lt;key&gt;org.infinispan.transaction.lookup.TransactionManagerLookup&lt;/key&gt;
+      &lt;type&gt;org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup&lt;/type&gt;
+   &lt;/component&gt;
+   &lt;!-- Configuration of the TransactionService --&gt;
+   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.transaction.infinispan.JBossTransactionsService&lt;/type&gt;
+      &lt;!-- Uncomment the lines below if you want to set default transaction timeout that is expressed in seconds --&gt;
+      &lt;!--init-params&gt;
+         &lt;value-param&gt;
+            &lt;name&gt;timeout&lt;/name&gt;
+            &lt;value&gt;60&lt;/value&gt;
+         &lt;/value-param&gt;
+      &lt;/init-params--&gt;
+   &lt;/component&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>A very specific TransactionService for JBoss AS</title>
+
+      <para>If you intend to use JBoss AS with JBoss Cache and Infinispan, you
+      can use a very specific TransactionService for JBoss AS. See below an
+      example of configuration:</para>
+
+      <programlisting>   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.transaction.impl.jboss.JBossTransactionService&lt;/type&gt;
+      &lt;!-- Uncomment the lines below if you want to set default transaction timeout that is expressed in seconds --&gt;
+      &lt;!--init-params&gt;
+         &lt;value-param&gt;
+            &lt;name&gt;timeout&lt;/name&gt;
+            &lt;value&gt;60&lt;/value&gt;
+         &lt;/value-param&gt;
+      &lt;/init-params--&gt;
+   &lt;/component&gt;</programlisting>
+    </section>
   </section>
 </chapter>

@@ -19,20 +19,28 @@
 package org.exoplatform.services.jcr.api.xa;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.XASession;
 import org.exoplatform.services.transaction.TransactionService;
 
 import javax.jcr.LoginException;
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.jcr.lock.Lock;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 /**
  * Created by The eXo Platform SAS. <br>
@@ -57,12 +65,11 @@ public class TestXATransaction extends JcrAPIBaseTest
    public void testSimpleGlobalTransaction() throws Exception
    {
       assertNotNull(ts);
-      Xid id = ts.createXid();
-      XAResource xares = ((XASession)session).getXAResource();
-      xares.start(id, XAResource.TMNOFLAGS);
+      TransactionManager tm = ts.getTransactionManager();
+      tm.begin();
       session.getRootNode().addNode("txg1");
       session.save();
-      xares.commit(id, true);
+      tm.commit();
       Session s1 =
          repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
       assertNotNull(s1.getItem("/txg1"));
@@ -75,13 +82,12 @@ public class TestXATransaction extends JcrAPIBaseTest
       Session s1 =
          repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
 
-      Xid id1 = ts.createXid();
-      XAResource xares = ((XASession)session).getXAResource();
-      xares.start(id1, XAResource.TMNOFLAGS);
+      TransactionManager tm = ts.getTransactionManager();
+      tm.begin();
 
       session.getRootNode().addNode("txg2");
       session.save();
-      // xares.commit(id, true);
+
       try
       {
          s1.getItem("/txg2");
@@ -90,10 +96,9 @@ public class TestXATransaction extends JcrAPIBaseTest
       catch (PathNotFoundException e)
       {
       }
-      xares.end(id1, XAResource.TMSUSPEND);
+      Transaction tx = tm.suspend();
 
-      Xid id2 = ts.createXid();
-      xares.start(id2, XAResource.TMNOFLAGS);
+      tm.begin();
       session.getRootNode().addNode("txg3");
       session.save();
 
@@ -107,21 +112,119 @@ public class TestXATransaction extends JcrAPIBaseTest
       }
 
       // End work
-      xares.end(id2, XAResource.TMSUCCESS);
-
-      // Resume work with former transaction
-      xares.start(id1, XAResource.TMRESUME);
-
-      // Commit work recorded when associated with xid2
-      xares.commit(id1, true);
-      // xares.commit(id2, true);
-      assertNotNull(s1.getItem("/txg2"));
+      tm.commit();
+      try
+      {
+         s1.getItem("/txg2");
+         fail("PathNotFoundException");
+      }
+      catch (PathNotFoundException e)
+      {
+      }
       assertNotNull(s1.getItem("/txg3"));
 
+      // Resume work with former transaction
+      tm.resume(tx);
+
+      // Commit work recorded when associated with xid2
+      tm.commit();
+
+      assertNotNull(s1.getItem("/txg2"));
+      assertNotNull(s1.getItem("/txg3"));
+      
+      QueryManager manager = s1.getWorkspace().getQueryManager();
+      Query query = manager.createQuery("select * from nt:base where jcr:path = '/txg2'", Query.SQL);
+      QueryResult queryResult = query.execute();
+      assertNotNull(queryResult);
+      NodeIterator iter = queryResult.getNodes();
+      assertEquals(1, iter.getSize());
+      
+      query = manager.createQuery("select * from nt:base where jcr:path = '/txg3'", Query.SQL);
+      queryResult = query.execute();
+      assertNotNull(queryResult);
+      iter = queryResult.getNodes();
+      assertEquals(1, iter.getSize());      
    }
 
+   public void test2GlobalTransactions2() throws Exception
+   {
+      assertNotNull(ts);
+      Session s1 =
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
+
+      TransactionManager tm = ts.getTransactionManager();
+      tm.begin();
+
+      session.getRootNode().addNode("txg2");
+      session.save();
+
+      try
+      {
+         s1.getItem("/txg2");
+         fail("PathNotFoundException");
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+      Transaction tx = tm.suspend();
+
+      tm.begin();
+      session.getRootNode().addNode("txg3");
+      session.save();
+
+      try
+      {
+         s1.getItem("/txg3");
+         fail("PathNotFoundException");
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+
+      // End work
+      tm.commit();
+      try
+      {
+         s1.getItem("/txg2");
+         fail("PathNotFoundException");
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+      assertNotNull(s1.getItem("/txg3"));
+
+      // Resume work with former transaction
+      tm.resume(tx);
+
+      // Roll back work recorded when associated with xid2
+      tm.rollback();
+      
+      try
+      {
+         s1.getItem("/txg2");
+         fail("PathNotFoundException");
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+      assertNotNull(s1.getItem("/txg3"));
+      
+      QueryManager manager = s1.getWorkspace().getQueryManager();
+      Query query = manager.createQuery("select * from nt:base where jcr:path = '/txg2'", Query.SQL);
+      QueryResult queryResult = query.execute();
+      assertNotNull(queryResult);
+      NodeIterator iter = queryResult.getNodes();
+      assertEquals(0, iter.getSize());
+      
+      query = manager.createQuery("select * from nt:base where jcr:path = '/txg3'", Query.SQL);
+      queryResult = query.execute();
+      assertNotNull(queryResult);
+      iter = queryResult.getNodes();
+      assertEquals(1, iter.getSize());
+   }
+   
    public void testLockInTransactions() throws LoginException, NoSuchWorkspaceException, RepositoryException,
-      XAException
+      XAException, NotSupportedException, SystemException, SecurityException, IllegalStateException, RollbackException, HeuristicMixedException, HeuristicRollbackException
    {
       assertNotNull(ts);
       Session s1 =
@@ -133,9 +236,8 @@ public class TestXATransaction extends JcrAPIBaseTest
       n1.addMixin("mix:lockable");
       session.getRootNode().save();
 
-      Xid id1 = ts.createXid();
-      XAResource xares = ((XASession)session).getXAResource();
-      xares.start(id1, XAResource.TMNOFLAGS);
+      TransactionManager tm = ts.getTransactionManager();
+      tm.begin();
 
       // lock node
       Lock lock = n1.lock(false, true);
@@ -145,11 +247,8 @@ public class TestXATransaction extends JcrAPIBaseTest
 
       assertFalse(s2.getRootNode().getNode("testLock").isLocked());
 
-      // End work
-      xares.end(id1, XAResource.TMSUCCESS);
-
       // Commit work recorded when associated with xid2
-      xares.commit(id1, true);
+      tm.commit();
       assertTrue(s2.getRootNode().getNode("testLock").isLocked());
 
       n1.unlock();

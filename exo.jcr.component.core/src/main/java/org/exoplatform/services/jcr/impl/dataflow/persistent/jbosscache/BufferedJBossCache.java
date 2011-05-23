@@ -110,68 +110,84 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
       try
       {
-         //log.info("Before=" + changesContainer.toString());
-         //Collections.sort(changesContainer);
-         List<ChangesContainer> containers = changesContainer.getSortedList();
-         //log.info("After=" + changesContainer.toString());
-         for (ChangesContainer cacheChange : containers)
+         final List<ChangesContainer> containers = changesContainer.getSortedList();
+         PrivilegedAction<Void> action = new PrivilegedAction<Void>()
          {
-            boolean isTxCreated = false;
-            try
+            public Void run()
             {
-               if (cacheChange.isTxRequired() && tm != null && tm.getStatus() == Status.STATUS_NO_TRANSACTION)
-               {
-                  // No tx exists so we create a new tx
-                  if (LOG.isTraceEnabled()) LOG.trace("No Tx is active we then create a new tx");
-                  tm.begin();
-                  isTxCreated = true;
-               }
+               commitChanges(containers);
+               return null;
             }
-            catch (Exception e)
-            {
-               LOG.warn("Could not create a new tx", e);
-            }
-            try
-            {
-               cacheChange.apply();
-            }
-            catch (RuntimeException e)
-            {
-               if (isTxCreated)
-               {
-                  try
-                  {
-                     if (LOG.isTraceEnabled()) LOG.trace("An error occurs the tx will be rollbacked");
-                     tm.rollback();
-                  }
-                  catch (Exception e1)
-                  {
-                     LOG.warn("Could not rollback the tx", e1);
-                  }
-               }
-               throw e;
-            }
-            if (isTxCreated)
-            {
-               try
-               {
-                  if (LOG.isTraceEnabled()) LOG.trace("The tx will be committed");
-                  tm.commit();
-               }
-               catch (Exception e)
-               {
-                  LOG.warn("Could not commit the tx", e);
-               }
-            }
-         }
+         };
+         AccessController.doPrivileged(action);         
       }
       finally
       {
          changesList.set(null);
          changesContainer = null;
       }
-   }
+   }   
 
+   /**
+    * @param containers
+    */
+   private void commitChanges(List<ChangesContainer> containers)
+   {
+      for (ChangesContainer cacheChange : containers)
+      {
+         boolean isTxCreated = false;
+         try
+         {
+            if (cacheChange.isTxRequired() && tm != null && tm.getStatus() == Status.STATUS_NO_TRANSACTION)
+            {
+               // No tx exists so we create a new tx
+               if (LOG.isTraceEnabled())
+                  LOG.trace("No Tx is active we then create a new tx");
+               tm.begin();
+               isTxCreated = true;
+            }
+         }
+         catch (Exception e)
+         {
+            LOG.warn("Could not create a new tx", e);
+         }
+         try
+         {
+            cacheChange.apply();
+         }
+         catch (RuntimeException e)
+         {
+            if (isTxCreated)
+            {
+               try
+               {
+                  if (LOG.isTraceEnabled())
+                     LOG.trace("An error occurs the tx will be rollbacked");
+                  tm.rollback();
+               }
+               catch (Exception e1)
+               {
+                  LOG.warn("Could not rollback the tx", e1);
+               }
+            }
+            throw e;
+         }
+         if (isTxCreated)
+         {
+            try
+            {
+               if (LOG.isTraceEnabled())
+                  LOG.trace("The tx will be committed");
+               tm.commit();
+            }
+            catch (Exception e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+         }
+      }
+   }
+   
    /**
     * Tries to get buffer and if it is null throws an exception otherwise returns buffer. 
     * 

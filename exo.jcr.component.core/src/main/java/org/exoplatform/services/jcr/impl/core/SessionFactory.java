@@ -24,12 +24,10 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
-import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.IdentityConstants;
-import org.exoplatform.services.transaction.TransactionService;
 
 import javax.jcr.LoginException;
 import javax.jcr.RepositoryException;
@@ -48,25 +46,18 @@ public class SessionFactory
 
    private final ExoContainer container;
 
-   private final TransactionService tService;
-
    private final String workspaceName;
-
-   private final TransactionableResourceManager txResourceManager;
 
    /**
     * JCR Session factory.
     * 
-    * @param tService TransactionService
     * @param config WorkspaceEntry
     * @param containerContext ExoContainerContext
     */
-   public SessionFactory(TransactionService tService, WorkspaceEntry config, ExoContainerContext containerContext)
+   public SessionFactory(WorkspaceEntry config, ExoContainerContext containerContext)
    {
       this.container = containerContext.getContainer();
       this.workspaceName = config.getName();
-      this.tService = tService;
-      this.txResourceManager = new TransactionableResourceManager();
 
       boolean tracking =
          "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty("exo.jcr.session.tracking.active", "false"));
@@ -105,21 +96,10 @@ public class SessionFactory
    }
 
    /**
-    * JCR Session factory.
-    * 
-    * @param config WorkspaceEntry
-    * @param containerContext ExoContainerContext
-    */
-   public SessionFactory(WorkspaceEntry config, ExoContainerContext containerContext)
-   {
-      this((TransactionService)null, config, containerContext);
-   }
-
-   /**
     * Creates Session object by given Credentials
     * 
     * @param credentials
-    * @return XASessionImpl if TransactionService present or SessionImpl otherwise
+    * @return the SessionImpl corresponding to the given {@link ConversationState}
     * @throws RepositoryException
     */
    SessionImpl createSession(ConversationState user) throws RepositoryException, LoginException
@@ -142,26 +122,13 @@ public class SessionFactory
             security.checkPermission(JCRRuntimePermissions.CREATE_DYNAMIC_SESSION_PERMISSION);
          }
       }
-      if (tService == null)
-      {
-         if (SessionReference.isStarted())
-         {
-            return new TrackedSession(workspaceName, user, container);
-         }
-         else
-         {
-            return new SessionImpl(workspaceName, user, container);
-         }
-      }
-
       if (SessionReference.isStarted())
       {
-         return new TrackedXASession(workspaceName, user, container, tService, txResourceManager);
+         return new TrackedSession(workspaceName, user, container);
       }
       else
       {
-         return new XASessionImpl(workspaceName, user, container, tService, txResourceManager);
+         return new SessionImpl(workspaceName, user, container);
       }
    }
-
 }

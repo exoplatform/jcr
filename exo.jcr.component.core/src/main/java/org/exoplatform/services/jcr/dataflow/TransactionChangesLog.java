@@ -66,6 +66,14 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       changesLogs.add(log);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void removeLog(PlainChangesLog log)
+   {
+      changesLogs.remove(log);
+   }
+
    /*
     * (non-Javadoc)
     * 

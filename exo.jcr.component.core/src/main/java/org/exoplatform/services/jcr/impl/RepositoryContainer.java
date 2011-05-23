@@ -59,6 +59,7 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.value.StandaloneStoragePluginProvider;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
@@ -459,6 +460,7 @@ public class RepositoryContainer extends ExoContainer
             public Void run()
             {
                workspaceContainer.registerComponentImplementation(initilizerType);
+               workspaceContainer.registerComponentImplementation(TransactionableResourceManager.class);
                workspaceContainer.registerComponentImplementation(SessionFactory.class);
                return null;
             }

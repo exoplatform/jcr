@@ -41,6 +41,8 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
@@ -105,7 +107,12 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * Read-only status.
     */
    protected boolean readOnly = false;
-
+   
+   /**
+    * The resource manager
+    */
+   private final TransactionableResourceManager txResourceManager;
+   
    /**
     * WorkspacePersistentDataManager constructor.
     * 
@@ -114,8 +121,24 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * @param systemDataContainerHolder
     *          holder of system workspace data container
     */
-   public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
+   protected WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
       SystemDataContainerHolder systemDataContainerHolder)
+   {
+      this(dataContainer, systemDataContainerHolder, null);
+   }
+   
+   /**
+    * WorkspacePersistentDataManager constructor.
+    * 
+    * @param dataContainer
+    *          workspace data container
+    * @param systemDataContainerHolder
+    *          holder of system workspace data container
+    * @param txResourceManager
+    *          the resource manager used to manage the whole tx
+    */
+   public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
+      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager)
    {
       this.dataContainer = dataContainer;
       this.systemDataContainer = systemDataContainerHolder.getContainer();
@@ -123,6 +146,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       this.listeners = new ArrayList<ItemsPersistenceListener>();
       this.mandatoryListeners = new ArrayList<MandatoryItemsPersistenceListener>();
       this.liestenerFilters = new ArrayList<ItemsPersistenceListenerFilter>();
+      this.txResourceManager = txResourceManager;
    }
 
    /**
@@ -140,7 +164,8 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
       // whole log will be reconstructed with persisted data 
       ItemStateChangesLog persistedLog;
-
+      boolean failed = true;
+      ConnectionMode mode = getMode();
       try
       {
          if (changesLog instanceof PlainChangesLogImpl)
@@ -166,7 +191,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // we don't support other types now... i.e. add else-if for that type here
             throw new RepositoryException("Unsupported changes log class " + changesLog.getClass());
          }
-         persister.commit();
+         notifySaveItems(persistedLog, true);
+         onCommit(persister, mode);
+         failed = false;
       }
       catch (IOException e)
       {
@@ -174,12 +201,79 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       }
       finally
       {
-         persister.rollback();
+         persister.clear();
+         if (failed)
+         {
+            onRollback(persister, mode);
+         }
       }
-
-      notifySaveItems(persistedLog, true);
    }
 
+   /**
+    * @return the current tx mode
+    */
+   private ConnectionMode getMode()
+   {
+      if (txResourceManager != null && txResourceManager.isGlobalTxActive())
+      {
+         return ConnectionMode.PARTIALLY_MANAGED;
+      }
+      return ConnectionMode.NORMAL;
+   }
+
+   /**
+    * @param persister
+    * @throws RepositoryException
+    */
+   private void onRollback(final ChangesLogPersister persister, ConnectionMode mode) throws RepositoryException
+   {
+      if (mode == ConnectionMode.NORMAL || mode == ConnectionMode.PARTIALLY_MANAGED)
+      {
+         // The rollback is done normally
+         persister.rollback();
+      }      
+   }
+
+   /**
+    * @param persister
+    * @throws RepositoryException
+    */
+   private void onCommit(final ChangesLogPersister persister, ConnectionMode mode) throws RepositoryException
+   {
+      if (mode == ConnectionMode.NORMAL)
+      {
+         // The commit is done normally
+         persister.commit();
+      }
+      else if (mode == ConnectionMode.PARTIALLY_MANAGED)
+      {
+         // The commit or rollback will be done by callback once the tx will be completed since it could
+         // fail later in the tx
+         txResourceManager.addListener(new TransactionableResourceManagerListener()
+         {
+            
+            public void onCommit(boolean onePhase) throws Exception
+            {
+               persister.commit();
+            }
+            
+            public void onAfterCompletion(int status) throws Exception
+            {
+            }
+            
+            public void onAbort() throws Exception
+            {
+               persister.rollback();
+            }
+         });
+      }      
+   }
+
+   private enum ConnectionMode
+   {
+      NORMAL, PARTIALLY_MANAGED
+   }
+   
    class ChangesLogPersister
    {
 
@@ -201,6 +295,12 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          }
       }
 
+      protected void clear()
+      {
+         // help to GC
+         addedNodes.clear();
+      }
+
       protected void rollback() throws IllegalStateException, RepositoryException
       {
          if (thisConnection != null && thisConnection.isOpened())
@@ -211,9 +311,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          {
             systemConnection.rollback();
          }
-
-         // help to GC
-         addedNodes.clear();
       }
 
       protected WorkspaceStorageConnection getSystemConnection() throws RepositoryException
@@ -471,7 +568,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   @Override
    public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();

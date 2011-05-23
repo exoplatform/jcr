@@ -226,11 +226,21 @@ public final class SessionRegistry implements Startable
       {
          for (SessionImpl session : sessionsMap.values())
          {
-            if (session.getLastAccessTime() + sessionTimeOut < System.currentTimeMillis())
+            if (session.getLastAccessTime() + getTimeout(session) < System.currentTimeMillis())
             {
-               session.logout();
+               session.expire();
             }
          }
+      }
+      
+      /**
+       * Checks if the session has a local timeout if so it will use it otherwise it will use the
+       * global timeout
+       */
+      private long getTimeout(SessionImpl session)
+      {
+         long localSessionTimeout = session.getTimeout();
+         return localSessionTimeout == 0 ? sessionTimeOut : localSessionTimeout;
       }
    }
 }

@@ -33,8 +33,6 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.transaction.TransactionException;
-import org.exoplatform.services.transaction.TransactionResource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +47,7 @@ import javax.jcr.RepositoryException;
  * @author Gennady Azarenkov
  * @version $Id: TransactionableDataManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TransactionableDataManager implements TransactionResource, DataManager
+public class TransactionableDataManager implements DataManager
 {
 
    // use LocalWorkspaceDataManagerStub, otherwise JVM will use save(ItemStateChangesLog changes) instead of
@@ -60,22 +58,14 @@ public class TransactionableDataManager implements TransactionResource, DataMana
 
    private TransactionChangesLog transactionLog;
 
+   private SessionImpl session;
+   
    public TransactionableDataManager(LocalWorkspaceDataManagerStub dataManager, SessionImpl session)
       throws RepositoryException
    {
       super();
+      this.session = session;
       this.storageDataManager = dataManager;
-
-      // TODO EXOJCR-272
-      //      try
-      //      {
-      //         this.storageDataManager = new LocalWorkspaceStorageDataManagerProxy(dataManager, session.getValueFactory());
-      //      }
-      //      catch (Exception e1)
-      //      {
-      //         String infoString = "[Error of read value factory: " + e1.getMessage() + "]";
-      //         throw new RepositoryException(infoString);
-      //      }
    }
 
    // --------------- ItemDataConsumer --------
@@ -309,9 +299,9 @@ public class TransactionableDataManager implements TransactionResource, DataMana
    // --------------- --------
 
    /**
-    * {@inheritDoc}
+    * Initializes the tx changes log
     */
-   public void start()
+   void start()
    {
       if (LOG.isDebugEnabled())
       {
@@ -325,47 +315,23 @@ public class TransactionableDataManager implements TransactionResource, DataMana
    }
 
    /**
-    * {@inheritDoc}
+    * Re move a given changes log
     */
-   public void commit() throws TransactionException
-   {
-      if (txStarted())
-      {
-         if (LOG.isDebugEnabled())
-         {
-            LOG.debug("tx commit() " + this + "\n" + transactionLog.dump());
-         }
-
-         try
-         {
-            TransactionChangesLog tl = transactionLog;
-            transactionLog = null;
-            storageDataManager.save(tl);
-         }
-         catch (InvalidItemStateException e)
-         {
-            throw new TransactionException(e.getMessage(), e);
-         }
-         catch (RepositoryException e)
-         {
-            throw new TransactionException(e.getMessage(), e);
-         }
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void rollback()
+   void removeLog(PlainChangesLog log)
    {
       if (LOG.isDebugEnabled())
       {
-         LOG.debug("tx rollback() " + this + (transactionLog != null ? "\n" + transactionLog.dump() : "[NULL]"));
+         LOG.debug("tx removeLog() " + this + (transactionLog != null ? "\n" + transactionLog.dump() : "[NULL]"));
       }
 
       if (txStarted())
       {
-         transactionLog = null;
+         transactionLog.removeLog(log);
+         if (transactionLog.getSize() == 0)
+         {
+            // Clear tx changes log if there is no log left
+            transactionLog = null;
+         }
       }
    }
 
@@ -388,12 +354,14 @@ public class TransactionableDataManager implements TransactionResource, DataMana
             + (statesLog != null ? "\n" + statesLog.dump() : "[NULL]") + "=====================");
       }
 
-      if (txStarted())
+      if (session.canEnrollChangeToGlobalTx(statesLog))
       {
+         // Save within a global tx
          transactionLog.addLog(statesLog);
       }
       else
       {
+         // Regular save
          storageDataManager.save(new TransactionChangesLog(statesLog));
       }
 

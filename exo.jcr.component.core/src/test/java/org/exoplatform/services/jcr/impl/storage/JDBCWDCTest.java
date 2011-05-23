@@ -108,7 +108,7 @@ public class JDBCWDCTest extends TestCase
 
       container =
          new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config,
-            holder), holder);
+            holder), holder, null);
 
       Properties logProps = new Properties();
       logProps.put("org.apache.commons.logging.simplelog.defaultlog", "debug");
