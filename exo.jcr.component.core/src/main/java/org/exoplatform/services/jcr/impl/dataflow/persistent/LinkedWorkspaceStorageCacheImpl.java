@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -59,7 +60,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: LinkedWorkspaceStorageCacheImpl.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
+public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, Startable
 {
 
    /**
@@ -761,28 +762,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          LOG.info(this.name + " Create per-users-group blocking cache map.");
          return new GroupBlockingCacheMap<CacheKey, CacheValue>(maxSize, LOAD_FACTOR, blockingUsers);
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected void finalize() throws Throwable
-   {
-      try
-      {
-         workerTimer.cancel();
-      }
-      catch (Throwable e)
-      {
-         System.err.println(this.name + " cache, finalyze error " + e);
-      }
-
-      nodesCache.clear();
-      propertiesCache.clear();
-      cache.clear();
-
-      super.finalize();
    }
 
    private void scheduleTask(TimerTask task, int start, long period)
@@ -1999,5 +1978,34 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    public boolean isTXAware()
    {
       return true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void start()
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void stop()
+   {
+      if (workerTimer != null)
+      {
+         try
+         {
+            workerTimer.cancel();
+         }
+         catch (Throwable e)
+         {
+            LOG.warn(this.name + " cache, stop error " + e);
+         }
+      }
+
+      nodesCache.clear();
+      propertiesCache.clear();
+      cache.clear();
    }
 }

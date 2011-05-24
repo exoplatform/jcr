@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
+import org.picocontainer.Startable;
+
 /**
  * Created by The eXo Platform SAS. <br/> per workspace container file cleaner holder object
  * 
@@ -25,7 +27,7 @@ package org.exoplatform.services.jcr.impl.util.io;
  * @version $Id: WorkspaceFileCleanerHolder.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class FileCleanerHolder
+public class FileCleanerHolder implements Startable
 {
 
    private final FileCleaner fileCleaner;
@@ -38,6 +40,21 @@ public class FileCleanerHolder
    public FileCleaner getFileCleaner()
    {
       return fileCleaner;
+   }
+
+   /**
+    * @see org.picocontainer.Startable#start()
+    */
+   public void start()
+   {
+   }
+
+   /**
+    * @see org.picocontainer.Startable#stop()
+    */
+   public void stop()
+   {
+      fileCleaner.halt();
    }
 
 }
