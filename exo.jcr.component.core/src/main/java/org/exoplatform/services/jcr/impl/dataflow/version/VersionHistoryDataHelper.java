@@ -123,8 +123,8 @@ public class VersionHistoryDataHelper extends TransientNodeData
       TransientNodeData vh = init(versionable, changes);
 
       // TransientItemData
-      this.parentIdentifier = vh.getParentIdentifier().intern();
-      this.identifier = vh.getIdentifier().intern();
+      this.parentIdentifier = vh.getParentIdentifier();
+      this.identifier = vh.getIdentifier();
       this.qpath = vh.getQPath();
       this.persistedVersion = vh.getPersistedVersion();
 

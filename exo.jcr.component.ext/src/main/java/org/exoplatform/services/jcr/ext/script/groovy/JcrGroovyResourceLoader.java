@@ -79,29 +79,17 @@ public class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
    {
       if (LOG.isDebugEnabled())
          LOG.debug("Process file: " + filename);
-      URL resource = null;
-      filename = filename.intern();
-      synchronized (filename)
-      {
-         resource = resources.get(filename);
-         boolean inCache = resource != null;
-         if (inCache && !checkResource(resource))
-            resource = null;
-         for (int i = 0; i < roots.length && resource == null; i++)
-         {
-            // In JCR URL path represented by fragment jcr://repository/workspace#/path
-            URL tmp =
-               ("jcr".equals(roots[i].getProtocol())) ? new URL(roots[i], "#" + roots[i].getRef() + filename)
-                  : new URL(roots[i], filename);
-            if (checkResource(tmp))
-               resource = tmp;
-         }
-         if (resource != null)
-            resources.put(filename, resource);
-         else if (inCache)
-            resources.remove(filename);
-      }
-      return resource;
+      return super.getResource(filename);
+   }
+   
+   /**
+    * @see org.exoplatform.services.rest.ext.groovy.DefaultGroovyResourceLoader#createURL(java.net.URL,java.lang.String)
+    */
+   @Override
+   protected URL createURL(URL root, String filename) throws MalformedURLException
+   {
+      return ("jcr".equals(root.getProtocol())) ? new URL(root, "#" + root.getRef() + filename)
+      : new URL(root, filename);
    }
 
    /**

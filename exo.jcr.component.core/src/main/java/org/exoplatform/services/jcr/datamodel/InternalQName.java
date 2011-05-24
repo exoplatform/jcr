@@ -40,7 +40,7 @@ public class InternalQName extends QName
     */
    public InternalQName(String namespace, String name)
    {
-      super(safeIntern(namespace), safeIntern(name));
+      super(safeIntern(namespace), name);
    }
 
    private static String safeIntern(String s)
