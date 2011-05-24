@@ -126,6 +126,15 @@ public interface WorkspaceStorageConnection
    int getChildNodesCount(NodeData parent) throws RepositoryException;
 
    /**
+    * Reads order number of last <code>parent<code/> child nodes.
+    *
+    * @param parent NodeData
+    * @return long, order number of last parent's child node.
+    * @throws RepositoryException if error occurs
+    */
+   int getLastOrderNumber(NodeData parent) throws RepositoryException;
+   
+   /**
     * Reads <code>List</code> of <code>PropertyData</code> from the storage using item's parent
     * location.
     * 

@@ -36,13 +36,13 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Session;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.datamodel.NodeData;
 
 /**
  * Created by The eXo Platform SAS.
@@ -227,7 +227,7 @@ public class TestNodeOrder extends JcrImplBaseTest
          assertEquals(order++, orderNumb);
       }
    }
-   
+
    public void testOrderWithRefreshKeep() throws Exception
    {
       Node testNode = root.addNode("testNode");
@@ -266,6 +266,43 @@ public class TestNodeOrder extends JcrImplBaseTest
 
          assertEquals(order++, orderNumb);
       }
+   }
+
+   public void testRemoveOrder() throws Exception
+   {
+      Node list = session.getRootNode().addNode("list");
+      assertTrue(list.getPrimaryNodeType().hasOrderableChildNodes());
+      list.addNode("foo", "nt:unstructured");
+      list.addNode("bar", "nt:unstructured");
+      list.addNode("juu", "nt:unstructured");
+      session.save();
+
+      list = session.getRootNode().getNode("list");
+      list.getNode("bar").remove();
+      session.save();
+
+      list = session.getRootNode().getNode("list");
+      list.addNode("daa", "nt:unstructured");
+      session.save();
+
+      //check order numbers
+      NodeImpl foo = (NodeImpl)list.getNode("foo");
+      assertEquals(0, ((NodeData)foo.getData()).getOrderNumber());
+      NodeImpl juu = (NodeImpl)list.getNode("juu");
+      assertEquals(2, ((NodeData)juu.getData()).getOrderNumber());
+      NodeImpl daa = (NodeImpl)list.getNode("daa");
+      assertEquals(3, ((NodeData)daa.getData()).getOrderNumber());
+
+      //     list.orderBefore("daa", null);
+      NodeIterator it = list.getNodes();
+      foo = (NodeImpl)it.nextNode();
+      assertEquals("foo", foo.getName());
+      juu = (NodeImpl)it.nextNode();
+      assertEquals("juu", juu.getName());
+      daa = (NodeImpl)it.nextNode();
+      assertEquals("daa", daa.getName());
+      assertFalse(it.hasNext());
+      session.save();
    }
 
 }

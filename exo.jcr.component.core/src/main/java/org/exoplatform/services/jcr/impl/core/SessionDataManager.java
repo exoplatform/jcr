@@ -843,6 +843,17 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * {@inheritDoc}
     */
+   public int getLastOrderNumber(NodeData parent) throws RepositoryException
+   {
+      int lastOrderNumber = changesLog.getLastChildOrderNumber(parent.getIdentifier());
+      int lastPersistedNodeOrderNumber = transactionableManager.getLastOrderNumber(parent);
+
+      return Math.max(lastPersistedNodeOrderNumber, lastOrderNumber);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public int getChildNodesCount(NodeData parent) throws RepositoryException
    {
       int childsCount =

@@ -91,6 +91,15 @@ public interface ItemDataConsumer
     * @return int, child nodes count
     */
    int getChildNodesCount(NodeData parent) throws RepositoryException;
+   
+   /**
+    * Get order number of parent's last child node.
+    * 
+    * @param parent node
+    * @return int Returns last child nodes order number or -1 if there is no subnodes.
+    * @throws RepositoryException
+    */
+   int getLastOrderNumber(NodeData parent) throws RepositoryException;
 
    /**
     * Get child Properties of the parent node.

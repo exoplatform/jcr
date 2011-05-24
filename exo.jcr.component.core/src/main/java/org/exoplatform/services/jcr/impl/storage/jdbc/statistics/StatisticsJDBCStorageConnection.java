@@ -117,6 +117,12 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     * <code>getChildNodesCount(NodeData parent)</code>
     */
    private static final String GET_CHILD_NODES_COUNT_DESCR = "getChildNodesCount";
+   
+   /**
+    * The description of the statistics corresponding to the method 
+    * <code>getLastOrderNumber(NodeData parent)</code>
+    */
+   private static final String GET_LAST_ORDER_NUMBER_DESCR = "getLastOrderNumber";
 
    /**
     * The description of the statistics corresponding to the method 
@@ -171,6 +177,8 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
          GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR));
       ALL_STATISTICS.put(GET_CHILD_NODES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_DATA_DESCR));
       ALL_STATISTICS.put(GET_CHILD_NODES_COUNT_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_COUNT_DESCR));
+      ALL_STATISTICS.put(GET_LAST_ORDER_NUMBER_DESCR, new Statistics(GLOBAL_STATISTICS, GET_LAST_ORDER_NUMBER_DESCR));
+      
       ALL_STATISTICS.put(GET_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
          GET_CHILD_PROPERTIES_DATA_DESCR));
       ALL_STATISTICS.put(LIST_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
@@ -227,7 +235,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#add(org.exoplatform.services.jcr.datamodel.NodeData)
+    * {@inheritDoc}
     */
    public void add(NodeData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
       IllegalStateException
@@ -245,7 +253,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#add(org.exoplatform.services.jcr.datamodel.PropertyData)
+    * {@inheritDoc}
     */
    public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
@@ -263,7 +271,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#close()
+    * {@inheritDoc}
     */
    public void close() throws IllegalStateException, RepositoryException
    {
@@ -280,7 +288,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#commit()
+    * {@inheritDoc}
     */
    public void commit() throws IllegalStateException, RepositoryException
    {
@@ -297,7 +305,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#delete(org.exoplatform.services.jcr.datamodel.NodeData)
+    * {@inheritDoc}
     */
    public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
@@ -315,7 +323,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#delete(org.exoplatform.services.jcr.datamodel.PropertyData)
+    * {@inheritDoc}
     */
    public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
@@ -333,7 +341,24 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildNodesCount(org.exoplatform.services.jcr.datamodel.NodeData)
+    * {@inheritDoc}
+    */
+   public int getLastOrderNumber(NodeData parent) throws RepositoryException
+   {
+      Statistics s = ALL_STATISTICS.get(GET_LAST_ORDER_NUMBER_DESCR);
+      try
+      {
+         s.begin();
+         return wcs.getLastOrderNumber(parent);
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
     */
    public int getChildNodesCount(NodeData parent) throws RepositoryException
    {
@@ -350,7 +375,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildNodesData(org.exoplatform.services.jcr.datamodel.NodeData)
+    * {@inheritDoc}
     */
    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException
    {
@@ -367,7 +392,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData)
+    * {@inheritDoc}
     */
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException
    {
@@ -410,7 +435,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getItemData(java.lang.String)
+    * {@inheritDoc}
     */
    public ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException
    {
@@ -427,7 +452,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getReferencesData(java.lang.String)
+    * {@inheritDoc}
     */
    public List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException,
       IllegalStateException, UnsupportedOperationException
@@ -445,7 +470,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#isOpened()
+    * {@inheritDoc}
     */
    public boolean isOpened()
    {
@@ -462,7 +487,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#listChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData)
+    * {@inheritDoc}
     */
    public List<PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException
    {
@@ -479,7 +504,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#rename(org.exoplatform.services.jcr.datamodel.NodeData)
+    * {@inheritDoc}
     */
    public void rename(NodeData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
@@ -497,7 +522,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#rollback()
+    * {@inheritDoc}
     */
    public void rollback() throws IllegalStateException, RepositoryException
    {
@@ -514,7 +539,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#update(org.exoplatform.services.jcr.datamodel.NodeData)
+    * {@inheritDoc}
     */
    public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
@@ -532,7 +557,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#update(org.exoplatform.services.jcr.datamodel.PropertyData)
+    * {@inheritDoc}
     */
    public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException

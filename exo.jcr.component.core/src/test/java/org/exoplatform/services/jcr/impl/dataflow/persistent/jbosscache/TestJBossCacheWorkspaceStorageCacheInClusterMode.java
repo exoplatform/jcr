@@ -96,6 +96,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          // Test getChildNodesData
          Action readAction = new Action(cwdmNode2)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                cwdm.getChildNodesData(parentNode);
@@ -103,6 +104,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          };
          Action writeAction = new Action(cwdmNode1)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                PlainChangesLog chlog = new PlainChangesLogImpl();            
@@ -127,6 +129,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          // Test getChildPropertiesData
          readAction = new Action(cwdmNode2)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                cwdm.getChildPropertiesData(parentNode);
@@ -134,6 +137,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          };
          writeAction = new Action(cwdmNode1)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                PlainChangesLog chlog = new PlainChangesLogImpl();            
@@ -161,6 +165,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          // Test getReferencesData
          readAction = new Action(cwdmNode2)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                cwdm.getReferencesData(parentNode.getIdentifier(), false);
@@ -168,6 +173,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          };
          writeAction = new Action(cwdmNode1)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                PlainChangesLog chlog = new PlainChangesLogImpl();            
@@ -196,6 +202,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          // Test getItemData by Id
          readAction = new Action(cwdmNode2)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                cwdm.getItemData(parentNode.getIdentifier());
@@ -203,6 +210,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          };
          writeAction = new Action(cwdmNode1)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                PlainChangesLog chlog = new PlainChangesLogImpl();
@@ -231,6 +239,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          final QPathEntry qpe = new QPathEntry(null, "my-property", 1);
          readAction = new Action(cwdmNode2)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                cwdm.getItemData(parentNode, qpe, ItemType.PROPERTY);
@@ -238,6 +247,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
          };
          writeAction = new Action(cwdmNode1)
          {
+            @Override
             public void execute(NodeData parentNode) throws Exception
             {
                PlainChangesLog chlog = new PlainChangesLogImpl();
@@ -308,6 +318,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
       final CountDownLatch doneSignal = new CountDownLatch(2);
       Thread writer = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -331,6 +342,7 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
       writer.start();
       Thread reader = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -592,6 +604,11 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
       public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {
+      }
+
+      public int getLastOrderNumber(NodeData parent) throws RepositoryException
+      {
+         return -1;
       }
    };
    

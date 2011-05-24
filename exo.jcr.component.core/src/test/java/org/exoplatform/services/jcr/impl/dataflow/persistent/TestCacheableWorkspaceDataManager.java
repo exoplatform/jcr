@@ -526,6 +526,12 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
       }
 
+      @Override
+      public int getLastOrderNumber(NodeData parent) throws RepositoryException
+      {
+         return -1;
+      }
+
    };
 
    private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase

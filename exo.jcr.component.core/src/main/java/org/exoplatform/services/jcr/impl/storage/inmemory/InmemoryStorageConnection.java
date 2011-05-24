@@ -126,6 +126,11 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
       return null;
    }
 
+   public int getLastOrderNumber(NodeData nodeData) throws RepositoryException
+   {
+      return -1;
+   }
+   
    public int getChildNodesCount(NodeData nodeData) throws RepositoryException
    {
       return 0;
