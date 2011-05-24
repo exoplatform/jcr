@@ -96,18 +96,6 @@
       <programlisting>boolean isCheckSNSNewConnection();
 </programlisting>
 
-      <important>
-        <title>New connection for SNS</title>
-
-        <para>It is neccessary to check the name of nodes when they have the
-        same names. Usually, new Workspace Storage Connection is used for this
-        purpose. The improvement came from JDBC Workspace Data Container,
-        which shows a better performance on Oracle RDBMS when using new
-        connection for checking SNS existence. But later, this causes to
-        deadlocks on Sybase RDBMS, so this feature is made as an optional and
-        configurable one.</para>
-      </important>
-
       <para>Container initialization is only based on a configuration. After
       the container has been created, it's not possible to change parameters.
       Configuration consists of implementation class and set of properties and

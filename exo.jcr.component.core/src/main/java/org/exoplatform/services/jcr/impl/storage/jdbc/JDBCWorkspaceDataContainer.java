@@ -370,7 +370,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       catch (RepositoryConfigurationException e)
       {
-         this.checkSNSNewConnection = DBConstants.DB_DIALECT_SYBASE.equals(this.dbDialect) ? false : true;
+         this.checkSNSNewConnection = false;
       }
 
       // ------------- Values swap config ------------------
@@ -836,6 +836,22 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void start()
    {
+      // if isolation level lesser then TRANSACTION_READ_COMMITTED, print a warning
+      try
+      {
+         if (getConnectionFactory().getJdbcConnection().getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
+         {
+            LOG.warn("Wrong default isolation level, please set the default isolation level to READ_COMMITTED or higher. Other default isolation levels are not supported");
+         }
+      }
+      catch (SQLException e)
+      {
+         LOG.error("Error checking isolation level configuration.", e);
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error("Error checking isolation level configuration.", e);
+      }
    }
 
    /**
