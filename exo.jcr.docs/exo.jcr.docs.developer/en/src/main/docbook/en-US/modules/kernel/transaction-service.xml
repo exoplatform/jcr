@@ -72,7 +72,7 @@
     <section>
       <title>JOTM in standalone mode</title>
 
-      <para>To use JOTM as TransactionManager in standalone mode simply add
+      <para>To use JOTM as TransactionManager in standalone mode, simply add
       the following component configuration:</para>
 
       <programlisting>   &lt;component&gt;
@@ -216,6 +216,25 @@
       <programlisting>   &lt;component&gt;
       &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
       &lt;type&gt;org.exoplatform.services.transaction.impl.jboss.JBossTransactionService&lt;/type&gt;
+      &lt;!-- Uncomment the lines below if you want to set default transaction timeout that is expressed in seconds --&gt;
+      &lt;!--init-params&gt;
+         &lt;value-param&gt;
+            &lt;name&gt;timeout&lt;/name&gt;
+            &lt;value&gt;60&lt;/value&gt;
+         &lt;/value-param&gt;
+      &lt;/init-params--&gt;
+   &lt;/component&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>TransactionsEssentials in standalone mode</title>
+
+      <para>To use TransactionsEssentials as TransactionManager in standalone
+      mode, simply add the following component configuration:</para>
+
+      <programlisting>   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.transaction.impl.atomikos.TransactionsEssentialsTransactionService&lt;/type&gt;
       &lt;!-- Uncomment the lines below if you want to set default transaction timeout that is expressed in seconds --&gt;
       &lt;!--init-params&gt;
          &lt;value-param&gt;
