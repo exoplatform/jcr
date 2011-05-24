@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.webdav.WebDavConst;
 import org.exoplatform.services.jcr.webdav.command.lock.LockRequestEntity;
 import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
 import org.exoplatform.services.jcr.webdav.resource.GenericResource;
+import org.exoplatform.services.jcr.webdav.util.PropertyConstants;
 import org.exoplatform.services.jcr.webdav.xml.PropertyWriteUtil;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
@@ -42,6 +43,7 @@ import javax.jcr.lock.Lock;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -89,6 +91,7 @@ public class LockCommand
    public Response lock(Session session, String path, HierarchicalProperty body, Depth depth, String timeout)
    {
 
+      boolean bodyIsEmpty = (body == null);
       String lockToken;
       try
       {
@@ -106,7 +109,21 @@ public class LockCommand
                }
             }
 
-            Lock lock = node.lock((depth.getIntValue() != 1), false);
+            Lock lock;
+            if (bodyIsEmpty)
+            {
+               lock = node.getLock();
+               lock.refresh();
+
+               body = new HierarchicalProperty(new QName("DAV", "activelock", "D"));
+               HierarchicalProperty owner = new HierarchicalProperty(PropertyConstants.OWNER);
+               HierarchicalProperty href = new HierarchicalProperty(new QName("D", "href"), lock.getLockOwner());
+               body.addChild(owner).addChild(href);
+            }
+            else
+            {
+               lock = node.lock((depth.getIntValue() != 1), false);
+            }
             lockToken = lock.getLockToken();
          }
          catch (PathNotFoundException pexc)
@@ -118,8 +135,17 @@ public class LockCommand
 
          lockToken = WebDavConst.Lock.OPAQUE_LOCK_TOKEN + ":" + lockToken;
 
-         return Response.ok(body(nsContext, requestEntity, depth, lockToken, requestEntity.getOwner(), timeout),
-            "text/xml").header("Lock-Token", "<" + lockToken + ">").build();
+         if (bodyIsEmpty)
+         {
+            return Response.ok(body(nsContext, requestEntity, depth, lockToken, requestEntity.getOwner(), timeout),
+               "text/xml").build();
+         }
+         else
+         {
+            return Response
+            .ok(body(nsContext, requestEntity, depth, lockToken, requestEntity.getOwner(), timeout), "text/xml")
+               .header("Lock-Token", "<" + lockToken + ">").build();
+         }
 
          // TODO 412 Precondition Failed ?
       }
