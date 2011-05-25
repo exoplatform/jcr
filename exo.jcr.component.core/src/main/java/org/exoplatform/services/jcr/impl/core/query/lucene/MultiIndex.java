@@ -56,11 +56,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -2131,49 +2131,50 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private void checkIndexingQueue(boolean transactionPresent)
    {
-      Document[] docs = indexingQueue.getFinishedDocuments();
-      Map<String, Document> finished = new HashMap<String, Document>();
-      for (int i = 0; i < docs.length; i++)
-      {
-         String uuid = docs[i].get(FieldNames.UUID);
-         finished.put(uuid, docs[i]);
-      }
-
-      // now update index with the remaining ones if there are any
-      if (!finished.isEmpty())
-      {
-         log.info("updating index with {} nodes from indexing queue.", new Long(finished.size()));
-
-         // remove documents from the queue
-         for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
-         {
-            indexingQueue.removeDocument(it.next().toString());
-         }
-
-         try
-         {
-            if (transactionPresent)
-            {
-               for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
-               {
-                  executeAndLog(new DeleteNode(getTransactionId(), it.next()));
-               }
-               for (Iterator<Document> it = finished.values().iterator(); it.hasNext();)
-               {
-                  executeAndLog(new AddNode(getTransactionId(), it.next()));
-               }
-            }
-            else
-            {
-               update(finished.keySet(), finished.values());
-            }
-         }
-         catch (IOException e)
-         {
-            // update failed
-            log.warn("Failed to update index with deferred text extraction", e);
-         }
-      }
+      // EXOJCR-1337, have been commented since it is not used
+      //      Document[] docs = indexingQueue.getFinishedDocuments();
+      //      Map<String, Document> finished = new HashMap<String, Document>();
+      //      for (int i = 0; i < docs.length; i++)
+      //      {
+      //         String uuid = docs[i].get(FieldNames.UUID);
+      //         finished.put(uuid, docs[i]);
+      //      }
+      //
+      //      // now update index with the remaining ones if there are any
+      //      if (!finished.isEmpty())
+      //      {
+      //         log.info("updating index with {} nodes from indexing queue.", new Long(finished.size()));
+      //
+      //         // remove documents from the queue
+      //         for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
+      //         {
+      //            indexingQueue.removeDocument(it.next().toString());
+      //         }
+      //
+      //         try
+      //         {
+      //            if (transactionPresent)
+      //            {
+      //               for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
+      //               {
+      //                  executeAndLog(new DeleteNode(getTransactionId(), it.next()));
+      //               }
+      //               for (Iterator<Document> it = finished.values().iterator(); it.hasNext();)
+      //               {
+      //                  executeAndLog(new AddNode(getTransactionId(), it.next()));
+      //               }
+      //            }
+      //            else
+      //            {
+      //               update(finished.keySet(), finished.values());
+      //            }
+      //         }
+      //         catch (IOException e)
+      //         {
+      //            // update failed
+      //            log.warn("Failed to update index with deferred text extraction", e);
+      //         }
+      //      }
    }
 
    // ------------------------< Actions
