@@ -325,10 +325,13 @@
 
       <para><citetitle>PermGen space size</citetitle></para>
 
-      <para>if it is used ISPN, needs to increase the PermGen size to 256M due
-      to the latest versions of JGroups that are required for ISPN. In case is
-      it is used JBC can keep on using JGroups 2.6.13.GA thus doesn't need to
-      increase the PermGen size.</para>
+      <para>If you intend to use Infinispan, you will have to increase the
+      PermGen size to at least 256 Mo due to the latest versions of JGroups
+      that are needed by Infinispan (please note that Infinspan is only
+      dedicated to the community for now, no support will be provided). In
+      case, you intend to use JBoss Cache, you can keep on using JGroups
+      2.6.13.GA which means that you don't need to increase the PermGen
+      size.</para>
     </section>
   </section>
 </chapter>
