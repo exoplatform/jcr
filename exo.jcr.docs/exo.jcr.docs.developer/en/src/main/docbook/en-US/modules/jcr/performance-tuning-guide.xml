@@ -87,7 +87,7 @@
 
               <entry>tps</entry>
 
-              <entry> Responses &gt;2s</entry>
+              <entry>Responses &gt;2s</entry>
 
               <entry>Responses &gt;4s</entry>
             </row>
@@ -101,7 +101,7 @@
 
               <entry>6.87%</entry>
 
-              <entry>1.27% </entry>
+              <entry>1.27%</entry>
             </row>
 
             <row>
@@ -109,9 +109,9 @@
 
               <entry>1754</entry>
 
-              <entry>0.64% </entry>
+              <entry>0.64%</entry>
 
-              <entry>0.08% </entry>
+              <entry>0.08%</entry>
             </row>
 
             <row>
@@ -119,9 +119,9 @@
 
               <entry>2388</entry>
 
-              <entry>0.49% </entry>
+              <entry>0.49%</entry>
 
-              <entry>0.09% </entry>
+              <entry>0.09%</entry>
             </row>
 
             <row>
@@ -129,9 +129,9 @@
 
               <entry>2706</entry>
 
-              <entry>0.46% </entry>
+              <entry>0.46%</entry>
 
-              <entry> 0.1% </entry>
+              <entry>0.1%</entry>
             </row>
           </tbody>
         </tgroup>
@@ -205,7 +205,7 @@
             <row>
               <entry>4</entry>
 
-              <entry>2756 </entry>
+              <entry>2756</entry>
 
               <entry>2.2%</entry>
 
@@ -318,6 +318,17 @@
       ...
       &lt;sync replTimeout="60000" /&gt;
    &lt;/clustering&gt;</programlisting>value is set in miliseconds.</para>
+    </section>
+
+    <section>
+      <title>JVM parameters</title>
+
+      <para><citetitle>PermGen space size</citetitle></para>
+
+      <para>if it is used ISPN, needs to increase the PermGen size to 256M due
+      to the latest versions of JGroups that are required for ISPN. In case is
+      it is used JBC can keep on using JGroups 2.6.13.GA thus doesn't need to
+      increase the PermGen size.</para>
     </section>
   </section>
 </chapter>
