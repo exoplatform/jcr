@@ -63,6 +63,10 @@
     <para>The format of each column header is ${method-alias}-${metric-alias}.
     The metric alias are described in the statistics manager section.</para>
 
+    <para>The name of the category of statistics corresponding to these
+    statistics is <emphasis>JDBCStorageConnection</emphasis>, this name is
+    mostly needed to access to the statistics through JMX.</para>
+
     <table>
       <title>Method Alias</title>
 
@@ -313,6 +317,11 @@
     <para>The metric alias are described in the statistics manager
     section.</para>
 
+    <para>The name of the category of statistics corresponding to these
+    statistics is the simple name of the monitored interface (e.g.
+    ExtendedSession for org.exoplatform.services.jcr.core.ExtendedSession),
+    this name is mostly needed to access to the statistics through JMX.</para>
+
     <remark>Please note that this feature will affect the performances of eXo
     JCR so it must be used with caution.</remark>
   </section>
@@ -343,25 +352,29 @@
             <row>
               <entry>Min</entry>
 
-              <entry>The minimum time spent into the method.</entry>
+              <entry>The minimum time spent into the method expressed in
+              milliseconds.</entry>
             </row>
 
             <row>
               <entry>Max</entry>
 
-              <entry>The maximum time spent into the method.</entry>
+              <entry>The maximum time spent into the method expressed in
+              milliseconds.</entry>
             </row>
 
             <row>
               <entry>Total</entry>
 
-              <entry>The total amount of time spent into the method.</entry>
+              <entry>The total amount of time spent into the method expressed
+              in milliseconds.</entry>
             </row>
 
             <row>
               <entry>Avg</entry>
 
-              <entry>The average time spent into the method.</entry>
+              <entry>The average time spent into the method expressed in
+              milliseconds.</entry>
             </row>
 
             <row>
@@ -395,7 +408,7 @@
 
               <entry>Give the minimum time spent into the method corresponding
               to the given category name and statistics name. The expected
-              arguments are the name of the category of the statistics (e.g.
+              arguments are the name of the category of statistics (e.g.
               JDBCStorageConnection) and the name of the expected method or
               global for the global value.</entry>
             </row>
@@ -405,7 +418,7 @@
 
               <entry>Give the maximum time spent into the method corresponding
               to the given category name and statistics name. The expected
-              arguments are the name of the category of the statistics (e.g.
+              arguments are the name of the category of statistics (e.g.
               JDBCStorageConnection) and the name of the expected method or
               global for the global value.</entry>
             </row>
@@ -415,7 +428,7 @@
 
               <entry>Give the total amount of time spent into the method
               corresponding to the given category name and statistics name.
-              The expected arguments are the name of the category of the
+              The expected arguments are the name of the category of
               statistics (e.g. JDBCStorageConnection) and the name of the
               expected method or global for the global value.</entry>
             </row>
@@ -425,7 +438,7 @@
 
               <entry>Give the average time spent into the method corresponding
               to the given category name and statistics name. The expected
-              arguments are the name of the category of the statistics (e.g.
+              arguments are the name of the category of statistics (e.g.
               JDBCStorageConnection) and the name of the expected method or
               global for the global value.</entry>
             </row>
@@ -435,7 +448,7 @@
 
               <entry>Give the total amount of times the method has been called
               corresponding to the given ,category name and statistics name.
-              The expected arguments are the name of the category of the
+              The expected arguments are the name of the category of
               statistics (e.g. JDBCStorageConnection) and the name of the
               expected method or global for the global value.</entry>
             </row>
@@ -445,16 +458,15 @@
 
               <entry>Reset the statistics for the given category name and
               statistics name. The expected arguments are the name of the
-              category of the statistics (e.g. JDBCStorageConnection) and the
-              name of the expected method or global for the global
-              value.</entry>
+              category of statistics (e.g. JDBCStorageConnection) and the name
+              of the expected method or global for the global value.</entry>
             </row>
 
             <row>
               <entry>resetAll</entry>
 
               <entry>Reset all the statistics for the given category name. The
-              expected argument is the name of the category of the statistics
+              expected argument is the name of the category of statistics
               (e.g. JDBCStorageConnection).</entry>
             </row>
           </tbody>
