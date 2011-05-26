@@ -837,9 +837,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    public void start()
    {
       // if isolation level lesser then TRANSACTION_READ_COMMITTED, print a warning
+      Connection con = null;
       try
       {
-         if (getConnectionFactory().getJdbcConnection().getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
+         con = getConnectionFactory().getJdbcConnection();
+         if (con.getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
          {
             LOG.warn("Wrong default isolation level, please set the default isolation level to READ_COMMITTED or higher. Other default isolation levels are not supported");
          }
@@ -851,6 +853,20 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       catch (RepositoryException e)
       {
          LOG.error("Error checking isolation level configuration.", e);
+      }
+      finally
+      {
+         if (con != null)
+         {
+            try
+            {
+               con.close();
+            }
+            catch (SQLException e)
+            {
+               // ignore me
+            }
+         }
       }
    }
 
