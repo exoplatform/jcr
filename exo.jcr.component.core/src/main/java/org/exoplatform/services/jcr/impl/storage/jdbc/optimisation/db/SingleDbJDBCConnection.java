@@ -877,7 +877,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       if (indexConstraint && entry.getIndex() != -1)
       {
-         sb.append(" and I_INDEX=");
+         sb.append(" and I.I_INDEX=");
          sb.append(entry.getIndex());
       }
       sb.append(")");
