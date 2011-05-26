@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.statistics.JCRStatisticsManager;
 import org.exoplatform.services.jcr.statistics.Statistics;
@@ -106,11 +107,15 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     */
    private static final String GET_CHILD_PROPERTIES_DATA_DESCR = "getChildPropertiesData";
 
+   private static final String GET_CHILD_PROPERTIES_DATA_PATTERN_DESCR = "getChildPropertiesDataPattern";
+
    /**
     * The description of the statistics corresponding to the method 
     * <code>getChildNodesData(NodeData parent)</code>
     */
    private static final String GET_CHILD_NODES_DATA_DESCR = "getChildNodesData";
+
+   private static final String GET_CHILD_NODES_DATA_PATTERN_DESCR = "getChildNodesData";
 
    /**
     * The description of the statistics corresponding to the method 
@@ -176,11 +181,14 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       ALL_STATISTICS.put(GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR, new Statistics(GLOBAL_STATISTICS,
          GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR));
       ALL_STATISTICS.put(GET_CHILD_NODES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_DATA_DESCR));
+      ALL_STATISTICS.put(GET_CHILD_NODES_DATA_PATTERN_DESCR, new Statistics(GLOBAL_STATISTICS,
+         GET_CHILD_NODES_DATA_PATTERN_DESCR));
       ALL_STATISTICS.put(GET_CHILD_NODES_COUNT_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_COUNT_DESCR));
       ALL_STATISTICS.put(GET_LAST_ORDER_NUMBER_DESCR, new Statistics(GLOBAL_STATISTICS, GET_LAST_ORDER_NUMBER_DESCR));
-      
       ALL_STATISTICS.put(GET_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
          GET_CHILD_PROPERTIES_DATA_DESCR));
+      ALL_STATISTICS.put(GET_CHILD_PROPERTIES_DATA_PATTERN_DESCR, new Statistics(GLOBAL_STATISTICS,
+         GET_CHILD_PROPERTIES_DATA_PATTERN_DESCR));
       ALL_STATISTICS.put(LIST_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
          LIST_CHILD_PROPERTIES_DATA_DESCR));
       ALL_STATISTICS.put(GET_REFERENCES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_REFERENCES_DATA_DESCR));
@@ -394,6 +402,24 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      IllegalStateException
+   {
+      Statistics s = ALL_STATISTICS.get(GET_CHILD_NODES_DATA_PATTERN_DESCR);
+      try
+      {
+         s.begin();
+         return wcs.getChildNodesData(parent, pattern);
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException
    {
       Statistics s = ALL_STATISTICS.get(GET_CHILD_PROPERTIES_DATA_DESCR);
@@ -401,6 +427,24 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       {
          s.begin();
          return wcs.getChildPropertiesData(parent);
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData, java.lang.String[] pattern)
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
+      throws RepositoryException, IllegalStateException
+   {
+      Statistics s = ALL_STATISTICS.get(GET_CHILD_PROPERTIES_DATA_PATTERN_DESCR);
+      try
+      {
+         s.begin();
+         return wcs.getChildPropertiesData(parent, pattern);
       }
       finally
       {

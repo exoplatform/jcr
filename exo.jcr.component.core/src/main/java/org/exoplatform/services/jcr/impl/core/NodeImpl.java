@@ -44,7 +44,8 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.ItemDataFilter;
-import org.exoplatform.services.jcr.impl.core.itemfilters.ItemDataNamePatternFilter;
+import org.exoplatform.services.jcr.impl.core.itemfilters.NodeNamePatternFilter;
+import org.exoplatform.services.jcr.impl.core.itemfilters.PropertyNamePatternFilter;
 import org.exoplatform.services.jcr.impl.core.lock.LockImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.ItemAutocreator;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeDefinitionImpl;
@@ -1095,9 +1096,19 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       try
       {
-         List<NodeData> childs = childNodesData();
 
-         ItemDataFilter filter = new ItemDataNamePatternFilter(namePattern, session);
+         NodeNamePatternFilter filter = new NodeNamePatternFilter(namePattern, session);
+
+         List<NodeData> childs = null;
+         if (filter.isLookingAllData())
+         {
+            childs = childNodesData();
+         }
+         else
+         {
+            childs = new ArrayList<NodeData>(dataManager.getChildNodesData(nodeData(), filter.getQPathEntryFilters()));
+            Collections.sort(childs, new NodeDataOrderComparator());
+         }
 
          if (childs.size() < session.getLazyReadThreshold())
          {
@@ -1120,7 +1131,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          else
          {
             // lazy iterator
-            return new LazyNodeIterator(childNodesData(), filter);
+            return new LazyNodeIterator(childs, filter);
          }
       }
       finally
@@ -1251,13 +1262,25 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       try
       {
-         List<PropertyData> childs = childPropertiesData();
-
-         ItemDataFilter filter = new ItemDataNamePatternFilter(namePattern, session);
-
          if (session.getAccessManager().hasPermission(nodeData().getACL(), new String[]{PermissionType.READ},
             session.getUserState().getIdentity()))
          {
+
+            PropertyNamePatternFilter filter = new PropertyNamePatternFilter(namePattern, session);
+
+            List<PropertyData> childs = null;
+            if (filter.isLookingAllData())
+            {
+               childs = childPropertiesData();
+            }
+            else
+            {
+               childs =
+                  new ArrayList<PropertyData>(dataManager.getChildPropertiesData(nodeData(),
+                     filter.getQPathEntryFilters()));
+               Collections.sort(childs, new PropertiesDataOrderComparator<PropertyData>());
+            }
+
             if (childs.size() < session.getLazyReadThreshold())
             {
                // full iterator 
@@ -1278,7 +1301,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             else
             {
                // lazy iterator
-               return new LazyPropertyIterator(childPropertiesData(), filter);
+               return new LazyPropertyIterator(childs, filter);
             }
          }
          else

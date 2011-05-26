@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
@@ -228,6 +229,12 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          return null;
       }
 
+      public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
+         throws RepositoryException, IllegalStateException
+      {
+         return null;
+      }
+
       /**
        * {@inheritDoc}
        */
@@ -298,6 +305,12 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       public int getLastOrderNumber(NodeData parent) throws RepositoryException
       {
          return -1;
+      }
+
+      public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+         IllegalStateException
+      {
+         return getChildNodesData(parent);
       }
 
    };

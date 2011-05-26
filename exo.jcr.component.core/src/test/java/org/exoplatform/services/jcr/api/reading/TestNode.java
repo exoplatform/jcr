@@ -395,6 +395,49 @@ public class TestNode extends JcrAPIBaseTest
 
    }
 
+   public void testGetPropertiesWithNamePatternStoredData() throws RepositoryException
+   {
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      Node root = session.getRootNode();
+      // Node node = root.getNode("/childNode/childNode2/jcr:content");
+
+      Node node = root.addNode("testNode", "nt:unstructured");
+
+      node.setProperty("property1", "prop1Value");
+      node.setProperty("property2", "prop2Value");
+      root.save();
+
+      PropertyIterator iterator = node.getProperties("property1 | property2");
+
+      while (iterator.hasNext())
+      {
+         Property property = iterator.nextProperty();
+         if (!("property1".equals(property.getName()) || "property2".equals(property.getName())))
+            fail("returned non expected properties");
+      }
+
+      iterator = node.getProperties("property1 | jcr:*");
+
+      while (iterator.hasNext())
+      {
+         Property property = iterator.nextProperty();
+         if (!("property1".equals(property.getName()) || "jcr:primaryType".equals(property.getName())))
+            fail("returned non expected properties");
+      }
+
+      node.setProperty("proper_ty", "prop_value");
+      node.setProperty("properAty", "propAvalue");
+      root.save();
+
+      iterator = node.getProperties("proper_t%");
+      while (iterator.hasNext())
+      {
+         Property property = iterator.nextProperty();
+         if (!("proper_ty".equals(property.getName())))
+            fail("returned non expected properties");
+      }
+   }
+
    public void testGetPrimaryItem() throws RepositoryException
    {
       Node root = session.getRootNode();

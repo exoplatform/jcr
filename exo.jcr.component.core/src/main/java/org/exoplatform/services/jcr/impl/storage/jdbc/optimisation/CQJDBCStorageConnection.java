@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
@@ -53,6 +54,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -98,6 +100,16 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected String FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ;
 
    /**
+    * FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE;
+    */
+   protected String FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE;
+
+   /**
+    * FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE;
+    */
+   protected String FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE;
+
+   /**
     * FIND_ITEM_QPATH_BY_ID_CQ.
     */
    protected String FIND_ITEM_QPATH_BY_ID_CQ;
@@ -130,6 +142,10 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected PreparedStatement deleteValueDataByOrderNum;
 
    protected PreparedStatement updateValue;
+
+   protected Statement findPropertiesByParentIdAndComplexPatternCQ;
+
+   protected Statement findNodesByParentIdAndComplexPatternCQ;
 
    /**
      * JDBCStorageConnection constructor.
@@ -168,6 +184,73 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       {
          // query will return nodes and properties in same result set
          resultSet = findChildNodesByParentIdentifierCQ(getInternalId(parent.getIdentifier()));
+         TempNodeData data = null;
+         List<NodeData> childNodes = new ArrayList<NodeData>();
+         while (resultSet.next())
+         {
+            if (data == null)
+            {
+               data = new TempNodeData(resultSet);
+            }
+            else if (!resultSet.getString(COLUMN_ID).equals(data.cid))
+            {
+               NodeData nodeData = loadNodeFromTemporaryNodeData(data, parent.getQPath(), parent.getACL());
+               childNodes.add(nodeData);
+               data = new TempNodeData(resultSet);
+            }
+            Map<String, SortedSet<TempPropertyData>> properties = data.properties;
+            String key = resultSet.getString("PROP_NAME");
+            SortedSet<TempPropertyData> values = properties.get(key);
+            if (values == null)
+            {
+               values = new TreeSet<TempPropertyData>();
+               properties.put(key, values);
+            }
+            values.add(new TempPropertyData(resultSet));
+         }
+         if (data != null)
+         {
+            NodeData nodeData = loadNodeFromTemporaryNodeData(data, parent.getQPath(), parent.getACL());
+            childNodes.add(nodeData);
+         }
+         return childNodes;
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+      finally
+      {
+         if (resultSet != null)
+         {
+            try
+            {
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      IllegalStateException
+   {
+      checkIfOpened();
+      ResultSet resultSet = null;
+      try
+      {
+         // query will return nodes and properties in same result set
+         resultSet = findChildNodesByParentIdentifierCQ(getInternalId(parent.getIdentifier()), pattern);
          TempNodeData data = null;
          List<NodeData> childNodes = new ArrayList<NodeData>();
          while (resultSet.next())
@@ -518,7 +601,107 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
          }
       }
+   }
 
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException, IllegalStateException
+   {
+      checkIfOpened();
+      ResultSet resultSet = null;
+      try
+      {
+         resultSet = findChildPropertiesByParentIdentifierCQ(getInternalId(parent.getIdentifier()), itemDataFilters);
+         List<PropertyData> children = new ArrayList<PropertyData>();
+
+         QPath parentPath = parent.getQPath();
+
+         if (resultSet.next())
+         {
+            boolean isNotLast = true;
+
+            do
+            {
+               // read property data
+               String cid = resultSet.getString(COLUMN_ID);
+               String identifier = getIdentifier(cid);
+
+               String cname = resultSet.getString(COLUMN_NAME);
+               int cversion = resultSet.getInt(COLUMN_VERSION);
+
+               String cpid = resultSet.getString(COLUMN_PARENTID);
+               // if parent ID is empty string - it's a root node
+
+               int cptype = resultSet.getInt(COLUMN_PTYPE);
+               boolean cpmultivalued = resultSet.getBoolean(COLUMN_PMULTIVALUED);
+               QPath qpath;
+               try
+               {
+                  qpath =
+                     QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath,
+                        InternalQName.parse(cname));
+               }
+               catch (IllegalNameException e)
+               {
+                  throw new RepositoryException(e.getMessage(), e);
+               }
+
+               // read values
+               List<ValueData> data = new ArrayList<ValueData>();
+               do
+               {
+                  int orderNum = resultSet.getInt(COLUMN_VORDERNUM);
+                  // check is there value columns
+                  if (!resultSet.wasNull())
+                  {
+                     final String storageId = resultSet.getString(COLUMN_VSTORAGE_DESC);
+                     ValueData vdata =
+                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion,
+                           resultSet.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+                     data.add(vdata);
+                  }
+
+                  isNotLast = resultSet.next();
+               }
+               while (isNotLast && resultSet.getString(COLUMN_ID).equals(cid));
+
+               // To avoid using a temporary table, we sort the values manually
+               Collections.sort(data, COMPARATOR_VALUE_DATA);
+               //create property
+               PersistedPropertyData pdata =
+                  new PersistedPropertyData(identifier, qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued,
+                     data);
+
+               children.add(pdata);
+            }
+            while (isNotLast);
+         }
+         return children;
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+      finally
+      {
+         if (resultSet != null)
+         {
+            try
+            {
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
    }
 
    /**
@@ -925,6 +1108,16 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          {
             updateValue.close();
          }
+
+         if (findPropertiesByParentIdAndComplexPatternCQ != null)
+         {
+            findPropertiesByParentIdAndComplexPatternCQ.close();
+         }
+
+         if (findNodesByParentIdAndComplexPatternCQ != null)
+         {
+            findNodesByParentIdAndComplexPatternCQ.close();
+         }
       }
       catch (SQLException e)
       {
@@ -936,7 +1129,13 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
 
    protected abstract ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 
+   protected abstract ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier,
+      List<QPathEntryFilter> patternList) throws SQLException;
+
    protected abstract ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
+
+   protected abstract ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier,
+      List<QPathEntryFilter> patternList) throws SQLException;
 
    protected abstract ResultSet findNodeMainPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.AdvancedCache;
@@ -32,7 +34,9 @@ import org.infinispan.util.concurrent.NotifyingFuture;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -270,6 +274,63 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    }
 
    /**
+    * It tries to get Map{filter, Set{itemIds}} by given key. If Map exists then adds itemDatas ID to all acceptable pattern lists.
+    */
+   public static class AddToPatternListContainer extends ChangesContainer
+   {
+      private final ItemData itemData;
+
+      public AddToPatternListContainer(CacheKey key, ItemData value, AdvancedCache<CacheKey, Object> cache,
+         int historicalIndex, boolean local, Boolean allowLocalChanges)
+      {
+         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
+         this.itemData = value;
+      }
+
+      @Override
+      public void apply()
+      {
+         // force writeLock on next read
+         cache.withFlags(Flag.FORCE_WRITE_LOCK);
+
+         Object existingObject = cache.get(key);
+
+         // if Map found , perform add
+         if (existingObject instanceof Map)
+         {
+            Map<QPathEntryFilter, Set<String>> newMap =
+               new HashMap<QPathEntryFilter, Set<String>>((Map<QPathEntryFilter, Set<String>>)existingObject);
+
+            Iterator<QPathEntryFilter> iterator = newMap.keySet().iterator();
+            while (iterator.hasNext())
+            {
+               QPathEntryFilter pattern = iterator.next();
+               if (pattern.accept(itemData))
+               {
+                  Set<String> newSet = newMap.get(pattern);
+                  newSet.add(itemData.getIdentifier());
+                  newMap.put(pattern, newSet);
+               }
+            }
+
+            setCacheLocalMode();
+            cache.put(key, newMap);
+         }
+         else if (existingObject != null)
+         {
+            LOG.error("Unexpected object found by key " + key.toString() + ". Expected Map, but found:"
+               + existingObject.getClass().getName());
+         }
+      }
+
+      @Override
+      public boolean isTxRequired()
+      {
+         return true;
+      }
+   }
+
+   /**
     * It tries to get set by given key. If it is set then removes value and puts new modified set
     * back.
     */
@@ -304,6 +365,59 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          }
       }
       
+      @Override
+      public boolean isTxRequired()
+      {
+         return true;
+      }
+   }
+
+   /**
+    * It tries to get Map{filter, Set{itemIds}} by given key. IfMap exists then removes item IDs from all acceptable pattern lists.
+    */
+   public static class RemoveFromPatternListContainer extends ChangesContainer
+   {
+      private final ItemData itemData;
+
+      public RemoveFromPatternListContainer(CacheKey key, ItemData value, AdvancedCache<CacheKey, Object> cache,
+         int historicalIndex, boolean local, Boolean allowLocalChanges)
+      {
+         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
+         this.itemData = value;
+      }
+
+      @Override
+      public void apply()
+      {
+         // force writeLock on next read
+         cache.withFlags(Flag.FORCE_WRITE_LOCK);
+
+         setCacheLocalMode();
+         Object existingObject = cache.get(key);
+
+         // if found value is really set! add to it.
+         if (existingObject instanceof Map)
+         {
+            Map<QPathEntryFilter, Set<String>> newMap =
+               new HashMap<QPathEntryFilter, Set<String>>((HashMap<QPathEntryFilter, Set<String>>)existingObject);
+
+            Iterator<QPathEntryFilter> patternInterator = newMap.keySet().iterator();
+            while (patternInterator.hasNext())
+            {
+               QPathEntryFilter pattern = patternInterator.next();
+               if (pattern.accept(itemData))
+               {
+                  Set<String> newSet = new HashSet<String>(newMap.get(pattern));
+                  newSet.remove(itemData.getIdentifier());
+                  newMap.put(pattern, newSet);
+               }
+            }
+
+            setCacheLocalMode();
+            cache.put(key, newMap);
+         }
+      }
+
       @Override
       public boolean isTxRequired()
       {
@@ -1102,6 +1216,20 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    {
       CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
       changesContainer.add(new RemoveFromListContainer(key, value, parentCache, changesContainer.getHistoryIndex(),
+         local.get(), allowLocalChanges));
+   }
+
+   public void removeFromPatternList(CacheKey key, ItemData value)
+   {
+      CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new RemoveFromPatternListContainer(key, value, parentCache, changesContainer
+         .getHistoryIndex(), local.get(), allowLocalChanges));
+   }
+
+   public void addToPatternList(CacheKey key, ItemData value)
+   {
+      CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new AddToPatternListContainer(key, value, parentCache, changesContainer.getHistoryIndex(),
          local.get(), allowLocalChanges));
    }
 

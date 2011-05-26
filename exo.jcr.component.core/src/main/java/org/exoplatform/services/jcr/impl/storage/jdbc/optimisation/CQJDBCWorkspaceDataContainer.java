@@ -35,6 +35,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConn
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MSSQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.OracleConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.PostgreConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseConnectionFactory;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
@@ -46,7 +47,9 @@ import org.picocontainer.Startable;
 import java.io.IOException;
 
 import javax.jcr.RepositoryException;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -134,6 +137,25 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
       {
          this.connFactory = defaultConnectionFactory();
+
+         if (dbSourceName != null)
+         {
+            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+            if (ds != null)
+               this.connFactory =
+                  new PostgreConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
+                     swapDirectory, swapCleaner);
+            else
+               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+         }
+         else
+            this.connFactory =
+               new PostgreConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+
+         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql.sql";
+         dbInitilizer = defaultDBInitializer(sqlPath);
+
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.pgsql.sql";
          dbInitilizer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }

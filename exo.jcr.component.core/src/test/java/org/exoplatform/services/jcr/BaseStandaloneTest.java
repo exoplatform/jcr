@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.impl.core.ItemImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -41,6 +42,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import javax.jcr.Node;
@@ -475,6 +479,34 @@ public abstract class BaseStandaloneTest extends TestCase
          catch (InterruptedException e)
          {
          }
+      }
+   }
+
+   protected void testNames(Iterator iterator, String[] expectedNames) throws RepositoryException
+   {
+
+      List<String> names = new ArrayList<String>();
+      while (iterator.hasNext())
+      {
+         ItemImpl item = (ItemImpl)iterator.next();
+         names.add(item.getName());
+      }
+
+      //compare names
+      assertEquals(expectedNames.length, names.size());
+
+      for (String expectedName : expectedNames)
+      {
+         boolean finded = false;
+         for (String name : names)
+         {
+            if (expectedName.equals(name))
+            {
+               finded = true;
+               break;
+            }
+         }
+         assertTrue(finded);
       }
    }
 }

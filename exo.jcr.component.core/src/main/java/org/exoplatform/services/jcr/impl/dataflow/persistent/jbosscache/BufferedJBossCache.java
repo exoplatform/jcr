@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -39,6 +41,7 @@ import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -784,6 +787,13 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          .getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
    }
 
+   public void addToPatternList(Fqn fqn, String patternKey, String listKey, ItemData value)
+   {
+      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new AddToPatternListContainer(fqn, patternKey, listKey, value, parentCache, changesContainer
+         .getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
+   }
+
    /**
     * It tries to get set by given key. If it is set then removes value and puts new modified set back.
     * 
@@ -795,6 +805,13 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
       changesContainer.add(new RemoveFromListContainer(fqn, key, value, parentCache,
+         changesContainer.getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
+   }
+
+   public void removeFromPatternList(Fqn fqn, String patternKey, String listKey, ItemData value)
+   {
+      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new RemoveFromPatternListContainer(fqn, patternKey, listKey, value, parentCache,
          changesContainer.getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
    }
 
@@ -1054,6 +1071,68 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    }
 
    /**
+    * It tries to get all child pattern nodes. Then iterate patterns and adds item ID to acceptable pattern nodes list.
+    */
+   public static class AddToPatternListContainer extends ChangesContainer
+   {
+      private final Serializable patternKey;
+
+      private final Serializable listKey;
+
+      private final ItemData value;
+
+      public AddToPatternListContainer(Fqn fqn, Serializable patternKey, Serializable listKey, ItemData value,
+         Cache<Serializable, Object> cache, int historicalIndex, boolean local, boolean useExpiration, long timeOut)
+      {
+         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         this.patternKey = patternKey;
+         this.listKey = listKey;
+         this.value = value;
+      }
+
+      @Override
+      public void apply()
+      {
+         // force writeLock on next read
+         cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
+
+         Iterator<Object> patternNames = cache.getChildrenNames(fqn).iterator();
+         while (patternNames.hasNext())
+         {
+            Object name = patternNames.next();
+            Fqn<Object> patternFqn = Fqn.fromRelativeElements(fqn, name);
+            Object patternObject = cache.get(patternFqn, patternKey);
+            if (!(patternObject instanceof QPathEntryFilter))
+            {
+               LOG.error("Unexpected object found by FQN:" + patternFqn + " and key:" + patternKey
+                  + ". Expected QPathEntryFilter, but found:" + patternObject.getClass().getName());
+               continue;
+            }
+            QPathEntryFilter nameFilter = (QPathEntryFilter)patternObject;
+            if (nameFilter.accept((ItemData)value))
+            {
+               Object setObject = cache.get(patternFqn, listKey);
+               if (!(setObject instanceof Set))
+               {
+                  LOG.error("Unexpected object found by FQN:" + patternFqn + " and key:" + listKey
+                     + ". Expected Set, but found:" + setObject.getClass().getName());
+                  continue;
+               }
+               Set<String> newSet = new HashSet<String>((Set<String>)setObject);
+               newSet.add(value.getIdentifier());
+               cache.put(patternFqn, listKey, newSet);
+            }
+         }
+      }
+
+      @Override
+      public boolean isTxRequired()
+      {
+         return true;
+      }
+   }
+
+   /**
     * It tries to get set by given key. If it is set then removes value and puts new modified set back.
     */
    public static class RemoveFromListContainer extends ChangesContainer
@@ -1099,6 +1178,69 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       {
          return false;
       }      
+   }
+
+   /**
+    * It tries to get all child pattern nodes. Then iterate patterns and removes item IDs from acceptable pattern nodes list.
+    */
+   public static class RemoveFromPatternListContainer extends ChangesContainer
+   {
+      private final Serializable patternKey;
+
+      private final Serializable listKey;
+
+      private final ItemData value;
+
+      public RemoveFromPatternListContainer(Fqn fqn, Serializable patternKey, Serializable listKey, ItemData value,
+         Cache<Serializable, Object> cache, int historicalIndex, boolean local, boolean useExpiration, long timeOut)
+      {
+         super(fqn, ChangesType.REMOVE_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         this.patternKey = patternKey;
+         this.listKey = listKey;
+         this.value = value;
+      }
+
+      @Override
+      public void apply()
+      {
+         // force writeLock on next read
+         cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
+         // object found by FQN and key;
+         setCacheLocalMode();
+
+         Iterator<Object> patternNames = cache.getChildrenNames(fqn).iterator();
+         while (patternNames.hasNext())
+         {
+            Fqn<Object> patternFqn = Fqn.fromRelativeElements(fqn, patternNames.next());
+            Object patternObject = cache.get(patternFqn, patternKey);
+            if (!(patternObject instanceof QPathEntryFilter))
+            {
+               LOG.error("Unexpected object found by FQN:" + patternFqn + " and key:" + patternKey
+                  + ". Expected QPathEntryFilter, but found:" + patternObject.getClass().getName());
+               continue;
+            }
+            QPathEntryFilter nameFilter = (QPathEntryFilter)patternObject;
+            if (nameFilter.accept((ItemData)value))
+            {
+               Object setObject = cache.get(patternFqn, listKey);
+               if (!(setObject instanceof Set))
+               {
+                  LOG.error("Unexpected object found by FQN:" + patternFqn + " and key:" + listKey
+                     + ". Expected Set, but found:" + setObject.getClass().getName());
+                  continue;
+               }
+               Set<String> newSet = new HashSet<String>((Set<String>)setObject);
+               newSet.remove(value.getIdentifier());
+               cache.put(patternFqn, listKey, newSet);
+            }
+         }
+      }
+
+      @Override
+      public boolean isTxRequired()
+      {
+         return false;
+      }
    }
 
    /**

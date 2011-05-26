@@ -40,6 +40,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
@@ -625,6 +626,25 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
+   public List<NodeData> getChildNodesData(final NodeData nodeData, List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
+   {
+
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      try
+      {
+         return con.getChildNodesData(nodeData, patternFilters);
+      }
+      finally
+      {
+         con.close();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
@@ -663,6 +683,23 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       try
       {
          return con.getChildPropertiesData(nodeData);
+      }
+      finally
+      {
+         con.close();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(final NodeData nodeData, final List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
+   {
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      try
+      {
+         return con.getChildPropertiesData(nodeData, itemDataFilters);
       }
       finally
       {

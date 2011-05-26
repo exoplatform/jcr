@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 
 import java.util.List;
 
@@ -86,6 +87,16 @@ public interface ItemDataConsumer
    List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException;
 
    /**
+    * Get child Nodes of the parent node.ItemDataFilter used to reduce count of returned items. 
+    * But not guarantee that only items matching filter will be returned.
+    * 
+    * @param parent NodeData
+    * @param patternFilters
+    * @return List of children Nodes
+    */
+   List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException;
+
+   /**
     * Get children nodes count of the parent node. 
     * @param parent NodeData
     * @return int, child nodes count
@@ -108,6 +119,17 @@ public interface ItemDataConsumer
     * @return List of children Properties
     */
    List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException;
+
+   /**
+    * Get child Properties of the parent node. ItemDataFilter used to reduce count of returned items. 
+    * But not guarantee that only items matching filter will be returned.
+    * 
+    * @param parent NodeData
+    * @param itemDataFilters String
+    * 
+    * @return List of children Properties
+    */
+   List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters) throws RepositoryException;
 
    /**
     * List child Properties, returned list will contains Properties without actual Values.

@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -90,6 +91,20 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
     * {@inheritDoc}
     */
    @Override
+   public List<NodeData> getChildNodesData(final NodeData nodeData, final List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
+   {
+      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      {
+         return versionDataManager.getChildNodesData(nodeData, patternFilters);
+      }
+      return super.getChildNodesData(nodeData, patternFilters);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
       if (isSystemDescendant(parent.getQPath()) && !this.equals(versionDataManager))
@@ -110,6 +125,20 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
          return versionDataManager.getChildPropertiesData(nodeData);
       }
       return super.getChildPropertiesData(nodeData);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<PropertyData> getChildPropertiesData(final NodeData nodeData, final List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
+   {
+      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      {
+         return versionDataManager.getChildPropertiesData(nodeData, itemDataFilters);
+      }
+      return super.getChildPropertiesData(nodeData, itemDataFilters);
    }
 
    /**

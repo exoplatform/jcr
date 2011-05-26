@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.version.ChildVersionRemoveVisitor;
 import org.exoplatform.services.jcr.impl.core.version.VersionHistoryImpl;
@@ -963,6 +964,36 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * {@inheritDoc}
     */
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
+   {
+      long start = System.currentTimeMillis();
+      if (log.isDebugEnabled())
+      {
+         log.debug("getChildNodesData(" + parent.getQPath().getAsString() + " , itemDataFilter) >>>>>");
+      }
+
+      try
+      {
+         List<NodeData> persistChildNodes =
+            (isNew(parent.getIdentifier())) ? new ArrayList<NodeData>() : transactionableManager.getChildNodesData(
+               parent, patternFilters);
+         return (List<NodeData>)mergeNodes(parent, persistChildNodes);
+      }
+      finally
+      {
+         if (log.isDebugEnabled())
+         {
+            log.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") <<<<< "
+               + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
+      }
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public int getLastOrderNumber(NodeData parent) throws RepositoryException
    {
       int lastOrderNumber = changesLog.getLastChildOrderNumber(parent.getIdentifier());
@@ -1011,6 +1042,38 @@ public class SessionDataManager implements ItemDataConsumer
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
+   {
+      long start = 0;
+      if (log.isDebugEnabled())
+      {
+         start = System.currentTimeMillis();
+         log.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") >>>>>");
+      }
+
+      try
+      {
+         List<PropertyData> childProperties =
+            (isNew(parent.getIdentifier())) ? new ArrayList<PropertyData>() : transactionableManager
+               .getChildPropertiesData(parent, itemDataFilters);
+
+         return (List<PropertyData>)mergeProps(parent, childProperties, transactionableManager);
+      }
+      finally
+      {
+         if (log.isDebugEnabled())
+         {
+            log.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") <<<<< "
+               + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
+      }
+
    }
 
    /**
@@ -1957,6 +2020,55 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * Merges incoming node with changes stored in this log i.e: 1. incoming data still not modified
     * if there are no corresponding changes 2. incoming data is refreshed with corresponding changes
+    * if any 3. new data is added from changes 4. if changed data is marked as "deleted" it removes
+    * from outgoing list WARN. THIS METHOD HAS SIBLING - mergeList, see below.
+    * 
+    * @param rootData 
+    * @param persistChildNodes persisted child nodes, that will be merged with transient data
+    * 
+    * @return merged nodes list
+    */
+   protected List<? extends ItemData> mergeNodes(ItemData rootData, List<NodeData> persistChildNodes)
+      throws RepositoryException
+   {
+      // 1 get all transient descendants
+      Collection<ItemState> transientDescendants = changesLog.getLastChildrenStates(rootData, true);
+
+      if (!transientDescendants.isEmpty())
+      {
+         // 2 get ALL persisted descendants
+         Map<String, ItemData> descendants = new LinkedHashMap<String, ItemData>();
+         for (int i = 0, length = persistChildNodes.size(); i < length; i++)
+         {
+            NodeData childNode = persistChildNodes.get(i);
+            descendants.put(childNode.getIdentifier(), childNode);
+         }
+
+         // merge data
+         for (ItemState state : transientDescendants)
+         {
+            ItemData data = state.getData();
+            if (!state.isDeleted())
+            {
+               descendants.put(data.getIdentifier(), data);
+            }
+            else
+            {
+               descendants.remove(data.getIdentifier());
+            }
+         }
+         Collection<ItemData> desc = descendants.values();
+         return new ArrayList<ItemData>(desc);
+      }
+      else
+      {
+         return persistChildNodes;
+      }
+   }
+
+   /**
+    * Merges incoming node with changes stored in this log i.e: 1. incoming data still not modified
+    * if there are no corresponding changes 2. incoming data is refreshed with corresponding changes
     * if any 3. new datas is added from changes 4. if chaged data is marked as "deleted" it removes
     * from outgoing list WARN. THIS METHOD HAS SIBLING - mergeList, see below.
     * 
@@ -1997,6 +2109,62 @@ public class SessionDataManager implements ItemDataConsumer
             return Collections.emptyList();
          }
          return dataManager.getChildNodesData((NodeData)rootData);
+      }
+   }
+
+   /**
+    * Merges incoming property data with changes stored in this log i.e: 1. incoming data still not modified
+    * if there are no corresponding changes 2. incoming data is refreshed with corresponding changes
+    * if any 3. new datas is added from changes 4. if chaged data is marked as "deleted" it removes
+    * from outgoing list WARN. THIS METHOD HAS SIBLING - mergeList, see below.
+    * 
+    * @param rootData
+    * @param listOnly 
+    * @return
+    */
+   protected List<? extends ItemData> mergeProps(ItemData rootData, List<PropertyData> childProperties,
+      DataManager dataManager) throws RepositoryException
+   {
+      // 1 get all transient descendants
+      Collection<ItemState> transientDescendants = changesLog.getLastChildrenStates(rootData, false);
+
+      if (!transientDescendants.isEmpty())
+      {
+         Map<String, ItemData> descendants = new LinkedHashMap<String, ItemData>();
+         outer : for (int i = 0, length = childProperties.size(); i < length; i++)
+         {
+            ItemData childProp = childProperties.get(i);
+            for (ItemState transientState : transientDescendants)
+            {
+               if (!transientState.isNode() && !transientState.isDeleted()
+                  && transientState.getData().getQPath().getDepth() == childProp.getQPath().getDepth()
+                  && transientState.getData().getQPath().getName().equals(childProp.getQPath().getName()))
+               {
+                  continue outer;
+               }
+            }
+            descendants.put(childProp.getIdentifier(), childProp);
+         }
+
+         // merge data
+         for (ItemState state : transientDescendants)
+         {
+            ItemData data = state.getData();
+            if (!state.isDeleted())
+            {
+               descendants.put(data.getIdentifier(), data);
+            }
+            else
+            {
+               descendants.remove(data.getIdentifier());
+            }
+         }
+         Collection<ItemData> desc = descendants.values();
+         return new ArrayList<ItemData>(desc);
+      }
+      else
+      {
+         return childProperties;
       }
    }
 

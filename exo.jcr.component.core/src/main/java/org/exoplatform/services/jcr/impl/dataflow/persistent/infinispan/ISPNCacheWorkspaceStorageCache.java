@@ -44,6 +44,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
@@ -58,9 +59,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -629,6 +632,47 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    /**
     * {@inheritDoc}
     */
+   public void addChildNodes(NodeData parent, QPathEntryFilter pattern, List<NodeData> childs)
+   {
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+
+         cache.setLocal(true);
+         Set<String> set = new HashSet<String>();
+
+         for (NodeData child : childs)
+         {
+            putNode(child, ModifyChildOption.NOT_MODIFY);
+            set.add(child.getIdentifier());
+         }
+
+         CachePatternNodesId cacheId = new CachePatternNodesId(parent.getIdentifier());
+         Map<QPathEntryFilter, Set<String>> patterns = (Map<QPathEntryFilter, Set<String>>)cache.get(cacheId);
+         if (patterns == null)
+         {
+            patterns = new HashMap<QPathEntryFilter, Set<String>>();
+         }
+         patterns.put(pattern, set);
+         cache.put(cacheId, patterns);
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public void addChildProperties(NodeData parent, List<PropertyData> childs)
    {
       boolean inTransaction = cache.isTransactionActive();
@@ -654,6 +698,49 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          else
          {
             LOG.warn("Empty properties list cached " + (parent != null ? parent.getQPath().getAsString() : parent));
+         }
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void addChildProperties(NodeData parent, QPathEntryFilter pattern, List<PropertyData> childs)
+   {
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+         cache.setLocal(true);
+         if (childs.size() > 0)
+         {
+            // add all new
+            Set<String> set = new HashSet<String>();
+            for (PropertyData child : childs)
+            {
+               putProperty(child, ModifyChildOption.NOT_MODIFY);
+               set.add(child.getIdentifier());
+            }
+
+            CachePatternPropsId cacheId = new CachePatternPropsId(parent.getIdentifier());
+            Map<QPathEntryFilter, Set<String>> patterns = (Map<QPathEntryFilter, Set<String>>)cache.get(cacheId);
+            if (patterns == null)
+            {
+               patterns = new HashMap<QPathEntryFilter, Set<String>>();
+            }
+            patterns.put(pattern, set);
+            cache.put(cacheId, patterns);
          }
       }
       finally
@@ -709,6 +796,45 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    /**
     * {@inheritDoc}
     */
+   public List<NodeData> getChildNodes(final NodeData parent, final QPathEntryFilter pattern)
+   {
+      // get list of children uuids
+      final Map<QPathEntryFilter, Set<String>> patterns =
+         (Map<QPathEntryFilter, Set<String>>)cache.get(new CachePatternNodesId(parent.getIdentifier()));
+
+      if (patterns == null)
+      {
+         return null;
+      }
+
+      Set<String> set = patterns.get(pattern);
+      if (set == null)
+      {
+         return null;
+      }
+
+      final List<NodeData> childs = new ArrayList<NodeData>();
+
+      for (String childId : set)
+      {
+         NodeData child = (NodeData)cache.get(new CacheId(childId));
+         if (child == null)
+         {
+            return null;
+         }
+
+         childs.add(child);
+      }
+
+      // order children by orderNumber, as HashSet returns children in other order
+      Collections.sort(childs, new NodesOrderComparator<NodeData>());
+      return childs;
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public int getChildNodesCount(NodeData parent)
    {
       return getChildNodesCount.run(parent);
@@ -720,6 +846,43 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    public List<PropertyData> getChildProperties(NodeData parent)
    {
       return getChildProps(parent.getIdentifier(), true);
+   }
+
+   public List<PropertyData> getChildProperties(NodeData parent, QPathEntryFilter pattern)
+   {
+      // get list of children uuids
+      final Map<QPathEntryFilter, Set<String>> patterns =
+         (Map<QPathEntryFilter, Set<String>>)cache.get(new CachePatternPropsId(parent.getIdentifier()));
+
+      if (patterns == null)
+      {
+         return null;
+      }
+
+      Set<String> set = patterns.get(pattern);
+      if (set == null)
+      {
+         return null;
+      }
+
+      final List<PropertyData> childs = new ArrayList<PropertyData>();
+
+      for (String childId : set)
+      {
+         PropertyData child = (PropertyData)cache.get(new CacheId(childId));
+
+         if (child == null)
+         {
+            return null;
+         }
+         if (child.getValues().size() <= 0)
+         {
+            return null;
+         }
+         childs.add(child);
+      }
+      return childs;
+
    }
 
    /**
@@ -756,6 +919,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    public boolean isEnabled()
    {
       return enabled;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isPatternSupported()
+   {
+      return true;
    }
 
    /**
@@ -812,6 +983,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          // if MODIFY and List present OR FORCE_MODIFY, then write
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
+            cache.addToPatternList(new CachePatternNodesId(node.getParentIdentifier()), node);
             cache.addToList(new CacheNodesId(node.getParentIdentifier()), node.getIdentifier(),
                modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
          }
@@ -893,6 +1065,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       // if MODIFY and List present OR FORCE_MODIFY, then write
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
       {
+         cache.addToPatternList(new CachePatternPropsId(prop.getParentIdentifier()), prop);
          cache.addToList(new CachePropsId(prop.getParentIdentifier()), prop.getIdentifier(),
             modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
       }
@@ -955,12 +1128,15 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          {
             cache.remove(new CacheNodesId(item.getIdentifier()));
             cache.remove(new CachePropsId(item.getIdentifier()));
-
+            cache.removeFromPatternList(new CachePatternNodesId(item.getParentIdentifier()), item);
+            cache.remove(new CachePatternNodesId(item.getIdentifier()));
+            cache.remove(new CachePatternPropsId(item.getIdentifier()));
             cache.removeFromList(new CacheNodesId(item.getParentIdentifier()), item.getIdentifier());
             cache.remove(new CacheRefsId(item.getIdentifier()));
          }
          else
          {
+            cache.removeFromPatternList(new CachePatternPropsId(item.getParentIdentifier()), item);
             cache.removeFromList(new CachePropsId(item.getParentIdentifier()), item.getIdentifier());
          }
       }

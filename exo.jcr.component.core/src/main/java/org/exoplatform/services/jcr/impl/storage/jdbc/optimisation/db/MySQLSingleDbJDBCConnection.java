@@ -39,6 +39,8 @@ import java.sql.SQLException;
 public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
 
+   protected static final String PATTERN_ESCAPE_STRING = "\\\\";
+
    /**
     * MySQL Singledatabase JDBC Connection constructor.
     * 
@@ -66,6 +68,15 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    {
 
       super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void prepareQueries() throws SQLException
+   {
+      super.prepareQueries();
    }
 
    /**
@@ -128,4 +139,9 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
       return super.addPropertyRecord(data);
    }
 
+   protected String getLikeExpressionEscape()
+   {
+      // must be .. LIKE 'prop\\_name' ESCAPE '\\\\'
+      return this.PATTERN_ESCAPE_STRING;
+   }
 }

@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -158,6 +159,19 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
    /**
     * {@inheritDoc}
     */
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException
+   {
+      final List<NodeData> nodes = persistentManager.getChildNodesData(parent, patternFilters);
+      for (int i = 0; i < nodes.size(); i++)
+      {
+         nodes.set(i, (NodeData)initACL(parent, nodes.get(i)));
+      }
+      return nodes;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public int getLastOrderNumber(final NodeData parent) throws RepositoryException
    {
       return persistentManager.getLastOrderNumber(parent);
@@ -203,6 +217,15 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException
    {
       return persistentManager.getChildPropertiesData(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
+   {
+      return persistentManager.getChildPropertiesData(parent, itemDataFilters);
    }
 
    /**

@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
@@ -135,6 +136,14 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    /**
     * {@inheritDoc}
     */
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException
+   {
+      return copyNodes(storageDataManager.getChildNodesData(parent, patternFilters));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public int getLastOrderNumber(final NodeData parent) throws RepositoryException
    {
       return storageDataManager.getLastOrderNumber(parent);
@@ -154,6 +163,15 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException
    {
       return copyProperties(storageDataManager.getChildPropertiesData(parent));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
+   {
+      return copyProperties(storageDataManager.getChildPropertiesData(parent, itemDataFilters));
    }
 
    /**

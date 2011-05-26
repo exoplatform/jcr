@@ -151,7 +151,7 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
       String res;
       if (showIndex)
       {
-         res = super.getAsString() + QPath.PREFIX_DELIMITER + this.index;
+         res = super.getAsString() + QPath.PREFIX_DELIMITER + getIndex();
       }
       else
       {
@@ -206,7 +206,7 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
 
       if (result == true && (o instanceof QPathEntry))
       {
-         return result && (index == ((QPathEntry)o).getIndex());
+         return result && (getIndex() == ((QPathEntry)o).getIndex());
       }
       else
       {

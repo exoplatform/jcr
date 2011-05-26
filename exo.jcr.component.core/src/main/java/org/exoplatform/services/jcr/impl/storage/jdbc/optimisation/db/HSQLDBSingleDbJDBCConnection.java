@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
@@ -31,6 +32,7 @@ import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.jcr.InvalidItemStateException;
 
@@ -296,6 +298,49 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
+   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier, List<QPathEntryFilter> pattern)
+      throws SQLException
+   {
+      if (pattern.isEmpty())
+      {
+         throw new SQLException("Pattern list is empty.");
+      }
+      else
+      {
+         if (findNodesByParentIdAndComplexPatternCQ == null)
+         {
+            findNodesByParentIdAndComplexPatternCQ = dbConnection.createStatement();
+         }
+
+         //create query from list
+         StringBuilder query = new StringBuilder(FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE);
+         query.append(" where I.PARENT_ID='");
+         query.append(parentIdentifier);
+         query.append("' and I.I_CLASS=1 and I.CONTAINER_NAME='");
+         query.append(containerName);
+         query.append("' and ( ");
+         appendPattern(query, pattern.get(0).getQPathEntry(), true);
+         for (int i = 1; i < pattern.size(); i++)
+         {
+            query.append(" or ");
+            appendPattern(query, pattern.get(i).getQPathEntry(), true);
+         }
+         query.append(" ) and P.PARENT_ID=I.ID and P.I_CLASS=2 and P.CONTAINER_NAME='");
+         query.append(containerName);
+         query.append("' and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType'");
+         query.append(" or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'");
+         query.append(" or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'");
+         query.append(" or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')");
+         query.append(" and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID");
+
+         return findNodesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException
    {
       if (findPropertiesByParentIdCQ == null)
@@ -314,6 +359,43 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          }
       };
       return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentCid, List<QPathEntryFilter> pattern)
+      throws SQLException
+   {
+      if (pattern.isEmpty())
+      {
+         throw new SQLException("Pattern list is empty.");
+      }
+      else
+      {
+         if (findPropertiesByParentIdAndComplexPatternCQ == null)
+         {
+            findPropertiesByParentIdAndComplexPatternCQ = dbConnection.createStatement();
+         }
+
+         //create query from list
+         StringBuilder query = new StringBuilder(FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE);
+         query.append(" where I.PARENT_ID='");
+         query.append(parentCid);
+         query.append("' and I.I_CLASS=2 and I.CONTAINER_NAME='");
+         query.append(containerName);
+         query.append("' and ( ");
+         appendPattern(query, pattern.get(0).getQPathEntry(), false);
+         for (int i = 1; i < pattern.size(); i++)
+         {
+            query.append(" or ");
+            appendPattern(query, pattern.get(i).getQPathEntry(), false);
+         }
+         query.append(" ) order by I.NAME");
+
+         return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
+      }
    }
 
    /**

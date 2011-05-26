@@ -98,4 +98,14 @@ public class ItemDataNamePatternFilter implements ItemDataFilter
       return Pattern.compile(regexp).matcher(name).matches();
    }
 
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.itemfilters.ItemDataFilter#accept(java.util.List)
+    */
+   @Override
+   public List<? extends ItemData> accept(List<? extends ItemData> item)
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
 }

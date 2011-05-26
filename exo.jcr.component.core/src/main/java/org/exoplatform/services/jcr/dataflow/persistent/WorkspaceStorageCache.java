@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 
 import java.util.List;
 
@@ -81,6 +82,8 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    ItemData get(String identifier);
 
    /**
+    * Get child nodes.
+    * 
     * @param parent
     * @return child nodes for parent if found; empty list if no items found; null if no items
     *         initialized
@@ -88,6 +91,18 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    List<NodeData> getChildNodes(NodeData parent);
 
    /**
+    * Get child nodes by pattern.
+    * 
+    * @param parent
+    * @param pattern
+    * @return child nodes for parent if found; empty list if no items found; null if no items
+    *         initialized
+    */
+   List<NodeData> getChildNodes(NodeData parent, QPathEntryFilter pattern);
+
+   /**
+    * Get child nodes count.
+    * 
     * @param parent
     * @return child nodes count for parent if found; 0 if no items found; -1 if no items
     *         initialized
@@ -102,6 +117,16 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     *         initialized
     */
    List<PropertyData> getChildProperties(NodeData parent);
+
+   /**
+    * Get node child properties by pattern.<br/>
+    * 
+    * @param parent
+    * @param pattern
+    * @return child properties for parent if found; empty list if no items found; null if no items
+    *         initialized
+    */
+   List<PropertyData> getChildProperties(NodeData parent, QPathEntryFilter pattern);
 
    /**
     * List node child properties.<br/> A difference from {@link getChildProperties()} it's that the
@@ -150,13 +175,33 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    void addChildNodes(NodeData parent, List<NodeData> childNodes);
 
    /**
+    * Adds (update should not be the case!) list of child nodes. The list can be empty. If list is
+    * null the operation is ignored.
+    * 
+    * @param parent
+    * @param pattern
+    * @param childNodes
+    */
+   void addChildNodes(NodeData parent, QPathEntryFilter pattern, List<NodeData> childNodes);
+
+   /**
     * Adds (update should not be the case!) list of child properties. The list can be empty. If list
     * is null the operation is ignored.
     * 
     * @param parent
-    * @param childNodes
+    * @param childProperties
     */
    void addChildProperties(NodeData parent, List<PropertyData> childProperties);
+
+   /**
+    * Adds (update should not be the case!) list of child properties. The list can be empty. If list
+    * is null the operation is ignored.
+    * 
+    * @param parent
+    * @param pattern
+    * @param childProperties
+    */
+   void addChildProperties(NodeData parent, QPathEntryFilter pattern, List<PropertyData> childProperties);
 
    /**
     * Adds (update should not be the case!) list of child properties with empty values. The list can
@@ -181,6 +226,12 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    @Managed
    @ManagedDescription("Indicates whether the cache is enabled or not")   
    boolean isEnabled();
+
+   /**
+    * 
+    * @return isPatternSupported status flag, if true then cache can store pattern results 
+    */
+   boolean isPatternSupported();
 
    /**
     * Cache size.

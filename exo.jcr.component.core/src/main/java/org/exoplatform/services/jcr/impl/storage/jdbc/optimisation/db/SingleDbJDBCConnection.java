@@ -20,8 +20,10 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -59,6 +61,8 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
          + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
          + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? order by I.NAME";
+
+   protected static final String PATTERN_ESCAPE_STRING = "\\"; //valid for HSQL, Sybase, DB2, MSSQL, ORACLE
 
    /**
     * Singledatabase JDBC Connection constructor.
@@ -169,6 +173,12 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
          "select * from JCR_SITEM" + " where I_CLASS=2 and CONTAINER_NAME=? and PARENT_ID=?" + " order by NAME";
 
       FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
+      FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
+            + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)";
+
+      FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V";
 
       INSERT_NODE =
          "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,?,"
@@ -610,6 +620,48 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
+   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier, List<QPathEntryFilter> pattern)
+      throws SQLException
+   {
+      if (pattern.isEmpty())
+      {
+         throw new SQLException("Pattern list is empty.");
+      }
+      else
+      {
+         if (findNodesByParentIdAndComplexPatternCQ == null)
+         {
+            findNodesByParentIdAndComplexPatternCQ = dbConnection.createStatement();
+         }
+         //create query from list
+         StringBuilder query = new StringBuilder(FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE);
+         query.append(" where I.I_CLASS=1 and I.CONTAINER_NAME='");
+         query.append(containerName);
+         query.append("' and I.PARENT_ID='");
+         query.append(parentIdentifier);
+         query.append("' and ( ");
+         appendPattern(query, pattern.get(0).getQPathEntry(), true);
+         for (int i = 1; i < pattern.size(); i++)
+         {
+            query.append(" or ");
+            appendPattern(query, pattern.get(i).getQPathEntry(), true);
+         }
+         query.append(" ) and P.I_CLASS=2 and P.CONTAINER_NAME='");
+         query.append(containerName);
+         query.append("' and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType'");
+         query.append(" or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'");
+         query.append(" or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'");
+         query.append(" or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')");
+         query.append(" and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID");
+
+         return findNodesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException
    {
       if (findPropertiesByParentIdCQ == null)
@@ -621,6 +673,42 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       findPropertiesByParentIdCQ.setString(2, parentIdentifier);
       return findPropertiesByParentIdCQ.executeQuery();
 
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentCid, List<QPathEntryFilter> pattern)
+      throws SQLException
+   {
+      if (pattern.isEmpty())
+      {
+         throw new SQLException("Pattern list is empty.");
+      }
+      else
+      {
+         if (findPropertiesByParentIdAndComplexPatternCQ == null)
+         {
+            findPropertiesByParentIdAndComplexPatternCQ = dbConnection.createStatement();
+         }
+         //create query from list
+         StringBuilder query = new StringBuilder(FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE);
+         query.append(" where I.I_CLASS=2 and I.CONTAINER_NAME='");
+         query.append(containerName);
+         query.append("' and I.PARENT_ID='");
+         query.append(parentCid);
+         query.append("' and ( ");
+         appendPattern(query, pattern.get(0).getQPathEntry(), false);
+         for (int i = 1; i < pattern.size(); i++)
+         {
+            query.append(" or ");
+            appendPattern(query, pattern.get(i).getQPathEntry(), false);
+         }
+         query.append(" ) order by I.NAME");
+
+         return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
+      }
    }
 
    /**
@@ -731,4 +819,77 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       updateValue.setInt(4, orderNumber);
       return updateValue.executeUpdate();
    }  
+
+   /**
+    * Replace underscore in pattern with escaped symbol. Replace jcr-wildcard '*' with sql-wildcard '%'.
+    * 
+    * @param pattern
+    * @return pattern with escaped underscore and fixed wildcard symbols
+    */
+   protected String fixEscapeSymbols(String pattern)
+   {
+      char[] chars = pattern.toCharArray();
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < chars.length; i++)
+      {
+         switch (chars[i])
+         {
+            case '*' :
+               sb.append('%');
+               break;
+            case '_' :
+            case '%' :
+               sb.append(getWildcardEscapeSymbold());
+            default :
+               sb.append(chars[i]);
+         }
+      }
+      return sb.toString();
+   }
+
+   /**
+    * Append pattern expression.
+    * Appends String "I.NAME LIKE 'escaped pattern' ESCAPE 'escapeString'" or "I.NAME='pattern'"
+    * to String builder sb.
+    * 
+    * @param sb StringBuilder
+    * @param indexConstraint 
+    * @param pattern
+    */
+   protected void appendPattern(StringBuilder sb, QPathEntry entry, boolean indexConstraint)
+   {
+      String pattern = entry.getAsString(false);
+      sb.append("(I.NAME");
+      if (pattern.contains("*"))
+      {
+         sb.append(" LIKE '");
+         sb.append(fixEscapeSymbols(pattern));
+         sb.append("' ESCAPE '");
+         sb.append(getLikeExpressionEscape());
+         sb.append("'");
+      }
+      else
+      {
+         sb.append("='");
+         sb.append(pattern);
+         sb.append("'");
+      }
+
+      if (indexConstraint && entry.getIndex() != -1)
+      {
+         sb.append(" and I_INDEX=");
+         sb.append(entry.getIndex());
+      }
+      sb.append(")");
+   }
+
+   protected String getWildcardEscapeSymbold()
+   {
+      return PATTERN_ESCAPE_STRING;
+   }
+
+   protected String getLikeExpressionEscape()
+   {
+      return PATTERN_ESCAPE_STRING;
+   }
 }

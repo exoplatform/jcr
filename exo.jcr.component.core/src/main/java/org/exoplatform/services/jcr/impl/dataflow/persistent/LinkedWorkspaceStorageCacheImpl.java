@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.log.ExoLogger;
@@ -1702,6 +1703,14 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public boolean isPatternSupported()
+   {
+      return false;
+   }
+
+   /**
     * Enable cache.
     * 
     * @param enabled
@@ -2171,5 +2180,28 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
       nodesCache.clear();
       propertiesCache.clear();
       cache.clear();
+   }
+
+   public void addChildProperties(NodeData parent, QPathEntryFilter pattern, List<PropertyData> childProperties)
+   {
+      // TODO Auto-generated method stub
+   }
+
+   public List<PropertyData> getChildProperties(NodeData parent, QPathEntryFilter pattern)
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   public void addChildNodes(NodeData parent, QPathEntryFilter pattern, List<NodeData> childNodes)
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   public List<NodeData> getChildNodes(NodeData parent, QPathEntryFilter pattern)
+   {
+      // TODO Auto-generated method stub
+      return null;
    }
 }

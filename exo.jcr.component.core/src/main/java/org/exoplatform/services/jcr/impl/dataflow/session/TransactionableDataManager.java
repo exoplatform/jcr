@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -76,6 +77,34 @@ public class TransactionableDataManager implements DataManager
    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException
    {
       List<NodeData> nodes = storageDataManager.getChildNodesData(parent);
+
+      if (txStarted())
+      {
+         // merge data
+         List<ItemState> txChanges = transactionLog.getChildrenChanges(parent.getIdentifier(), true);
+         if (txChanges.size() > 0)
+         {
+            List<NodeData> res = new ArrayList<NodeData>(nodes);
+
+            for (ItemState state : txChanges)
+            {
+               res.remove(state.getData());
+               if (!state.isDeleted())
+               {
+                  res.add((NodeData)state.getData());
+               }
+            }
+
+            return Collections.unmodifiableList(res);
+         }
+      }
+
+      return nodes;
+   }
+
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException
+   {
+      List<NodeData> nodes = storageDataManager.getChildNodesData(parent, patternFilters);
 
       if (txStarted())
       {
@@ -177,6 +206,37 @@ public class TransactionableDataManager implements DataManager
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException
    {
       List<PropertyData> props = storageDataManager.getChildPropertiesData(parent);
+
+      if (txStarted())
+      {
+         // merge data
+         List<ItemState> txChanges = transactionLog.getChildrenChanges(parent.getIdentifier(), false);
+         if (txChanges.size() > 0)
+         {
+            List<PropertyData> res = new ArrayList<PropertyData>(props);
+            for (ItemState state : txChanges)
+            {
+               res.remove(state.getData());
+               if (!state.isDeleted())
+               {
+                  res.add((PropertyData)state.getData());
+               }
+            }
+
+            return Collections.unmodifiableList(res);
+         }
+      }
+
+      return props;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
+   {
+      List<PropertyData> props = storageDataManager.getChildPropertiesData(parent, itemDataFilters);
 
       if (txStarted())
       {

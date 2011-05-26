@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
@@ -353,6 +354,14 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          return true;
       }
 
+      /**
+       * {@inheritDoc}
+       */
+      public boolean isPatternSupported()
+      {
+         return false;
+      }
+
       public List<PropertyData> listChildProperties(NodeData parentData)
       {
          return childPropertiesList;
@@ -393,6 +402,24 @@ public class TestCacheableWorkspaceDataManager extends TestCase
 
       public void addReferencedProperties(String identifier, List<PropertyData> refProperties)
       {
+      }
+
+      public void addChildProperties(NodeData parent, QPathEntryFilter pattern, List<PropertyData> childProperties)
+      {
+      }
+
+      public List<PropertyData> getChildProperties(NodeData parent, QPathEntryFilter pattern)
+      {
+         return null;
+      }
+
+      public void addChildNodes(NodeData parent, QPathEntryFilter pattern, List<NodeData> childNodes)
+      {
+      }
+
+      public List<NodeData> getChildNodes(NodeData parent, QPathEntryFilter pattern)
+      {
+         return null;
       }
 
    }
@@ -454,6 +481,16 @@ public class TestCacheableWorkspaceDataManager extends TestCase
             .asList((PropertyData)new PersistedPropertyData("getChildPropertiesData", null, null, 0,
                PropertyType.STRING, false,
                Arrays.asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
+      }
+
+      public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
+         throws RepositoryException, IllegalStateException
+      {
+         getChildPropertiesDataCalls.incrementAndGet();
+         return Arrays
+            .asList((PropertyData)new PersistedPropertyData("getChildPropertiesDataByPattern", null, null, 0,
+               PropertyType.STRING, false, Arrays
+                  .asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
       }
 
       public AtomicInteger getItemDataByNodeDataNQPathEntryCalls = new AtomicInteger();
@@ -537,6 +574,12 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       public int getLastOrderNumber(NodeData parent) throws RepositoryException
       {
          return -1;
+      }
+
+      public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+         IllegalStateException
+      {
+         return null;
       }
 
    };

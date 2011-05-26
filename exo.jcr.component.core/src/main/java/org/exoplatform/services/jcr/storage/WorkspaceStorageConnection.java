@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 
 import java.util.List;
 
@@ -117,6 +118,21 @@ public interface WorkspaceStorageConnection
    List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;
 
    /**
+    * Reads <code>List</code> of <code>NodeData</code> from the storage using item's parent location, and name filter.
+    * 
+    * @param parent
+    *          NodeData
+    * @param pattern  - list of QPathEntryFilters
+    * @return child nodes data or empty <code>List</code>
+    * @throws RepositoryException
+    *           if some exception occured
+    * @throws IllegalStateException
+    *           if connection is closed
+    */
+   List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      IllegalStateException;
+
+   /**
     * Reads count of <code>parent<code/> child nodes.
     *
     * @param parent NodeData
@@ -147,6 +163,23 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException;
+
+   /**
+    * Reads <code>List</code> of <code>PropertyData</code> from the storage using item's parent
+    * location.
+    * 
+    * @param parent
+    *          NodeData
+    * @param pattern
+    *          String[] list of wildcard names 
+    * @return child properties data or empty <code>List</code>
+    * @throws RepositoryException
+    *           if some exception occured
+    * @throws IllegalStateException
+    *           if connection is closed
+    */
+   List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      IllegalStateException;
 
    /**
     * Reads <code>List</code> of <code>PropertyData</code> with empty <code>ValueData</code> from the

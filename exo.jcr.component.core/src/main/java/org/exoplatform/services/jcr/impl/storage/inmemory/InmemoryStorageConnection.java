@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -119,9 +120,21 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
       return null;
    }
 
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      IllegalStateException
+   {
+      return getChildNodesData(parent);
+   }
+
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException
    {
       return null;
+   }
+
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
+      throws RepositoryException, IllegalStateException
+   {
+      return getChildPropertiesData(parent);
    }
 
    public List<PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException

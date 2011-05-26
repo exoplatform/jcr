@@ -35,6 +35,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
@@ -51,7 +52,12 @@ import java.io.Serializable;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -501,9 +507,35 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
+   public List<NodeData> getChildNodesData(NodeData parentData, List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
+   {
+      return getChildNodesDataByPattern(parentData, patternFilters);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public List<PropertyData> getChildPropertiesData(NodeData nodeData) throws RepositoryException
    {
       List<PropertyData> childs = getChildPropertiesData(nodeData, false);
+      for (PropertyData prop : childs)
+      {
+         fixPropertyValues(prop);
+      }
+
+      return childs;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<PropertyData> getChildPropertiesData(NodeData nodeData, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
+   {
+      List<PropertyData> childs = getChildPropertiesDataByPattern(nodeData, itemDataFilters);
       for (PropertyData prop : childs)
       {
          fixPropertyValues(prop);
@@ -950,6 +982,174 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
+   protected List<NodeData> getChildNodesDataByPattern(NodeData parentData, List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
+   {
+      if (!cache.isEnabled())
+      {
+         return super.getChildNodesData(parentData, patternFilters);
+      }
+
+      if (!cache.isPatternSupported())
+      {
+         return getChildNodesData(parentData);
+      }
+
+      // 1. check cache - outside data request
+
+      List<NodeData> childNodesList = cache.getChildNodes(parentData);
+      if (childNodesList != null)
+      {
+         return childNodesList;
+      }
+
+      Map<String, NodeData> childNodesMap = new HashMap<String, NodeData>();
+
+      Set<QPathEntryFilter> uncachedPatterns = new HashSet<QPathEntryFilter>();
+      for (int i = 0; i < patternFilters.size(); i++)
+      {
+         if (patternFilters.get(i).isExactName())
+         {
+            ItemData data = getCachedItemData(parentData, patternFilters.get(i).getQPathEntry(), ItemType.NODE);
+            if (data != null)
+            {
+               if (!(data instanceof NullItemData))
+               {
+                  childNodesMap.put(data.getIdentifier(), (NodeData)data);
+               }
+            }
+            else
+            {
+               uncachedPatterns.add(patternFilters.get(i));
+            }
+         }
+         else
+         {
+            // get nodes list by pattern
+            List<NodeData> cachedItemList = cache.getChildNodes(parentData, patternFilters.get(i));
+            if (cachedItemList != null)
+            {
+               //merge results
+               for (int j = 0, length = cachedItemList.size(); j < length; j++)
+               {
+                  childNodesMap.put(cachedItemList.get(j).getIdentifier(), cachedItemList.get(j));
+               }
+            }
+            else
+            {
+               uncachedPatterns.add(patternFilters.get(i));
+            }
+         }
+      }
+
+      // 2. check cache - inside data requests
+      if (!uncachedPatterns.isEmpty())
+      {
+         List<DataRequest> requests = new ArrayList<DataRequest>();
+         try
+         {
+            final DataRequest request = new DataRequest(parentData.getIdentifier(), DataRequest.GET_NODES);
+            request.start();
+            requests.add(request);
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            childNodesList = cache.getChildNodes(parentData);
+            if (childNodesList != null)
+            {
+               return childNodesList;
+            }
+
+            Iterator<QPathEntryFilter> patternIterator = uncachedPatterns.iterator();
+            while (patternIterator.hasNext())
+            {
+               QPathEntryFilter pattern = patternIterator.next();
+               if (pattern.isExactName())
+               {
+                  DataRequest exactNameRequest = new DataRequest(parentData.getIdentifier(), pattern.getQPathEntry());
+                  exactNameRequest.start();
+                  requests.add(exactNameRequest);
+
+                  ItemData data = getCachedItemData(parentData, pattern.getQPathEntry(), ItemType.NODE);
+                  if (data != null)
+                  {
+                     if (!(data instanceof NullItemData))
+                     {
+                        childNodesMap.put(data.getIdentifier(), (NodeData)data);
+                     }
+                     patternIterator.remove();
+                  }
+               }
+               else
+               {
+                  // get node list by pattern
+                  List<NodeData> cachedItemList = cache.getChildNodes(parentData, pattern);
+                  if (cachedItemList != null)
+                  {
+                     //merge results
+                     for (int j = 0, length = cachedItemList.size(); j < length; j++)
+                     {
+                        childNodesMap.put(cachedItemList.get(j).getIdentifier(), cachedItemList.get(j));
+                     }
+                     patternIterator.remove();
+                  }
+               }
+            }
+            patternIterator = null;
+
+            // execute all patterns and put result in cache
+            if (!uncachedPatterns.isEmpty())
+            {
+               List<NodeData> persistedItemList =
+                  super.getChildNodesData(parentData, new ArrayList<QPathEntryFilter>(uncachedPatterns));
+
+               if (persistedItemList.size() > 0)
+               {
+                  NodeData parent = (NodeData)getItemData(parentData.getIdentifier());
+                  if (parent != null)
+                  {
+                     // filter nodes list for each exact name
+                     patternIterator = uncachedPatterns.iterator();
+                     while (patternIterator.hasNext())
+                     {
+                        QPathEntryFilter pattern = patternIterator.next();
+                        List<NodeData> persistedNodeData = (List<NodeData>)pattern.accept(persistedItemList);
+                        if (pattern.isExactName())
+                        {
+                           if (persistedNodeData.isEmpty())
+                           {
+                              cache.put(new NullNodeData(parentData, pattern.getQPathEntry()));
+                           }
+                           else
+                           {
+                              cache.put(persistedNodeData.get(0));
+                           }
+                        }
+                        else
+                        {
+                           cache.addChildNodes(parent, pattern, persistedNodeData);
+                        }
+                        for (NodeData node : persistedItemList)
+                        {
+                           childNodesMap.put(node.getIdentifier(), node);
+                        }
+                     }
+                  }
+               }
+            }
+         }
+         finally
+         {
+            for (DataRequest rq : requests)
+            {
+               rq.done();
+            }
+            requests.clear();
+         }
+      }
+
+      return new ArrayList<NodeData>(childNodesMap.values());
+   }
+
    /**
     * Get referenced properties data.
     * 
@@ -1055,6 +1255,177 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          request.done();
       }
+   }
+
+   protected List<PropertyData> getChildPropertiesDataByPattern(NodeData nodeData, List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
+   {
+      if (!cache.isEnabled())
+      {
+         return super.getChildPropertiesData(nodeData, patternFilters);
+      }
+
+      if (!cache.isPatternSupported())
+      {
+         return getChildPropertiesData(nodeData);
+      }
+
+      // 1. check cache - outside data request
+      List<PropertyData> childPropsList = cache.getChildProperties(nodeData);
+      if (childPropsList != null)
+      {
+         return childPropsList;
+      }
+
+      Map<String, PropertyData> childPropsMap = new HashMap<String, PropertyData>();
+
+      Set<QPathEntryFilter> uncachedPatterns = new HashSet<QPathEntryFilter>();
+      for (int i = 0; i < patternFilters.size(); i++)
+      {
+         if (patternFilters.get(i).isExactName())
+         {
+            ItemData data = getCachedItemData(nodeData, patternFilters.get(i).getQPathEntry(), ItemType.PROPERTY);
+            if (data != null)
+            {
+               if (!(data instanceof NullPropertyData))
+               {
+                  childPropsMap.put(data.getIdentifier(), (PropertyData)data);
+               }
+            }
+            else
+            {
+               uncachedPatterns.add(patternFilters.get(i));
+            }
+         }
+         else
+         {
+
+            // get property list by pattern
+            List<PropertyData> cachedItemList = cache.getChildProperties(nodeData, patternFilters.get(i));
+            if (cachedItemList != null)
+            {
+               //merge results
+               for (int j = 0, length = cachedItemList.size(); j < length; j++)
+               {
+                  childPropsMap.put(cachedItemList.get(j).getIdentifier(), cachedItemList.get(j));
+               }
+            }
+            else
+            {
+               uncachedPatterns.add(patternFilters.get(i));
+            }
+         }
+      }
+
+      // 2. check cache - inside data requests
+      if (!uncachedPatterns.isEmpty())
+      {
+         List<DataRequest> requests = new ArrayList<DataRequest>();
+         try
+         {
+
+            final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_PROPERTIES);
+            request.start();
+            requests.add(request);
+
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            childPropsList = cache.getChildProperties(nodeData);
+            if (childPropsList != null)
+            {
+               return childPropsList;
+            }
+
+            Iterator<QPathEntryFilter> patternIterator = uncachedPatterns.iterator();
+            while (patternIterator.hasNext())
+            {
+               QPathEntryFilter pattern = patternIterator.next();
+               if (pattern.isExactName())
+               {
+                  DataRequest exactNameRequest = new DataRequest(nodeData.getIdentifier(), pattern.getQPathEntry());
+                  exactNameRequest.start();
+                  requests.add(exactNameRequest);
+
+                  ItemData data = getCachedItemData(nodeData, pattern.getQPathEntry(), ItemType.PROPERTY);
+                  if (data != null)
+                  {
+                     if (!(data instanceof NullPropertyData))
+                     {
+                        childPropsMap.put(data.getIdentifier(), (PropertyData)data);
+                     }
+                     patternIterator.remove();
+                  }
+               }
+               else
+               {
+                  // get properties list by pattern
+                  List<PropertyData> cachedItemList = cache.getChildProperties(nodeData, pattern);
+                  if (cachedItemList != null)
+                  {
+                     //merge results
+                     for (int j = 0, length = cachedItemList.size(); j < length; j++)
+                     {
+                        childPropsMap.put(cachedItemList.get(j).getIdentifier(), cachedItemList.get(j));
+                     }
+                     patternIterator.remove();
+                  }
+               }
+            }
+            patternIterator = null;
+
+            // execute all patterns and put result in cache
+            if (!uncachedPatterns.isEmpty())
+            {
+               List<PropertyData> persistedItemList =
+                  super.getChildPropertiesData(nodeData, new ArrayList<QPathEntryFilter>(uncachedPatterns));
+
+               if (persistedItemList.size() > 0)
+               {
+                  NodeData parent = (NodeData)getItemData(nodeData.getIdentifier());
+                  if (parent != null)
+                  {
+                     // filter properties list for each exact name
+                     patternIterator = uncachedPatterns.iterator();
+                     while (patternIterator.hasNext())
+                     {
+                        QPathEntryFilter pattern = patternIterator.next();
+                        List<PropertyData> persistedPropData = (List<PropertyData>)pattern.accept(persistedItemList);
+                        if (pattern.isExactName())
+                        {
+                           if (persistedPropData.isEmpty())
+                           {
+                              cache.put(new NullPropertyData(parent, pattern.getQPathEntry()));
+                           }
+                           else
+                           {
+                              cache.put(persistedPropData.get(0));
+                           }
+                        }
+                        else
+                        {
+                           cache.addChildProperties(parent, pattern, persistedPropData);
+                        }
+
+                        for (PropertyData node : persistedItemList)
+                        {
+                           childPropsMap.put(node.getIdentifier(), node);
+                        }
+                     }
+                  }
+               }
+            }
+         }
+         finally
+         {
+            for (DataRequest rq : requests)
+            {
+               rq.done();
+            }
+            requests.clear();
+         }
+      }
+
+      return new ArrayList<PropertyData>(childPropsMap.values());
    }
 
    /**
