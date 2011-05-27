@@ -237,12 +237,22 @@ public class SystemViewStreamExporter extends StreamExporter
             else
             {
                InputStream is = data.getAsStream();
-               byte[] buffer = new byte[BUFFER_SIZE];
-               int len;
-               while ((len = is.read(buffer)) > 0)
+               try
                {
-                  char[] charbuf1 = Base64.encode(buffer, 0, len, 0, "").toCharArray();
-                  writer.writeCharacters(charbuf1, 0, charbuf1.length);
+                  byte[] buffer = new byte[BUFFER_SIZE];
+                  int len;
+                  while ((len = is.read(buffer)) > 0)
+                  {
+                     char[] charbuf1 = Base64.encode(buffer, 0, len, 0, "").toCharArray();
+                     writer.writeCharacters(charbuf1, 0, charbuf1.length);
+                  }
+               }
+               finally
+               {
+                  if (is != null)
+                  {
+                     is.close();
+                  }
                }
             }
          }

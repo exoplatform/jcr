@@ -736,8 +736,7 @@ public class BackupChainLog
                         String dir = readContent();
                         if (dir.equals("."))
                         {
-                           String path = logFile.getParentFile().getCanonicalPath();
-
+                           String path = PrivilegedFileHelper.getCanonicalPath(logFile.getParentFile());
                            conf.setBackupDir(new File(path));
                         }
                         else
