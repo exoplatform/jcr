@@ -35,6 +35,7 @@ import org.jboss.cache.Region;
 import org.jboss.cache.config.Configuration;
 import org.jboss.cache.config.EvictionConfig;
 import org.jboss.cache.config.EvictionRegionConfig;
+import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.jgroups.JChannelFactory;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 
 /**
@@ -315,6 +317,31 @@ public class ExoJBossCacheFactory<K, V>
       return cache;
    }
 
+   /**
+    * Gives the {@link JmxRegistrationManager} instance corresponding to the given context
+    */
+   public static JmxRegistrationManager getJmxRegistrationManager(ExoContainerContext ctx, Cache<?, ?> parentCache,
+      CacheType cacheType)
+   {
+      try
+      {
+         ObjectName containerObjectName = ctx.getContainer().getScopingObjectName();
+         final String objectNameBase = containerObjectName.toString() + ",cache-type=" + cacheType;
+         return new JmxRegistrationManager(ctx.getContainer().getMBeanServer(), parentCache, objectNameBase)
+         {
+            public String getObjectName(String resourceName)
+            {
+               return objectNameBase + JMX_RESOURCE_KEY + resourceName;
+            }
+         };
+      }
+      catch (Exception e)
+      {
+         log.error("Could not create the JMX Manager", e);
+      }
+      return null;
+   }
+   
    /**
     * All the known cache types
     */

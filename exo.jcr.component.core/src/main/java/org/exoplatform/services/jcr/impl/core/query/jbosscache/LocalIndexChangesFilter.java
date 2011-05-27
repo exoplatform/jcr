@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -38,9 +39,11 @@ import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
+import org.jboss.cache.jmx.JmxRegistrationManager;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.PrivilegedAction;
 
 import javax.jcr.RepositoryException;
 
@@ -82,6 +85,8 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
 
    private final Fqn<String> rootFqn;
 
+   private final JmxRegistrationManager jmxManager;
+   
    public static final String LISTWRAPPER = "$lists".intern();
 
    /**
@@ -126,6 +131,18 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
 
       PrivilegedJBossCacheHelper.create(cache);
       PrivilegedJBossCacheHelper.start(cache);
+      this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(searchManager.getExoContainerContext(), cache, CacheType.INDEX_CACHE);
+      if (jmxManager != null)
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               jmxManager.registerAllMBeans();
+               return null;
+            }
+         });
+      }
 
       indexerCacheLoader = (IndexerCacheLoader)((CacheSPI)cache).getCacheLoaderManager().getCacheLoader();
 
@@ -155,4 +172,30 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
       String id = IdGenerator.generate();
       PrivilegedJBossCacheHelper.put(cache, Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER, changes);
    }
+   
+   /**
+    * @see java.lang.Object#finalize()
+    */
+   @Override
+   protected void finalize() throws Throwable
+   {
+      try
+      {
+         if (jmxManager != null)
+         {
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+            {
+               public Void run()
+               {
+                  jmxManager.unregisterAllMBeans();
+                  return null;
+               }
+            });
+         }         
+      }
+      finally
+      {
+         super.finalize();         
+      }
+   }    
 }

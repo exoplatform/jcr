@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -59,11 +61,13 @@ import org.jboss.cache.Node;
 import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
+import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.picocontainer.Startable;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -409,6 +413,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    protected volatile boolean initialized;
 
+   private JmxRegistrationManager jmxManager;
+
    /**
     * Node order comparator for getChildNodes().
     */
@@ -532,12 +538,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    /**
     * Cache constructor with eXo TransactionService support.
     * 
+    * @param ctx The container context
     * @param wsConfig WorkspaceEntry workspace config
     * @param transactionService TransactionService external transaction service
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService,
+   public JBossCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, TransactionService transactionService,
       ConfigurationManager cfm) throws RepositoryException, RepositoryConfigurationException
    {
       if (wsConfig.getCache() == null)
@@ -589,6 +596,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       parentCache =
          ExoJBossCacheFactory.getUniqueInstance(CacheType.JCR_CACHE, rootFqn, parentCache, wsConfig.getCache()
             .getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT).booleanValue());
+      if (ctx != null)
+      {
+         this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(ctx, parentCache, CacheType.JCR_CACHE);
+      }
 
       // if expiration is used, set appropriate factory with with timeout set via configuration (or default one 15minutes)
       this.cache =
@@ -613,16 +624,31 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    }
 
    /**
+    * Cache constructor with eXo TransactionService support.
+    * 
+    * @param wsConfig WorkspaceEntry workspace config
+    * @param transactionService TransactionService external transaction service
+    * @throws RepositoryException if error of initialization
+    * @throws RepositoryConfigurationException if error of configuration
+    */
+   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService,
+      ConfigurationManager cfm) throws RepositoryException, RepositoryConfigurationException
+   {
+      this(null, wsConfig, transactionService, cfm);
+   }
+
+   /**
     * Cache constructor with JBossCache JTA transaction support.
     * 
+    * @param ctx The container context
     * @param wsConfig WorkspaceEntry workspace config
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, ConfigurationManager cfm)
+   public JBossCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, ConfigurationManager cfm)
       throws RepositoryException, RepositoryConfigurationException
    {
-      this(wsConfig, null, cfm);
+      this(ctx, wsConfig, null, cfm);
    }
 
    /**
@@ -647,6 +673,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       createResidentNode(childNodesByPatternList);
       createResidentNode(itemsRoot);
 
+      if (jmxManager != null)
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               jmxManager.registerAllMBeans();
+               return null;
+            }
+         });
+      }
       this.initialized = true;
    }
 
@@ -665,6 +702,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    public void stop()
    {
+      if (jmxManager != null)
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               jmxManager.unregisterAllMBeans();
+               return null;
+            }
+         });
+      }      
    }
 
    /**

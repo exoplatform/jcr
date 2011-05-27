@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -40,9 +41,11 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig.SingletonStoreConfig;
+import org.jboss.cache.jmx.JmxRegistrationManager;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.PrivilegedAction;
 import java.util.Properties;
 
 import javax.jcr.RepositoryException;
@@ -75,6 +78,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
    private final Cache<Serializable, Object> cache;
 
    private final Fqn<String> rootFqn;
+   
+   private final JmxRegistrationManager jmxManager;
 
    public static final String LISTWRAPPER = "$lists".intern();
 
@@ -135,6 +140,19 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 
       PrivilegedJBossCacheHelper.create(cache);
       PrivilegedJBossCacheHelper.start(cache);
+      
+      this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(searchManager.getExoContainerContext(), cache, CacheType.INDEX_CACHE);
+      if (jmxManager != null)
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               jmxManager.registerAllMBeans();
+               return null;
+            }
+         });
+      }
 
       // start will invoke cache listener which will notify handler that mode is changed
       IndexerIoMode ioMode =
@@ -183,4 +201,30 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
    {
       return true;
    }
+
+   /**
+    * @see java.lang.Object#finalize()
+    */
+   @Override
+   protected void finalize() throws Throwable
+   {
+      try
+      {
+         if (jmxManager != null)
+         {
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+            {
+               public Void run()
+               {
+                  jmxManager.unregisterAllMBeans();
+                  return null;
+               }
+            });
+         }
+      }
+      finally
+      {
+         super.finalize();         
+      }
+   } 
 }

@@ -31,6 +31,7 @@ import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -43,6 +44,8 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.management.MBeanServer;
 
 /**
  * Factory that creates and starts pre-configured instances of Infinispan.
@@ -71,6 +74,14 @@ public class ISPNCacheFactory<K, V>
    private static Map<GlobalConfiguration, EmbeddedCacheManager> CACHE_MANAGERS =
       new HashMap<GlobalConfiguration, EmbeddedCacheManager>();
 
+   private static final MBeanServerLookup MBEAN_SERVER_LOOKUP = new MBeanServerLookup()
+   {
+      public MBeanServer getMBeanServer(Properties properties)
+      {
+         return ExoContainerContext.getTopContainer().getMBeanServer();
+      }      
+   };
+   
    /**
     * Creates InfinispanCacheFactory with provided configuration transaction managers.
     * Transaction manager will later be injected to cache instance. 
@@ -206,6 +217,9 @@ public class ISPNCacheFactory<K, V>
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       // Ensure that the cluster name won't be used between 2 ExoContainers
       gc.setClusterName(gc.getClusterName() + "_" + container.getContext().getName());
+      gc.setCacheManagerName(gc.getCacheManagerName() + "_" + container.getContext().getName());
+      // Configure the MBeanServerLookup
+      gc.setMBeanServerLookupInstance(MBEAN_SERVER_LOOKUP);
       Configuration conf = manager.getDefaultConfiguration();
       if (CACHE_MANAGERS.containsKey(gc))
       {

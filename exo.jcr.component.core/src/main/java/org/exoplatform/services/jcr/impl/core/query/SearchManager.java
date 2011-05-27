@@ -18,9 +18,9 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -237,6 +237,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * Switches index between online and offline modes
     */
    private RemoteCommand changeIndexState;
+   
+   private final ExoContainerContext ctx;
 
    private String hotReindexingState = "not stated";
 
@@ -288,6 +290,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
       RepositoryConfigurationException
    {
+      this.ctx = ctx;
       this.wsContainerId = ctx.getName();
       this.rpcService = rpcService;
       this.repositoryName = rEntry.getName();
@@ -805,6 +808,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected IndexingTree getIndexingTree()
    {
       return indexingTree;
+   }
+
+   /**
+    * @return the ctx
+    */
+   public ExoContainerContext getExoContainerContext()
+   {
+      return ctx;
    }
 
    /**

@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -31,8 +33,8 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -44,6 +46,7 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
+import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.jboss.cache.loader.CacheLoader;
 import org.jboss.cache.loader.CacheLoaderManager;
 import org.jboss.cache.lock.TimeoutException;
@@ -116,9 +119,12 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
 
    private final boolean shareable;
 
+   private final JmxRegistrationManager jmxManager;
+   
    /**
     * Constructor.
     * 
+    * @param ctx The container context
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
@@ -126,31 +132,33 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
     *          the transaction service
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
       LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
+      this(ctx, dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
    }
 
    /**
     * Constructor.
     * 
+    * @param ctx The container context
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
       throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
+      this(ctx, dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
    }
 
    /**
     * Constructor.
     * 
+    * @param ctx The container context
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
@@ -158,7 +166,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
     *          the transaction manager
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
       LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
@@ -184,6 +192,18 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
             config.getLockManager().getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT)
                .booleanValue();
          cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.LOCK_CACHE, rootFqn, cache, shareable);
+         this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(ctx, cache, CacheType.LOCK_CACHE);
+         if (jmxManager != null)
+         {
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+            {
+               public Void run()
+               {
+                  jmxManager.registerAllMBeans();
+                  return null;
+               }
+            });
+         }
          PrivilegedJBossCacheHelper.create(cache);
          if (cache.getCacheStatus().startAllowed())
          {
@@ -490,6 +510,17 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          PrivilegedJBossCacheHelper.stop(cache);
       }
+      if (jmxManager != null)
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               jmxManager.unregisterAllMBeans();
+               return null;
+            }
+         });
+      }      
    }
 
    /**
