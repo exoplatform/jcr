@@ -54,7 +54,7 @@ public class LazyTextExtractorField extends AbstractField
    /**
     * The extract as obtained lazily from {@link #reader}.
     */
-   private String extract;
+   volatile private String extract;
 
    /**
     * Creates a new <code>LazyTextExtractorField</code> with the given
