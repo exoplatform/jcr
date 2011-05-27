@@ -1,0 +1,432 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java	(revision 4445)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java	(working copy)
+@@ -16,6 +16,7 @@
+  */
+ package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
+ 
++import org.exoplatform.container.ExoContainerContext;
+ import org.exoplatform.container.configuration.ConfigurationManager;
+ import org.exoplatform.management.annotations.Managed;
+ import org.exoplatform.management.annotations.ManagedDescription;
+@@ -63,6 +64,7 @@
+ import org.jboss.cache.Node;
+ import org.jboss.cache.config.CacheLoaderConfig;
+ import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
++import org.jboss.cache.jmx.JmxRegistrationManager;
+ import org.jboss.cache.loader.CacheLoader;
+ import org.jboss.cache.loader.CacheLoaderManager;
+ import org.jboss.cache.lock.TimeoutException;
+@@ -168,9 +170,12 @@
+     */
+    private Map<String, CacheableSessionLockManager> sessionLockManagers;
+ 
++   private final JmxRegistrationManager jmxManager;
++   
+    /**
+     * Constructor.
+     * 
++    * @param ctx The container context
+     * @param dataManager - workspace persistent data manager
+     * @param config - workspace entry
+     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
+@@ -178,32 +183,33 @@
+     *          the transaction service
+     * @throws RepositoryConfigurationException
+     */
+-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
++   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+       InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
+       LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
+    {
+-      this(dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
++      this(ctx, dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
+    }
+ 
+    /**
+     * Constructor.
+     * 
++    * @param ctx The container context
+     * @param dataManager - workspace persistent data manager
+     * @param config - workspace entry
+     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
+     * @throws RepositoryConfigurationException
+     */
+-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
++   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+       InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
+       throws RepositoryConfigurationException, RepositoryException
+    {
+-      this(dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
+-
++      this(ctx, dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
+    }
+ 
+    /**
+     * Constructor.
+     * 
++    * @param ctx The container context
+     * @param dataManager - workspace persistent data manager
+     * @param config - workspace entry
+     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
+@@ -211,7 +217,7 @@
+     *          the transaction manager
+     * @throws RepositoryConfigurationException
+     */
+-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
++   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+       InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
+       LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
+    {
+@@ -260,6 +266,11 @@
+          // Add the cache loader needed to prevent TimeoutException
+          addCacheLoader();
+          cache.start();
++         this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(ctx, cache, "LOCK_CACHE");
++         if (jmxManager != null)
++         {
++            jmxManager.registerAllMBeans();
++         }
+ 
+          createStructuredNode(lockRoot);
+ 
+@@ -786,6 +797,10 @@
+ 
+       sessionLockManagers.clear();
+       cache.stop();
++      if (jmxManager != null)
++      {
++         jmxManager.unregisterAllMBeans();
++      }
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 4445)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(working copy)
+@@ -18,9 +18,10 @@
+ 
+ import org.apache.lucene.index.IndexReader;
+ import org.apache.lucene.index.Term;
++import org.apache.lucene.search.BooleanClause.Occur;
+ import org.apache.lucene.search.BooleanQuery;
+ import org.apache.lucene.search.WildcardQuery;
+-import org.apache.lucene.search.BooleanClause.Occur;
++import org.exoplatform.container.ExoContainerContext;
+ import org.exoplatform.container.configuration.ConfigurationManager;
+ import org.exoplatform.services.document.DocumentReaderService;
+ import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+@@ -134,10 +135,14 @@
+    protected LuceneVirtualTableResolver virtualTableResolver;
+ 
+    protected IndexerChangesFilter changesFilter;
++   
++   private final ExoContainerContext ctx;
+ 
+    /**
+     * Creates a new <code>SearchManager</code>.
+     * 
++    * @param ctx
++    *            The eXo Container context in which the SearchManager is registered
+     * @param config
+     *            the search configuration.
+     * @param nsReg
+@@ -159,12 +164,12 @@
+     * @throws RepositoryConfigurationException
+     */
+ 
+-   public SearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
++   public SearchManager(ExoContainerContext ctx, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
+       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
+       throws RepositoryException, RepositoryConfigurationException
+    {
+-
++      this.ctx = ctx;
+       this.extractor = extractor;
+       indexSearcherHolder.addIndexSearcher(this);
+       this.config = config;
+@@ -625,6 +630,14 @@
+    }
+ 
+    /**
++    * @return the ctx
++    */
++   public ExoContainerContext getExoContainerContext()
++   {
++      return ctx;
++   }
++
++   /**
+     * Initialize changes filter.
+     * @throws RepositoryException
+     * @throws RepositoryConfigurationException
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SystemSearchManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SystemSearchManager.java	(revision 4445)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SystemSearchManager.java	(working copy)
+@@ -16,6 +16,7 @@
+  */
+ package org.exoplatform.services.jcr.impl.core.query;
+ 
++import org.exoplatform.container.ExoContainerContext;
+ import org.exoplatform.container.configuration.ConfigurationManager;
+ import org.exoplatform.services.document.DocumentReaderService;
+ import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+@@ -56,11 +57,11 @@
+ 
+    public static final String INDEX_DIR_SUFFIX = "system";
+ 
+-   public SystemSearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
++   public SystemSearchManager(ExoContainerContext ctx, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+       WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
+       RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException, RepositoryConfigurationException
+    {
+-      super(config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
++      super(ctx, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
+    }
+ 
+    @Override
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/jbosscache/JBossCacheIndexChangesFilter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/jbosscache/JBossCacheIndexChangesFilter.java	(revision 4445)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/jbosscache/JBossCacheIndexChangesFilter.java	(working copy)
+@@ -38,6 +38,7 @@
+ import org.jboss.cache.config.CacheLoaderConfig;
+ import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
+ import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig.SingletonStoreConfig;
++import org.jboss.cache.jmx.JmxRegistrationManager;
+ 
+ import java.io.IOException;
+ import java.io.Serializable;
+@@ -60,6 +61,8 @@
+ 
+    private final Cache<Serializable, Object> cache;
+ 
++   private final JmxRegistrationManager jmxManager;
++
+    public static final String LISTWRAPPER = "$lists".intern();
+ 
+    /**
+@@ -117,6 +120,11 @@
+       this.cache.getConfiguration().setCacheLoaderConfig(cacheLoaderConfig);
+       this.cache.create();
+       this.cache.start();
++      this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(searchManager.getExoContainerContext(), cache, "INDEX_CACHE");
++      if (jmxManager != null)
++      {
++         jmxManager.registerAllMBeans();
++      }
+       // start will invoke cache listener which will notify handler that mode is changed
+       IndexerIoMode ioMode =
+          ((CacheSPI)cache).getRPCManager().isCoordinator() ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY;
+@@ -178,4 +186,23 @@
+          log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
+       }
+    }
++
++   /**
++    * @see java.lang.Object#finalize()
++    */
++   @Override
++   protected void finalize() throws Throwable
++   {
++      try
++      {
++         if (jmxManager != null)
++         {
++            jmxManager.unregisterAllMBeans();
++         }
++      }
++      finally
++      {
++         super.finalize();         
++      }
++   } 
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4445)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(working copy)
+@@ -18,6 +18,7 @@
+  */
+ package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
+ 
++import org.exoplatform.container.ExoContainerContext;
+ import org.exoplatform.container.configuration.ConfigurationManager;
+ import org.exoplatform.services.jcr.access.AccessControlList;
+ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+@@ -46,6 +47,8 @@
+ import org.jboss.cache.Node;
+ import org.jboss.cache.config.EvictionRegionConfig;
+ import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
++import org.jboss.cache.jmx.JmxRegistrationManager;
++import org.picocontainer.Startable;
+ 
+ import java.io.IOException;
+ import java.io.Serializable;
+@@ -95,7 +98,7 @@
+  * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
+  * @version $Id: JBossCacheWorkspaceStorageCache.java 13869 2008-05-05 08:40:10Z pnedonosko $
+  */
+-public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
++public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, Startable
+ {
+ 
+    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheWorkspaceStorageCache");
+@@ -140,6 +143,8 @@
+ 
+    protected final Fqn<String> childPropsList;
+ 
++   private JmxRegistrationManager jmxManager;
++
+    /**
+     * Node order comparator for getChildNodes().
+     */
+@@ -263,12 +268,13 @@
+    /**
+     * Cache constructor with eXo TransactionService support.
+     * 
++    * @param ctx The container context
+     * @param wsConfig WorkspaceEntry workspace config
+     * @param transactionService TransactionService external transaction service
+     * @throws RepositoryException if error of initialization
+     * @throws RepositoryConfigurationException if error of configuration
+     */
+-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService,
++   public JBossCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, TransactionService transactionService,
+       ConfigurationManager cfm) throws RepositoryException, RepositoryConfigurationException
+    {
+       if (wsConfig.getCache() == null)
+@@ -314,9 +320,17 @@
+          LOG.info("Using BufferedJBossCache compatible with Expiration algorithm.");
+       }
+ 
++      if (ctx != null)
++      {
++         this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(ctx, parentCache, "JCR_CACHE");
++         if (jmxManager != null)
++         {
++            jmxManager.registerAllMBeans();
++         }        
++      }
+       // if expiration is used, set appropriate factory with with timeout set via configuration (or default one 15minutes)
+       this.cache =
+-         new BufferedJBossCache(factory.createCache(wsConfig.getCache()), useExpiration, wsConfig.getCache()
++         new BufferedJBossCache(parentCache, useExpiration, wsConfig.getCache()
+             .getParameterTime(JBOSSCACHE_EXPIRATION, JBOSSCACHE_EXPIRATION_DEFAULT));
+ 
+       this.itemsRoot = Fqn.fromElements(ITEMS);
+@@ -338,19 +352,52 @@
+    }
+ 
+    /**
++    * Cache constructor with eXo TransactionService support.
++    * 
++    * @param wsConfig WorkspaceEntry workspace config
++    * @param transactionService TransactionService external transaction service
++    * @throws RepositoryException if error of initialization
++    * @throws RepositoryConfigurationException if error of configuration
++    */
++   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService,
++      ConfigurationManager cfm) throws RepositoryException, RepositoryConfigurationException
++   {
++      this(null, wsConfig, transactionService, cfm);
++   }
++
++   /**
+     * Cache constructor with JBossCache JTA transaction support.
+     * 
++    * @param ctx The container context
+     * @param wsConfig WorkspaceEntry workspace config
+     * @throws RepositoryException if error of initialization
+     * @throws RepositoryConfigurationException if error of configuration
+     */
+-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, ConfigurationManager cfm)
++   public JBossCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, ConfigurationManager cfm)
+       throws RepositoryException, RepositoryConfigurationException
+    {
+-      this(wsConfig, null, cfm);
++      this(ctx, wsConfig, null, cfm);
+    }
+ 
+    /**
++    * {@inheritDoc} 
++    */
++   public void start()
++   {
++   }
++
++   /**
++    * {@inheritDoc} 
++    */
++   public void stop()
++   {
++      if (jmxManager != null)
++      {
++         jmxManager.unregisterAllMBeans();
++      }      
++   }
++   
++   /**
+     * Checks if node with give FQN not exists and creates resident node.
+     * @param fqn
+     */
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/jbosscache/ExoJBossCacheFactory.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/jbosscache/ExoJBossCacheFactory.java	(revision 4445)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/jbosscache/ExoJBossCacheFactory.java	(working copy)
+@@ -18,6 +18,7 @@
+  */
+ package org.exoplatform.services.jcr.jbosscache;
+ 
++import org.exoplatform.container.ExoContainerContext;
+ import org.exoplatform.container.configuration.ConfigurationManager;
+ import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
+ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+@@ -27,11 +28,13 @@
+ import org.jboss.cache.Cache;
+ import org.jboss.cache.CacheFactory;
+ import org.jboss.cache.DefaultCacheFactory;
++import org.jboss.cache.jmx.JmxRegistrationManager;
+ import org.jgroups.JChannelFactory;
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
+ 
++import javax.management.ObjectName;
+ import javax.transaction.TransactionManager;
+ 
+ /**
+@@ -181,4 +184,29 @@
+       }
+       return cache;
+    }
++
++   /**
++    * Gives the {@link JmxRegistrationManager} instance corresponding to the given context
++    */
++   public static JmxRegistrationManager getJmxRegistrationManager(ExoContainerContext ctx, Cache<?, ?> parentCache,
++      String cacheType)
++   {
++      try
++      {
++         ObjectName containerObjectName = ctx.getContainer().getScopingObjectName();
++         final String objectNameBase = containerObjectName.toString() + ",cache-type=" + cacheType;
++         return new JmxRegistrationManager(ctx.getContainer().getMBeanServer(), parentCache, objectNameBase)
++         {
++            public String getObjectName(String resourceName)
++            {
++               return objectNameBase + JMX_RESOURCE_KEY + resourceName;
++            }
++         };
++      }
++      catch (Exception e)
++      {
++         log.error("Could not create the JMX Manager", e);
++      }
++      return null;
++   }
+ }
