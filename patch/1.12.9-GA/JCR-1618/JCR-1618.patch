@@ -1,6 +1,6 @@
 Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/data-container.xml
 ===================================================================
---- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/data-container.xml	(revision 4390)
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/data-container.xml	(revision 4300)
 +++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/data-container.xml	(working copy)
 @@ -96,18 +96,6 @@
        <programlisting>boolean isCheckSNSNewConnection();
@@ -23,7 +23,7 @@ Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr
        Configuration consists of implementation class and set of properties and
 Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/jdbc-data-container-config.xml
 ===================================================================
---- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/jdbc-data-container-config.xml	(revision 4390)
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/jdbc-data-container-config.xml	(revision 4300)
 +++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/jdbc-data-container-config.xml	(working copy)
 @@ -56,6 +56,13 @@
          </listitem>
@@ -41,7 +41,7 @@ Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr
      database dialect parameter. If you need a more detailed configuration of
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(revision 4390)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(revision 4300)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(working copy)
 @@ -370,7 +370,7 @@
        }
@@ -52,14 +52,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        }
  
        // ------------- Values swap config ------------------
-@@ -836,6 +836,22 @@
+@@ -836,6 +836,38 @@
      */
     public void start()
     {
 +      // if isolation level lesser then TRANSACTION_READ_COMMITTED, print a warning
++      Connection con = null;
 +      try
 +      {
-+         if (getConnectionFactory().getJdbcConnection().getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
++         con = getConnectionFactory().getJdbcConnection();
++         if (con.getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
 +         {
 +            LOG.warn("Wrong default isolation level, please set the default isolation level to READ_COMMITTED or higher. Other default isolation levels are not supported");
 +         }
@@ -71,6 +73,20 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
 +      catch (RepositoryException e)
 +      {
 +         LOG.error("Error checking isolation level configuration.", e);
++      }
++      finally
++      {
++         if (con != null)
++         {
++            try
++            {
++               con.close();
++            }
++            catch (SQLException e)
++            {
++               // ignore me
++            }
++         }
 +      }
     }
  
