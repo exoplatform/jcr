@@ -1,0 +1,568 @@
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/access/TestUserAccess.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/access/TestUserAccess.java	(revision 4449)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/access/TestUserAccess.java	(working copy)
+@@ -23,9 +23,13 @@
+ import org.exoplatform.services.jcr.access.SystemIdentity;
+ import org.exoplatform.services.jcr.core.CredentialsImpl;
+ import org.exoplatform.services.jcr.impl.core.NodeImpl;
++import org.exoplatform.services.security.MembershipEntry;
+ 
+ import java.security.AccessControlException;
++import java.util.ArrayList;
++import java.util.List;
+ 
++import javax.jcr.AccessDeniedException;
+ import javax.jcr.Node;
+ import javax.jcr.Session;
+ 
+@@ -72,7 +76,7 @@
+    public void testUser() throws Exception
+    {
+       // Mary only node, Mary membership is '*:/exo', seems it's user
+-      NodeImpl maryNode = (NodeImpl)testRoot.addNode("mary");
++      NodeImpl maryNode = (NodeImpl) testRoot.addNode("mary");
+       maryNode.addMixin("exo:privilegeable");
+       if (!session.getUserID().equals("mary"))
+       {
+@@ -175,4 +179,100 @@
+       }
+    }
+ 
++   /**
++    * Check if Dynamic user has rights to a node with user "mary".
++    * 
++    * @throws Exception
++    */
++   public void testDynamicUserRead() throws Exception
++   {
++      // Mary only node, Mary membership is '*:/platform/users', seems it's user
++      NodeImpl maryNode = (NodeImpl) testRoot.addNode("mary_dynamic");
++      maryNode.addMixin("exo:privilegeable");
++      if (!session.getUserID().equals("mary"))
++      {
++         maryNode.setPermission("*:/platform/users", new String[] {PermissionType.READ});
++         maryNode.setPermission("mary", PermissionType.ALL);
++         maryNode.removePermission(session.getUserID());
++      }
++      maryNode.removePermission(SystemIdentity.ANY);
++      testRoot.save();
++
++      Session marySession =
++                  repository.login(new CredentialsImpl("mary", "exo".toCharArray()), session.getWorkspace().getName());
++      NodeImpl myNode = (NodeImpl) marySession.getItem(maryNode.getPath());
++      Node test = myNode.addNode("test");
++      test.setProperty("property", "any data");
++      myNode.save();
++
++      //Dynamic session fail read
++      List<MembershipEntry> dynamicMembershipEntries = new ArrayList<MembershipEntry>();
++      dynamicMembershipEntries.add(new MembershipEntry("/platform/administrators"));
++
++      try
++      {
++         Session dynamicSession =
++                  repository.getDynamicSession(session.getWorkspace().getName(), dynamicMembershipEntries);
++         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
++         fail("Dynamic session with membership '*:/platform/users' should not read node with membership '*:/platform/users'");
++      }
++      catch (AccessDeniedException e)
++      {
++         //ok
++      }
++
++      //Dynamic session successful read
++      dynamicMembershipEntries = new ArrayList<MembershipEntry>();
++      dynamicMembershipEntries.add(new MembershipEntry("/platform/users"));
++
++      //check get
++      try
++      {
++         Session dynamicSession =
++                  repository.getDynamicSession(session.getWorkspace().getName(), dynamicMembershipEntries);
++         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
++         //ok
++      }
++      catch (AccessDeniedException e)
++      {
++
++         e.printStackTrace();
++         fail("Dynamic session with membership '*:/platform/users' should read node with membership '*:/platform/users'. Exception message :"
++                  + e.getMessage());
++      }
++
++      //check add
++      try
++      {
++         Session dynamicSession =
++                  repository.getDynamicSession(session.getWorkspace().getName(), dynamicMembershipEntries);
++         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
++
++         maryNodeDynamic.addNode("test2");
++         maryNodeDynamic.save();
++         fail("Dynamic session with membership '*:/platform/users' should be not add child node with membership '*:/platform/users READ'");
++      }
++      catch (AccessDeniedException e)
++      {
++         //ok
++      }
++
++      //check remove
++      try
++      {
++         Session dynamicSession =
++                  repository.getDynamicSession(session.getWorkspace().getName(), dynamicMembershipEntries);
++         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
++
++         maryNodeDynamic.getNode("test").remove();
++         maryNodeDynamic.save();
++         fail("Dynamic session with membership '*:/platform/users' should be not remove child node with membership '*:/platform/users READ'");
++      }
++      catch (AccessDeniedException e)
++      {
++         //ok
++      }
++
++   }
++
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/AccessManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/AccessManager.java	(revision 4449)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/AccessManager.java	(working copy)
+@@ -192,7 +192,9 @@
+ 
+             }
+             else if (user.isMemberOf(ace.getMembershipEntry()))
++            {
+                return true;
++            }
+          }
+       }
+       return false;
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/DynamicIdentity.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/DynamicIdentity.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/DynamicIdentity.java	(revision 0)
+@@ -0,0 +1,32 @@
++/*
++ * Copyright (C) 2003-2011 eXo Platform SAS.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Affero General Public License
++ * as published by the Free Software Foundation; either version 3
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see<http://www.gnu.org/licenses/>.
++ */
++package org.exoplatform.services.jcr.access;
++
++
++/**
++ * Created by The eXo Platform SAS.
++ * 
++ * <br/>Date: 2011
++ *
++ * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
++ * @version $Id: FakeUserIdentity.java 111 2011-11-11 11:11:11Z rainf0x $
++ */
++public class DynamicIdentity
++   extends SystemIdentity
++{
++   public static final String DYNAMIC = "__dynamic".intern();
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/jndi/BindableRepositoryImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/jndi/BindableRepositoryImpl.java	(revision 4449)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/jndi/BindableRepositoryImpl.java	(working copy)
+@@ -25,10 +25,12 @@
+ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+ import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
++import org.exoplatform.services.security.MembershipEntry;
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.Serializable;
++import java.util.Collection;
+ 
+ import javax.jcr.Credentials;
+ import javax.jcr.LoginException;
+@@ -133,6 +135,18 @@
+    /*
+     * (non-Javadoc)
+     * @see
++    * org.exoplatform.services.jcr.core.ManageableRepository#getDynamicSession
++    * (java.lang.String)
++    */
++   public Session getDynamicSession(String workspaceName, Collection<MembershipEntry> membershipEntries)
++            throws RepositoryException
++   {
++      return delegatee.getDynamicSession(workspaceName, membershipEntries);
++   }
++
++   /*
++    * (non-Javadoc)
++    * @see
+     * org.exoplatform.services.jcr.core.ManageableRepository#getWorkspaceNames()
+     */
+    public String[] getWorkspaceNames()
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 4449)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(working copy)
+@@ -19,6 +19,7 @@
+ package org.exoplatform.services.jcr.impl.core;
+ 
+ import org.exoplatform.services.jcr.access.AuthenticationPolicy;
++import org.exoplatform.services.jcr.access.DynamicIdentity;
+ import org.exoplatform.services.jcr.access.SystemIdentity;
+ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+ import org.exoplatform.services.jcr.config.RepositoryEntry;
+@@ -39,11 +40,14 @@
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+ import org.exoplatform.services.security.ConversationState;
++import org.exoplatform.services.security.Identity;
++import org.exoplatform.services.security.MembershipEntry;
+ import org.picocontainer.ComponentAdapter;
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.util.ArrayList;
++import java.util.Collection;
+ import java.util.HashMap;
+ import java.util.Iterator;
+ import java.util.List;
+@@ -342,6 +346,29 @@
+    }
+ 
+    /**
++    * {@inheritDoc}
++    */
++   public SessionImpl getDynamicSession(String workspaceName, Collection<MembershipEntry> membershipEntries)
++            throws RepositoryException
++   {
++
++      if (getState() == OFFLINE)
++         LOG.warn("Repository " + getName() + " is OFFLINE.");
++
++      WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
++      if (workspaceContainer == null || !workspaceContainer.getWorkspaceInitializer().isWorkspaceInitialized())
++      {
++         throw new RepositoryException("Workspace " + workspaceName + " not found or workspace is not initialized");
++      }
++
++      SessionFactory sessionFactory = workspaceContainer.getSessionFactory();
++
++      Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
++
++      return sessionFactory.createSession(new ConversationState(id));
++   }
++
++   /**
+     * @return system workspace name as it configured in jcr configuration
+     */
+    public String getSystemWorkspaceName()
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 4449)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(working copy)
+@@ -23,9 +23,11 @@
+ import org.exoplatform.services.jcr.config.WorkspaceEntry;
+ import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
++import org.exoplatform.services.security.MembershipEntry;
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
++import java.util.Collection;
+ 
+ import javax.jcr.NamespaceRegistry;
+ import javax.jcr.NoSuchWorkspaceException;
+@@ -117,6 +119,15 @@
+    Session getSystemSession(String workspaceName) throws RepositoryException;
+ 
+    /**
++    * @param workspaceName - name of workspace
++    * @param membershipEntries - list of memberships
++    * @return the Dynamic session (session with Dynamic identity)
++    * @throws RepositoryException
++    */
++   Session getDynamicSession(String workspaceName, Collection<MembershipEntry> membershipEntries)
++            throws RepositoryException;
++
++   /**
+     * @return array of workspace names
+     */
+    String[] getWorkspaceNames();
+Index: exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java
+===================================================================
+--- exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(revision 4449)
++++ exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(working copy)
+@@ -53,6 +53,7 @@
+ import javax.jcr.NodeIterator;
+ import javax.jcr.PathNotFoundException;
+ import javax.jcr.RepositoryException;
++import javax.jcr.Session;
+ import javax.jcr.ValueFactory;
+ import javax.jcr.Workspace;
+ 
+@@ -154,10 +155,10 @@
+       log.info("tearDown() BEGIN " + getClass().getName() + "." + getName());
+       if (session != null)
+       {
++         Session sysSession = repository.getSystemSession(session.getWorkspace().getName());
+          try
+          {
+-            session.refresh(false);
+-            Node rootNode = session.getRootNode();
++            Node rootNode = sysSession.getRootNode();
+             if (rootNode.hasNodes())
+             {
+                // clean test root
+@@ -171,7 +172,7 @@
+                      node.remove();
+                   }
+                }
+-               session.save();
++               sysSession.save();
+             }
+          }
+          catch (Exception e)
+@@ -181,6 +182,7 @@
+          }
+          finally
+          {
++            sysSession.logout();
+             session.logout();
+          }
+       }
+Index: exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/common/DynamicSessionProviderTest.java
+===================================================================
+--- exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/common/DynamicSessionProviderTest.java	(revision 0)
++++ exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/common/DynamicSessionProviderTest.java	(revision 0)
+@@ -0,0 +1,144 @@
++/*
++ * Copyright (C) 2003-2011 eXo Platform SAS.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Affero General Public License
++ * as published by the Free Software Foundation; either version 3
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see<http://www.gnu.org/licenses/>.
++ */
++package org.exoplatform.services.jcr.ext.common;
++
++import org.exoplatform.services.jcr.access.AccessControlEntry;
++import org.exoplatform.services.jcr.access.PermissionType;
++import org.exoplatform.services.jcr.access.SystemIdentity;
++import org.exoplatform.services.jcr.core.CredentialsImpl;
++import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
++import org.exoplatform.services.jcr.ext.common.SessionProvider;
++import org.exoplatform.services.jcr.impl.core.NodeImpl;
++
++import java.util.ArrayList;
++import java.util.List;
++
++import javax.jcr.AccessDeniedException;
++import javax.jcr.Session;
++
++/**
++ * Created by The eXo Platform SAS.
++ * 
++ * <br/>Date: 2011
++ *
++ * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
++ * @version $Id: DynamicSessionProviderTest.java 111 2011-11-11 11:11:11Z rainf0x $
++ */
++public class DynamicSessionProviderTest
++   extends BaseStandaloneTest
++{
++   private NodeImpl testRoot;
++
++   @Override
++   public void setUp() throws Exception
++   {
++      super.setUp();
++
++      testRoot = (NodeImpl)root.addNode("testDynamicSession");
++      root.save();
++   }
++   
++   public void testDynamicSession() throws Exception
++   {
++      // Mary only node, Mary membership is '*:/platform/users', seems it's user
++      NodeImpl maryNode = (NodeImpl) testRoot.addNode("mary_dynamic");
++      maryNode.addMixin("exo:privilegeable");
++      if (!session.getUserID().equals("mary"))
++      {
++         maryNode.setPermission("*:/platform/users", new String[] {PermissionType.READ});
++         maryNode.setPermission("mary", PermissionType.ALL);
++         maryNode.removePermission(session.getUserID());
++      }
++      maryNode.removePermission(SystemIdentity.ANY);
++      testRoot.save();
++
++      Session marySession =
++                  repository.login(new CredentialsImpl("mary", "exo".toCharArray()), session.getWorkspace().getName());
++      NodeImpl myNode = (NodeImpl) marySession.getItem(maryNode.getPath());
++      NodeImpl test = (NodeImpl) myNode.addNode("test");
++      test.setProperty("property", "any data");
++      myNode.save();
++      marySession.logout();
++
++      //Dynamic session fail read
++      List<AccessControlEntry> accessControlEntries = new ArrayList<AccessControlEntry>();
++      accessControlEntries.add(new AccessControlEntry("*:/platform/administrators", "READ"));
++      SessionProvider dynamicProvider = SessionProvider.createProvider(accessControlEntries);
++
++      Session dynamicSession = null;
++      try
++      {
++         dynamicSession = dynamicProvider.getSession(session.getWorkspace().getName(), repository);
++         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
++         fail("Dynamic session with membership '*:/platform/users' should not read node with membership '*:/platform/users'");
++      }
++      catch (AccessDeniedException e)
++      {
++         //ok
++      }
++
++      //Dynamic session successful read
++      accessControlEntries = new ArrayList<AccessControlEntry>();
++      accessControlEntries.add(new AccessControlEntry("*:/platform/users", "READ"));
++      dynamicProvider = SessionProvider.createProvider(accessControlEntries);
++
++      //check get
++      try
++      {
++         dynamicSession = dynamicProvider.getSession(session.getWorkspace().getName(), repository);
++         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
++         //ok
++      }
++      catch (AccessDeniedException e)
++      {
++
++         e.printStackTrace();
++         fail("Dynamic session with membership '*:/platform/users' should read node with membership '*:/platform/users'. Exception message :"
++                  + e.getMessage());
++      }
++
++      //check add
++      try
++      {
++         dynamicSession = dynamicProvider.getSession(session.getWorkspace().getName(), repository);
++         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
++
++         maryNodeDynamic.addNode("test2");
++         maryNodeDynamic.save();
++         fail("Dynamic session with membership '*:/platform/users' should be not add child node with membership '*:/platform/users READ'");
++      }
++      catch (AccessDeniedException e)
++      {
++         //ok
++      }
++
++      //check remove
++      try
++      {
++         dynamicSession = dynamicProvider.getSession(session.getWorkspace().getName(), repository);
++         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
++
++         maryNodeDynamic.getNode("test").remove();
++         maryNodeDynamic.save();
++         fail("Dynamic session with membership '*:/platform/users' should be not remove child node with membership '*:/platform/users READ'");
++      }
++      catch (AccessDeniedException e)
++      {
++         //ok
++      }
++   }
++}
+Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java
+===================================================================
+--- exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java	(revision 4449)
++++ exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java	(working copy)
+@@ -18,6 +18,8 @@
+  */
+ package org.exoplatform.services.jcr.ext.common;
+ 
++import org.exoplatform.services.jcr.access.AccessControlEntry;
++import org.exoplatform.services.jcr.access.DynamicIdentity;
+ import org.exoplatform.services.jcr.access.SystemIdentity;
+ import org.exoplatform.services.jcr.core.ExtendedSession;
+ import org.exoplatform.services.jcr.core.ManageableRepository;
+@@ -28,6 +30,7 @@
+ 
+ import java.util.HashMap;
+ import java.util.HashSet;
++import java.util.List;
+ import java.util.Map;
+ 
+ import javax.jcr.LoginException;
+@@ -113,6 +116,29 @@
+       return new SessionProvider(new ConversationState(id));
+    }
+ 
++   public static SessionProvider createProvider(List<AccessControlEntry> accessList)
++   {
++      if (accessList == null || accessList.isEmpty())
++      {
++         return createAnonimProvider();
++      }
++      else
++      {
++         HashSet<MembershipEntry> membershipEntries = new HashSet<MembershipEntry>();
++
++         for (AccessControlEntry ace : accessList)
++         {
++            membershipEntries.add(ace.getMembershipEntry());
++         }
++
++         Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
++         ConversationState conversationState = new ConversationState(id);
++         ConversationState.setCurrent(conversationState);
++         return new SessionProvider(conversationState);
++      }
++
++   }
++
+    /**
+     * Gets the session from internal cache or creates and caches new one.
+     * 
+@@ -142,11 +168,19 @@
+ 
+       if (session == null)
+       {
+-
+-         if (!isSystem)
++         ConversationState conversationState = ConversationState.getCurrent();
++         if (conversationState != null && conversationState.getIdentity().getUserId().equals(DynamicIdentity.DYNAMIC))
++         {
++            session = (ExtendedSession) repository.getDynamicSession(workspaceName, conversationState.getIdentity().getMemberships());
++         }
++         else if (!isSystem)
++         {
+             session = (ExtendedSession)repository.login(workspaceName);
++         }
+          else
++         {
+             session = (ExtendedSession)repository.getSystemSession(workspaceName);
++         }
+ 
+          session.registerLifecycleListener(this);
+ 
