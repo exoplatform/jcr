@@ -38,7 +38,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
@@ -154,7 +153,7 @@ public class ISPNCacheFactory<K, V>
             return manager.getCache(regionIdEscaped);
          }
       };
-      Cache<K, V> cache = AccessController.doPrivileged(action);
+      Cache<K, V> cache = SecurityHelper.doPrivilegedAction(action);
 
       return cache;
    }

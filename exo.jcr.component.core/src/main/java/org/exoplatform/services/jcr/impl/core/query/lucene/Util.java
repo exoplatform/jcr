@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -60,33 +59,26 @@ public class Util
     */
    public static void disposeDocument(final Document old)
    {
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+      for (Iterator it = old.getFields().iterator(); it.hasNext();)
       {
-         public Object run()
+         Fieldable f = (Fieldable)it.next();
+         try
          {
-            for (Iterator it = old.getFields().iterator(); it.hasNext();)
+            if (f.readerValue() != null)
             {
-               Fieldable f = (Fieldable)it.next();
-               try
-               {
-                  if (f.readerValue() != null)
-                  {
-                     f.readerValue().close();
-                  }
-                  else if (f instanceof LazyTextExtractorField)
-                  {
-                     LazyTextExtractorField field = (LazyTextExtractorField)f;
-                     field.dispose();
-                  }
-               }
-               catch (IOException ex)
-               {
-                  log.warn("Exception while disposing index document: " + ex);
-               }
+               f.readerValue().close();
             }
-            return null;
+            else if (f instanceof LazyTextExtractorField)
+            {
+               LazyTextExtractorField field = (LazyTextExtractorField)f;
+               field.dispose();
+            }
          }
-      });
+         catch (IOException ex)
+         {
+            log.warn("Exception while disposing index document: " + ex);
+         }
+      }
    }
 
    /**

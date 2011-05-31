@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 
 import org.apache.commons.fileupload.FileItem;
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
@@ -54,7 +55,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -74,7 +74,6 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.observation.Event;
-import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 import javax.ws.rs.Consumes;
@@ -595,7 +594,7 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
       Document doc;
       try
       {
-         doc = AccessController.doPrivileged(new PrivilegedExceptionAction<Document>()
+         doc = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Document>()
          {
             public Document run() throws ParserConfigurationException
             {

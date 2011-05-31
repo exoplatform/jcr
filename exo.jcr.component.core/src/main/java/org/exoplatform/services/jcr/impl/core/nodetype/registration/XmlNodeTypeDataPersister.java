@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeValuesList;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -30,7 +31,6 @@ import org.jibx.runtime.JiBXException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
@@ -148,7 +148,7 @@ public class XmlNodeTypeDataPersister implements NodeTypeDataPersister
          };
          try
          {
-            factory = AccessController.doPrivileged(action);
+            factory = SecurityHelper.doPrivilegedExceptionAction(action);
          }
          catch (PrivilegedActionException pae)
          {

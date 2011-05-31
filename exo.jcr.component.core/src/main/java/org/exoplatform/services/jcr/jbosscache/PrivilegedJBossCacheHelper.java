@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheException;
 import org.jboss.cache.Fqn;
 
 import java.io.Serializable;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -50,7 +50,7 @@ public class PrivilegedJBossCacheHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -68,7 +68,7 @@ public class PrivilegedJBossCacheHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -86,45 +86,7 @@ public class PrivilegedJBossCacheHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
-   }
-
-   /**
-    * Put in JBoss cache in privileged mode.
-    * 
-    * @param cache
-    */
-   public static Object put(final Cache<Serializable, Object> cache, final String fqn, final Serializable key,
-      final Object value) throws CacheException
-   {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            return cache.put(fqn, key, value);
-
-         }
-      };
-      try
-      {
-         return AccessController.doPrivileged(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof CacheException)
-         {
-            throw (CacheException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -144,43 +106,7 @@ public class PrivilegedJBossCacheHelper
       };
       try
       {
-         return AccessController.doPrivileged(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof CacheException)
-         {
-            throw (CacheException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
-   }
-
-   /**
-    * Remove node in privileged mode.
-    * 
-    * @param cache
-    */
-   public static Object removeNode(final Cache<Serializable, Object> cache, final Fqn fqn) throws CacheException
-   {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            return cache.removeNode(fqn);
-         }
-      };
-      try
-      {
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {

@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.infinispan;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.infinispan.Cache;
 
 import java.io.Serializable;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +48,7 @@ public class PrivilegedISPNCacheHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -66,7 +66,7 @@ public class PrivilegedISPNCacheHelper
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -83,7 +83,7 @@ public class PrivilegedISPNCacheHelper
             return cache.putIfAbsent(key, value);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -100,7 +100,7 @@ public class PrivilegedISPNCacheHelper
             return cache.put(key, value);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -118,6 +118,6 @@ public class PrivilegedISPNCacheHelper
             return cache.put(key, value, lifespan, unit);
          }
       };
-      return AccessController.doPrivileged(action);
+      return SecurityHelper.doPrivilegedAction(action);
    }
 }

@@ -191,7 +191,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
    protected void doUpdateIndex(ChangesFilterListsWrapper changes)
    {
       String id = IdGenerator.generate();
-      PrivilegedJBossCacheHelper.put(cache, Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER, changes);
+      cache.put(Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER, changes);
    }
 
    /**

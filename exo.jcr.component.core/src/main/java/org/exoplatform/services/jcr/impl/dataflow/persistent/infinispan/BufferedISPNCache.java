@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.log.ExoLogger;
@@ -31,7 +32,6 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.util.concurrent.NotifyingFuture;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.HashMap;
@@ -905,14 +905,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       changesContainer.add(new PutObjectContainer(key, value, parentCache, changesContainer.getHistoryIndex(), local
          .get(), allowLocalChanges));
 
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            return withReturnValue ? parentCache.get(key) : null;
-         }
-      };
-      return AccessController.doPrivileged(action);
+      return withReturnValue ? parentCache.get(key) : null;
    }
 
    /**
@@ -957,7 +950,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -973,7 +966,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /**
@@ -1028,15 +1021,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       try
       {
          final List<ChangesContainer> containers = changesContainer.getSortedList();
-         PrivilegedAction<Void> action = new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
-               commitChanges(tm, containers);
-               return null;
-            }
-         };
-         AccessController.doPrivileged(action);         
+         commitChanges(tm, containers);
       }
       finally
       {

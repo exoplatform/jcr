@@ -25,7 +25,6 @@ import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -120,7 +119,7 @@ public class DBInitializer
             return this.getClass().getResourceAsStream(path);
          }
       };
-      final InputStream is = AccessController.doPrivileged(action);
+      final InputStream is = SecurityHelper.doPrivilegedAction(action);
 
       PrivilegedAction<InputStreamReader> actionGetReader = new PrivilegedAction<InputStreamReader>()
       {
@@ -129,7 +128,7 @@ public class DBInitializer
             return new InputStreamReader(is);
          }
       };
-      InputStreamReader isr = AccessController.doPrivileged(actionGetReader);
+      InputStreamReader isr = SecurityHelper.doPrivilegedAction(actionGetReader);
 
       try
       {

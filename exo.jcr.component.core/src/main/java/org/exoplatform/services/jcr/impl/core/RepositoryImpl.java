@@ -48,7 +48,6 @@ import org.picocontainer.ComponentAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -597,7 +596,7 @@ public class RepositoryImpl implements ManageableRepository
       };
       try
       {
-         state = AccessController.doPrivileged(action);
+         state = SecurityHelper.doPrivilegedExceptionAction(action);
       }
       catch (PrivilegedActionException pae)
       {

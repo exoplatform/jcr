@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
@@ -29,10 +28,6 @@ import org.jboss.cache.lock.TimeoutException;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,31 +78,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void commit(final Object tx) throws Exception
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            cl.commit(tx);
-            return null;
-         }
-      };
-      try
-      {
-         AccessController.doPrivileged(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-
-         if (cause instanceof Exception)
-         {
-            throw (Exception)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      cl.commit(tx);
    }
 
    /**
@@ -202,31 +173,7 @@ public class ControllerCacheLoader implements CacheLoader
    public void prepare(final Object tx, final List<Modification> modifications, final boolean onePhase)
       throws Exception
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            cl.prepare(tx, modifications, onePhase);
-            return null;
-         }
-      };
-      try
-      {
-         AccessController.doPrivileged(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-
-         if (cause instanceof Exception)
-         {
-            throw (Exception)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      cl.prepare(tx, modifications, onePhase);
    }
 
    /**
@@ -234,14 +181,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void put(final List<Modification> modifications) throws Exception
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-      {
-         public Void run() throws Exception
-         {
-            cl.put(modifications);
-            return null;
-         }
-      });
+      cl.put(modifications);
    }
 
    /**
@@ -249,14 +189,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void put(final Fqn name, final Map<Object, Object> attributes) throws Exception
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-      {
-         public Void run() throws Exception
-         {
-            cl.put(name, attributes);
-            return null;
-         }
-      });
+      cl.put(name, attributes);
    }
 
    /**
@@ -264,13 +197,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public Object put(final Fqn name, final Object key, final Object value) throws Exception
    {
-      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            return cl.put(name, key, value);
-         }
-      });
+      return cl.put(name, key, value);
    }
 
    /**
@@ -278,14 +205,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void remove(final Fqn fqn) throws Exception
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-      {
-         public Void run() throws Exception
-         {
-            cl.remove(fqn);
-            return null;
-         }
-      });
+      cl.remove(fqn);
    }
 
    /**
@@ -293,13 +213,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public Object remove(final Fqn fqn, final Object key) throws Exception
    {
-      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            return cl.remove(fqn, key);
-         }
-      });
+      return cl.remove(fqn, key);
    }
 
    /**
@@ -307,14 +221,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void removeData(final Fqn fqn) throws Exception
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-      {
-         public Void run() throws Exception
-         {
-            cl.removeData(fqn);
-            return null;
-         }
-      });
+      cl.removeData(fqn);
    }
 
    /**
@@ -322,15 +229,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void rollback(final Object tx)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            cl.rollback(tx);
-            return null;
-         }
-      };
-      AccessController.doPrivileged(action);
+      cl.rollback(tx);
    }
 
    /**

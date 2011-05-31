@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.store.Directory;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexOutputStream;
 import org.slf4j.Logger;
@@ -31,7 +30,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,16 +145,9 @@ class RedoLog
     */
    void append(final MultiIndex.Action action) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            initOut();
-            out.write(action.toString() + "\n");
-            entryCount++;
-            return null;
-         }
-      });
+      initOut();
+      out.write(action.toString() + "\n");
+      entryCount++;
    }
 
    /**
@@ -165,17 +156,10 @@ class RedoLog
     */
    void flush() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (out != null)
       {
-         public Object run() throws Exception
-         {
-            if (out != null)
-            {
-               out.flush();
-            }
-            return null;
-         }
-      });
+         out.flush();
+      }
    }
 
    /**
@@ -184,28 +168,21 @@ class RedoLog
     */
    synchronized void clear() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (out != null)
       {
-         public Object run() throws Exception
-         {
-            if (out != null)
-            {
-               out.close();
-               out = null;
-            }
-            try
-            {
-               dir.deleteFile(REDO_LOG);
-            }
-            catch (Exception e)
-            {
-               log.error(e.getLocalizedMessage(), e);
-               throw e;
-            }
-            entryCount = 0;
-            return null;
-         }
-      });
+         out.close();
+         out = null;
+      }
+      try
+      {
+         dir.deleteFile(REDO_LOG);
+      }
+      catch (IOException e)
+      {
+         log.error(e.getLocalizedMessage(), e);
+         throw e;
+      }
+      entryCount = 0;
    }
 
    /**
@@ -215,18 +192,11 @@ class RedoLog
     */
    private synchronized void initOut() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (out == null)
       {
-         public Object run() throws Exception
-         {
-            if (out == null)
-            {
-               OutputStream os = new IndexOutputStream(dir.createOutput(REDO_LOG));
-               out = new BufferedWriter(new OutputStreamWriter(os));
-            }
-            return null;
-         }
-      });
+         OutputStream os = new IndexOutputStream(dir.createOutput(REDO_LOG));
+         out = new BufferedWriter(new OutputStreamWriter(os));
+      }
    }
 
    /**
@@ -238,48 +208,41 @@ class RedoLog
     */
    private void read(final ActionCollector collector) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (!dir.fileExists(REDO_LOG))
       {
-         public Object run() throws Exception
+         return;
+      }
+      InputStream in = new IndexInputStream(dir.openInput(REDO_LOG));
+      try
+      {
+         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+         String line;
+         while ((line = reader.readLine()) != null)
          {
-            if (!dir.fileExists(REDO_LOG))
-            {
-               return null;
-            }
-            InputStream in = new IndexInputStream(dir.openInput(REDO_LOG));
             try
             {
-               BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-               String line;
-               while ((line = reader.readLine()) != null)
-               {
-                  try
-                  {
-                     collector.collect(MultiIndex.Action.fromString(line));
-                  }
-                  catch (IllegalArgumentException e)
-                  {
-                     log.warn("Malformed redo entry: " + e.getMessage());
-                  }
-               }
+               collector.collect(MultiIndex.Action.fromString(line));
             }
-            finally
+            catch (IllegalArgumentException e)
             {
-               if (in != null)
-               {
-                  try
-                  {
-                     in.close();
-                  }
-                  catch (IOException e)
-                  {
-                     log.warn("Exception while closing redo log: " + e.toString());
-                  }
-               }
+               log.warn("Malformed redo entry: " + e.getMessage());
             }
-            return null;
          }
-      });
+      }
+      finally
+      {
+         if (in != null)
+         {
+            try
+            {
+               in.close();
+            }
+            catch (IOException e)
+            {
+               log.warn("Exception while closing redo log: " + e.toString());
+            }
+         }
+      }
    }
 
    //-----------------------< internal >---------------------------------------

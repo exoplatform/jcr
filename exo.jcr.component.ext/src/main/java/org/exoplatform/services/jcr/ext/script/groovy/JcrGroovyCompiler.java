@@ -22,6 +22,7 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
 import org.exoplatform.services.jcr.ext.script.groovy.JcrGroovyClassLoaderProvider.JcrGroovyClassLoader;
 import org.exoplatform.services.log.ExoLogger;
@@ -34,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -170,7 +170,7 @@ public class JcrGroovyCompiler implements Startable
    @SuppressWarnings("rawtypes")
    private Class<?>[] doCompile(final JcrGroovyClassLoader cl, final SourceFile[] files) throws IOException
    {
-      Class[] classes = AccessController.doPrivileged(new PrivilegedAction<Class[]>() {
+      Class[] classes = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Class[]>() {
          public Class[] run()
          {
             return cl.parseClasses(files);
@@ -194,7 +194,7 @@ public class JcrGroovyCompiler implements Startable
    {
       try
       {
-         return AccessController.doPrivileged(new PrivilegedExceptionAction<URL[]>() {
+         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<URL[]>() {
             public URL[] run() throws IOException
             {
                return ((JcrGroovyClassLoader)classLoaderProvider.getGroovyClassLoader()).findDependencies(sources,
@@ -243,7 +243,7 @@ public class JcrGroovyCompiler implements Startable
    @Deprecated
    protected GroovyCodeSource createCodeSource(final InputStream in, final String name)
    {
-      GroovyCodeSource gcs = AccessController.doPrivileged(new PrivilegedAction<GroovyCodeSource>() {
+      GroovyCodeSource gcs = SecurityHelper.doPrivilegedAction(new PrivilegedAction<GroovyCodeSource>() {
          public GroovyCodeSource run()
          {
             return new GroovyCodeSource(in, name, "/groovy/script");

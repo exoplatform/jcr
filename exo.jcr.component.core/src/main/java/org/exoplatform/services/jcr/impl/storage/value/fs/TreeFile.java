@@ -19,12 +19,12 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 /**
@@ -65,7 +65,7 @@ public class TreeFile extends File
             return TreeFile.super.delete();
          }
       };
-      boolean res = AccessController.doPrivileged(action);
+      boolean res = SecurityHelper.doPrivilegedAction(action);
 
       if (res)
          deleteParent(new File(getParent()));

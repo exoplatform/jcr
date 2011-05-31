@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
-import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -117,7 +116,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    {
       ChangesKey changesKey = new ChangesKey(wsId, IdGenerator.generate());
       cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING);
-      PrivilegedISPNCacheHelper.put(cache, changesKey, changes);
+      cache.put(changesKey, changes);
    }
 
    /**

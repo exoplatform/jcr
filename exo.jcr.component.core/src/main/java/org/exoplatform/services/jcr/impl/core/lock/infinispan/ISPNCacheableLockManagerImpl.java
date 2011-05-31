@@ -17,6 +17,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -41,7 +42,6 @@ import org.infinispan.Cache;
 import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.Serializable;
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -233,7 +233,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                };
                try
                {
-                  jdbcConn = AccessController.doPrivileged(action);
+                  jdbcConn = SecurityHelper.doPrivilegedExceptionAction(action);
                }
                catch (PrivilegedActionException pae)
                {

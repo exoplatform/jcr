@@ -16,19 +16,13 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -138,14 +132,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findItemByName.setString(3, name);
       findItemByName.setInt(4, index);
 
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return findItemByName.executeQuery();
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+      return findItemByName.executeQuery();
    }
 
    /**
@@ -163,14 +150,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findPropertyByName.setString(2, containerName);
       findPropertyByName.setString(3, name);
 
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return findPropertyByName.executeQuery();
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+      return findPropertyByName.executeQuery();
    }
 
    /**
@@ -187,14 +167,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findNodesByParentId.setString(1, parentCid);
       findNodesByParentId.setString(2, containerName);
 
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return findNodesByParentId.executeQuery();
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+      return findNodesByParentId.executeQuery();
    }
 
    /**
@@ -211,14 +184,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findLastOrderNumberByParentId.setString(1, parentIdentifier);
       findLastOrderNumberByParentId.setString(2, containerName);
 
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return findLastOrderNumberByParentId.executeQuery();
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+      return findLastOrderNumberByParentId.executeQuery();
    }
 
    /**
@@ -235,14 +201,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findNodesCountByParentId.setString(1, parentCid);
       findNodesCountByParentId.setString(2, containerName);
 
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return findNodesCountByParentId.executeQuery();
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+      return findNodesCountByParentId.executeQuery();
    }
 
    /**
@@ -259,16 +218,9 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findPropertiesByParentId.setString(1, parentCid);
       findPropertiesByParentId.setString(2, containerName);
 
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return findPropertiesByParentId.executeQuery();
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+      return findPropertiesByParentId.executeQuery();
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -283,17 +235,10 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findNodesByParentIdCQ.setString(1, parentIdentifier);
       findNodesByParentIdCQ.setString(2, containerName);
       findNodesByParentIdCQ.setString(3, containerName);
-
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return findNodesByParentIdCQ.executeQuery();
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+      
+      return findNodesByParentIdCQ.executeQuery();
    }
-
+  
    /**
     * {@inheritDoc}
     */
@@ -350,17 +295,10 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
 
       findPropertiesByParentIdCQ.setString(1, parentIdentifier);
       findPropertiesByParentIdCQ.setString(2, containerName);
-
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return findPropertiesByParentIdCQ.executeQuery();
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
+      
+       return findPropertiesByParentIdCQ.executeQuery();
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -396,281 +334,5 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
 
          return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int addNodeRecord(final NodeData data) throws SQLException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.addNodeRecord(data);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int addPropertyRecord(final PropertyData prop) throws SQLException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.addPropertyRecord(prop);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findItemByIdentifier(final String identifier) throws SQLException
-   {
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.findItemByIdentifier(identifier);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int addReference(final PropertyData data) throws SQLException, IOException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.addReference(data);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int renameNode(final NodeData data) throws SQLException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.renameNode(data);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int deleteReference(final String propertyIdentifier) throws SQLException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.deleteReference(propertyIdentifier);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findReferences(final String nodeIdentifier) throws SQLException
-   {
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.findReferences(nodeIdentifier);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int deleteItemByIdentifier(final String identifier) throws SQLException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.deleteItemByIdentifier(identifier);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int updateNodeByIdentifier(final int version, final int index, final int orderNumb, final String identifier)
-      throws SQLException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.updateNodeByIdentifier(version, index, orderNumb, identifier);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int updatePropertyByIdentifier(final int version, final int type, final String identifier)
-      throws SQLException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.updatePropertyByIdentifier(version, type, identifier);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   // -------- values processing ------------
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int addValueData(final String cid, final int orderNumber, final InputStream stream,
-      final int streamLength, final String storageId) throws SQLException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.addValueData(cid, orderNumber, stream, streamLength, storageId);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected int deleteValueData(final String cid) throws SQLException
-   {
-      PrivilegedExceptionAction<Integer> action = new PrivilegedExceptionAction<Integer>()
-      {
-         public Integer run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.deleteValueData(cid);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findValuesByPropertyId(final String cid) throws SQLException
-   {
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.findValuesByPropertyId(cid);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findValuesStorageDescriptorsByPropertyId(final String cid) throws SQLException
-   {
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.findValuesStorageDescriptorsByPropertyId(cid);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findValueByPropertyIdOrderNumber(final String cid, final int orderNumb) throws SQLException
-   {
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.findValueByPropertyIdOrderNumber(cid, orderNumb);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findItemQPathByIdentifierCQ(final String identifier) throws SQLException
-   {
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.findItemQPathByIdentifierCQ(identifier);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findNodeMainPropertiesByParentIdentifierCQ(final String parentIdentifier) throws SQLException
-   {
-      PrivilegedExceptionAction<ResultSet> action = new PrivilegedExceptionAction<ResultSet>()
-      {
-         public ResultSet run() throws Exception
-         {
-            return HSQLDBSingleDbJDBCConnection.super.findNodeMainPropertiesByParentIdentifierCQ(parentIdentifier);
-         }
-      };
-      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 }

@@ -19,13 +19,13 @@
 package org.exoplatform.services.jcr.impl.util.io;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -119,7 +119,7 @@ public class SpoolFile extends File
                return sf.exists() ? SpoolFile.super.delete() : true;
             }
          };
-         return AccessController.doPrivileged(action);
+         return SecurityHelper.doPrivilegedAction(action);
 
       }
 

@@ -52,7 +52,6 @@ import org.jboss.cache.loader.CacheLoaderManager;
 import org.jboss.cache.lock.TimeoutException;
 
 import java.io.Serializable;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -337,7 +336,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
                };
                try
                {
-                  jdbcConn = AccessController.doPrivileged(action);
+                  jdbcConn = SecurityHelper.doPrivilegedExceptionAction(action);
                }
                catch (PrivilegedActionException pae)
                {
@@ -602,7 +601,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
                return cache.getRoot().addChild(fqn);
             }
          };
-         node = AccessController.doPrivileged(action);
+         node = SecurityHelper.doPrivilegedAction(action);
       }
       node.setResident(true);
    }

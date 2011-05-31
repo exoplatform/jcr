@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -444,7 +443,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   swapFile.spoolDone();
                }
 
-               long vlen = PrivilegedFileHelper.length(swapFile);
+               long vlen = swapFile.length();
                if (vlen <= Integer.MAX_VALUE)
                {
                   streamLength = (int)vlen;

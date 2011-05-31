@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 /**
@@ -89,7 +89,7 @@ public class SerializationSpoolFile extends SpoolFile
                   return SerializationSpoolFile.super.delete();
                }
             };
-            boolean result = AccessController.doPrivileged(action);
+            boolean result = SecurityHelper.doPrivilegedAction(action);
 
             if (result)
             {

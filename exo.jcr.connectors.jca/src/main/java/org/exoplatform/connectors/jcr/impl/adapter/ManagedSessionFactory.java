@@ -18,6 +18,7 @@
  */
 package org.exoplatform.connectors.jcr.impl.adapter;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -30,7 +31,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.PrintWriter;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.Set;
@@ -153,7 +153,7 @@ public class ManagedSessionFactory implements ManagedConnectionFactory
       CredentialsImpl credentials = null;
       if (subject != null)
       {
-         credentials = AccessController.doPrivileged(new PrivilegedAction<CredentialsImpl>()
+         credentials = SecurityHelper.doPrivilegedAction(new PrivilegedAction<CredentialsImpl>()
          {
             public CredentialsImpl run()
             {

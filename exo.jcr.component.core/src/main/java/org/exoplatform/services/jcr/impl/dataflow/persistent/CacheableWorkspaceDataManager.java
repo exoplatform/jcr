@@ -557,7 +557,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
-   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
+   public ItemData getItemData(final NodeData parentData, final QPathEntry name, final ItemType itemType) throws RepositoryException
    {
       if (cache.isEnabled())
       {
@@ -577,7 +577,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                data = getCachedItemData(parentData, name, itemType);
                if (data == null)
                {
-                  data = getPersistedItemData(parentData, name, itemType);
+                  data = executeAction(new PrivilegedExceptionAction<ItemData>()
+                  {
+                     public ItemData run() throws RepositoryException
+                     {
+                        return getPersistedItemData(parentData, name, itemType);
+                     }
+                  });
                }
             }
             finally
@@ -608,7 +614,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
-   public ItemData getItemData(String identifier) throws RepositoryException
+   public ItemData getItemData(final String identifier) throws RepositoryException
    {
       if (cache.isEnabled())
       {
@@ -628,7 +634,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                data = getCachedItemData(identifier);
                if (data == null)
                {
-                  data = getPersistedItemData(identifier);
+                  data = executeAction(new PrivilegedExceptionAction<ItemData>()
+                  {
+                     public ItemData run() throws RepositoryException
+                     {
+                        return getPersistedItemData(identifier);
+                     }
+                  });
                }
             }
             finally
@@ -694,7 +706,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
-   @Override
    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
    {
       if (isSuspended)
@@ -936,7 +947,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @throws RepositoryException
     *           Repository error
     */
-   protected List<NodeData> getChildNodesData(NodeData nodeData, boolean forcePersistentRead)
+   protected List<NodeData> getChildNodesData(final NodeData nodeData, boolean forcePersistentRead)
       throws RepositoryException
    {
 
@@ -964,17 +975,23 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return childNodes;
             }
          }
-         childNodes = super.getChildNodesData(nodeData);
-         if (cache.isEnabled())
+         return executeAction(new PrivilegedExceptionAction<List<NodeData>>()
          {
-            NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
-
-            if (parentData != null)
+            public List<NodeData> run() throws RepositoryException
             {
-               cache.addChildNodes(parentData, childNodes);
+               List<NodeData> childNodes = CacheableWorkspaceDataManager.super.getChildNodesData(nodeData);
+               if (cache.isEnabled())
+               {
+                  NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
+
+                  if (parentData != null)
+                  {
+                     cache.addChildNodes(parentData, childNodes);
+                  }
+               }
+               return childNodes;
             }
-         }
-         return childNodes;
+         });
       }
       finally
       {
@@ -1159,7 +1176,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @throws RepositoryException
     *           Repository error
     */
-   protected List<PropertyData> getReferencedPropertiesData(String identifier) throws RepositoryException
+   protected List<PropertyData> getReferencedPropertiesData(final String identifier) throws RepositoryException
    {
       List<PropertyData> refProps = null;
       if (cache.isEnabled())
@@ -1185,12 +1202,18 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return refProps;
             }
          }
-         refProps = super.getReferencesData(identifier, false);
-         if (cache.isEnabled())
+         return executeAction(new PrivilegedExceptionAction<List<PropertyData>>()
          {
-            cache.addReferencedProperties(identifier, refProps);
-         }
-         return refProps;
+            public List<PropertyData> run() throws RepositoryException
+            {
+               List<PropertyData> refProps = CacheableWorkspaceDataManager.super.getReferencesData(identifier, false);
+               if (cache.isEnabled())
+               {
+                  cache.addReferencedProperties(identifier, refProps);
+               }
+               return refProps;
+            }
+         });
       }
       finally
       {
@@ -1209,7 +1232,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @throws RepositoryException
     *           Repository error
     */
-   protected List<PropertyData> getChildPropertiesData(NodeData nodeData, boolean forcePersistentRead)
+   protected List<PropertyData> getChildPropertiesData(final NodeData nodeData, boolean forcePersistentRead)
       throws RepositoryException
    {
 
@@ -1237,19 +1260,25 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return childProperties;
             }
          }
-
-         childProperties = super.getChildPropertiesData(nodeData);
-         // TODO childProperties.size() > 0 for SDB
-         if (childProperties.size() > 0 && cache.isEnabled())
+         return executeAction(new PrivilegedExceptionAction<List<PropertyData>>()
          {
-            NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
-
-            if (parentData != null)
+            public List<PropertyData> run() throws RepositoryException
             {
-               cache.addChildProperties(parentData, childProperties);
+               List<PropertyData> childProperties =
+                  CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData);
+               // TODO childProperties.size() > 0 for SDB
+               if (childProperties.size() > 0 && cache.isEnabled())
+               {
+                  NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
+
+                  if (parentData != null)
+                  {
+                     cache.addChildProperties(parentData, childProperties);
+                  }
+               }
+               return childProperties;
             }
-         }
-         return childProperties;
+         });
       }
       finally
       {
@@ -1815,5 +1844,29 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
          rpcService.registerTopologyChangeListener(this);
       }
+   }
+   
+   private <T> T executeAction(PrivilegedExceptionAction<T> action) throws RepositoryException
+   {
+      try
+      {
+         return SecurityHelper.doPrivilegedExceptionAction(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof RepositoryException)
+         {
+            throw (RepositoryException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }      
    }
 }

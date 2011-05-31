@@ -75,7 +75,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -588,7 +587,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
          try
          {
-            AccessController.doPrivileged((new PrivilegedExceptionAction<Object>()
+            SecurityHelper.doPrivilegedExceptionAction((new PrivilegedExceptionAction<Object>()
             {
                public Object run() throws Exception
                {

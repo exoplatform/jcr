@@ -20,7 +20,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -38,7 +38,6 @@ import org.jboss.cache.interceptors.base.CommandInterceptor;
 import org.jgroups.Address;
 
 import java.io.Serializable;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -114,15 +113,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       try
       {
          final List<ChangesContainer> containers = changesContainer.getSortedList();
-         PrivilegedAction<Void> action = new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
-               commitChanges(containers);
-               return null;
-            }
-         };
-         AccessController.doPrivileged(action);         
+         commitChanges(containers);
       }
       finally
       {
@@ -301,7 +292,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /* (non-Javadoc)
@@ -740,7 +731,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    /* (non-Javadoc)
@@ -764,7 +755,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             return null;
          }
       };
-      AccessController.doPrivileged(action);
+      SecurityHelper.doPrivilegedAction(action);
    }
 
    public TransactionManager getTransactionManager()
@@ -1282,7 +1273,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       public void apply()
       {
          setCacheLocalMode();
-         PrivilegedJBossCacheHelper.removeNode(cache, fqn);
+         cache.removeNode(fqn);
       }
    }
 }

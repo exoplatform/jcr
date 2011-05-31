@@ -19,10 +19,10 @@
 package org.exoplatform.services.jcr.impl.util.io;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
@@ -168,7 +168,7 @@ public class SwapFile extends SpoolFile
                return sf.exists() ? SwapFile.super.delete() : true;
             }
          };
-         boolean res = AccessController.doPrivileged(action);
+         boolean res = SecurityHelper.doPrivilegedAction(action);
 
          if (res)
          {

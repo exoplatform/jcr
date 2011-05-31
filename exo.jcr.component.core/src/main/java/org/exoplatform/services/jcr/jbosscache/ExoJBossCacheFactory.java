@@ -40,7 +40,6 @@ import org.jgroups.JChannelFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
@@ -175,7 +174,7 @@ public class ExoJBossCacheFactory<K, V>
             return factory.createCache(stream, false);
          }
       };
-      Cache<K, V> cache = AccessController.doPrivileged(action);
+      Cache<K, V> cache = SecurityHelper.doPrivilegedAction(action);
 
       // inject transaction manager if defined
       if (transactionManager != null)

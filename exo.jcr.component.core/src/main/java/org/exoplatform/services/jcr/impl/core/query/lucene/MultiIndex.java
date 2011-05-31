@@ -56,11 +56,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -1523,44 +1523,51 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    public void flush() throws IOException
    {
-      synchronized (this)
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
       {
-         // commit volatile index
-         executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
-         commitVolatileIndex();
-
-         // commit persistent indexes
-         for (int i = indexes.size() - 1; i >= 0; i--)
+         public Void run() throws Exception
          {
-            PersistentIndex index = indexes.get(i);
-            // only commit indexes we own
-            // index merger also places PersistentIndex instances in
-            // indexes,
-            // but does not make them public by registering the name in
-            // indexNames
-            if (indexNames.contains(index.getName()))
+            synchronized (this)
             {
-               index.commit();
-               // check if index still contains documents
-               if (index.getNumDocuments() == 0)
+               // commit volatile index
+               executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+               commitVolatileIndex();
+
+               // commit persistent indexes
+               for (int i = indexes.size() - 1; i >= 0; i--)
                {
-                  executeAndLog(new DeleteIndex(getTransactionId(), index.getName()));
+                  PersistentIndex index = indexes.get(i);
+                  // only commit indexes we own
+                  // index merger also places PersistentIndex instances in
+                  // indexes,
+                  // but does not make them public by registering the name in
+                  // indexNames
+                  if (indexNames.contains(index.getName()))
+                  {
+                     index.commit();
+                     // check if index still contains documents
+                     if (index.getNumDocuments() == 0)
+                     {
+                        executeAndLog(new DeleteIndex(getTransactionId(), index.getName()));
+                     }
+                  }
                }
-            }
-         }
-         executeAndLog(new Commit(getTransactionId()));
+             executeAndLog(new Commit(getTransactionId()));
+ 
+             indexNames.write();
 
-         indexNames.write();
+             // reset redo log
+             redoLog.clear();
 
-         // reset redo log
-         redoLog.clear();
+             lastFlushTime = System.currentTimeMillis();
+             lastFileSystemFlushTime = System.currentTimeMillis();
+          }
 
-         lastFlushTime = System.currentTimeMillis();
-         lastFileSystemFlushTime = System.currentTimeMillis();
-      }
-
-      // delete obsolete indexes
-      attemptDelete();
+          // delete obsolete indexes
+          attemptDelete();
+          return null;
+        }
+     });
    }
 
    /**
@@ -1578,24 +1585,17 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void releaseMultiReader() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (multiReader != null)
       {
-         public Object run() throws Exception
+         try
          {
-            if (multiReader != null)
-            {
-               try
-               {
-                  multiReader.release();
-               }
-               finally
-               {
-                  multiReader = null;
-               }
-            }
-            return null;
+            multiReader.release();
          }
-      });
+         finally
+         {
+            multiReader = null;
+         }
+      }
    }
 
    // -------------------------< internal >-------------------------------------
@@ -1707,23 +1707,17 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private Action executeAndLog(final Action a) throws IOException
    {
-      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Action>()
+      a.execute(MultiIndex.this);
+      redoLog.append(a);
+      // please note that flushing the redo log is only required on
+      // commit, but we also want to keep track of new indexes for sure.
+      // otherwise it might happen that unused index folders are orphaned
+      // after a crash.
+      if (a.getType() == Action.TYPE_COMMIT || a.getType() == Action.TYPE_ADD_INDEX)
       {
-         public Action run() throws Exception
-         {
-            a.execute(MultiIndex.this);
-            redoLog.append(a);
-            // please note that flushing the redo log is only required on
-            // commit, but we also want to keep track of new indexes for sure.
-            // otherwise it might happen that unused index folders are orphaned
-            // after a crash.
-            if (a.getType() == Action.TYPE_COMMIT || a.getType() == Action.TYPE_ADD_INDEX)
-            {
-               redoLog.flush();
-            }
-            return a;
-         }
-      });
+         redoLog.flush();
+      }
+      return a;
    }
 
    /**

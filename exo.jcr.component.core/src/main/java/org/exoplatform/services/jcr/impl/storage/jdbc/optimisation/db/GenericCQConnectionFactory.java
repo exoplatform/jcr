@@ -24,9 +24,6 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -197,36 +194,8 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    {
       try
       {
-         Connection conn = null;
-
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               return dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager
-                  .getConnection(dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
-            }
-         };
-         try
-         {
-            conn = (Connection)AccessController.doPrivileged(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof SQLException)
-            {
-               throw (SQLException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         Connection conn = dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager
+            .getConnection(dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
 
          if (readOnly)
          {

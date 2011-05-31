@@ -18,11 +18,8 @@
  */
 package org.exoplatform.services.transaction;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-
-import java.security.PrivilegedExceptionAction;
 
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -58,13 +55,7 @@ public abstract class ActionNonTxAware<R, A, E extends Exception>
          {
             try
             {
-               tx = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Transaction>()
-               {
-                  public Transaction run() throws Exception
-                  {
-                     return tm.suspend();
-                  }
-               });
+               tx = tm.suspend();
             }
             catch (Exception e)
             {
@@ -79,15 +70,7 @@ public abstract class ActionNonTxAware<R, A, E extends Exception>
          {
             try
             {
-               final Transaction privilegedTx = tx;
-               SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
-               {
-                  public Object run() throws Exception
-                  {
-                     tm.resume(privilegedTx);
-                     return null;
-                  }
-               });
+               tm.resume(tx);
             }
             catch (Exception e)
             {
