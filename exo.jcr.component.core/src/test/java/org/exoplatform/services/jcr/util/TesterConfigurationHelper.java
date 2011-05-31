@@ -187,7 +187,7 @@ public class TesterConfigurationHelper
 
       // Indexer
       ArrayList qParams = new ArrayList();
-      qParams.add(new SimpleParameterEntry("indexDir", "../temp/index/" + IdGenerator.generate()));
+      qParams.add(new SimpleParameterEntry("indexDir", "target/temp/index/" + IdGenerator.generate()));
       QueryHandlerEntry qEntry =
          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
 
@@ -211,7 +211,7 @@ public class TesterConfigurationHelper
       LockPersisterEntry persisterEntry = new LockPersisterEntry();
       persisterEntry.setType("org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister");
       ArrayList lpParams = new ArrayList();
-      lpParams.add(new SimpleParameterEntry("path", "../temp/lock"));
+      lpParams.add(new SimpleParameterEntry("path", "target/temp/lock"));
       persisterEntry.setParameters(lpParams);
       lockManagerEntry.setPersister(persisterEntry);
       workspaceEntry.setLockManager(lockManagerEntry);

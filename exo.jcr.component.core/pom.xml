@@ -364,7 +364,7 @@
                            <overWrite>false</overWrite>
                         </artifactItem>
                      </artifactItems>
-                     <outputDirectory>${project.build.testSourceDirectory}</outputDirectory>
+                     <outputDirectory>${project.build.directory}/jackrabbit-jcr-tests</outputDirectory>
                   </configuration>
                </execution>
             </executions>
@@ -373,7 +373,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-               <argLine>${env.MAVEN_OPTS}</argLine>
+               <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory}</argLine>
                <systemProperties>
                   <property>
                      <name>jcr.test.configuration.file</name>
@@ -558,7 +558,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <!-- TAKE CARE TO UPDATE ALSO run-all PROFILE -->
-                     <argLine>${env.MAVEN_OPTS}</argLine>
+                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory}</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
@@ -645,7 +645,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <!-- TAKE CARE TO UPDATE ALSO run-tck PROFILE -->
-                     <argLine>${env.MAVEN_OPTS}</argLine>
+                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory}</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
