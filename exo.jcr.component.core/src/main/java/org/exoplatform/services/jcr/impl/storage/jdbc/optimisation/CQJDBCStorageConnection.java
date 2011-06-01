@@ -245,6 +245,12 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       IllegalStateException
    {
       checkIfOpened();
+
+      if (pattern.isEmpty())
+      {
+         return new ArrayList<NodeData>();
+      }
+
       ResultSet resultSet = null;
       try
       {
