@@ -202,9 +202,9 @@
     configuration</emphasis>.</para>
 
     <para>The following is an example configuration compatible with JCR 1.9.3
-    and later :</para>
+    and later:</para>
 
-    <programlisting>&lt;component&gt;
+    <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.jcr.ext.backup.BackupManager&lt;/key&gt;
   &lt;type&gt;org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl&lt;/type&gt;
   &lt;init-params&gt;
@@ -255,7 +255,7 @@
       Full + Incrementals mode, then we ask the BackupManager to start the
       backup process.</para>
 
-      <programlisting>// Obtaining the backup service from the eXo container.
+      <programlisting language="java">// Obtaining the backup service from the eXo container.
 BackupManager backup = (BackupManager) container.getComponentInstanceOfType(BackupManager.class);
 
 // And prepare the BackupConfig instance with custom parameters. 
@@ -278,7 +278,7 @@ BackupChain chain = backup.startBackup(config);</programlisting>
       <para>To stop the backup operation, you have to use the BackupChain
       instance.</para>
 
-      <programlisting>// stop backup
+      <programlisting language="java">// stop backup
 backup.stopBackup(chain);</programlisting>
     </section>
 
@@ -290,7 +290,7 @@ backup.stopBackup(chain);</programlisting>
       following snippet shows the typical sequence for restoring a workspace
       :</para>
 
-      <programlisting>// find BackupChain using the repository and workspace names (return null if not found)
+      <programlisting language="java">// find BackupChain using the repository and workspace names (return null if not found)
 BackupChain chain = backup.findBackup("db1", "ws1");
 
 // Get the RepositoryEntry and WorkspaceEntry
@@ -318,13 +318,16 @@ backup.restore(bchLog, repositoryEntry, workspaceEntry);</programlisting>
         </note>
 
         <para>To restore a backup over an existing workspace, you are required
-        to clear its data. Your backup process should follow these steps :
-        <itemizedlist>
+        to clear its data. Your backup process should follow these steps:</para>
+          <itemizedlist>
             <listitem>
-              <para>Remove workspace<programlisting>ManageableRepository repo = repositoryService.getRepository(repository);
-repo.removeWorkspace(workspace);</programlisting></para>
+              <para>Remove workspace</para>
             </listitem>
-
+          </itemizedlist>
+        <programlisting language="java">ManageableRepository repo = repositoryService.getRepository(repository);
+repo.removeWorkspace(workspace);</programlisting>
+            
+          <itemizedlist>
             <listitem>
               <para>Clean database, value storage, index</para>
             </listitem>
@@ -332,7 +335,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
             <listitem>
               <para>Restore (see snippet above)</para>
             </listitem>
-          </itemizedlist></para>
+          </itemizedlist>
       </section>
 
       <section>
@@ -346,7 +349,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
         <para>Restoring the JCR System workspace requires to shutdown the
         system and use of a special initializer.</para>
 
-        <para>Follow these steps (this will also work for normal workspaces) :
+        <para>Follow these steps (this will also work for normal workspaces): </para>
         <itemizedlist>
             <listitem>
               <para>Stop repository (or portal)</para>
@@ -359,8 +362,10 @@ repo.removeWorkspace(workspace);</programlisting></para>
             <listitem>
               <para>In configuration, the workspace set
               BackupWorkspaceInitializer to refer to your backup.</para>
-
-              <para>For example :<programlisting>&lt;workspaces&gt;
+            </listitem>              
+          </itemizedlist>
+              <para>For example:</para>
+              <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="production" ... &gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
       ...
@@ -371,13 +376,14 @@ repo.removeWorkspace(workspace);</programlisting></para>
       &lt;/properties&gt;
    &lt;/initializer&gt;
     ...
-&lt;/workspace&gt;</programlisting></para>
-            </listitem>
-
+&lt;/workspace&gt;
+</programlisting>
+    
+          <itemizedlist> 
             <listitem>
               <para>Start repository (or portal).</para>
             </listitem>
-          </itemizedlist></para>
+          </itemizedlist>
       </section>
     </section>
 
@@ -399,7 +405,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
       <para>Restoring the repository or workspace requires to shutdown the
       repository.</para>
 
-      <para>Follow these steps : <itemizedlist>
+      <para>Follow these steps: <itemizedlist>
           <listitem>
             <para>Stop repository (will be skipped this step if repository or
             workace is not exists)</para>
@@ -425,7 +431,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
       <para>Example of configuration initializer to restore workspace "backup"
       over BackupWorkspaceInitializer:</para>
 
-      <programlisting>&lt;workspaces&gt;
+      <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="backup" ... &gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
       ...
@@ -442,7 +448,8 @@ repo.removeWorkspace(workspace);</programlisting></para>
         <title>Restore the Workspace over BackupWorksaceInitializer</title>
 
         <para>Example of configuration initializer to resore the workspace
-        "backup" over BackupWorkspaceInitializer :<itemizedlist>
+        "backup" over BackupWorkspaceInitializer:</para>
+        <itemizedlist>
             <listitem>
               <para>Stop repository (will be skipped this step if workspace is
               not exists)</para>
@@ -452,11 +459,13 @@ repo.removeWorkspace(workspace);</programlisting></para>
               <para>Clean database, value storage, index; (will be skipped
               this step if workspace is new)</para>
             </listitem>
-
-            <listitem>
+        </itemizedlist>
+            
               <para>In configuration, the workspace/-s set
               BackupWorkspaceInitializer to refer to your
-              backup<programlisting>&lt;workspaces&gt;
+              backup.</para>
+              
+        <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="backup" ... &gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
       ...
@@ -467,20 +476,21 @@ repo.removeWorkspace(workspace);</programlisting></para>
       &lt;/properties&gt;
    &lt;/initializer&gt;
     ...
-&lt;/workspace&gt;</programlisting></para>
-            </listitem>
-
-            <listitem>
-              <para>Start repository</para>
-            </listitem>
-          </itemizedlist></para>
+&lt;/workspace&gt;</programlisting>
+      <itemizedlist>    
+        <listitem>
+          <para>Start repository</para>
+        </listitem>
+      </itemizedlist> 
       </section>
 
       <section>
         <title>Restore the Repository over BackupWorksaceInitializer</title>
 
         <para>Example of configuration initializers to restore the repository
-        "repository" over BackupWorkspaceInitializer : <itemizedlist>
+        "repository" over BackupWorkspaceInitializer:</para>
+        
+        <itemizedlist>
             <listitem>
               <para>Stop repository (will be skipped this step if repository
               is not exists)</para>
@@ -490,12 +500,15 @@ repo.removeWorkspace(workspace);</programlisting></para>
               <para>Clean database, value storage, index; (will be skipped
               this step if repository is new)</para>
             </listitem>
-
-            <listitem>
+        </itemizedlist>
+            
               <para>In configuration of repository will be configured
               initializers of workspace to refer to your backup.</para>
+        
 
-              <para>For example :<programlisting>...
+              <para>For example:</para>
+              
+              <programlisting language="xml">...
 &lt;workspaces&gt;
  &lt;workspace name="system" ... &gt;
   &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
@@ -533,13 +546,14 @@ repo.removeWorkspace(workspace);</programlisting></para>
   &lt;/initializer&gt;
   ...
   &lt;/workspace&gt;
-&lt;/workspaces&gt;</programlisting></para>
-            </listitem>
+&lt;/workspaces&gt;
+</programlisting>
 
+          <itemizedlist>
             <listitem>
               <para>Start repository.</para>
             </listitem>
-          </itemizedlist></para>
+          </itemizedlist>
       </section>
     </section>
   </section>
@@ -590,7 +604,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
       </listitem>
     </itemizedlist>
 
-    <programlisting>// geting the scheduler from the BackupManager
+    <programlisting language="java">// geting the scheduler from the BackupManager
    BackupScheduler scheduler = backup.getScheduler();
 
 // schedule backup using a ready configuration (Full + Incrementals) to run from startTime
@@ -649,7 +663,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
 
     <para>For restore will be used spacial methods:</para>
 
-    <programlisting> /**
+    <programlisting language="java"> /**
     * Restore existing workspace. Previous data will be deleted.
     * For getting status of workspace restore can use 
     * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
@@ -755,7 +769,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
     <para>The Backup manager allows you to restore a repository or a workspace
     using the original configuration stored into the backup log:</para>
 
-    <programlisting>/**
+    <programlisting language="java">/**
     * Restore existing workspace. Previous data will be deleted.
     * For getting status of workspace restore can use 
     * BackupManager.getLastRestore(String repositoryName, String workspaceName) method
@@ -934,7 +948,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
         </listitem>
       </itemizedlist>Configuration:</para>
 
-    <para><programlisting>&lt;component&gt;
+    <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.jcr.ext.backup.BackupManager&lt;/key&gt;
   &lt;type&gt;org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl&lt;/type&gt;
   &lt;init-params&gt;
@@ -947,6 +961,6 @@ repo.removeWorkspace(workspace);</programlisting></para>
     &lt;/properties-param&gt;
   &lt;/init-params&gt;
 &lt;/component&gt;
-</programlisting></para>
+</programlisting>
   </section>
 </chapter>

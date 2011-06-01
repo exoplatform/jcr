@@ -41,7 +41,8 @@
     <title>Configuration</title>
 
     <para>How TikaDocumentReaderService Impl configuration looks
-    like:<programlisting>&lt;component&gt;
+    like:</para>
+    <programlisting language="xml">&lt;component&gt;
       &lt;key&gt;org.exoplatform.services.document.DocumentReaderService&lt;/key&gt;
       &lt;type&gt;org.exoplatform.services.document.impl.tika.TikaDocumentReaderServiceImpl&lt;/type&gt;
 
@@ -147,9 +148,10 @@
       &lt;/init-params&gt;
 
    &lt;/component&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;</programlisting>
 
-    <para>tika-config.xml example:<programlisting>&lt;properties&gt;
+    <para>tika-config.xml example:</para>
+    <programlisting language="xml">&lt;properties&gt;
 
   &lt;mimeTypeRepository magic="false"/&gt;
   &lt;parsers&gt;
@@ -291,7 +293,7 @@
 
   &lt;/parsers&gt;
 
-&lt;/properties&gt;</programlisting></para>
+&lt;/properties&gt;</programlisting>
   </section>
 
   <section>
@@ -318,42 +320,57 @@
       <para>You can make you own DocumentReader in two ways.</para>
 
       <para><emphasis role="bold">Old-Style Document
-      Reader</emphasis>:<itemizedlist>
-          <listitem>
-            <para>extend BaseDocumentReader <programlisting>public class MyDocumentReader extends BaseDocumentReader
+      Reader</emphasis>:</para>
+      <itemizedlist>
+        <listitem>
+          <para>extend BaseDocumentReader</para>
+        </listitem> 
+      </itemizedlist>          
+  <programlisting language="java">public class MyDocumentReader extends BaseDocumentReader
 {
    public String[] getMimeTypes()
    {
       return new String[]{"mymimetype"};
    }
    ...
-}</programlisting></para>
-          </listitem>
-
+}</programlisting>
+          
+        <itemizedlist>
           <listitem>
-            <para>register it as component-plugin<programlisting>&lt;component-plugin&gt;
+            <para>register it as component-plugin</para>
+          </listitem>
+        </itemizedlist>
+            <programlisting language="xml">&lt;component-plugin&gt;
    &lt;name&gt;my.DocumentReader&lt;/name&gt;
    &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
    &lt;type&gt;com.mycompany.document.MyDocumentReader&lt;/type&gt;
    &lt;description&gt;to read my own file format&lt;/description&gt;
-&lt;/component-plugin&gt;</programlisting></para>
-          </listitem>
-        </itemizedlist></para>
+&lt;/component-plugin&gt;</programlisting>
+          
+     
 
-      <para><emphasis role="bold">Tika Parser</emphasis>:<itemizedlist>
-          <listitem>
-            <para>implement Parser<programlisting>public class MyParser implements Parser
+      <para><emphasis role="bold">Tika Parser</emphasis>:</para>
+      <itemizedlist>
+        <listitem>
+          <para>implement Parser</para>
+        </listitem>
+      </itemizedlist>
+      <programlisting language="java">public class MyParser implements Parser
 {
    ...
-}</programlisting></para>
-          </listitem>
-
+}</programlisting>
+          
+        <itemizedlist>
           <listitem>
-            <para>register it in tika-config.xml<programlisting> &lt;parser name="parse-mydocument" class="com.mycompany.document.MyParser"&gt;
-      &lt;mime&gt;mymimetype&lt;/mime&gt;
- &lt;/parser&gt;</programlisting></para>
+            <para>register it in tika-config.xml</para>
           </listitem>
-        </itemizedlist></para>
+        </itemizedlist>
+<programlisting language="xml"> &lt;parser name="parse-mydocument" class="com.mycompany.document.MyParser"&gt;
+      &lt;mime&gt;mymimetype&lt;/mime&gt;
+ &lt;/parser&gt;
+</programlisting>
+          
+     
     </section>
   </section>
 

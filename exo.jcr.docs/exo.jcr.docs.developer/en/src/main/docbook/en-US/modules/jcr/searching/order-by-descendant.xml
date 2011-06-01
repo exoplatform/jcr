@@ -89,7 +89,7 @@
 
     <para><emphasis role="bold">XPath</emphasis></para>
 
-    <programlisting>// make XPath query
+    <programlisting language="java">// make XPath query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String xpathStatement = "/jcr:root/* order by a/b/c/@prop descending;
@@ -103,7 +103,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para>Let's get nodes:</para>
 
-    <programlisting>NodeIterator it = result.getNodes();
+    <programlisting language="java">NodeIterator it = result.getNodes();
 
 if(it.hasNext())
 {
@@ -115,7 +115,7 @@ if(it.hasNext())
 
     <para>We can also get a table:</para>
 
-    <programlisting>String[] columnNames = result.getColumnNames();
+    <programlisting language="java">String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
 while (rit.hasNext())
 {

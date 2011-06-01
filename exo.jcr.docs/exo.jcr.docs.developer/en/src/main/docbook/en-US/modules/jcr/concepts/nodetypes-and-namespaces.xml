@@ -30,7 +30,7 @@
     configuration file thanks to eXo component plugin mechanism, described as
     follows:</para>
 
-    <programlisting>&lt;external-component-plugins&gt;
+    <programlisting language="xml">&lt;external-component-plugins&gt;
   &lt;target-component&gt;org.exoplatform.services.jcr.RepositoryService&lt;/target-component&gt;
       &lt;component-plugin&gt;
         &lt;name&gt;add.nodeType&lt;/name&gt;
@@ -65,7 +65,7 @@
 
     <para>Node type definition file format:</para>
 
-    <programlisting>  &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+    <programlisting language="xml">  &lt;?xml version="1.0" encoding="UTF-8"?&gt;
   &lt;!DOCTYPE nodeTypes [
    &lt;!ELEMENT nodeTypes (nodeType)*&gt;
       &lt;!ELEMENT nodeType (supertypes?|propertyDefinitions?|childNodeDefinitions?)&gt;
@@ -127,7 +127,7 @@
     application specific ones, declaring it in service's configuration file
     thanks to eXo component plugin mechanism, described as follows:</para>
 
-    <programlisting>      &lt;component-plugin&gt; 
+    <programlisting language="xml">      &lt;component-plugin&gt; 
           &lt;name&gt;add.namespaces&lt;/name&gt;
           &lt;set-method&gt;addPlugin&lt;/set-method&gt;
           &lt;type&gt;org.exoplatform.services.jcr.impl.AddNamespacesPlugin&lt;/type&gt;

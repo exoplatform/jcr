@@ -23,7 +23,7 @@
     <section>
       <title>command-port:</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;command-port&lt;/name&gt;
    &lt;value&gt;21&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
@@ -39,12 +39,12 @@
     <section>
       <title>data-min-port &amp; data-max-port</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;data-min-port&lt;/name&gt;
    &lt;value&gt;52000&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;data-max-port&lt;/name&gt;
    &lt;value&gt;53000&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
@@ -59,7 +59,7 @@
     <section>
       <title>system</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;system&lt;/name&gt;
 
    &lt;value&gt;Windows_NT&lt;/value&gt;
@@ -74,7 +74,7 @@
     <section>
       <title>client-side-encoding</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;client-side-encoding&lt;/name&gt;
       
    &lt;value&gt;windows-1251&lt;/value&gt;
@@ -90,7 +90,7 @@
     <section>
       <title>def-folder-node-type</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;def-folder-node-type&lt;/name&gt;
    &lt;value&gt;nt:folder&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
@@ -102,7 +102,7 @@
     <section>
       <title>def-file-node-type</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;def-file-node-type&lt;/name&gt;
    &lt;value&gt;nt:file&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
@@ -114,7 +114,7 @@
     <section>
       <title>def-file-mime-type</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;def-file-mime-type&lt;/name&gt;                 
    &lt;value&gt;application/zip&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
@@ -127,7 +127,7 @@
     <section>
       <title>cache-folder-name</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;cache-folder-name&lt;/name&gt;
    &lt;value&gt;../temp/ftp_cache&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
@@ -138,7 +138,7 @@
     <section>
       <title>upload-speed-limit</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;upload-speed-limit&lt;/name&gt;           
    &lt;value&gt;20480&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
@@ -149,7 +149,7 @@
     <section>
       <title>download-speed-limit</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;download-speed-limit&lt;/name&gt;
    &lt;value&gt;20480&lt;/value&gt;          
 &lt;/value-param&gt;</programlisting>
@@ -160,7 +160,7 @@
     <section>
       <title>timeout</title>
 
-      <programlisting>&lt;value-param&gt;
+      <programlisting language="xml">&lt;value-param&gt;
    &lt;name&gt;timeout&lt;/name&gt;
    &lt;value&gt;60&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>

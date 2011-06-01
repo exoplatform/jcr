@@ -12,7 +12,7 @@
     <para>JCR index configuration. You can find this file here:
     <filename>.../portal/WEB-INF/conf/jcr/repository-configuration.xml</filename></para>
 
-    <programlisting>&lt;repository-service default-repository="db1"&gt;
+    <programlisting language="xml">&lt;repository-service default-repository="db1"&gt;
   &lt;repositories&gt;
     &lt;repository name="db1" system-workspace="ws" default-workspace="ws"&gt;
        ....
@@ -382,7 +382,7 @@
       (<filename>portal/WEB-INF/conf/jcr/repository-configuration.xml</filename>)
       in the tag "query-handler".</para>
 
-      <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;</programlisting>
+      <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;</programlisting>
 
       <para>In fact, when using Lucene, you should always use the same
       analyzer for indexing and for querying, otherwise the results are
@@ -399,14 +399,18 @@
 
       <para>By default Exo JCR uses the Lucene standard Analyzer to index
       contents. This analyzer uses some standard filters in the method that
-      analyzes the content:<programlisting>public TokenStream tokenStream(String fieldName, Reader reader) {
+      analyzes the content:</para>
+      
+      <programlisting language="java">public TokenStream tokenStream(String fieldName, Reader reader) {
     StandardTokenizer tokenStream = new StandardTokenizer(reader, replaceInvalidAcronym);
     tokenStream.setMaxTokenLength(maxTokenLength);
     TokenStream result = new StandardFilter(tokenStream);
     result = new LowerCaseFilter(result);
     result = new StopFilter(result, stopSet);
     return result;
-  }</programlisting><itemizedlist>
+  }</programlisting>
+  
+  <itemizedlist>
           <listitem>
             <para>The first one (StandardFilter) removes 's (as 's in
             "Peter's") from the end of words and removes dots from
@@ -422,7 +426,7 @@
             <para>The last one (StopFilter) removes stop words from a token
             stream. The stop set is defined in the analyzer.</para>
           </listitem>
-        </itemizedlist></para>
+        </itemizedlist>
 
       <para>For specific cases, you may wish to use additional filters like
       <phrase>ISOLatin1AccentFilter</phrase>, which replaces accented
@@ -438,8 +442,10 @@
 
         <para>The ISOLatin1AccentFilter is not present in the current Lucene
         version used by eXo. You can use the attached file. You can also
-        create your own filter, the relevant method is<programlisting>public final Token next(final Token reusableToken) throws java.io.IOException</programlisting>which
-        defines how chars are read and used by the filter.</para>
+        create your own filter, the relevant method is</para>
+        
+        <programlisting language="java">public final Token next(final Token reusableToken) throws java.io.IOException</programlisting> 
+        <para>which defines how chars are read and used by the filter.</para>
       </section>
 
       <section>
@@ -447,9 +453,10 @@
 
         <para>The analyzer has to extends
         org.apache.lucene.analysis.standard.StandardAnalyzer, and overload the
-        method<programlisting>public TokenStream tokenStream(String fieldName, Reader reader)</programlisting>to
-        put your own filters. You can have a glance at the example analyzer
-        attached to this article.</para>
+        method</para>
+
+        <programlisting language="java">public TokenStream tokenStream(String fieldName, Reader reader)</programlisting>
+        <para>to put your own filters. You can have a glance at the example analyzer attached to this article.</para>
       </section>
 
       <section>
@@ -459,9 +466,11 @@
         which will use the analyzer. Your have to extends
         org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex. You
         have to write the constructor, to set the right analyzer, and the
-        method<programlisting>public Analyzer getAnalyzer() {
+        method</para>
+        <programlisting language="java">public Analyzer getAnalyzer() {
     return MyAnalyzer;
-  }</programlisting>to return your analyzer. You can see the attached
+  }</programlisting> 
+  <para>to return your analyzer. You can see the attached
         SearchIndex.</para>
 
         <note>
@@ -476,8 +485,14 @@
 
         <para>In
         <filename>portal/WEB-INF/conf/jcr/repository-configuration.xml</filename>,
-        you have to replace each<programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;</programlisting>by
-        your own class<programlisting>&lt;query-handler class="mypackage.indexation.MySearchIndex"&gt;</programlisting></para>
+        you have to replace each</para>
+        
+        <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+        </programlisting>
+        <para>by your own class</para>
+        
+        <programlisting language="xml">&lt;query-handler class="mypackage.indexation.MySearchIndex"&gt;
+        </programlisting>
       </section>
 
       <section>
@@ -486,13 +501,16 @@
         <para>In
         <filename>portal/WEB-INF/conf/jcr/repository-configuration.xml</filename>,
         you have to add parameter "analyzer" to each query-handler
-        config:<programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+        config:</para>
+        
+        <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
       ...
       &lt;property name="analyzer" value="org.exoplatform.services.jcr.impl.core.MyAnalyzer"/&gt;
       ...
    &lt;/properties&gt;
-&lt;/query-handler&gt;</programlisting></para>
+&lt;/query-handler&gt;
+</programlisting>
 
         <para>When you start exo, your SearchIndex will start to index
         contents with the specified filters.</para>
@@ -518,7 +536,7 @@
       parameter to the query-handler element in your configuration
       file.</para>
 
-      <programlisting>&lt;param name="indexing-configuration-path" value="/indexing_configuration.xml"/&gt;</programlisting>
+      <programlisting language="xml">&lt;param name="indexing-configuration-path" value="/indexing_configuration.xml"/&gt;</programlisting>
     </section>
 
     <section>
@@ -535,7 +553,7 @@
         indexed for nodes of type nt:unstructured. This configuration also
         applies to all nodes whose type extends from nt:unstructured.</para>
 
-        <programlisting>&lt;?xml version="1.0"?&gt;
+        <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;index-rule nodeType="nt:unstructured"&gt;
@@ -556,7 +574,7 @@
         1.0. Higher boost values (a reasonable range is 1.0 - 5.0) will yield
         a higher score value and appear as more relevant.</para>
 
-        <programlisting>&lt;?xml version="1.0"?&gt;
+        <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;index-rule nodeType="nt:unstructured"
@@ -567,14 +585,17 @@
 
         <para>If you do not wish to boost the complete node but only certain
         properties, you can also provide a boost value for the listed
-        properties:<programlisting>&lt;?xml version="1.0"?&gt;
+        properties:</para>
+        
+        <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;index-rule nodeType="nt:unstructured"&gt;
     &lt;property boost="3.0"&gt;Title&lt;/property&gt;
     &lt;property boost="1.5"&gt;Text&lt;/property&gt;
   &lt;/index-rule&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;
+</programlisting>
       </section>
 
       <section>
@@ -583,7 +604,9 @@
         <para>You may also add a <phrase>condition</phrase> to the index rule
         and have multiple rules with the same nodeType. The first index rule
         that matches will apply and all remain ones are
-        ignored:<programlisting>&lt;?xml version="1.0"?&gt;
+        ignored:</para>
+        
+        <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;index-rule nodeType="nt:unstructured"
@@ -594,7 +617,8 @@
   &lt;index-rule nodeType="nt:unstructured"&gt;
     &lt;property&gt;Text&lt;/property&gt;
   &lt;/index-rule&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;
+</programlisting>
 
         <para>In the above example, the first rule only applies if the
         nt:unstructured node has a priority property with a value 'high'. The
@@ -602,7 +626,9 @@
         literal.</para>
 
         <para>You may also refer properties in the condition that are not on
-        the current node:<programlisting>&lt;?xml version="1.0"?&gt;
+        the current node:</para>
+        
+        <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;index-rule nodeType="nt:unstructured"
@@ -623,14 +649,15 @@
   &lt;index-rule nodeType="nt:unstructured"&gt;
     &lt;property&gt;Text&lt;/property&gt;
   &lt;/index-rule&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;
+</programlisting>
 
         <para>The indexing configuration also allows you to specify the type
         of a node in the condition. Please note however that the type match
         must be exact. It does not consider sub types of the specified node
         type.</para>
 
-        <programlisting>&lt;?xml version="1.0"?&gt;
+        <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;index-rule nodeType="nt:unstructured"
@@ -649,13 +676,16 @@
         scope search finds normally all nodes of an index. That is, the select
         jcr:contains(., 'foo') returns all nodes that have a string property
         containing the word 'foo'. You can exclude explicitly a property from
-        the node scope index:<programlisting>&lt;?xml version="1.0"?&gt;
+        the node scope index:</para>
+        
+        <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;index-rule nodeType="nt:unstructured"&gt;
     &lt;property nodeScopeIndex="false"&gt;Text&lt;/property&gt;
   &lt;/index-rule&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;
+</programlisting>
       </section>
     </section>
 
@@ -670,38 +700,48 @@
       path patterns and primary node types.</para>
 
       <para>The following example creates an indexed aggregate on nt:file that
-      includes the content of the jcr:content node:<programlisting>&lt;?xml version="1.0"?&gt;
+      includes the content of the jcr:content node:</para>
+      
+      <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
                xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;aggregate primaryType="nt:file"&gt;
     &lt;include&gt;jcr:content&lt;/include&gt;
   &lt;/aggregate&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;
+</programlisting>
 
       <para>You can also restrict the included nodes to a certain
-      type:<programlisting>&lt;?xml version="1.0"?&gt;
+      type:</para>
+      
+      <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
                xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;aggregate primaryType="nt:file"&gt;
     &lt;include primaryType="nt:resource"&gt;jcr:content&lt;/include&gt;
   &lt;/aggregate&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;</programlisting>
 
-      <para>You may also use the * to match all child nodes:<programlisting>&lt;?xml version="1.0"?&gt;
+      <para>You may also use the * to match all child nodes:</para>
+
+      
+      <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
                xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;aggregate primaryType="nt:file"&gt;http://wiki.exoplatform.com/xwiki/bin/edit/JCR/Search+Configuration
     &lt;include primaryType="nt:resource"&gt;*&lt;/include&gt;
   &lt;/aggregate&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;</programlisting>
 
       <para>If you wish to include nodes up to a certain depth below the
       current node, you can add multiple include elements. E.g. the nt:file
       node may contain a complete XML document under
-      jcr:content:<programlisting>&lt;?xml version="1.0"?&gt;
+      jcr:content:</para>
+      
+      <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
                xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
@@ -710,7 +750,8 @@
     &lt;include&gt;*/*&lt;/include&gt;
     &lt;include&gt;*/*/*&lt;/include&gt;
   &lt;/aggregate&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;
+</programlisting>
     </section>
 
     <section>
@@ -722,7 +763,9 @@
         <para>In this configuration section, you define how a property has to
         be analyzed. If there is an analyzer configuration for a property,
         this analyzer is used for indexing and searching of this property. For
-        example:<programlisting>&lt;?xml version="1.0"?&gt;
+        example:</para>
+        
+        <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
   &lt;analyzers&gt; 
@@ -733,7 +776,7 @@
             &lt;property&gt;mytext2&lt;/property&gt;
         &lt;/analyzer&gt;
   &lt;/analyzers&gt; 
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;</programlisting>
 
         <para>The configuration above means that the property "mytext" for the
         entire workspace is indexed (and searched) with the Lucene
@@ -758,28 +801,43 @@
         for the property "mytext" (and not changed the default analyzer in
         SearchIndex).</para>
 
-        <para>If your query is for example:<programlisting>xpath = "//*[jcr:contains(mytext,'analyzer')]"</programlisting></para>
+        <para>If your query is for example:</para>
+        
+        <programlisting>xpath = "//*[jcr:contains(mytext,'analyzer')]"
+        </programlisting>
 
         <para>This xpath does not return a hit in the node with the property
         above and default analyzers.</para>
 
-        <para>Also a search on the node scope<programlisting>xpath = "//*[jcr:contains(.,'analyzer')]"</programlisting>won't
-        give a hit. Realize that you can only set specific analyzers on a node
-        property, and that the node scope indexing/analyzing is always done
-        with the globally defined analyzer in the SearchIndex element.</para>
+        <para>Also a search on the node scope</para>
+        
+        <programlisting>xpath = "//*[jcr:contains(.,'analyzer')]"</programlisting>
+        
+        <para>won't give a hit. Realize that you can only set specific analyzers 
+        on a node property, and that the node scope indexing/analyzing is always 
+        done with the globally defined analyzer in the SearchIndex element.</para>
 
         <para>Now, if you change the analyzer used to index the "mytext"
-        property above to<programlisting>&lt;analyzer class="org.apache.lucene.analysis.Analyzer.GermanAnalyzer"&gt;
+        property above to</para>
+        
+        <programlisting language="xml">&lt;analyzer class="org.apache.lucene.analysis.Analyzer.GermanAnalyzer"&gt;
      &lt;property&gt;mytext&lt;/property&gt;
-&lt;/analyzer&gt;</programlisting>and you do the same search again, then
-        for<programlisting>xpath = "//*[jcr:contains(mytext,'analyzer')]"</programlisting>you
+&lt;/analyzer&gt;
+</programlisting>
+
+        <para>and you do the same search again, then for 
+        <programlisting>xpath = "//*[jcr:contains(mytext,'analyzer')]"</programlisting>you
         would get a hit because of the word stemming (analyzers -
         analyzer).</para>
 
-        <para>The other search,<programlisting>xpath = "//*[jcr:contains(.,'analyzer')]"</programlisting>still
-        would not give a result, since the node scope is indexed with the
-        global analyzer, which in this case does not take into account any
-        word stemming.</para>
+        <para>The other search,</para>
+        
+        <programlisting>xpath = "//*[jcr:contains(.,'analyzer')]"
+        </programlisting>
+        
+        <para>still would not give a result, since the node scope is indexed 
+        with the global analyzer, which in this case does not take into 
+        account any word stemming.</para>
 
         <para>In conclusion, be aware that when using analyzers for specific
         properties, you might find a hit in a property for some search text,

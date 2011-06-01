@@ -23,7 +23,7 @@
     <para>You can enable LockManager by adding lock-manager-configuration to
     workspace-configuration.</para>
     <para>For example:</para>
-    <programlisting>&lt;workspace name=&quot;ws&quot;&gt;
+    <programlisting language="xml">&lt;workspace name=&quot;ws&quot;&gt;
    ...
    &lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
       &lt;properties&gt;
@@ -51,7 +51,7 @@
     <para>Both of the implementations support to remove Expired Locks. LockRemover separates threads, that periodically ask LockManager to remove Locks
     that live so long. So, the timeout for LockRemover may be set
     as follows, the default value is 30m.</para>
-    <programlisting>&lt;properties&gt;
+    <programlisting language="xml">&lt;properties&gt;
    &lt;property name=&quot;time-out&quot; value=&quot;10m&quot; /&gt;
    ...
 &lt;/properties&gt;</programlisting>
@@ -92,13 +92,15 @@
           configuration.</para>
         </note></para>
       <para>Configuration is as follows:</para>
-      <programlisting>&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
+      <programlisting language="xml">&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
    &lt;properties&gt;
      &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
      &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;conf/standalone/cluster/test-jbosscache-lock-config.xml&quot; /&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
-      <para><filename>test-jbosscache-lock-config.xml</filename><programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+      <para><filename>test-jbosscache-lock-config.xml</filename></para>
+      
+      <programlisting language="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;jbosscache xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns=&quot;urn:jboss:jbosscache-core:config:3.2&quot;&gt;
 
  &lt;locking useLockStriping=&quot;false&quot; concurrencyLevel=&quot;50000&quot; lockParentForChildInsertRemove=&quot;false&quot; lockAcquisitionTimeout=&quot;20000&quot; /&gt;
@@ -154,7 +156,8 @@
 
  &lt;/loaders&gt;
 
-&lt;/jbosscache&gt;</programlisting></para>
+&lt;/jbosscache&gt;
+</programlisting>
       <para>Configuration requirements:</para>
       <itemizedlist>
         <listitem>
@@ -179,7 +182,7 @@
       LockManagers.</para>
       <para><citetitle>Lock template configuration</citetitle></para>
       <para><filename>test-jbosscache-lock.xml</filename></para>
-      <programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+      <programlisting language="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;jbosscache xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns=&quot;urn:jboss:jbosscache-core:config:3.1&quot;&gt;
 
    &lt;locking useLockStriping=&quot;false&quot; concurrencyLevel=&quot;50000&quot; lockParentForChildInsertRemove=&quot;false&quot;
@@ -219,7 +222,7 @@
 &lt;/jbosscache&gt;</programlisting>
       <para>As you see, all configurable parameters are filled by templates
       and will be replaced by LockManagers configuration parameters:</para>
-      <programlisting>&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
+      <programlisting language="xml">&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
    &lt;properties&gt;
       &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
       &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;test-jbosscache-lock.xml&quot; /&gt;
@@ -254,7 +257,9 @@
             we can still create our own configuration.</para>
           </listitem>
         </itemizedlist></para>
-      <para><filename>our-udp-mux.xml</filename><programlisting>&lt;protocol_stacks&gt;
+      <para><filename>our-udp-mux.xml</filename></para>
+      
+      <programlisting language="xml">&lt;protocol_stacks&gt;
    &lt;stack name=&quot;jcr.stack&quot;&gt;
       &lt;config&gt;
          &lt;UDP mcast_addr=&quot;228.10.10.10&quot; mcast_port=&quot;45588&quot; tos=&quot;8&quot; ucast_recv_buf_size=&quot;20000000&quot;
@@ -286,7 +291,7 @@
          &lt;!-- pbcast.FLUSH  /--&gt;
       &lt;/config&gt;
    &lt;/stack&gt;
-&lt;/protocol_stacks&gt; </programlisting></para>
+&lt;/protocol_stacks&gt; </programlisting>
     </section>
     <section id="datatypes">
       <title id="datatypes.title">Data Types in Different Databases</title>

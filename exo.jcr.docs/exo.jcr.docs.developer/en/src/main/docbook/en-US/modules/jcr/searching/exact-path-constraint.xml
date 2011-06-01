@@ -54,7 +54,7 @@
 
     <para><emphasis role="bold">SQL</emphasis></para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 // we want find 'document1'
 String sqlStatement = "SELECT * FROM nt:file WHERE jcr:path = '/folder1/folder2/document1'";
@@ -65,7 +65,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para><emphasis role="bold">XPath</emphasis></para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 // we want to find 'document1'
 String xpathStatement = "/jcr:root/folder1[1]/folder2[1]/element(document1,nt:file)[1]";
@@ -84,7 +84,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para>Let's get nodes:</para>
 
-    <programlisting>NodeIterator it = result.getNodes();
+    <programlisting language="java">NodeIterator it = result.getNodes();
 
 if(it.hasNext())
 {
@@ -95,7 +95,7 @@ if(it.hasNext())
 
     <para>We can also get a table:</para>
 
-    <programlisting>String[] columnNames = result.getColumnNames();
+    <programlisting language="java">String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
 while (rit.hasNext())
 {

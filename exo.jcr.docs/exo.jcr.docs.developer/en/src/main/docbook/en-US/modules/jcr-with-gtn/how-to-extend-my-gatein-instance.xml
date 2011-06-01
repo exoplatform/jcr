@@ -267,12 +267,12 @@
         </listitem>
       </itemizedlist>
 
-      <para>A init task is defined as below:</para>
+      <para>An init task is defined as below:</para>
 
       <note>
         <title>PortalContainerPreInitTask</title>
 
-        <programlisting>   /**
+        <programlisting language="java">   /**
     * This interface is used to define a task that needs to be launched at a given state during the
     * initialization of a portal container
     */
@@ -346,7 +346,7 @@
       <note>
         <title>Old GadgetRegister.java</title>
 
-        <programlisting>...
+        <programlisting language="java">...
 public class GadgetRegister implements ServletContextListener
 {
 ...
@@ -369,7 +369,7 @@ public class GadgetRegister implements ServletContextListener
       <note>
         <title>New GadgetRegister.java</title>
 
-        <programlisting>...
+        <programlisting language="java">...
 public class GadgetRegister implements ServletContextListener {
 ...
    public void contextInitialized(ServletContextEvent event)
@@ -591,7 +591,7 @@ public class GadgetRegister implements ServletContextListener {
       file that define and register a
       PortalContainerDefinition:</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -757,7 +757,7 @@ public class GadgetRegister implements ServletContextListener {
 
       <para><emphasis role="underline">See below an example</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -944,7 +944,7 @@ public class GadgetRegister implements ServletContextListener {
 
       <para>See an example of a web.xml below:</para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1" ?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1" ?&gt;
 &lt;!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
                  "http://java.sun.com/dtd/web-app_2_3.dtd"&gt;
 &lt;web-app&gt;
@@ -1018,7 +1018,7 @@ public class GadgetRegister implements ServletContextListener {
       file that add the portal extension "portal-ext" to the dependency list
       of the portal "portal":</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -1197,7 +1197,7 @@ public class GadgetRegister implements ServletContextListener {
 
       <para><emphasis role="underline">See an example below:</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -1333,7 +1333,7 @@ public class GadgetRegister implements ServletContextListener {
       <emphasis>WEB-INF/conf/configuration.xml</emphasis> of the product
       "sample-ext".</para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -1358,7 +1358,7 @@ public class GadgetRegister implements ServletContextListener {
       <emphasis>\-$portal.container.name</emphasis>. <emphasis
       role="underline">See an example below:</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -1416,7 +1416,7 @@ public class GadgetRegister implements ServletContextListener {
       <para><emphasis role="underline">See an example of jcr-configuration.xml
       below:</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -1444,7 +1444,7 @@ public class GadgetRegister implements ServletContextListener {
 
       <para>See an example of repository-configuration.xml below:</para>
 
-      <programlisting>&lt;repository-service default-repository="repository"&gt;
+      <programlisting language="xml">&lt;repository-service default-repository="repository"&gt;
   &lt;repositories&gt;
     &lt;repository name="repository" system-workspace="system" default-workspace="portal-system"&gt;
       &lt;security-domain&gt;exo-domain&lt;/security-domain&gt;
@@ -1526,7 +1526,7 @@ public class GadgetRegister implements ServletContextListener {
 
       <para><emphasis role="underline">See an example below:</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -1648,7 +1648,7 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
 
       <para><emphasis role="underline">See an example below:</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -1740,7 +1740,7 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
       <para><emphasis role="underline">See an example of configuration
       below:</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -1782,7 +1782,7 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
       <note>
         <title>SampleFilter.java</title>
 
-        <programlisting>...
+        <programlisting language="java">...
 import org.exoplatform.web.filter.Filter;
 
 import java.io.IOException;
@@ -1864,7 +1864,7 @@ public class SampleFilter implements Filter
       <para><emphasis role="underline">See an example of configuration
       below:</emphasis></para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -1912,7 +1912,7 @@ public class SampleFilter implements Filter
       <note>
         <title>SampleHttpSessionCreatedListener.java</title>
 
-        <programlisting>..
+        <programlisting language="java">..
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.listener.Event;
 import org.exoplatform.services.listener.Listener;
@@ -1935,7 +1935,7 @@ public class SampleHttpSessionCreatedListener extends Listener&lt;PortalContaine
       <note>
         <title>SampleContextInitializedListener.java</title>
 
-        <programlisting>..
+        <programlisting language="java">..
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.listener.Event;
 import org.exoplatform.services.listener.Listener;
@@ -2211,7 +2211,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
           </listitem>
         </itemizedlist>
 
-        <programlisting>  &lt;application-policy name="exo-domain-sample-portal"&gt;
+        <programlisting language="xml">  &lt;application-policy name="exo-domain-sample-portal"&gt;
     &lt;authentication&gt;
       &lt;login-module code="org.exoplatform.web.security.PortalLoginModule" flag="required"&gt;
         &lt;module-option name="portalContainerName"&gt;sample-portal&lt;/module-option&gt;
@@ -2337,7 +2337,7 @@ exo-domain-sample-portal {
         <note>
           <title>tomcat/conf/Catalina/localhost/sample-portal.xml</title>
 
-          <programlisting>&lt;Context path='/sample-portal' docBase='sample-portal' debug='0' reloadable='true' crossContext='true' privileged='true'&gt;
+          <programlisting language="xml">&lt;Context path='/sample-portal' docBase='sample-portal' debug='0' reloadable='true' crossContext='true' privileged='true'&gt;
   &lt;Logger className='org.apache.catalina.logger.SystemOutLogger'
           prefix='localhost_portal_log.' suffix='.txt' timestamp='true'/&gt;
   &lt;Manager className='org.apache.catalina.session.PersistentManager' saveOnRestart='false'/&gt;
@@ -2362,7 +2362,7 @@ exo-domain-sample-portal {
         <note>
           <title>tomcat/conf/Catalina/localhost/rest-sample-portal.xml</title>
 
-          <programlisting>&lt;Context path="/rest-sample-portal" docBase="rest-sample-portal" reloadable="true" crossContext="false"&gt;
+          <programlisting language="xml">&lt;Context path="/rest-sample-portal" docBase="rest-sample-portal" reloadable="true" crossContext="false"&gt;
 
   &lt;Logger className='org.apache.catalina.logger.SystemOutLogger'
             prefix='localhost_portal_log.' suffix='.txt' timestamp='true'/&gt;

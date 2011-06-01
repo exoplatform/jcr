@@ -67,14 +67,14 @@
       your service, so that you should define an <emphasis
       role="bold">interface</emphasis> that defines your service.</para>
 
-      <programlisting>package com.laverdad.services; 
+      <programlisting language="java">package com.laverdad.services; 
 public interface ArticleStatsService {
    public abstract int calcSentences(String article);
 }</programlisting>
 
       <para>A very simple implementation:</para>
 
-      <programlisting>public class ArticleStatsServiceImpl implements ArticleStatsService {
+      <programlisting language="java">public class ArticleStatsServiceImpl implements ArticleStatsService {
    public int calcSentences(String article) {
       throw new RuntimeException("Not implemented"); 
    }
@@ -99,7 +99,7 @@ public interface ArticleStatsService {
       of your service base folder. As you already know the container looks for
       a "/conf/configuration.xml" file in each jar-file.</para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF8"?&gt;
 &lt;configuration
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -136,7 +136,7 @@ public interface ArticleStatsService {
       For the exact method, you wish to configure more details for the
       service. Let's enhance the word service configuration file:</para>
 
-      <programlisting>  &lt;component&gt;
+      <programlisting language="xml">  &lt;component&gt;
     &lt;key&gt;com.laverdad.services.ArticleStatsService&lt;/key&gt;
     &lt;type&gt;com.laverdad.services.ArticleStatsServiceImpl&lt;/type&gt;
     &lt;init-params&gt;
@@ -168,7 +168,7 @@ public interface ArticleStatsService {
       example. It's up to your imagination to implement the exact
       method.</para>
 
-      <programlisting>public class ArticleStatsServiceImpl implements ArticleStatsService {
+      <programlisting language="java">public class ArticleStatsServiceImpl implements ArticleStatsService {
 
   private String calcMethod = "fast";
   private String variant = "French";
@@ -250,7 +250,7 @@ public interface ArticleStatsService {
 
       <para>Recapitulation:</para>
 
-      <programlisting>package com.laverdad.common;
+      <programlisting language="java">package com.laverdad.common;
 
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -289,7 +289,7 @@ public class Statistics {
 
       <para>There is an value-param example:</para>
 
-      <programlisting>  &lt;component&gt;
+      <programlisting language="xml">  &lt;component&gt;
     &lt;key&gt;org.exoplatform.portal.config.UserACL&lt;/key&gt;
     &lt;type&gt;org.exoplatform.portal.config.UserACL&lt;/type&gt;   
     &lt;init-params&gt;	     
@@ -305,7 +305,7 @@ public class Statistics {
       <para>The UserACL class accesses to the <emphasis
       role="bold">value-param</emphasis> in its constructor.</para>
 
-      <programlisting>package org.exoplatform.portal.config;
+      <programlisting language="java">package org.exoplatform.portal.config;
 public class UserACL {
 
   public UserACL(InitParams params) {
@@ -323,7 +323,7 @@ public class UserACL {
 
       <para>Here you see the hibernate configuration example:</para>
 
-      <programlisting>  &lt;component&gt;
+      <programlisting language="xml">  &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
     &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;
     &lt;init-params&gt;
@@ -343,7 +343,7 @@ public class UserACL {
       you will find that the name "hibernate.properties" of the
       properties-param is used to access the properties.</para>
 
-      <programlisting>package org.exoplatform.services.database.impl;
+      <programlisting language="java">package org.exoplatform.services.database.impl;
 
 public class HibernateServiceImpl implements HibernateService, ComponentRequestLifecycle {
   public HibernateServiceImpl(InitParams initParams, CacheService cacheService) {
@@ -358,7 +358,7 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
       <para>Let's have a look at the configuration of the LDAPService. It's
       not important to know LDAP, we only discuss the parameters.</para>
 
-      <programlisting>&lt;component&gt;
+      <programlisting language="xml">&lt;component&gt;
     &lt;key&gt;org.exoplatform.services.ldap.LDAPService&lt;/key&gt;
     &lt;type&gt;org.exoplatform.services.ldap.impl.LDAPServiceImpl&lt;/type&gt;
     &lt;init-params&gt;
@@ -389,7 +389,7 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
 
       <para>Here you see how the service accesses the object:</para>
 
-      <programlisting>package org.exoplatform.services.ldap.impl;
+      <programlisting language="java">package org.exoplatform.services.ldap.impl;
 
 public class LDAPServiceImpl implements LDAPService {
 ...
@@ -405,7 +405,7 @@ public class LDAPServiceImpl implements LDAPService {
       bean and calls all setters whose values are configured in the
       configuration file.</para>
 
-      <programlisting>package org.exoplatform.services.ldap.impl;
+      <programlisting language="java">package org.exoplatform.services.ldap.impl;
 
 public class LDAPConnectionConfig {
   private String providerURL        = "ldap://127.0.0.1:389";
@@ -452,7 +452,7 @@ public class LDAPConnectionConfig {
       <para>The second collection is a <emphasis
       role="bold">HashSet</emphasis> that is a set of strings.</para>
 
-      <programlisting>    &lt;component-plugin&gt;
+      <programlisting language="xml">    &lt;component-plugin&gt;
       &lt;name&gt;new.user.event.listener&lt;/name&gt;
       &lt;set-method&gt;addListenerPlugin&lt;/set-method&gt;
       &lt;type&gt;org.exoplatform.services.organization.impl.NewUserEventListener&lt;/type&gt;
@@ -489,7 +489,7 @@ public class LDAPConnectionConfig {
       <para>Let's look at the
       org.exoplatform.services.organization.impl.NewUserConfig bean:</para>
 
-      <programlisting>public class NewUserConfig {
+      <programlisting language="java">public class NewUserConfig {
   private List    role;
   private List    group;
   private HashSet ignoredUser;
@@ -538,7 +538,7 @@ public class LDAPConnectionConfig {
     <para>Let's have a look at the configuration of the TaxonomyPlugin of the
     CategoriesService:</para>
 
-    <programlisting> &lt;external-component-plugins&gt;
+    <programlisting language="xml"> &lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.cms.categories.CategoriesService&lt;/target-component&gt;    
     &lt;component-plugin&gt;
      &lt;name&gt;predefinedTaxonomyPlugin&lt;/name&gt;
@@ -653,12 +653,14 @@ public class LDAPConnectionConfig {
 
     <para>If you open the
     "portal/trunk/web/portal/src/main/webapp/WEB-INF/conf.configuration.xml"
-    you will see that it consists only of imports: <programlisting>&lt;import&gt;war:/conf/common/common-configuration.xml&lt;/import&gt;
+    you will see that it consists only of imports:</para>
+    
+    <programlisting language="xml">&lt;import&gt;war:/conf/common/common-configuration.xml&lt;/import&gt;
 &lt;import&gt;war:/conf/common/logs-configuration.xml&lt;/import&gt;
 &lt;import&gt;war:/conf/database/database-configuration.xml&lt;/import&gt;
 &lt;import&gt;war:/conf/jcr/jcr-configuration.xml&lt;/import&gt;
 &lt;import&gt;war:/conf/common/portlet-container-configuration.xml&lt;/import&gt;
-... </programlisting></para>
+... </programlisting>
   </section>
 
   <section>
@@ -673,7 +675,7 @@ public class LDAPConnectionConfig {
     portal/trunk/web/portal/src/main/webapp/WEB-INF/conf/database/database-configuration.tmpl.xml
     you find an example for system properties:</para>
 
-    <programlisting>  &lt;component&gt;
+    <programlisting language="xml">  &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
     &lt;jmx-name&gt;database:type=HibernateService&lt;/jmx-name&gt;
     &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;

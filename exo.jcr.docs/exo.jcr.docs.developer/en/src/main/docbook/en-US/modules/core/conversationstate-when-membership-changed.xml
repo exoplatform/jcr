@@ -16,7 +16,7 @@
 
   <para>Example of configuration.</para>
 
-  <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+  <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"

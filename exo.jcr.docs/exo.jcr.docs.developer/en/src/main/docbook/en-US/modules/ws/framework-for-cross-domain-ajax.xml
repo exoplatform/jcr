@@ -92,12 +92,12 @@
 
     <para>3). Declare xda.js in the main page.</para>
 
-    <programlisting>&lt;script type="text/javascript" src="xda.js"&gt;&lt;/script&gt;</programlisting>
+    <programlisting language="html">&lt;script type="text/javascript" src="xda.js"&gt;&lt;/script&gt;</programlisting>
 
     <para>4). Create JS function which performs cross domain call as in the
     following example:</para>
 
-    <programlisting>&lt;script type="text/javascript"&gt;                                                                                                                                                                                                                                                  
+    <programlisting language="javascript">&lt;script type="text/javascript"&gt;                                                                                                                                                                                                                                                  
   function test(){                                                                                                                                       
                 var facade = xdaInit();                                                                                                                  
                 facade.clientURI = "http://localhost/cross-domain-ajax/client/client.html";                                                              
@@ -115,6 +115,6 @@
     <para>5). Use this function (here it is bound to a button's onclick
     event).</para>
 
-    <programlisting>&lt;button onclick='test()'&gt;test cross-domain&lt;/button&gt;</programlisting>
+    <programlisting language="html">&lt;button onclick='test()'&gt;test cross-domain&lt;/button&gt;</programlisting>
   </section>
 </chapter>

@@ -40,7 +40,7 @@
     </listitem>
   </itemizedlist>
 
-  <programlisting>public class MyAnalyzer extends Analyzer
+  <programlisting language="java">public class MyAnalyzer extends Analyzer
 {
    @Override
    public TokenStream tokenStream(String fieldName, Reader reader)
@@ -64,7 +64,7 @@
     </listitem>
   </itemizedlist>
 
-  <programlisting>&lt;workspace name="ws"&gt;
+  <programlisting language="xml">&lt;workspace name="ws"&gt;
    ...
    &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
       &lt;properties&gt;
@@ -109,7 +109,7 @@
 
     <para><emphasis role="bold">SQL</emphasis></para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String sqlStatement = "SELECT * FROM mix:title WHERE CONTAINS(jcr:title, 'tr\u00E8ma na\u00EFve')";
@@ -119,7 +119,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para><emphasis role="bold">XPath</emphasis></para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String xpathStatement = "//element(*,mix:title)[jcr:contains(@jcr:title, 'tr\u00E8ma na\u00EFve')]";
@@ -133,7 +133,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para>Let's get nodes:</para>
 
-    <programlisting>NodeIterator it = result.getNodes();
+    <programlisting language="java">NodeIterator it = result.getNodes();
 
 if(it.hasNext())
 {
@@ -146,7 +146,7 @@ if(it.hasNext())
 
     <para>Also, we can get a table:</para>
 
-    <programlisting>String[] columnNames = result.getColumnNames();
+    <programlisting language="java">String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
 while (rit.hasNext())
 {

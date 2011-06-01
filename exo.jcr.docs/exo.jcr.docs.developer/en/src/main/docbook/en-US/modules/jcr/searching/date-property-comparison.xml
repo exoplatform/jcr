@@ -72,7 +72,7 @@
     <para>You will see that it can be a date only (YYYY-MM-DD) but also a
     complete date and time with a timezone designator (TZD).</para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 StringBuffer sb = new StringBuffer();
@@ -96,7 +96,7 @@ QueryResult result = query.execute();</programlisting>
     brackets: xs:dateTime('datetime'). The actual format of the datetime also
     conforms with the ISO date standard.</para>
 
-    <programlisting>// make XPath query
+    <programlisting language="java">// make XPath query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 StringBuffer sb = new StringBuffer();
@@ -117,7 +117,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para>Let's get nodes:</para>
 
-    <programlisting>NodeIterator it = result.getNodes();
+    <programlisting language="java">NodeIterator it = result.getNodes();
 
 if(it.hasNext())
 {
@@ -128,7 +128,7 @@ if(it.hasNext())
 
     <para>We can also get a table:</para>
 
-    <programlisting>String[] columnNames = result.getColumnNames();
+    <programlisting language="java">String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
 while (rit.hasNext())
 {

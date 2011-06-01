@@ -54,7 +54,7 @@
     org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoaderPlugin.
     This is simple configuration example.</para>
 
-    <programlisting>&lt;external-component-plugins&gt;
+    <programlisting language="xml">&lt;external-component-plugins&gt;
   &lt;target-component&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader&lt;/target-component&gt;
   &lt;component-plugin&gt;
     &lt;name&gt;test&lt;/name&gt;
@@ -124,7 +124,7 @@ http://localhost:8080/rest/script/groovy/add/repository/production/script/groovy
     source code. It has possibility inject component from Container in Groovy
     Class constructor. Configuration example:</para>
 
-    <programlisting>&lt;component&gt;
+    <programlisting language="xml">&lt;component&gt;
   &lt;type&gt;org.exoplatform.services.script.groovy.GroovyScriptInstantiator&lt;/type&gt;
 &lt;/component&gt;</programlisting>
   </section>
@@ -140,7 +140,7 @@ http://localhost:8080/rest/script/groovy/add/repository/production/script/groovy
 
     <para>Example of configuration.</para>
 
-    <programlisting>&lt;component&gt;
+    <programlisting language="xml">&lt;component&gt;
     &lt;type&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader&lt;/type&gt;
     &lt;init-params&gt;
       &lt;object-param&gt;
@@ -248,7 +248,7 @@ http://localhost:8080/rest/script/groovy/delete/repository/production/script/gro
     Then, configure GroovyScript2RestLoaderPlugin as described in section Load
     script at startup time.</para>
 
-    <programlisting>import javax.jcr.Node
+    <programlisting language="java">import javax.jcr.Node
 import javax.jcr.Session
 import javax.ws.rs.GET
 import javax.ws.rs.Path
@@ -308,7 +308,7 @@ http://localhost:8080/rest/groovy/test/repository/production/test</programlistin
     Open script from local source code /home/andrew/JcrGroovyTest.groovy, add
     following code and save file.</para>
 
-    <programlisting>@POST
+    <programlisting language="java">@POST
 @Path("{path:.*}")
 public void addReferenceableMixin(@PathParam("repository") String repository,
                                   @PathParam("workspace") String workspace,

@@ -8,7 +8,7 @@
 
   <para><emphasis role="bold">XPath</emphasis></para>
 
-  <programlisting>// get QueryManager
+  <programlisting language="java">// get QueryManager
 QueryManager queryManager = workspace.getQueryManager(); 
 // make XPath query
 Query query = queryManager.createQuery("/jcr:root/Documents/Publie/2010//element(*, exo:article)", Query.XPATH);</programlisting>
@@ -35,7 +35,7 @@ Query query = queryManager.createQuery("/jcr:root/Documents/Publie/2010//element
 
   <para><emphasis role="bold">XPath</emphasis></para>
 
-  <programlisting>// get QueryManager
+  <programlisting language="java">// get QueryManager
 QueryManager queryManager = workspace.getQueryManager(); 
 // make XPath query
 Query query = queryManager.createQuery("/jcr:root/Documents/Publie/_x0032_010//element(*, exo:article)", Query.XPATH);</programlisting>

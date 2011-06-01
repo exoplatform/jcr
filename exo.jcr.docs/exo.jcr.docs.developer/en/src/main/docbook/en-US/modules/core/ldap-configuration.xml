@@ -34,11 +34,11 @@
       </listitem>
     </itemizedlist>
 
-    <programlisting>&lt;import&gt;war:/conf/organization/hibernate-configuration.xml&lt;/import&gt;</programlisting>
+    <programlisting language="xml">&lt;import&gt;war:/conf/organization/hibernate-configuration.xml&lt;/import&gt;</programlisting>
 
     <para>With</para>
 
-    <programlisting>&lt;import&gt;war:/conf/organization/ldap-configuration.xml&lt;/import&gt;</programlisting>
+    <programlisting language="xml">&lt;import&gt;war:/conf/organization/ldap-configuration.xml&lt;/import&gt;</programlisting>
 
     <itemizedlist>
       <listitem>
@@ -49,7 +49,7 @@
       </listitem>
     </itemizedlist>
 
-    <programlisting>&lt;field name="providerURL"&gt;&lt;string&gt;ldap://127.0.0.1:389&lt;/string&gt;&lt;/field&gt;
+    <programlisting language="xml">&lt;field name="providerURL"&gt;&lt;string&gt;ldap://127.0.0.1:389&lt;/string&gt;&lt;/field&gt;
 &lt;field name="rootdn"&gt;&lt;string&gt;CN=Manager,DC=MyCompany,DC=com&lt;/string&gt;&lt;/field&gt;
 &lt;field name="password"&gt;&lt;string&gt;secret&lt;/string&gt;&lt;/field&gt;</programlisting>
 
@@ -96,7 +96,7 @@
       parameters. This configuration is activated by the init-param
       ldap.config of service LDAPServiceImpl.</para>
 
-      <programlisting>&lt;component&gt;
+      <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.ldap.LDAPService&lt;/key&gt;
   &lt;type&gt;org.exoplatform.services.ldap.impl.LDAPServiceImpl&lt;/type&gt;
   &lt;init-params&gt;
@@ -177,7 +177,7 @@
       <emphasis role="bold">ldap-configuration.xml</emphasis> (by default
       located at portal.war/WEB-INF/conf/organization)</para>
 
-      <programlisting>&lt;component&gt;
+      <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.organization.OrganizationService&lt;/key&gt;
   &lt;type&gt;org.exoplatform.services.organization.ldap.OrganizationServiceImpl&lt;/type&gt;
   [...]
@@ -201,7 +201,7 @@
       ldap to eXo. At first there are two main parameters to configure in
       it:</para>
 
-      <programlisting>&lt;field name="baseURL"&gt;&lt;string&gt;dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;
+      <programlisting language="xml">&lt;field name="baseURL"&gt;&lt;string&gt;dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;
 &lt;field name="ldapDescriptionAttr"&gt;&lt;string&gt;description&lt;/string&gt;&lt;/field&gt;</programlisting>
 
       <itemizedlist>
@@ -234,7 +234,7 @@
           <para>Here are the main parameters to map eXo users to your
           directory :</para>
 
-          <programlisting>&lt;field name="userURL"&gt;&lt;string&gt;ou=users,ou=portal,dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;
+          <programlisting language="xml">&lt;field name="userURL"&gt;&lt;string&gt;ou=users,ou=portal,dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;
 &lt;field name="userObjectClassFilter"&gt;&lt;string&gt;objectClass=person&lt;/string&gt;&lt;/field&gt;
 &lt;field name="userLDAPClasses"&gt;&lt;string&gt;top,person,organizationalPerson,inetOrgPerson&lt;/string&gt;&lt;/field&gt;</programlisting>
 
@@ -310,7 +310,7 @@ ou=EMEA,cn=People,o=MyCompany,c=com
           <para>The following parameters maps ldap attributes to eXo User java
           objects attributes.</para>
 
-          <programlisting>&lt;field name="userUsernameAttr"&gt;&lt;string&gt;uid&lt;/string&gt;&lt;/field&gt;
+          <programlisting language="xml">&lt;field name="userUsernameAttr"&gt;&lt;string&gt;uid&lt;/string&gt;&lt;/field&gt;
 &lt;field name="userPassword"&gt;&lt;string&gt;userPassword&lt;/string&gt;&lt;/field&gt;
 &lt;field name="userFirstNameAttr"&gt;&lt;string&gt;givenName&lt;/string&gt;&lt;/field&gt;
 &lt;field name="userLastNameAttr"&gt;&lt;string&gt;sn&lt;/string&gt;&lt;/field&gt;        
@@ -368,7 +368,7 @@ ou=EMEA,cn=People,o=MyCompany,c=com
         <para>eXo groups can be mapped to organizational or applicative groups
         defined in your directory.</para>
 
-        <programlisting>&lt;field name="groupsURL"&gt;&lt;string&gt;ou=groups,ou=portal,dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;
+        <programlisting language="xml">&lt;field name="groupsURL"&gt;&lt;string&gt;ou=groups,ou=portal,dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;
 &lt;field name="groupLDAPClasses"&gt;&lt;string&gt;top,organizationalUnit&lt;/string&gt;&lt;/field&gt;
 &lt;field name="groupObjectClassFilter"&gt;&lt;string&gt;objectClass=organizationalUnit&lt;/string&gt;&lt;/field&gt;</programlisting>
 
@@ -449,7 +449,7 @@ l=London,dc=sites,dc=mycompany,dc=com
         <para>Membership types are the possible roles that can be assigned to
         users in groups.</para>
 
-        <programlisting>&lt;field name="membershipTypeURL"&gt;&lt;string&gt;ou=memberships,ou=portal,dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;          
+        <programlisting language="xml">&lt;field name="membershipTypeURL"&gt;&lt;string&gt;ou=memberships,ou=portal,dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;          
 &lt;field name="membershipTypeLDAPClasses"&gt;&lt;string&gt;top,organizationalRole&lt;/string&gt;&lt;/field&gt;
 &lt;field name="membershipTypeNameAttr"&gt;&lt;string&gt;cn&lt;/string&gt;&lt;/field&gt;</programlisting>
 
@@ -522,7 +522,7 @@ l=London,dc=sites,dc=mycompany,dc=com
         entry.</para>
 
         <para>Example: To designate tom as the manager of the group
-        human-resources :</para>
+        human-resources:</para>
 
         <programlisting>ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org
   …
@@ -530,9 +530,9 @@ l=London,dc=sites,dc=mycompany,dc=com
     member: uid=tom,ou=users,ou=portal,dc=exoplatform,dc=org
     …</programlisting>
 
-        <para>The parameters to configure memberships are :</para>
+        <para>The parameters to configure memberships are:</para>
 
-        <programlisting>&lt;field name="membershipLDAPClasses"&gt;&lt;string&gt;top,groupOfNames&lt;/string&gt;&lt;/field&gt;
+        <programlisting language="xml">&lt;field name="membershipLDAPClasses"&gt;&lt;string&gt;top,groupOfNames&lt;/string&gt;&lt;/field&gt;
 &lt;field name="membershipTypeMemberValue"&gt;&lt;string&gt;member&lt;/string&gt;&lt;/field&gt;                              
 &lt;field name="membershipTypeRoleNameAttr"&gt;&lt;string&gt;cn&lt;/string&gt;&lt;/field&gt;
 &lt;field name="membershipTypeObjectClassFilter"&gt;&lt;string&gt;objectClass=organizationalRole&lt;/string&gt;&lt;/field&gt;</programlisting>
@@ -611,7 +611,7 @@ l=London,dc=sites,dc=mycompany,dc=com
         <programlisting>(&amp;amp;(objectClass=ExoMembership)(membershipURL=*)) 
 </programlisting>
 
-        <para>Note : Pay attention to the xml escaping of the '&amp;' (and)
+        <para>Note: Pay attention to the xml escaping of the '&amp;' (and)
         operator</para>
       </section>
 
@@ -620,9 +620,9 @@ l=London,dc=sites,dc=mycompany,dc=com
 
         <para>eXo User profiles also have entries in the ldap but the actual
         storage is still done with the hibernate service. You will need the
-        following parameters :</para>
+        following parameters:</para>
 
-        <programlisting>&lt;field name="profileURL"&gt;&lt;string&gt;ou=profiles,ou=portal,dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;
+        <programlisting language="xml">&lt;field name="profileURL"&gt;&lt;string&gt;ou=profiles,ou=portal,dc=exoplatform,dc=org&lt;/string&gt;&lt;/field&gt;
 &lt;field name="profileLDAPClasses"&gt;&lt;string&gt;top,organizationalPerson&lt;/string&gt;&lt;/field&gt;</programlisting>
 
         <itemizedlist>
@@ -734,7 +734,7 @@ l=London,dc=sites,dc=mycompany,dc=com
 
       JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=/home/user/java/jdk1.6/jre/lib/security/cacerts"</programlisting>
 
-      <programlisting>[...]
+      <programlisting language="xml">[...]
   &lt;component&gt;
   &lt;key&gt;org.exoplatform.services.ldap.LDAPService&lt;/key&gt;
 [..]

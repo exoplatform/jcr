@@ -176,7 +176,7 @@
     <para>Create subclass of javax.ws.rs.core.Application with code as bellow
     and add it to the eXo Container configuration.</para>
 
-    <programlisting>package org.exoplatform.test.jackson;
+    <programlisting language="java">package org.exoplatform.test.jackson;
 
 import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
 

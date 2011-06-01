@@ -56,7 +56,7 @@
 
     <para>Action's Configuration may look like as the following:</para>
 
-    <programlisting>&lt;value&gt;
+    <programlisting language="xml">&lt;value&gt;
   &lt;object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration"&gt;
     &lt;field  name="eventTypes"&gt;&lt;string&gt;addNode,read&lt;/string&gt;&lt;/field&gt;
     &lt;field  name="workspace"&gt;&lt;string&gt;production&lt;/string&gt;&lt;/field &gt;
@@ -72,7 +72,7 @@
     current Item, the current ExoContainer and the current EventType is like
     below:</para>
 
-    <programlisting>public interface InvocationContext extends ContextBase {
+    <programlisting language="java">public interface InvocationContext extends ContextBase {
 
   Item getCurrentItem();
 
@@ -93,7 +93,7 @@
     role="bold">access-manager</emphasis> element inside <emphasis
     role="bold">workspace</emphasis> as follows:</para>
 
-    <programlisting>&lt;workspace name="ws"&gt;        
+    <programlisting language="xml">&lt;workspace name="ws"&gt;        
    ...
    &lt;!-- after query-handler element --&gt;
    &lt;access-manager class="org.exoplatform.services.jcr.CustomAccessManagerImpl"&gt;
@@ -135,7 +135,7 @@
     SetAccessContextAction should be configured in the way mentioned in
     <emphasis role="bold">Access Context Action.</emphasis></para>
 
-    <programlisting>public class CustomAccessManagerImpl extends AccessManager {
+    <programlisting language="java">public class CustomAccessManagerImpl extends AccessManager {
 
   private String property;
   private DecisionMakingService theService;

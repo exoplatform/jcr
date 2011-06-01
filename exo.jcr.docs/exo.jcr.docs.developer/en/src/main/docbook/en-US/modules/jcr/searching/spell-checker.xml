@@ -17,7 +17,7 @@
 
   <para>test-jcr-config.xml:</para>
 
-  <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+  <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
       ...
    &lt;property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" /&gt;
@@ -53,7 +53,7 @@
 
     <para><emphasis role="bold">SQL</emphasis></para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String sqlStatement = "SELECT rep:spellcheck() FROM nt:base WHERE jcr:path = '/' AND SPELLCHECK('quik OR (-foo bar)')";
@@ -63,7 +63,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para><emphasis role="bold">XPath</emphasis></para>
 
-    <programlisting>// make XPath query
+    <programlisting language="java">// make XPath query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String xpathStatement = "/jcr:root[rep:spellcheck('quik OR (-foo bar)')]/(rep:spellcheck())";
@@ -77,7 +77,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para>Get suggestion of coorect spelling our phrase:</para>
 
-    <programlisting>RowIterator it = result.getRows();
+    <programlisting language="java">RowIterator it = result.getRows();
 Row r = rows.nextRow();
 Value v = r.getValue("rep:spellcheck()");
 String correctPhrase = v.getString();</programlisting>

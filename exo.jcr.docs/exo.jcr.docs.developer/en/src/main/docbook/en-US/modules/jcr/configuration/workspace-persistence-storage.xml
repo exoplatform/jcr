@@ -16,7 +16,7 @@
   org.exoplatform.services.jcr.storage.WorkspaceDataContainer subclass
   like</para>
 
-  <programlisting>&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+  <programlisting language="xml">&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
   &lt;properties&gt;
     &lt;property name="source-name" value="jdbcjcr1"/&gt;
     &lt;property name="dialect" value="hsqldb"/&gt;
@@ -55,7 +55,7 @@
   Container will try to read or write Value using underlying value storage
   plugin if the filter criteria (see below) match the current property.</para>
 
-  <programlisting>&lt;value-storages&gt;
+  <programlisting language="xml">&lt;value-storages&gt;
   &lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
     &lt;properties&gt;
       &lt;property name="path" value="data/values"/&gt;

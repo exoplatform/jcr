@@ -12,35 +12,51 @@
     <section>
       <title>Obtaining a Repository object</title>
 
-      <para>A javax.jcr.Repository object can be obtained by:<itemizedlist>
+      <para>A javax.jcr.Repository object can be obtained by:</para>
+      <itemizedlist>
           <listitem>
             <para>Using the eXo Container "native" mechanism. All Repositories
             are kept with a single RepositoryService component. So it can be
             obtained from eXo Container, described as the
-            following:<programlisting>  RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
-  Repository repository = repositoryService.getRepository("repositoryName"); </programlisting></para>
+            following:</para>
           </listitem>
-
+      </itemizedlist>
+            
+            <programlisting language="java">
+            RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+  Repository repository = repositoryService.getRepository("repositoryName"); 
+            </programlisting>
+  
+      <itemizedlist>    
           <listitem>
             <para>Using the eXo Container "native" mechanism with a thread
             local saved "current" repository (especially if you plan to use a
             single repository which covers more than 90% of use
-            cases)<programlisting>  // set current repository at initial time
+            cases)</para>
+          </listitem>
+      </itemizedlist>         
+            
+            <programlisting language="java">  // set current repository at initial time
   RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
   repositoryService.setCurrentRepositoryName("repositoryName");
   ....
   // retrieve and use this repository
-  Repository repository = repositoryService.getCurrentRepository();</programlisting></para>
-          </listitem>
-
+  Repository repository = repositoryService.getCurrentRepository();
+            </programlisting>
+          
+      <itemizedlist>
           <listitem>
             <para>Using JNDI as specified in JSR-170. This way you have to
             configure the reference (see eXo <link
             linkend="Kernel.JNDINaming">JNDI Naming configuration</link>
-            )<programlisting>  Context ctx = new InitialContext();
-  Repository repository =(Repository) ctx.lookup("repositoryName");</programlisting></para>
+            )</para>
           </listitem>
-        </itemizedlist></para>
+      </itemizedlist>      
+            
+            <programlisting language="java">  Context ctx = new InitialContext();
+  Repository repository =(Repository) ctx.lookup("repositoryName");</programlisting>
+          
+        
     </section>
 
     <section>
@@ -93,7 +109,7 @@
       is responsible for caching/obtaining your JCR Sessions and closing all
       opened sessions at once.</para>
 
-      <programlisting>public class SessionProvider {
+      <programlisting language="java">public class SessionProvider {
 
   /**
    * Creates a SessionProvider for a certain identity
@@ -131,7 +147,7 @@
       operations, use it to obtain the Sessions and close at the end of an
       application session(request). See the following example:</para>
 
-      <programlisting>// (1) obtain current javax.jcr.Credentials, for example get it from AuthenticationService
+      <programlisting language="groovy">// (1) obtain current javax.jcr.Credentials, for example get it from AuthenticationService
 Credentials cred = ....
 
 // (2) create SessionProvider for current user
@@ -164,7 +180,7 @@ Session session = sessionProvider.getSession("workspaceName", repository);
       <para>The org.exoplatform.services.jcr.ext.app.SessionProviderService
       interface is defined as follows:</para>
 
-      <programlisting>public interface SessionProviderService {
+      <programlisting language="java">public interface SessionProviderService {
   void setSessionProvider(Object key, SessionProvider sessionProvider);
   SessionProvider getSessionProvider(Object key);
   void removeSessionProvider(Object key);

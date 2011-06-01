@@ -150,7 +150,7 @@
     <package>exo.kernel.component.cache-2.0.5.jar</package> file and inside
     this jar open /conf/portal/configuration.xml. You will see:</para>
 
-    <programlisting> 
+    <programlisting language="xml"> 
 &lt;component&gt;
 &lt;key&gt;org.exoplatform.services.cache.CacheService&lt;/key&gt; 
 &lt;type&gt;org.exoplatform.services.cache.impl.CacheServiceImpl&lt;/type&gt; 
@@ -264,14 +264,16 @@
     for a service can be defined as you see in the next chapter.</para>
 
     <note>
-      <para>"In your java code you have to use <programlisting>ExoContainer myContainer = ExoContainerContext.getCurrentContainer()</programlisting>
-      in order to access to the current container. It doesn't greatly matter
+      <para>"In your java code you have to use</para>
+
+      <programlisting language="java">ExoContainer myContainer = ExoContainerContext.getCurrentContainer();</programlisting>
+      <para>in order to access to the current container. It doesn't greatly matter
       to your application if the current container is a
       <classname>PortalContainer</classname> or a
       <classname>StandaloneContainer</classname>. Once you have your container
-      you may access to any service registered in this container using
-      <programlisting>MyService myService = (MyService) myContainer.getComponentInstance(MyService.class)</programlisting>
-      You easily realize that <classname>MyService.class</classname> is the
+      you may access to any service registered in this container using</para>      
+      <programlisting language="java">MyService myService = (MyService) myContainer.getComponentInstance(MyService.class);</programlisting>
+      <para> You easily realize that <classname>MyService.class</classname> is the
       name of the service interface.</para>
     </note>
   </section>
@@ -464,7 +466,7 @@
           empty hashtable and not any bit of previous configuration is used.
           Apply the following code to do this:</para>
 
-          <programlisting>StandaloneContainer.setConfigurationURL(containerConf);</programlisting>
+          <programlisting language="java">StandaloneContainer.setConfigurationURL(containerConf);</programlisting>
         </listitem>
 
         <listitem>
@@ -474,7 +476,7 @@
           configuration file that is provided by the URL is used to replace
           some of the service configurations.The code looks like this:</para>
 
-          <programlisting>StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
+          <programlisting language="java">StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
 
           <orderedlist>
             <listitem>
@@ -554,7 +556,7 @@
     <para>This JDBC implementation of BaseOrganizationService interface has
     only one constructor:</para>
 
-    <para><programlisting>public OrganizationServiceImpl(ListenerService listenerService, DatabaseService dbService)</programlisting></para>
+    <programlisting language="java">public OrganizationServiceImpl(ListenerService listenerService, DatabaseService dbService);</programlisting>
 
     <para>You see this service depends on two other services. In order to be
     able to call this constructor the container first needs a
@@ -685,7 +687,7 @@
       create an interface. In this case the configuration looks like
       this:</para>
 
-      <programlisting>&lt;key&gt;org.exoplatform.services.database.jdbc.DBSchemaCreator&lt;/key&gt;
+      <programlisting language="xml">&lt;key&gt;org.exoplatform.services.database.jdbc.DBSchemaCreator&lt;/key&gt;
 &lt;type&gt;org.exoplatform.services.database.jdbc.DBSchemaCreator&lt;/type&gt;</programlisting>
 
       <para>The key and type tags contain equally the qualified class
@@ -700,7 +702,7 @@
       it is possible to resolve properties at runtime instead of providing a
       value at packaging time.</para>
 
-      <programlisting>&lt;component&gt;
+      <programlisting language="xml">&lt;component&gt;
   ...
   &lt;init-params&gt;
     &lt;value-param&gt;

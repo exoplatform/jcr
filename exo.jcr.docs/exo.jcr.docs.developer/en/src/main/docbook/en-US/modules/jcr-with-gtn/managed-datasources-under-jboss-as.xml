@@ -26,7 +26,8 @@
       jdbcjcr_portal, jdbcjcr_portal-sample, jdbcidm_portal &amp;
       jdbcidm_sample-portal).</para>
 
-      <para>Example:<programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <para>Example:</para>
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;datasources&gt;
    &lt;no-tx-datasource&gt;
       &lt;jndi-name&gt;jdbcjcr_portal&lt;/jndi-name&gt;
@@ -59,7 +60,7 @@
       &lt;user-name&gt;sa&lt;/user-name&gt;
       &lt;password&gt;&lt;/password&gt;
    &lt;/no-tx-datasource&gt;
-&lt;/datasources&gt;</programlisting></para>
+&lt;/datasources&gt;</programlisting>
 
       <para>Which properties can be set for datasource can be found here:
       <ulink
@@ -89,7 +90,7 @@
       <para>In jcr-configuration.xml and idm-configuration.xml comment out the
       plugin InitialContextInitializer.</para>
 
-      <programlisting>&lt;!-- Commented because, Datasources are declared and bound by AS, not in eXo --&gt;
+      <programlisting language="xml">&lt;!-- Commented because, Datasources are declared and bound by AS, not in eXo --&gt;
 &lt;!--
 &lt;external-component-plugins&gt;
     [...]

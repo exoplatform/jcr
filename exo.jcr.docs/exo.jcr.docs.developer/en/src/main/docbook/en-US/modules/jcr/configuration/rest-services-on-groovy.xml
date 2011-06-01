@@ -29,7 +29,7 @@
 
     <para>Component configuration enables Groovy services loader:</para>
 
-    <programlisting>&lt;component&gt;
+    <programlisting language="xml">&lt;component&gt;
   &lt;type&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader&lt;/type&gt;
   &lt;init-params&gt;
     &lt;object-param&gt;

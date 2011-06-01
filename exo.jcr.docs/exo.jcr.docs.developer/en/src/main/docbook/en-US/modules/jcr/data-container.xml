@@ -49,7 +49,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>WorkspaceStorageConnection openConnection() throws RepositoryException;
+      <programlisting language="java">WorkspaceStorageConnection openConnection() throws RepositoryException;
 </programlisting>
 
       <itemizedlist>
@@ -59,7 +59,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException;
+      <programlisting language="java">WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException;
 </programlisting>
 
       <note>
@@ -81,7 +81,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>WorkspaceStorageConnection reuseConnection(WorkspaceStorageConnection original) throws RepositoryException;
+      <programlisting language="java">WorkspaceStorageConnection reuseConnection(WorkspaceStorageConnection original) throws RepositoryException;
 </programlisting>
 
       <itemizedlist>
@@ -93,7 +93,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>boolean isCheckSNSNewConnection();
+      <programlisting language="java">boolean isCheckSNSNewConnection();
 </programlisting>
 
       <para>Container initialization is only based on a configuration. After
@@ -163,7 +163,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException;
+      <programlisting language="java">ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -173,7 +173,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,IllegalStateException;
+      <programlisting language="java">ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -183,7 +183,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>List&lt;NodeData&gt; getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;
+      <programlisting language="java">List&lt;NodeData&gt; getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -193,7 +193,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>List&lt;PropertyData&gt; getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException;
+      <programlisting language="java">List&lt;PropertyData&gt; getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -206,7 +206,7 @@
       <para>This methiod specially dedicated for non-content modification
       operations (e.g. Items delete).</para>
 
-      <programlisting>List&lt;PropertyData&gt; listChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException;
+      <programlisting language="java">List&lt;PropertyData&gt; listChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -219,7 +219,7 @@
       <para>It's REFERENCE type: Properties referencing Node with given
       nodeIdentifier. See more in javax.jcr.Node.getReferences()</para>
 
-      <programlisting>List&lt;PropertyData&gt; getReferencesData(String nodeIdentifier) throws RepositoryException,IllegalStateException,UnsupportedOperationException;
+      <programlisting language="java">List&lt;PropertyData&gt; getReferencesData(String nodeIdentifier) throws RepositoryException,IllegalStateException,UnsupportedOperationException;
 </programlisting>
     </section>
 
@@ -232,7 +232,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void add(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+      <programlisting language="java">void add(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -241,7 +241,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void add(PropertyData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+      <programlisting language="java">void add(PropertyData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -250,7 +250,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void update(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+      <programlisting language="java">void update(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -259,7 +259,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void update(PropertyData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+      <programlisting language="java">void update(PropertyData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -269,7 +269,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void rename(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+      <programlisting language="java">void rename(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -278,7 +278,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void delete(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+      <programlisting language="java">void delete(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -287,7 +287,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void delete(PropertyData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+      <programlisting language="java">void delete(PropertyData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
 </programlisting>
 
       <itemizedlist>
@@ -297,7 +297,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void commit() throws IllegalStateException, RepositoryException;
+      <programlisting language="java">void commit() throws IllegalStateException, RepositoryException;
 </programlisting>
 
       <itemizedlist>
@@ -307,7 +307,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void rollback() throws IllegalStateException, RepositoryException;
+      <programlisting language="java">void rollback() throws IllegalStateException, RepositoryException;
 </programlisting>
 
       <para>All methods throw IllegalStateException if connection is closed.
@@ -325,7 +325,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>boolean isOpened();
+      <programlisting language="java">boolean isOpened();
 </programlisting>
     </section>
 
@@ -427,7 +427,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>ValueIOChannel getApplicableChannel(PropertyData property, int valueOrderNumer) throws IOException;
+      <programlisting language="java">ValueIOChannel getApplicableChannel(PropertyData property, int valueOrderNumer) throws IOException;
 </programlisting>
 
       <itemizedlist>
@@ -436,7 +436,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>ValueIOChannel getChannel(String storageId) throws IOException, ValueStorageNotFoundException;
+      <programlisting language="java">ValueIOChannel getChannel(String storageId) throws IOException, ValueStorageNotFoundException;
 </programlisting>
 
       <para>There is also method for consistency check, but this method
@@ -458,7 +458,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>public abstract void init(Properties props, ValueDataResourceHolder resources) throws RepositoryConfigurationException, IOException;
+      <programlisting language="java">public abstract void init(Properties props, ValueDataResourceHolder resources) throws RepositoryConfigurationException, IOException;
 </programlisting>
 
       <itemizedlist>
@@ -469,7 +469,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>public abstract ValueIOChannel openIOChannel() throws IOException;
+      <programlisting language="java">public abstract ValueIOChannel openIOChannel() throws IOException;
 </programlisting>
 
       <itemizedlist>
@@ -478,7 +478,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>public abstract boolean isSame(String valueDataDescriptor);
+      <programlisting language="java">public abstract boolean isSame(String valueDataDescriptor);
 </programlisting>
     </section>
 
@@ -494,7 +494,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException;
+      <programlisting language="java">ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException;
 </programlisting>
 
       <itemizedlist>
@@ -503,7 +503,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void write(String propertyId, ValueData data) throws IOException;
+      <programlisting language="java">void write(String propertyId, ValueData data) throws IOException;
 </programlisting>
 
       <itemizedlist>
@@ -512,7 +512,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void delete(String propertyId) throws IOException;
+      <programlisting language="java">void delete(String propertyId) throws IOException;
 </programlisting>
     </section>
 
@@ -528,7 +528,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void commit() throws IOException;
+      <programlisting language="java">void commit() throws IOException;
 </programlisting>
 
       <itemizedlist>
@@ -537,7 +537,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting>void rollback() throws IOException;
+      <programlisting language="java">void rollback() throws IOException;
 </programlisting>
     </section>
   </section>

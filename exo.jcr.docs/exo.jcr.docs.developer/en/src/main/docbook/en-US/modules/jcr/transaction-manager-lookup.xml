@@ -12,7 +12,7 @@
     <para>It's JBossCache class registered as eXo container component in
     configuration.xml file. </para>
 
-    <programlisting>  &lt;component&gt;
+    <programlisting language="xml">  &lt;component&gt;
      &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
      &lt;type&gt;org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup&lt;/type&gt;
   &lt;/component&gt;</programlisting>

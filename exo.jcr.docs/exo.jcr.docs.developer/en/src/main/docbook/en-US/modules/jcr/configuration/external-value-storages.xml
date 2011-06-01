@@ -38,7 +38,7 @@
     <para>A disadvantage is that it's a higher time on Value deletion due to
     unused tree-nodes remove.</para>
 
-    <programlisting>&lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
+    <programlisting language="xml">&lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
      &lt;properties&gt;
        &lt;property name="path" value="data/values"/&gt;
      &lt;/properties&gt;
@@ -73,7 +73,7 @@
     <property>min-value-size</property> and will be stored in the path
     "data/20Mvalues", all other in "data/values".</para>
 
-    <programlisting>&lt;value-storages&gt;
+    <programlisting language="xml">&lt;value-storages&gt;
   &lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
     &lt;properties&gt;
       &lt;property name="path" value="data/20Mvalues"/&gt;
@@ -107,7 +107,7 @@
     <para>Hold Values in flat FileSystem files. <property>path</property>
     property points to root directory in order to store files</para>
 
-    <programlisting>&lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage"&gt;
+    <programlisting language="xml">&lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage"&gt;
      &lt;properties&gt;
        &lt;property name="path" value="data/values"/&gt;
      &lt;/properties&gt;
@@ -170,7 +170,7 @@
     <para>To enable CAS support, just configure it in JCR Repositories
     configuration as we do for other Value Storages.</para>
 
-    <programlisting>&lt;workspaces&gt;
+    <programlisting language="xml">&lt;workspaces&gt;
         &lt;workspace name="ws"&gt;
           &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;

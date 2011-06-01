@@ -60,7 +60,7 @@
       &lt;&gt;org.exoplatform.services.organization.UserEventListener&lt;/&gt;
       :</para>
 
-      <programlisting>public class MyUserListener extends UserEventListener {
+      <programlisting language="java">public class MyUserListener extends UserEventListener {
 
   public void preSave(User user, boolean isNew) throws Exception {
     System.out.println("Before " + (isNew?"creating":"updating") + " user " + user.getUserName());
@@ -88,7 +88,7 @@
       &lt;&gt;org.exoplatform.services.organization.GroupEventListener&lt;/&gt;
       :</para>
 
-      <programlisting>public class MyGroupListener extends GroupEventListener {
+      <programlisting language="java">public class MyGroupListener extends GroupEventListener {
 
   public void preSave(Group group, boolean isNew) throws Exception {
     System.out.println("Before " + (isNew?"creating":"updating") + " group " + group.getName());
@@ -115,7 +115,7 @@
       &lt;&gt;org.exoplatform.services.organization.MembershipEventListener&lt;/&gt;
       :</para>
 
-      <programlisting>public class MyMembershipListener extends MembershipEventListener {
+      <programlisting language="java">public class MyMembershipListener extends MembershipEventListener {
 
   public void preSave(Membership membership, boolean isNew) throws Exception {
     System.out.println("Before " + (isNew?"creating":"updating") + " membership.");
@@ -151,7 +151,7 @@
     a .jar and create a configuration file into it under <emphasis
     role="bold">mylisteners.jar!/conf/portal/configuration.xml</emphasis></para>
 
-    <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+    <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration&gt;
  &lt;external-component-plugins&gt;
   &lt;target-component&gt;org.exoplatform.services.organization.OrganizationService&lt;/target-component&gt;

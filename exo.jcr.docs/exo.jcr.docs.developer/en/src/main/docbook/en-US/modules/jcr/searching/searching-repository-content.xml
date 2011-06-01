@@ -38,7 +38,7 @@
 
     <para>TwoWayRangeIterator interface:</para>
 
-    <programlisting>/**
+    <programlisting language="java">/**
  * Skip a number of elements in the iterator.
  * 
  * @param skipNum the non-negative number of elements to skip
@@ -49,7 +49,7 @@ public void skipBack(long skipNum);</programlisting>
 
     <para>Usage:</para>
 
-    <programlisting>NodeIterator iter = queryResult.getNodes();
+    <programlisting language="java">NodeIterator iter = queryResult.getNodes();
 while (iter.hasNext()) {
   if (skipForward) {
     iter.skip(10); // Skip 10 nodes in forward direction
@@ -71,7 +71,7 @@ while (iter.hasNext()) {
     <para>To use it, you have to form a query like the one described
     below:</para>
 
-    <programlisting>QueryManager qman = session.getWorkspace().getQueryManager();
+    <programlisting language="java">QueryManager qman = session.getWorkspace().getQueryManager();
 Query q = qman.createQuery("select * from nt:base where contains(field, 'ccccc~')", Query.SQL);
 QueryResult res = q.execute();</programlisting>
   </section>
@@ -92,10 +92,10 @@ XPath: //element(*, nt:resource)[jcr:contains(., '~parameter')</programlisting>
     configuration parameter to the query-handler element in your jcr
     configuration file to enable it.</para>
 
-    <programlisting>&lt;param  name="synonymprovider-config-path" value="..you path to configuration file....."/&gt;
+    <programlisting language="xml">&lt;param  name="synonymprovider-config-path" value="..you path to configuration file....."/&gt;
 &lt;param  name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider"/&gt;</programlisting>
 
-    <programlisting>/**
+    <programlisting language="xml">/**
  * &lt;code&gt;SynonymProvider&lt;/code&gt; defines an interface for a component that
  * returns synonyms for a given term.
  */
@@ -139,14 +139,14 @@ public interface SynonymProvider {
     to the query-handler element in your jcr configuration file to enable
     it.</para>
 
-    <programlisting>&lt;param name="support-highlighting" value="true"/&gt;</programlisting>
+    <programlisting language="xml">&lt;param name="support-highlighting" value="true"/&gt;</programlisting>
 
     <para>Additionally, there is a parameter that controls the format of the
     excerpt created. In JCR 1.9, the default is set to
     org.exoplatform.services.jcr.impl.core.query.lucene.DefaultHTMLExcerpt.
     The configuration parameter for this setting is:</para>
 
-    <programlisting>&lt;param name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.DefaultXMLExcerpt"/&gt;</programlisting>
+    <programlisting language="xml">&lt;param name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.DefaultXMLExcerpt"/&gt;</programlisting>
 
     <section>
       <title>DefaultXMLExcerpt</title>
@@ -154,7 +154,7 @@ public interface SynonymProvider {
       <para>This excerpt provider creates an XML fragment of the following
       form:</para>
 
-      <programlisting>&lt;excerpt&gt;
+      <programlisting language="xml">&lt;excerpt&gt;
     &lt;fragment&gt;
         &lt;highlight&gt;exoplatform&lt;/highlight&gt; implements both the mandatory
         XPath and optional SQL &lt;highlight&gt;query&lt;/highlight&gt; syntax.
@@ -172,7 +172,7 @@ public interface SynonymProvider {
       <para>This excerpt provider creates an HTML fragment of the following
       form:</para>
 
-      <programlisting>&lt;div&gt;
+      <programlisting language="html">&lt;div&gt;
     &lt;span&gt;
         &lt;strong&gt;exoplatform&lt;/strong&gt; implements both the mandatory XPath
         and optional SQL &lt;strong&gt;query&lt;/strong&gt; syntax.
@@ -190,7 +190,7 @@ public interface SynonymProvider {
       <para>If you are using XPath, you must use the rep:excerpt() function in
       the last location step, just like you would select properties:</para>
 
-      <programlisting>QueryManager qm = session.getWorkspace().getQueryManager();
+      <programlisting language="java">QueryManager qm = session.getWorkspace().getQueryManager();
 Query q = qm.createQuery("//*[jcr:contains(., 'exoplatform')]/(@Title|rep:excerpt(.))", Query.XPATH);
 QueryResult result = q.execute();
 for (RowIterator it = result.getRows(); it.hasNext(); ) {
@@ -215,7 +215,7 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
       but the column in the RowIterator will nonetheless be labled
       rep:excerpt(.)!</para>
 
-      <programlisting>QueryManager qm = session.getWorkspace().getQueryManager();
+      <programlisting language="java">QueryManager qm = session.getWorkspace().getQueryManager();
 Query q = qm.createQuery("select excerpt(.) from nt:resource where contains(., 'exoplatform')", Query.SQL);
 QueryResult result = q.execute();
 for (RowIterator it = result.getRows(); it.hasNext(); ) {
@@ -288,7 +288,7 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
       <para>You can spell check a fulltext statement either with an XPath or a
       SQL query:</para>
 
-      <programlisting>// rep:spellcheck('explatform') will always evaluate to true
+      <programlisting language="java">// rep:spellcheck('explatform') will always evaluate to true
 Query query = qm.createQuery("/jcr:root[rep:spellcheck('explatform')]/(rep:spellcheck())", Query.XPATH);
 RowIterator rows = query.execute().getRows();
 // the above query will always return the root node no matter what string we check
@@ -304,7 +304,7 @@ if (v == null) {
 
       <para>And the same using SQL:</para>
 
-      <programlisting>// SPELLCHECK('exoplatform') will always evaluate to true
+      <programlisting language="java">// SPELLCHECK('exoplatform') will always evaluate to true
 Query query = qm.createQuery("SELECT rep:spellcheck() FROM nt:base WHERE jcr:path = '/' AND SPELLCHECK('explatform')", Query.SQL);
 RowIterator rows = query.execute().getRows();
 // the above query will always return the root node no matter what string we check
@@ -350,7 +350,7 @@ if (v == null) {
     Hightlighting is enabled. Please make sure that you have the following
     parameter set for the query handler in your workspace.xml.</para>
 
-    <programlisting>&lt;param name="support-highlighting" value="true"/&gt;</programlisting>
+    <programlisting language="xml">&lt;param name="support-highlighting" value="true"/&gt;</programlisting>
 
     <para>The functions are called rep:similar() (in XPath) and similar() (in
     SQL) and have two arguments:</para>

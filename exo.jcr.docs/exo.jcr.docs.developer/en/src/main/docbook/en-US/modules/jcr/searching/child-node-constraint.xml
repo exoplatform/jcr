@@ -62,7 +62,7 @@
     "/". This way child nodes are included but descendant nodes are
     excluded.</para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String sqlStatement = "SELECT * FROM nt:folder WHERE jcr:path LIKE '/folder1/folder2/%' AND NOT jcr:path LIKE '/folder1/folder2/%/%'";
@@ -72,7 +72,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para><emphasis role="bold">XPath</emphasis></para>
 
-    <programlisting>// make XPath query
+    <programlisting language="java">// make XPath query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String xpathStatement = "/jcr:root/folder1[1]/folder2[1]/element(*,nt:folder)";
@@ -86,7 +86,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para>Let's get nodes:</para>
 
-    <programlisting>NodeIterator it = result.getNodes();
+    <programlisting language="java">NodeIterator it = result.getNodes();
 
 if(it.hasNext())
 {
@@ -97,7 +97,7 @@ if(it.hasNext())
 
     <para>We can also get a table:</para>
 
-    <programlisting>String[] columnNames = result.getColumnNames();
+    <programlisting language="java">String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
 while (rit.hasNext())
 {

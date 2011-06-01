@@ -41,7 +41,7 @@
     new database's connection) or throws <envar>DBCreatorException</envar>
     exception if any errors occurs in other case.</para>
 
-    <programlisting>public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;
+    <programlisting language="java">public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;
 </programlisting>
 
     <para>For MSSQL and Sybase servers, use autocommit mode to set true for
@@ -49,7 +49,7 @@
     created database not available for "use" command and therefore you can't
     create new user inside database per one script.</para>
 
-    <programlisting>public DBConnectionInfo getDBConnectionInfo(String dbName) throws DBCreatorException;
+    <programlisting language="java">public DBConnectionInfo getDBConnectionInfo(String dbName) throws DBCreatorException;
 </programlisting>
 
     <para>Return database connection information without database
@@ -61,7 +61,7 @@
 
     <para>Service's configuration.</para>
 
-    <programlisting>   &lt;component&gt;
+    <programlisting language="xml">   &lt;component&gt;
       &lt;key&gt;org.exoplatform.services.database.creator.DBCreator&lt;/key&gt;
       &lt;type&gt;org.exoplatform.services.database.creator.DBCreator&lt;/type&gt;
       &lt;init-params&gt;
@@ -95,13 +95,15 @@
     db-connection may contain additonal properties.</para>
 
     <para>For example, next additional proprites allows reconnect to MySQL
-    database when connection was refused:<programlisting>         &lt;properties-param&gt;
+    database when connection was refused:</para>
+    
+    <programlisting language="xml">         &lt;properties-param&gt;
             &lt;name&gt;db-connection&lt;/name&gt;
             ...
             &lt;property name="validationQuery" value="select 1"/&gt;
             &lt;property name="testOnReturn" value="true"/&gt;
             ...
-         &lt;/properties-param&gt;</programlisting></para>
+         &lt;/properties-param&gt;</programlisting>
 
     <para><envar>db-creation</envar> properties section contains paramaters
     for database creation using DDL script:</para>
@@ -128,35 +130,35 @@
 
     <para>MySQL:</para>
 
-    <programlisting>&lt;property name="driverClassName" value="com.mysql.jdbc.Driver" /&gt;
+    <programlisting language="xml">&lt;property name="driverClassName" value="com.mysql.jdbc.Driver" /&gt;
 &lt;property name="url" value="jdbc:mysql://localhost/" /&gt;
 &lt;property name="username" value="root" /&gt;
 &lt;property name="password" value="admin" /&gt;</programlisting>
 
     <para>PostgreSQL:</para>
 
-    <programlisting>&lt;property name="driverClassName" value="org.postgresql.Driver" /&gt;
+    <programlisting language="xml">&lt;property name="driverClassName" value="org.postgresql.Driver" /&gt;
 &lt;property name="url" value="jdbc:postgresql://localhost/" /&gt;
 &lt;property name="username" value="root" /&gt;
 &lt;property name="password" value="admin" /&gt;</programlisting>
 
     <para>MSSQL:</para>
 
-    <programlisting>&lt;property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/&gt;
+    <programlisting language="xml">&lt;property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/&gt;
 &lt;property name="url" value="jdbc:sqlserver://localhost:1433;"/&gt;
 &lt;property name="username" value="root"/&gt;
 &lt;property name="password" value="admin"/&gt;</programlisting>
 
     <para>Sybase:</para>
 
-    <programlisting>&lt;property name="driverClassName" value="com.sybase.jdbc3.jdbc.SybDriver" /&gt;
+    <programlisting language="xml">&lt;property name="driverClassName" value="com.sybase.jdbc3.jdbc.SybDriver" /&gt;
 &lt;property name="url" value="jdbc:sybase:Tds:localhost:5000/"/&gt;
 &lt;property name="username" value="root"/&gt;
 &lt;property name="password" value="admin"/&gt;</programlisting>
 
     <para>Oracle:</para>
 
-    <programlisting>&lt;property name="driverClassName" value="oracle.jdbc.OracleDriver" /&gt;
+    <programlisting language="xml">&lt;property name="driverClassName" value="oracle.jdbc.OracleDriver" /&gt;
 &lt;property name="url" value="jdbc:oracle:thin:@db2.exoua-int:1521:orclvm" /&gt;
 &lt;property name="username" value="root" /&gt;
 &lt;property name="password" value="admin" /&gt;</programlisting>

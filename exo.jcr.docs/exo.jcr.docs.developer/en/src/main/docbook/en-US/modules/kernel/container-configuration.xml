@@ -33,7 +33,7 @@
     <uri>http://www.exoplaform.org/xml/ns/kernel_1_2.xsd</uri> must be target
     namespace of the XML configuration file.</para>
 
-    <programlisting>&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    <programlisting language="xml">&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
                xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
                xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"&gt;
 
@@ -46,7 +46,7 @@
       variables since the eXo kernel resolves them, for example the following
       configuration will be well interpreted:</para>
 
-      <programlisting>&lt;configuration
+      <programlisting language="xml">&lt;configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
    xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"&gt;
@@ -162,8 +162,10 @@
             <itemizedlist>
               <listitem>
                 <para>if configuration URL was initialized to be added to
-                services defaults, as below:<programlisting>// add configuration to the default services configurations from JARs/WARs
-StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
+                services defaults, as below:</para>
+                
+                <programlisting language="java">// add configuration to the default services configurations from JARs/WARs
+StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
 
                 <para>Configuration from added URL
                 <emphasis>containerConf</emphasis> will override only services
@@ -366,7 +368,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         <envar>PortalContainer</envar> simply add the following lines in your
         <emphasis>web.xml</emphasis> file.</para>
 
-        <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1" ?&gt;
+        <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1" ?&gt;
 &lt;!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
                  "http://java.sun.com/dtd/web-app_2_3.dtd"&gt;
 &lt;web-app&gt;
@@ -416,7 +418,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         <envar>PortalContainerConfig</envar> has been defined at the
         <envar>RootContainer</envar> level, see an example below:</para>
 
-        <programlisting>  &lt;component&gt;
+        <programlisting language="xml">  &lt;component&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;type&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/type&gt;
     &lt;init-params&gt;
@@ -571,7 +573,9 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
         <para>A new <envar>PortalContainerDefinition</envar> can be defined at
         the <envar>RootContainer</envar> level thanks to an external plugin,
-        see an example below:<programlisting>  &lt;external-component-plugins&gt;
+        see an example below:</para>
+        
+        <programlisting language="xml">  &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
     &lt;component-plugin&gt;
@@ -664,7 +668,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         &lt;/object-param&gt;
       &lt;/init-params&gt;
     &lt;/component-plugin&gt;
-  &lt;/external-component-plugins&gt;</programlisting></para>
+  &lt;/external-component-plugins&gt;</programlisting>
 
         <table>
           <title>Descriptions of the fields of a
@@ -1053,7 +1057,9 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         </table>
 
         <para>You can find below an example of how to use the
-        variables:<programlisting>&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
+        variables:</para>
+        
+        <programlisting language="xml">&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"&gt;
   &lt;component&gt;
     &lt;type&gt;org.exoplatform.container.TestPortalContainer$MyComponent&lt;/type&gt;
@@ -1083,7 +1089,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
       &lt;/value-param&gt;
     &lt;/init-params&gt;
   &lt;/component&gt;
-&lt;/configuration&gt;</programlisting></para>
+&lt;/configuration&gt;</programlisting>
 
         <para>In the properties file corresponding to the external settings,
         you can reuse variables previously defined (in the external settings
@@ -1126,7 +1132,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
         portal container and to the portal containers called
         <envar>foo1</envar> and <envar>foo2</envar>:</para>
 
-        <programlisting>&lt;external-component-plugins&gt;
+        <programlisting language="xml">&lt;external-component-plugins&gt;
   &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
   &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
   &lt;component-plugin&gt;
@@ -1305,7 +1311,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
             the end of the dependency list of the default portal
             container:</para>
 
-            <programlisting>&lt;external-component-plugins&gt;
+            <programlisting language="xml">&lt;external-component-plugins&gt;
   &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
   &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
   &lt;component-plugin&gt;
@@ -1381,7 +1387,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
             before <envar>foo2</envar> in the dependency list of the default
             portal container:</para>
 
-            <programlisting>&lt;external-component-plugins&gt;
+            <programlisting language="xml">&lt;external-component-plugins&gt;
   &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
   &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
   &lt;component-plugin&gt;
@@ -1461,7 +1467,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
             <envar>foo2</envar> in the dependency list of the default portal
             container:</para>
 
-            <programlisting>&lt;external-component-plugins&gt;
+            <programlisting language="xml">&lt;external-component-plugins&gt;
   &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
   &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
   &lt;component-plugin&gt;
@@ -1528,7 +1534,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
             <envar>string</envar> and <envar>stringX</envar> to the settings
             of the default portal container:</para>
 
-            <programlisting>&lt;external-component-plugins&gt;
+            <programlisting language="xml">&lt;external-component-plugins&gt;
   &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
   &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
   &lt;component-plugin&gt;
@@ -1584,7 +1590,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
         the example below, we disable the portal container named
         <envar>foo</envar>:</para>
 
-        <programlisting>&lt;external-component-plugins&gt;
+        <programlisting language="xml">&lt;external-component-plugins&gt;
   &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
   &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
   &lt;component-plugin&gt;
@@ -1634,7 +1640,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
         make sure that the following Http Filter (or a sub class of it) has
         been added to your web.xml in first position as below:</para>
 
-        <programlisting>&lt;filter&gt;
+        <programlisting language="xml">&lt;filter&gt;
   &lt;filter-name&gt;PortalContainerFilter&lt;/filter-name&gt;
   &lt;filter-class&gt;org.exoplatform.container.web.PortalContainerFilter&lt;/filter-class&gt;
 &lt;/filter&gt;  
@@ -1669,7 +1675,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
       <para>The properties init param takes a property declared to configure
       various properties.</para>
 
-      <programlisting>&lt;component&gt;
+      <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;PropertyManagerConfigurator&lt;/key&gt;
   &lt;type&gt;org.exoplatform.container.PropertyConfigurator&lt;/type&gt;
   &lt;init-params&gt;
@@ -1691,7 +1697,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
       property declarations are loaded in the order in which the properties
       are declared sequentially in the file.</para>
 
-      <programlisting>&lt;component&gt;
+      <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;PropertyManagerConfigurator&lt;/key&gt;
   &lt;type&gt;org.exoplatform.container.PropertyConfigurator&lt;/type&gt;
   &lt;init-params&gt;
@@ -1809,7 +1815,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
           will shadow any element with the same key declared before in the
           same configuration file:</para>
 
-          <programlisting>&lt;component&gt;
+          <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;Component&lt;/key&gt;
   &lt;type&gt;Component&lt;/type&gt;
 &lt;/component&gt;
@@ -1827,7 +1833,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
           configuration of a given component. Thanks to the profiles the
           component-plugins could be enabled or disabled:</para>
 
-          <programlisting>&lt;external-component-plugins&gt;
+          <programlisting language="xml">&lt;external-component-plugins&gt;
   &lt;target-component&gt;Component&lt;/target-component&gt;
   &lt;component-plugin profiles="foo"&gt;
     &lt;name&gt;foo&lt;/name&gt;
@@ -1849,7 +1855,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
           <para>The import element imports a referenced configuration file
           when activated:</para>
 
-          <programlisting>&lt;import&gt;empty&lt;/import&gt;
+          <programlisting language="xml">&lt;import&gt;empty&lt;/import&gt;
 &lt;import profiles="foo"&gt;foo&lt;/import&gt;
 &lt;import profiles="bar"&gt;bar&lt;/import&gt;</programlisting>
         </section>
@@ -1860,7 +1866,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
           <para>The init param element configures the parameter argument of
           the construction of a component service:</para>
 
-          <programlisting>&lt;component&gt;
+          <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;Component&lt;/key&gt;
   &lt;type&gt;ComponentImpl&lt;/type&gt;
   &lt;init-params&gt;
@@ -1886,7 +1892,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
           <para>The value collection element configures one of the value of
           collection data:</para>
 
-          <programlisting>&lt;object type="org.exoplatform.container.configuration.ConfigParam"&gt;
+          <programlisting language="xml">&lt;object type="org.exoplatform.container.configuration.ConfigParam"&gt;
   &lt;field name="role"&gt;
     &lt;collection type="java.util.ArrayList"&gt;
       &lt;value&gt;&lt;string&gt;manager&lt;/string&gt;&lt;/value&gt;
@@ -1903,7 +1909,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
           <para>The field configuration element configures the field of an
           object:</para>
 
-          <programlisting>&lt;object-param&gt;
+          <programlisting language="xml">&lt;object-param&gt;
   &lt;name&gt;test.configuration&lt;/name&gt;
   &lt;object type="org.exoplatform.container.configuration.ConfigParam"&gt;
     &lt;field name="role"&gt;
@@ -1936,7 +1942,9 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
 
       <para>The component request life cycle is an interface that defines a
       contract for a component for being involved into a
-      request:<programlisting>public interface ComponentRequestLifecycle
+      request:</para>
+      
+      <programlisting language="java">public interface ComponentRequestLifecycle
 {
    /**
     * Start a request.
@@ -1949,7 +1957,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
     * @param container the related container
     */
    void endRequest(ExoContainer container);
-}</programlisting></para>
+}</programlisting>
 
       <para>The container passed is the container to which the component is
       related. This contract is often used to setup a thread local based
@@ -1973,7 +1981,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
       <section>
         <title>Scheduling a component request life cycle</title>
 
-        <programlisting>RequestLifeCycle.begin(component);
+        <programlisting language="java">RequestLifeCycle.begin(component);
 try
 {
    // Do something
@@ -1994,7 +2002,8 @@ finally
         scheduled again. When the local value is true, then the looked
         components will be those of the container, when it is false then the
         scheduler will also look at the components in the ancestor
-        containers.<programlisting>RequestLifeCycle.begin(container, local);
+        containers.</para>
+        <programlisting language="java">RequestLifeCycle.begin(container, local);
 try
 {
    // Do something
@@ -2002,7 +2011,7 @@ try
 finally
 {
    RequestLifeCycle.end();
-}</programlisting></para>
+}</programlisting>
       </section>
     </section>
 

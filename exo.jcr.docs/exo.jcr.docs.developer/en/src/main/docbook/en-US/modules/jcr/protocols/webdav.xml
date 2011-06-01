@@ -53,7 +53,7 @@
   </section>
   <section>
     <title>Configuration</title>
-    <programlisting>&lt;component&gt;
+    <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/key&gt;
   &lt;type&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/type&gt;
   &lt;init-params&gt;

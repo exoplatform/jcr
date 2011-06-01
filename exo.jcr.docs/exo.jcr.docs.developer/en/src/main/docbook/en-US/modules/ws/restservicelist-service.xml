@@ -45,7 +45,7 @@
       <para>To get the list of services in HTML format use listHTML()
       method:</para>
 
-      <programlisting>@GET
+      <programlisting language="java">@GET
 @Produces({MediaType.TEXT_HTML})
 public byte[] listHTML()
 {
@@ -58,7 +58,7 @@ public byte[] listHTML()
       <para>f.e. curl -u root:exo http://localhost:8080/rest/ will return such
       HTML code:</para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
 &lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
    &lt;head&gt;
       &lt;title&gt;eXo JAXRS Implementation&lt;/title&gt;
@@ -168,7 +168,7 @@ public byte[] listHTML()
       <para>To get the list of services in HTML format use listJSON()
       method:</para>
 
-      <programlisting>@GET
+      <programlisting language="java">@GET
 @Produces({MediaType.APPLICATION_JSON})
 public RootResourcesList listJSON()
 {

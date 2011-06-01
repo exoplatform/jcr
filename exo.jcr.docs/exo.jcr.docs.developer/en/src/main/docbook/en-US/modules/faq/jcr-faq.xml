@@ -15,7 +15,7 @@
       <title>What is the best, standardized way to get the instance of a
       service ?</title>
 
-      <programlisting>container.getComponentInstanceOfType(ServiceName.class);</programlisting>
+      <programlisting language="java">container.getComponentInstanceOfType(ServiceName.class);</programlisting>
     </section>
   </section>
 
@@ -209,7 +209,7 @@
         'check-sns-new-connection' with 'false' value is required for each
         workspace data container:</para>
 
-        <programlisting>&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
+        <programlisting language="xml">&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
   &lt;properties&gt;
     &lt;property name="source-name" value="jdbcjcr" /&gt;
     &lt;property name="dialect" value="auto" /&gt;
@@ -226,7 +226,7 @@
         <title>How to open and close a session properly to avoid memory
         leaks?</title>
 
-        <programlisting>Session session = repository.login(credentials);
+        <programlisting language="java">Session session = repository.login(credentials);
 try
 {
 // here your code
@@ -274,7 +274,7 @@ session.logout();
         Transaction Service and JBossCache Transaction Manager, as shown
         below.</para>
 
-        <programlisting>&lt;component&gt;
+        <programlisting language="xml">&lt;component&gt;
    &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
    &lt;type&gt;org.jboss.cache.GenericTransactionManagerLookup&lt;/type&gt;
 &lt;/component&gt;
@@ -303,7 +303,7 @@ session.logout();
           <listitem>
             <para>&lt;cache&gt; configuration should look like this:</para>
 
-            <programlisting>&lt;cache enabled="true"
+            <programlisting language="xml">&lt;cache enabled="true"
      class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache"&gt;
      &lt;properties&gt;
         &lt;property name="jbosscache-configuration" value="test-jbosscache-data.xml" /&gt;
@@ -349,13 +349,13 @@ session.logout();
                 <para>You must replace or add in &lt;query-handler&gt; block
                 the "changesfilter-class" parameter equals with:</para>
 
-                <programlisting>&lt;property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"/&gt;</programlisting>
+                <programlisting language="xml">&lt;property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"/&gt;</programlisting>
               </listitem>
 
               <listitem>
                 <para>add JBossCache-oriented configuration:</para>
 
-                <programlisting>&lt;property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" /&gt;
+                <programlisting language="xml">&lt;property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" /&gt;
 &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
 &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
 &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws" /&gt;
@@ -379,7 +379,7 @@ session.logout();
             have to define access to DB where locks will be stored. Replace
             exsiting lock-manager configuration with shown below.</para>
 
-            <programlisting>
+            <programlisting language="xml">
 &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
    &lt;properties&gt;
       &lt;property name="time-out" value="15m" /&gt;
@@ -476,7 +476,7 @@ session.logout();
             <para>Enable lucene spellchecker in jcr QueryHandler
             configuration:</para>
 
-            <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+            <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
       ...
       &lt;property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" /&gt;
@@ -491,7 +491,7 @@ session.logout();
             <para>Execute query with rep:spellcheck function and word that is
             checked:</para>
 
-            <programlisting>Query query = qm.createQuery("select rep:spellcheck() from nt:base where " + "jcr:path = '/' and spellcheck('word that is checked')", Query.SQL);
+            <programlisting language="java">Query query = qm.createQuery("select rep:spellcheck() from nt:base where " + "jcr:path = '/' and spellcheck('word that is checked')", Query.SQL);
 RowIterator rows = query.execute().getRows();</programlisting>
           </listitem>
         </itemizedlist>
@@ -500,7 +500,7 @@ RowIterator rows = query.execute().getRows();</programlisting>
           <listitem>
             <para>Fetch a result:</para>
 
-            <programlisting>Row r = rows.nextRow();
+            <programlisting language="java">Row r = rows.nextRow();
 Value v = r.getValue("rep:spellcheck()");</programlisting>
           </listitem>
         </itemizedlist>
@@ -525,7 +525,7 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
           <listitem>
             <para>Search for more popular suggestions;</para>
 
-            <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+            <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
       ...
       &lt;property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" /&gt;
@@ -574,39 +574,39 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
 
         <orderedlist>
           <listitem>
-            <para>Remove existing repository, use :</para>
+            <para>Remove existing repository, use:</para>
 
-            <programlisting>RepositoryService.removeRepository(String repositoryName)</programlisting>
+            <programlisting language="java">RepositoryService.removeRepository(String repositoryName)</programlisting>
           </listitem>
 
           <listitem>
             <para>Restore repository, use</para>
 
-            <programlisting>BackupManager.restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)</programlisting>
+            <programlisting language="java">BackupManager.restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)</programlisting>
           </listitem>
         </orderedlist>
       </section>
 
       <section>
-        <title>How to restore workspace to existing worksapce ?</title>
+        <title>How to restore workspace to existing worksapce?</title>
 
         <orderedlist>
           <listitem>
-            <para>Remove existing workspace, use :</para>
+            <para>Remove existing workspace, use:</para>
 
-            <programlisting>ManageableRepository.removeWorkspace(String workspaceName)</programlisting>
+            <programlisting language="java">ManageableRepository.removeWorkspace(String workspaceName)</programlisting>
           </listitem>
 
           <listitem>
-            <para>Restore workspace, use :</para>
+            <para>Restore workspace, use:</para>
 
-            <programlisting>BackupManager.restore(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)</programlisting>
+            <programlisting language="java">BackupManager.restore(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)</programlisting>
           </listitem>
         </orderedlist>
       </section>
 
       <section>
-        <title>Does JCR support hot backup ?</title>
+        <title>Does JCR support hot backup?</title>
 
         <para>Yes, JCR is support hot backup. Will use
         org.exoplatform.services.jcr.ext.backup.BackupManager.</para>
@@ -641,7 +641,7 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         files for 5 minutes (300 sec.) and other text/\* files for 10 minutes
         (600 sec.), use the next configuration:</para>
 
-        <programlisting>&lt;component&gt;
+        <programlisting language="xml">&lt;component&gt;
    &lt;type&gt;org.exoplatform.services.jcr.webdav.WebDavServiceImpl&lt;/type&gt;
    &lt;init-params&gt;
       &lt;value-param&gt;

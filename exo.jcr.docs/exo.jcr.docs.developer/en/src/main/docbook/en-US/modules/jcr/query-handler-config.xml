@@ -92,7 +92,9 @@
     <section>
       <title>Query-handler configuration overview</title>
 
-      <para>Configuration example:<programlisting>&lt;workspace name="ws"&gt;
+      <para>Configuration example:</para>
+      
+      <programlisting language="xml">&lt;workspace name="ws"&gt;
    &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
       &lt;properties&gt;
          &lt;property name="index-dir" value="shareddir/index/db1/ws" /&gt;
@@ -108,7 +110,9 @@
          &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
       &lt;/properties&gt;
    &lt;/query-handler&gt;
-&lt;/workspace&gt;</programlisting> <table>
+&lt;/workspace&gt;
+</programlisting>
+ <table>
           <title>Config properties description</title>
 
           <tgroup cols="2">
@@ -194,7 +198,7 @@
               </row>
             </tbody>
           </tgroup>
-        </table></para>
+        </table>
     </section>
 
     <section>
@@ -203,7 +207,9 @@
       <para>When running JCR in standalone usually standalone indexing is used
       also. Such parameters as "changesfilter-class", "jgroups-configuration"
       and all the "jbosscache-*" must be skipped and not defined. Like the
-      configuration below.<programlisting>&lt;workspace name="ws"&gt;
+      configuration below.</para>
+      
+      <programlisting language="xml">&lt;workspace name="ws"&gt;
    &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
       &lt;properties&gt;
          &lt;property name="index-dir" value="shareddir/index/db1/ws" /&gt;
@@ -213,7 +219,7 @@
          &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
       &lt;/properties&gt;
    &lt;/query-handler&gt;
-&lt;/workspace&gt;</programlisting> </para>
+&lt;/workspace&gt;</programlisting> 
     </section>
 
     <section>
@@ -225,7 +231,9 @@
       SMB or etc). Indexing directory ("indexDir" value) must point to it.
       Setting "changesfilter-class" to
       "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"
-      will enable shared index implementation.<programlisting>&lt;workspace name="ws"&gt;
+      will enable shared index implementation.</para>
+      
+      <programlisting language="xml">&lt;workspace name="ws"&gt;
    &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
       &lt;properties&gt;
          &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
@@ -241,14 +249,16 @@
          &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
       &lt;/properties&gt;
    &lt;/query-handler&gt;
-&lt;/workspace&gt;</programlisting> In order to use cluster-ready strategy
+&lt;/workspace&gt;</programlisting>
+
+      <para>In order to use cluster-ready strategy
       based on local indexes, when each node has own copy of index on local
       file system, the following configuration must be applied. Indexing
       directory must point to any folder on local file system and
       "changesfilter-class" must be set to
       "org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter".</para>
 
-      <para><programlisting>&lt;workspace name="ws"&gt;
+      <programlisting language="xml">&lt;workspace name="ws"&gt;
    &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
       &lt;properties&gt;
          &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
@@ -264,7 +274,8 @@
          &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
       &lt;/properties&gt;
    &lt;/query-handler&gt;
-&lt;/workspace&gt;</programlisting></para>
+&lt;/workspace&gt;
+</programlisting>
     </section>
 
     <section>
@@ -273,7 +284,9 @@
       <para>JBoss-Cache template configuration for query handler is about the
       same for both clustered strategies.</para>
 
-      <para>jbosscache-indexer.xml<programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <para>jbosscache-indexer.xml</para>
+      
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
 
    &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
@@ -294,7 +307,7 @@
       &lt;/default&gt;
    &lt;/eviction&gt;
 
-&lt;/jbosscache&gt;</programlisting></para>
+&lt;/jbosscache&gt;</programlisting>
 
       <para>See more about template configurations <link
       linkend="JCR.JBossCacheConfigurationTemplates">here</link>.</para>

@@ -269,7 +269,7 @@
     into the list of parameter values of the init param called
     <emphasis>targetInterfaces</emphasis>.</para>
 
-    <programlisting>&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+    <programlisting language="xml">&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
  xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"&gt;
 
  &lt;component&gt;
@@ -293,7 +293,7 @@
     JCR API calls from the exoplatform packages are took into account, don't
     hesistate to modify this filter to add your own package names.</para>
 
-    <programlisting>&lt;aspectj&gt;
+    <programlisting language="xml">&lt;aspectj&gt;
   &lt;aspects&gt;
     &lt;concrete-aspect name="org.exoplatform.services.jcr.statistics.JCRAPIAspectImpl" extends="org.exoplatform.services.jcr.statistics.JCRAPIAspect"&gt;
       &lt;pointcut name="JCRAPIPointcut"

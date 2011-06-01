@@ -10,7 +10,7 @@
   DDL script inside service configuration or in an external file,
   calling:</para>
 
-  <programlisting>  org.exoplatform.services.database.jdbc.DBSchemaCreator.createTables(String dsName, String script)</programlisting>
+  <programlisting language="java">  org.exoplatform.services.database.jdbc.DBSchemaCreator.createTables(String dsName, String script)</programlisting>
 
   <para>via</para>
 
@@ -18,7 +18,7 @@
 
   <para>A configuration example:</para>
 
-  <programlisting>&lt;component&gt;
+  <programlisting language="xml">&lt;component&gt;
    &lt;key&gt;org.exoplatform.services.database.jdbc.DBSchemaCreator&lt;/key&gt;
    &lt;type&gt;org.exoplatform.services.database.jdbc.DBSchemaCreator&lt;/type&gt;
    &lt;component-plugins&gt;    

@@ -118,7 +118,7 @@
     <para>The <envar>InitialContextInitializer</envar> configuration
     example:</para>
 
-    <para><programlisting>  &lt;component&gt;
+    <programlisting language="xml">  &lt;component&gt;
     &lt;type&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/type&gt;
     &lt;init-params&gt;
       &lt;properties-param&gt;
@@ -136,7 +136,7 @@
         &lt;value&gt;bind-references.xml&lt;/value&gt;.
       &lt;/value-param&gt;.
     &lt;/init-params&gt;
-  &lt;/component&gt;</programlisting></para>
+  &lt;/component&gt;</programlisting>
 
     <para>where</para>
 
@@ -146,7 +146,7 @@
     <para>The <envar>BindReferencePlugin</envar> component plugin
     configuration example (for JDBC datasource):</para>
 
-    <para><programlisting>  &lt;component-plugins&gt; 
+    <programlisting language="xml">  &lt;component-plugins&gt; 
     &lt;component-plugin&gt; 
       &lt;name&gt;bind.datasource&lt;/name&gt;
       &lt;set-method&gt;addPlugin&lt;/set-method&gt;
@@ -173,7 +173,7 @@
           &lt;property name="password" value=""/&gt;
         &lt;/properties-param&gt;     
       &lt;/init-params&gt;    
-  &lt;/component-plugin&gt;</programlisting></para>
+  &lt;/component-plugin&gt;</programlisting>
   </section>
 
   <section>
@@ -201,7 +201,7 @@
 
     <para>Service provides methods for binding reference.</para>
 
-    <programlisting>
+    <programlisting language="java">
      public void bind(String bindName, 
                       String className, 
                       String factory, 
@@ -237,7 +237,7 @@
 
     <para>Example of usage:</para>
 
-    <programlisting>
+    <programlisting language="java">
       // obtain InitialContextInitializer instance from ExoContainer (e.g. PortalContainer)
       InitialContextInitializer initContext = (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
   

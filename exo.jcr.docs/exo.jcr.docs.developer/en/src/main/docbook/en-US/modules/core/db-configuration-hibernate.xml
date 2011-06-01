@@ -16,7 +16,7 @@
     <para>The default DB configuration uses HSQLDB, a Java Database quite
     useful for demonstrations.</para>
 
-    <programlisting>&lt;component&gt; 
+    <programlisting language="xml">&lt;component&gt; 
    &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
    &lt;jmx-name&gt;exo-service:type=HibernateService&lt;/jmx-name&gt;
    &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;
@@ -57,7 +57,7 @@
 
     <para>For MySQL</para>
 
-    <programlisting>&lt;component&gt; 
+    <programlisting language="xml">&lt;component&gt; 
    &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
    &lt;jmx-name&gt;database:type=HibernateService&lt;/jmx-name&gt;
    &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;
@@ -92,7 +92,7 @@
     so, you just have to add a plugin and indicate the location of your
     files.</para>
 
-    <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+    <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration&gt;
   &lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.database.HibernateService&lt;/target-component&gt;

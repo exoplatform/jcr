@@ -51,7 +51,7 @@
 
     <para>An example of a specification usage.</para>
 
-    <programlisting>// Set the property value with given stream content. 
+    <programlisting language="java">// Set the property value with given stream content. 
 Property binProp = node.setProperty("BinData", myDataStream);
 // Get the property value stream. 
 InputStream binStream = binProp.getStream();
@@ -88,7 +88,7 @@ InputStream newStream = updatedBinProp.getStream();</programlisting>
     <para>ReadableBinaryValue value can be casted from any value, i.e. String,
     Binary, Date etc.</para>
 
-    <programlisting>// get the property value of type PropertyType.STRING 
+    <programlisting language="java">// get the property value of type PropertyType.STRING 
 ReadableBinaryValue extValue = (ReadableBinaryValue) node.getProperty("LargeText").getValue();
 // read 200 bytes to a destStream from the position 1024 in the value content
 OutputStream destStream = new FileOutputStream("MyTextFile.txt");
@@ -110,7 +110,7 @@ extValue.read(destStream, 200, 1024);</programlisting>
     and return (set) the value to the property after the content will be
     done.</para>
 
-    <programlisting>// get the property value for PropertyType.BINARY Property
+    <programlisting language="java">// get the property value for PropertyType.BINARY Property
 EditableBinaryValue extValue = (EditableBinaryValue) node.getProperty("BinData").getValue();
 
 // update length bytes from the stream starting from the position 1024 in existing Value data
@@ -127,7 +127,7 @@ node.save();</programlisting>
     update is done, the value will be applied to the property and be visible
     during the session.</para>
 
-    <programlisting>// update length bytes from the stream starting from the particular 
+    <programlisting language="java">// update length bytes from the stream starting from the particular 
 // position in the existing Value data
 int dpos = 1024;
 while (source.dataAvailable()) {
@@ -153,7 +153,7 @@ node.setProperty("BinData", extValue);</programlisting>
     <para>Read length bytes is counted from the binary value to the given
     position into the stream.</para>
 
-    <programlisting>long read(OutputStream stream, long length, long position) throws IOException, RepositoryException ;</programlisting>
+    <programlisting language="java">long read(OutputStream stream, long length, long position) throws IOException, RepositoryException ;</programlisting>
 
     <para>EditableBinaryValue has two methods to edit value.</para>
 
@@ -163,7 +163,7 @@ node.setProperty("BinData", extValue);</programlisting>
     length, the Value length will be increased at first to the size of
     position and length bytes will be added after the position.</para>
 
-    <programlisting>void update(InputStream stream, long length, long position) throws IOException;</programlisting>
+    <programlisting language="java">void update(InputStream stream, long length, long position) throws IOException;</programlisting>
 
     <para>Set the length of the Value in bytes to the specified size. If the
     size is lower than 0, the IOException exception will be thrown. This
@@ -171,7 +171,7 @@ node.setProperty("BinData", extValue);</programlisting>
     used internally in the update operation in case of extending the size to
     the given position.</para>
 
-    <programlisting>void setLength(long size) throws IOException;</programlisting>
+    <programlisting language="java">void setLength(long size) throws IOException;</programlisting>
 
     <para>An application can perform JCR binary operations more flexibly and
     will have less I/O and CPU usage using these methods.</para>

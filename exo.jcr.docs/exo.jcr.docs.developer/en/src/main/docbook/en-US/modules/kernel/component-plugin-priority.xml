@@ -18,7 +18,7 @@
   <para>Simple example of fragment of a <emphasis
   role="bold">configuration.xml</emphasis>.</para>
 
-  <programlisting>...
+  <programlisting language="xml">...
 &lt;component&gt;
   &lt;type&gt;org.exoplatform.services.Component1&lt;/type&gt;
 &lt;/component&gt;

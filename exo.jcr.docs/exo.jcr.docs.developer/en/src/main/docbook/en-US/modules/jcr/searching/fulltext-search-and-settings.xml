@@ -263,7 +263,7 @@
     the lazy dogs" will be transformed to set {[the] [quick] [brown] [fox]
     [jumped] [over] [the] [lazy] [dogs] }</para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 String sqlStatement = "SELECT * FROM mix:title WHERE CONTAINS(jcr:description, 'the')";
 // create query

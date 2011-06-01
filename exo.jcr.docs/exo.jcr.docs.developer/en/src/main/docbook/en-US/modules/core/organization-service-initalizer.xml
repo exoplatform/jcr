@@ -9,7 +9,7 @@
   <para>Use the Organization Service Initializer to create users, groups and
   membership types by default.</para>
 
-  <programlisting>&lt;external-component-plugins&gt;
+  <programlisting language="xml">&lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.organization.OrganizationService&lt;/target-component&gt;
     &lt;component-plugin&gt;
       &lt;name&gt;init.service.listener&lt;/name&gt;

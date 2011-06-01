@@ -314,10 +314,14 @@
 
       <para>Some operations may take too much time. So if you get
       <exceptionname>ReplicationTimeoutException</exceptionname> try
-      increasing replication timeout:<programlisting>   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
+      increasing replication timeout:</para>
+      
+      <programlisting language="xml">   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
       ...
       &lt;sync replTimeout="60000" /&gt;
-   &lt;/clustering&gt;</programlisting>value is set in miliseconds.</para>
+   &lt;/clustering&gt;
+   </programlisting>
+   <para>value is set in miliseconds.</para>
     </section>
 
     <section>

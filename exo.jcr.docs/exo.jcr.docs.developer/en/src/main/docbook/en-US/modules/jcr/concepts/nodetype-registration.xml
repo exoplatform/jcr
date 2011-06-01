@@ -18,7 +18,7 @@
       <title>ExtendedNodeTypeManager</title>
       <para>The ExtendedNodeTypeManager (from JCR 1.11) interface provides the
       following methods related to registering node types:</para>
-      <programlisting>public static final int IGNORE_IF_EXISTS  = 0;
+      <programlisting language="java">public static final int IGNORE_IF_EXISTS  = 0;
 
 public static final int FAIL_IF_EXISTS    = 2;
 
@@ -71,7 +71,7 @@ public void unregisterNodeTypes(String[] names) throws UnsupportedRepositoryOper
       structure used to define node types which are then registered through
       the ExtendedNodeTypeManager.registerNodeType method. The implementation of
       this interface does not contain any validation logic.</para>
-      <programlisting>/**
+      <programlisting language="java">/**
  * @return Returns the declaredSupertypeNames.
  */
 public List&lt;String&gt; getDeclaredSupertypeNames();
@@ -154,7 +154,7 @@ public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&
       the addition of writing methods, enabling the characteristics of a child
       node definition to be set, after that  the NodeDefinitionValue is added
       to a NodeTypeValue.</para>
-      <programlisting>/**
+      <programlisting language="java">/**
  * @return Returns the declaredSupertypeNames.
  */
 public List&lt;String&gt; getDeclaredSupertypeNames();
@@ -239,7 +239,7 @@ public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&
       with the addition of writing methods, enabling the characteristics of a
       child property definition to be set, after that the
       PropertyDefinitionValue is added to a NodeTypeValue.</para>
-      <programlisting>/**
+      <programlisting language="java">/**
  * @return Returns the defaultValues.
  */
 public List&lt;String&gt; getDefaultValueStrings();
@@ -281,7 +281,7 @@ public void setValueConstraints(List&lt;String&gt; valueConstraints);</programli
     </section>
     <section>
       <title>ItemDefinitionValue</title>
-      <programlisting> /**
+      <programlisting language="java"> /**
  * @return Returns the autoCreate.
  */
 public boolean isAutoCreate();
@@ -338,14 +338,14 @@ public void setReadOnly(boolean readOnly);</programlisting>
     registration.</para>
     <section>
       <title>Run time registration from xml file.</title>
-      <programlisting>ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
+      <programlisting language="java">ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
                                                              .getNodeTypeManager();
 InputStream is = MyClass.class.getResourceAsStream(&quot;mynodetypes.xml&quot;);
 nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.IGNORE_IF_EXISTS );</programlisting>
     </section>
     <section>
       <title>Run time registration using NodeTypeValue.</title>
-      <programlisting>ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
+      <programlisting language="java">ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
                                                              .getNodeTypeManager();
 NodeTypeValue testNValue = new NodeTypeValue();
 
@@ -374,7 +374,7 @@ nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXI
     <para>If you want to replace existing node type definition, you should
     pass ExtendedNodeTypeManager.REPLACE_IF_EXISTS as a second parameter for
     the method ExtendedNodeTypeManager.registerNodeType.</para>
-    <programlisting>ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
+    <programlisting language="java">ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
                                                                            .getNodeTypeManager();
 InputStream is = MyClass.class.getResourceAsStream(&quot;mynodetypes.xml&quot;);
 .....
@@ -386,13 +386,13 @@ nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.REPLACE_IF_EXISTS )
       <para>Node type is only possibly removed when the repository does not
       contain this node type.</para>
     </note>
-    <programlisting>nodeTypeManager.unregisterNodeType(&quot;myNodeType&quot;);</programlisting>
+    <programlisting language="java">nodeTypeManager.unregisterNodeType(&quot;myNodeType&quot;);</programlisting>
   </section>
   <section>
     <title>Practical How to</title>
     <section>
       <title>Adding new PropertyDefinition</title>
-      <programlisting>
+      <programlisting language="java">
 NodeTypeValue myNodeTypeValue = nodeTypeManager.getNodeTypeValue(myNodeTypeName);
 List&lt;PropertyDefinitionValue&gt; props = new ArrayList&lt;PropertyDefinitionValue&gt;();
 props.add(new PropertyDefinitionValue(&quot;tt&quot;,
@@ -410,7 +410,7 @@ nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLAC
     </section>
     <section>
       <title>Adding new child NodeDefinition</title>
-      <programlisting>NodeTypeValue myNodeTypeValue = nodeTypeManager.getNodeTypeValue(myNodeTypeName);
+      <programlisting language="java">NodeTypeValue myNodeTypeValue = nodeTypeManager.getNodeTypeValue(myNodeTypeName);
 
 List&lt;NodeDefinitionValue&gt; nodes = new ArrayList&lt;NodeDefinitionValue&gt;();
 nodes.add(new NodeDefinitionValue(&quot;child&quot;,
@@ -467,7 +467,7 @@ nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLAC
     </section>
     <section>
       <title>Changing the list of super types</title>
-      <programlisting>NodeTypeValue testNValue = nodeTypeManager.getNodeTypeValue(&quot;exo:myNodeType&quot;);
+      <programlisting language="java">NodeTypeValue testNValue = nodeTypeManager.getNodeTypeValue(&quot;exo:myNodeType&quot;);
 
 List&lt;String&gt; superType  = testNValue.getDeclaredSupertypeNames();
 superType.add(&quot;mix:versionable&quot;);

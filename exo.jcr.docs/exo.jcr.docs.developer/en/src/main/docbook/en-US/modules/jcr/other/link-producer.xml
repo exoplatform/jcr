@@ -14,7 +14,7 @@
 
   <para>Link Producer has a simple configuration like described below:</para>
 
-  <programlisting>&lt;component&gt;
+  <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.webdav.lnkproducer.LnkProducer&lt;/key&gt;
   &lt;type&gt;org.exoplatform.services.webdav.lnkproducer.LnkProducer&lt;/type&gt;
 &lt;/component&gt;</programlisting>
@@ -78,7 +78,7 @@
   <para>Also the Link Producer can be referenced to from an HTML page. If page
   contains code like</para>
 
-  <programlisting>&lt;a href="http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention"&gt;somefile.extention&lt;/a&gt;</programlisting>
+  <programlisting language="html">&lt;a href="http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention"&gt;somefile.extention&lt;/a&gt;</programlisting>
 
   <para>the file "somefile.extention" will open directly.</para>
 </chapter>

@@ -18,7 +18,7 @@
 
     <para>Service provide methods for binding reference.</para>
 
-    <programlisting>public void bind(String bindName, String className, String factory, String factoryLocation, Map&lt;String, String&gt; refAddr) throws NamingException, FileNotFoundException, XMLStreamExcept</programlisting>
+    <programlisting language="java">public void bind(String bindName, String className, String factory, String factoryLocation, Map&lt;String, String&gt; refAddr) throws NamingException, FileNotFoundException, XMLStreamExcept</programlisting>
 
     <itemizedlist>
       <listitem>

@@ -63,7 +63,7 @@
       possible to represent it as a <emphasis role="bold">context</emphasis>
       (current user's state).</para>
 
-      <programlisting>ConversationState.setCurrent(conversationState);
+      <programlisting language="java">ConversationState.setCurrent(conversationState);
 ....
 ConversationState.getCurrent();</programlisting>
 
@@ -74,7 +74,7 @@ ConversationState.getCurrent();</programlisting>
       key-value pairs, the session key is an arbitrary String (user name,
       ticket id, httpSessionId etc).</para>
 
-      <programlisting>conversationRegistry.register("key", conversationState); 
+      <programlisting language="java">conversationRegistry.register("key", conversationState); 
 ...
 conversationRegistry.getState("key");</programlisting>
 
@@ -82,7 +82,7 @@ conversationRegistry.getState("key");</programlisting>
       ConversationRegistry is a mandatory component deployed into eXo
       Container as following:</para>
 
-      <programlisting>&lt;component&gt;
+      <programlisting language="xml">&lt;component&gt;
     &lt;type&gt;org.exoplatform.services.security.ConversationRegistry&lt;/type&gt;
 &lt;/component&gt;</programlisting>
     </section>
@@ -105,7 +105,7 @@ conversationRegistry.getState("key");</programlisting>
         </listitem>
       </itemizedlist>
 
-      <programlisting>public interface Authenticator {
+      <programlisting language="java">public interface Authenticator {
   /**
    * Authenticate user and return userId which can be different to username. 
    * @param credentials - list of users credentials (such as name/password, X509 certificate etc)
@@ -142,7 +142,7 @@ conversationRegistry.getState("key");</programlisting>
       which compares incoming username/password credentials with the ones
       stored in OrganizationService. Configuration example:</para>
 
-      <programlisting>&lt;component&gt;
+      <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.security.Authenticator&lt;/key&gt; 
   &lt;type&gt;org.exoplatform.services.organization.auth.OrganizationAuthenticatorImpl&lt;/type&gt;
 &lt;/component&gt;</programlisting>
@@ -169,7 +169,7 @@ conversationRegistry.getState("key");</programlisting>
         </listitem>
       </itemizedlist>
 
-      <programlisting>Authenticator authenticator = (Authenticator) container()
+      <programlisting language="java">Authenticator authenticator = (Authenticator) container()
           .getComponentInstanceOfType(Authenticator.class); 
 // RolesExtractor can be null     
 RolesExtractor rolesExtractor = (RolesExtractor) container().
@@ -195,7 +195,7 @@ identity = authenticator.createIdentity(userId);</programlisting>
       registered more than one time. Parameter can be passed in this form
       singleLogin=yes or singleLogin=true.</para>
 
-      <programlisting>IdentityRegistry identityRegistry = (IdentityRegistry) getContainer().getComponentInstanceOfType(IdentityRegistry.class);
+      <programlisting language="java">IdentityRegistry identityRegistry = (IdentityRegistry) getContainer().getComponentInstanceOfType(IdentityRegistry.class);
       
 if (singleLogin &amp;&amp; identityRegistry.getIdentity(identity.getUserId()) != null) 
   throw new LoginException("User " + identity.getUserId() + " already logined.");
@@ -227,7 +227,7 @@ identityRegistry.register(identity);</programlisting>
       ConversationRegistry.unregister(sesionId) and calls the method
       LoginModule.logout().</para>
 
-      <programlisting>ConversationRegistry conversationRegistry = (ConversationRegistry) getContainer().getComponentInstanceOfType(ConversationRegistry.class);
+      <programlisting language="java">ConversationRegistry conversationRegistry = (ConversationRegistry) getContainer().getComponentInstanceOfType(ConversationRegistry.class);
 
 ConversationState conversationState = conversationRegistry.unregister(sesionId);
 
@@ -296,7 +296,7 @@ if (conversationState != null) {
       responsible for mapping primary Subject's principals (userId and a set
       of groups) to J2EE Roles:</para>
 
-      <programlisting>public interface RolesExtractor {
+      <programlisting language="java">public interface RolesExtractor {
   Set &lt;String&gt; extractRoles(String userId, Set&lt;MembershipEntry&gt; memberships);
 }</programlisting>
 

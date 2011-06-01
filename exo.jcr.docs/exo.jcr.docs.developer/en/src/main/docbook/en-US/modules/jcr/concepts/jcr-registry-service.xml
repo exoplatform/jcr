@@ -48,7 +48,7 @@
     parameter to component to ignore reading parameters initialization from
     RegistryService and to use file instead:</para>
 
-    <programlisting>&lt;value-param&gt;
+    <programlisting language="xml">&lt;value-param&gt;
   &lt;name&gt;force-xml-configuration&lt;/name&gt;
   &lt;value&gt;true&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
@@ -61,7 +61,7 @@
     straightforward, it is described in the Registry abstract class as the
     following:</para>
 
-    <programlisting>public abstract class Registry {
+    <programlisting language="java">public abstract class Registry {
   
   /**
    * Returns the Registry object which wraps the Node of the "exo:registry" type
@@ -107,7 +107,7 @@
 
     <para>Example of RegistryService using:</para>
 
-    <programlisting>    RegistryService regService = (RegistryService) container
+    <programlisting language="java">    RegistryService regService = (RegistryService) container
     .getComponentInstanceOfType(RegistryService.class);
 
     RegistryEntry registryEntry = regService.getEntry(sessionProvider,
@@ -128,7 +128,7 @@
     a repository name and its value as a workspace name (a system workspace by
     default).</para>
 
-    <programlisting>&lt;component&gt;
+    <programlisting language="xml">&lt;component&gt;
    &lt;type&gt;org.exoplatform.services.jcr.ext.registry.RegistryService&lt;/type&gt;
    &lt;init-params&gt;
       &lt;properties-param&gt;

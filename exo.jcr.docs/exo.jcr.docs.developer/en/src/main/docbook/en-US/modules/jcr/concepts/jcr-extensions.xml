@@ -121,7 +121,7 @@
       addProperty, changeProperty, removeProperty, removeNode, addMixin,
       removeMixin, lock, unlock, checkin, checkout, read.</emphasis></para>
 
-      <programlisting>&lt;component&gt;
+      <programlisting language="xml">&lt;component&gt;
    &lt;type&gt;org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog&lt;/type&gt;
    &lt;component-plugins&gt;
       &lt;component-plugin&gt;

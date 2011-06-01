@@ -22,7 +22,8 @@
         <listitem>
           <para>Configure JAAS by inserting XML fragment shown below into
           &lt;%jboss_home%/server/default/conf/login-config.xml&gt;</para>
-          <programlisting>&lt;application-policy name=&quot;exo-domain&quot;&gt;
+          
+          <programlisting language="xml">&lt;application-policy name=&quot;exo-domain&quot;&gt;
    &lt;authentication&gt;
       &lt;login-module code=&quot;org.exoplatform.services.security.j2ee.JbossLoginModule&quot; flag=&quot;required&quot;&gt;&lt;/login-module&gt;
    &lt;/authentication&gt;
@@ -32,7 +33,8 @@
           <para>Ensure that you use JBossTS <link linkend="Kernel.TransactionService">Transaction Service</link> and
           JBossCache <link linkend="JCR.JBossTransactionsService">Transaction Manager</link>. Your exo-configuration.xml must contain such
           parts:</para>
-          <programlisting>&lt;component&gt;
+          
+          <programlisting language="xml">&lt;component&gt;
    &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
    &lt;type&gt;org.jboss.cache.GenericTransactionManagerLookup&lt;/type&gt;^
 &lt;/component&gt;
@@ -73,7 +75,8 @@
           <para>To manually configure repository, create a new configuration
           file (e.g., exo-jcr-configuration.xml). For details, see <link linkend="JCR.eXoJCRconfiguration">JCR Configuration</link>. Your
           configuration must look like:</para>
-          <programlisting>&lt;repository-service default-repository=&quot;repository1&quot;&gt;
+          
+          <programlisting language="xml">&lt;repository-service default-repository=&quot;repository1&quot;&gt;
    &lt;repositories&gt;
       &lt;repository name=&quot;repository1&quot; system-workspace=&quot;ws1&quot; default-workspace=&quot;ws1&quot;&gt;
          &lt;security-domain&gt;exo-domain&lt;/security-domain&gt;
@@ -122,7 +125,9 @@
         </listitem>
         <listitem>
           <para>Then,  update RepositoryServiceConfiguration configuration in
-          exo-configuration.xml to use this file:<programlisting>&lt;component&gt;
+          exo-configuration.xml to use this file:</para>
+          
+          <programlisting language="xml">&lt;component&gt;
    &lt;key&gt;org.exoplatform.services.jcr.config.RepositoryServiceConfiguration&lt;/key&gt;
    &lt;type&gt;org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl&lt;/type&gt;
    &lt;init-params&gt;
@@ -132,7 +137,7 @@
          &lt;value&gt;exo-jcr-configuration.xml&lt;/value&gt;
       &lt;/value-param&gt;
    &lt;/init-params&gt;
-&lt;/component&gt;</programlisting></para>
+&lt;/component&gt;</programlisting>
         </listitem>
       </itemizedlist>
     </section>
@@ -167,7 +172,8 @@
       <itemizedlist>
         <listitem id="conf_value_storage">
           <para>Value Storage configuration:</para>
-          <programlisting>&lt;value-storages&gt;
+          
+          <programlisting language="xml">&lt;value-storages&gt;
    &lt;value-storage id=&quot;system&quot; class=&quot;org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage&quot;&gt;
       &lt;properties&gt;
          &lt;property name=&quot;path&quot; value=&quot;/mnt/tornado/temp/values/production&quot; /&gt;    &lt;!--path within NFS where ValueStorage will hold it&apos;s data--&gt;
@@ -180,7 +186,8 @@
         </listitem>
         <listitem id="conf_cache">
           <para>Cache configuration:</para>
-          <programlisting>&lt;cache enabled=&quot;true&quot; class=&quot;org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache&quot;&gt;
+          
+          <programlisting language="xml">&lt;cache enabled=&quot;true&quot; class=&quot;org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache&quot;&gt;
    &lt;properties&gt;
       &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;jar:/conf/portal/test-jbosscache-data.xml&quot; /&gt;     &lt;!--    path to JBoss Cache configuration for data storage --&gt;
       &lt;property name=&quot;jgroups-configuration&quot; value=&quot;jar:/conf/portal/udp-mux.xml&quot; /&gt;                     &lt;!--    path to JGroups configuration --&gt;
@@ -191,7 +198,8 @@
         </listitem>
         <listitem id="conf_indexer">
           <para>Indexer configuration:</para>
-          <programlisting>&lt;query-handler class=&quot;org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex&quot;&gt;
+          
+          <programlisting language="xml">&lt;query-handler class=&quot;org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex&quot;&gt;
    &lt;properties&gt;
       &lt;property name=&quot;changesfilter-class&quot; value=&quot;org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter&quot; /&gt;
       &lt;property name=&quot;index-dir&quot; value=&quot;/mnt/tornado/temp/jcrlucenedb/production&quot; /&gt;                       &lt;!--    path within NFS where ValueStorage will hold it&apos;s data --&gt;
@@ -204,7 +212,8 @@
         </listitem>
         <listitem id="conf_lock_manager">
           <para>Lock Manager configuration:</para>
-          <programlisting>&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
+          
+          <programlisting language="xml">&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
    &lt;properties&gt;
       &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
       &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;jar:/conf/portal/test-jbosscache-lock.xml&quot; /&gt;       &lt;!--    path to JBoss Cache configuration for lock manager --&gt;

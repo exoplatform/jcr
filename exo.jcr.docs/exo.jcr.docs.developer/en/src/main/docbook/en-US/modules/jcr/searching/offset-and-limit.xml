@@ -71,7 +71,7 @@
 
     <para><emphasis role="bold">SQL</emphasis></para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String sqlStatement = "SELECT * FROM nt:unstructured";
@@ -89,7 +89,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para>Let's get nodes:</para>
 
-    <programlisting>NodeIterator it = result.getNodes();
+    <programlisting language="java">NodeIterator it = result.getNodes();
 
 if(it.hasNext())
 {

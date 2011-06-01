@@ -17,7 +17,7 @@
     other parameters. The simplest way to configure them is to define their
     own configuration files for each component in each workspace:</para>
 
-    <programlisting>&lt;property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock-db1-ws1.xml" /&gt;</programlisting>
+    <programlisting language="xml">&lt;property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock-db1-ws1.xml" /&gt;</programlisting>
 
     <para>But if there are few workspaces, configuring them in such a way can
     be painful and hard-manageable. eXo JCR offers a template-based
@@ -30,14 +30,14 @@
 
     <para>Template:</para>
 
-    <programlisting>...
+    <programlisting language="xml">...
 &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
   &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
 ...</programlisting>
 
     <para>and JCR configuration file:</para>
 
-    <programlisting>...
+    <programlisting language="xml">...
 &lt;property name="jbosscache-configuration" value="jar:/conf/portal/jbosscache-lock.xml" /&gt;
 &lt;property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws" /&gt;
 ...</programlisting>
@@ -51,7 +51,7 @@
     is defined in component configuration, it will be injected into the JBoss
     Cache instance on startup.</para>
 
-    <programlisting>&lt;property name="jgroups-configuration" value="your/path/to/modified-udp.xml" /&gt;</programlisting>
+    <programlisting language="xml">&lt;property name="jgroups-configuration" value="your/path/to/modified-udp.xml" /&gt;</programlisting>
 
     <para>As mentioned above, each component (lock manager, data container and
     query handler) for each workspace requires its own clustered environment.
@@ -65,7 +65,7 @@
     pre-shipped one with eXo JCR) and set "jgroups-multiplexer-stack" into
     "true".</para>
 
-    <programlisting>&lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;
+    <programlisting language="xml">&lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;
 &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;</programlisting>
   </section>
 
@@ -83,7 +83,7 @@
     container configuration) by setting the property "jbosscache-shareable" to
     true as below:</para>
 
-    <programlisting>&lt;property name="jbosscache-shareable" value="true" /&gt;</programlisting>
+    <programlisting language="xml">&lt;property name="jbosscache-shareable" value="true" /&gt;</programlisting>
 
     <para>Once enabled this feature will allow the JBoss Cache instance used
     by the component to be re-used by another components of the same type
@@ -111,7 +111,7 @@
 
       <para>Data container template is "jbosscache-data.xml":</para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
 
    &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
@@ -160,7 +160,7 @@
 
       <para>It's template name is "jbosscache-lock.xml"</para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
 
    &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
@@ -256,7 +256,7 @@
 
       <para>Have a look at "jbosscache-indexer.xml"</para>
 
-      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
    &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
       lockAcquisitionTimeout="20000" /&gt;

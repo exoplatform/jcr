@@ -18,7 +18,7 @@
     <para>High-lighting is not default feature so we must set it in
     jcr-config.xml, also excerpt provider must be defined:</para>
 
-    <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+    <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
       ...
       &lt;property name="support-highlighting" value="true" /&gt;
@@ -36,7 +36,7 @@
     property as highlightable. Indexing-configuration.xml must containt the
     next rule:</para>
 
-    <programlisting>&lt;index-rule nodeType="nt:unstructured" condition="@rule='excerpt'"&gt;
+    <programlisting language="xml">&lt;index-rule nodeType="nt:unstructured" condition="@rule='excerpt'"&gt;
    &lt;property useInExcerpt="false"&gt;title&lt;/property&gt;
    &lt;property&gt;text&lt;/property&gt;
 &lt;/index-rule&gt;</programlisting>
@@ -73,7 +73,7 @@
 
     <para><emphasis role="bold">SQL</emphasis></para>
 
-    <programlisting>// make SQL query
+    <programlisting language="java">// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String sqlStatement = "SELECT rep:excerpt() FROM nt:unstructured WHERE CONTAINS(*, 'eXo implementation')";
@@ -83,7 +83,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para><emphasis role="bold">XPath</emphasis></para>
 
-    <programlisting>// make XPath query
+    <programlisting language="java">// make XPath query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
 String xpathStatement = "//element(*,nt:unstructured)[jcr:contains(., 'eXo implementation')]/rep:excerpt(.)";
@@ -97,7 +97,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para>Now let's see on the result table:</para>
 
-    <programlisting>String[] columnNames = result.getColumnNames();
+    <programlisting language="java">String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
 while (rit.hasNext())
 {
@@ -140,7 +140,7 @@ while (rit.hasNext())
 
     <para>Also, we can get exactly "rep:excerpt" value:</para>
 
-    <programlisting>RowIterator rows = result.getRows();
+    <programlisting language="java">RowIterator rows = result.getRows();
 Value excerpt = rows.nextRow().getValue("rep:excerpt(.)");
 // excerpt will be equal to "&lt;div&gt;&lt;span\&gt;&lt;strong&gt;eXo&lt;/strong&gt; is a JCR &lt;strong&gt;implementation&lt;/strong&gt;&lt;/span&gt;&lt;/div&gt;"</programlisting>
   </section>

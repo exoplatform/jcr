@@ -100,7 +100,7 @@
       <classname>QuartzSheduler</classname> and
       <classname>QueueTasks</classname>, you also have to configure these two
       components.</para>
-      <programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+      <programlisting language="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;configuration
   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
   xsi:schemaLocation=&quot;http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd&quot;
@@ -149,7 +149,7 @@
         </listitem>
       </itemizedlist>
       <para>Edit the pom.xml as follows:</para>
-      <programlisting>&lt;project
+      <programlisting language="xml">&lt;project
   xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot;
   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
   xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
@@ -175,7 +175,7 @@
         <title>Define a job</title>
         <para>To define a job, do as follows:</para>
         <para>Define your job to be performed. For example, the job <emphasis role="italic">DumbJob</emphasis> is defined as follows:</para>
-        <programlisting>package org.exoplatform.samples.scheduler.jobs;
+        <programlisting language="java">package org.exoplatform.samples.scheduler.jobs;
 
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -208,9 +208,9 @@ public class DumbJob implements Job {
       <section>
         <title>Job configuration</title>
         <para>After defining the &quot;job&quot;, the only next step is to configure it by using <emphasis role="italic">external-component-plugin</emphasis> configuration for <emphasis role="italic">org.exoplatform.services.scheduler.JobSchedulerService</emphasis>. You can use these methods below for setting component plugin:</para>
-        <programlisting>public void addPeriodJob(ComponentPlugin plugin) throws Exception;</programlisting>
+        <programlisting language="java">public void addPeriodJob(ComponentPlugin plugin) throws Exception;</programlisting>
         <para>The component plugin for this method must be the type of <emphasis role="italic">org.exoplatform.services.scheduler.PeriodJob</emphasis>. This type of job is used to perform actions that are executed in a period of time. You have to define when this job is performed, when it ends, when it performs the first action, how many times it is executed and the period of time to perform the action. See the configuration sample below to understand more clearly:</para>
-        <programlisting>&lt;external-component-plugins&gt;
+        <programlisting language="xml">&lt;external-component-plugins&gt;
    &lt;target-component&gt;org.exoplatform.services.scheduler.JobSchedulerService&lt;/target-component&gt;
     &lt;component-plugin&gt;
       &lt;name&gt;PeriodJob Plugin&lt;/name&gt;
@@ -232,9 +232,9 @@ public class DumbJob implements Job {
       &lt;/init-params&gt;
     &lt;/component-plugin&gt;
  &lt;/external-component-plugins&gt;</programlisting>
-        <programlisting>public void addCronJob(ComponentPlugin plugin) throws Exception;</programlisting>
+        <programlisting language="java">public void addCronJob(ComponentPlugin plugin) throws Exception;</programlisting>
         <para>The component plugin for this method must be the type of <emphasis role="italic">org.exoplatform.services.scheduler.CronJob</emphasis>. This type of job is used to perform actions at specified time with Unix &apos;cron-like&apos; definitions. The plugin uses &quot;expression&quot; field for specifying the &apos;cron-like&apos; definitions to execute the job. This is considered as the most powerful and flexible job to define when it will execute. For example, at 12pm every day =&gt; &quot;0 0 12 * * ?&quot;; or at 10:15am every Monday, Tuesday, Wednesday, Thursday and Friday =&gt; &quot;0 15 10 ? * MON-FRI&quot;. To see more about Cron expression, please refer to this article: <para><ulink url="http://en.wikipedia.org/wiki/CRON_expression">CRON expression</ulink>.</para>See the configuration sample below to understand more clearly:</para>
-        <programlisting>&lt;external-component-plugins&gt;
+        <programlisting language="xml">&lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.scheduler.JobSchedulerService&lt;/target-component&gt;
     &lt;component-plugin&gt;
       &lt;name&gt;CronJob Plugin&lt;/name&gt;
@@ -254,17 +254,17 @@ public class DumbJob implements Job {
       &lt;/init-params&gt;
     &lt;/component-plugin&gt;
   &lt;/external-component-plugins&gt;</programlisting>
-        <programlisting>public void addGlobalJobListener(ComponentPlugin plugin) throws Exception;</programlisting>
-        <programlisting>public void addJobListener(ComponentPlugin plugin) throws Exception;</programlisting>
+        <programlisting language="java">public void addGlobalJobListener(ComponentPlugin plugin) throws Exception;</programlisting>
+        <programlisting language="java">public void addJobListener(ComponentPlugin plugin) throws Exception;</programlisting>
         <para>The component plugin for two methods above must be the type of <emphasis role="italic">org.quartz.JobListener.</emphasis> This job listener is used so that it will be informed when a <emphasis role="italic">org.quartz.JobDetail</emphasis> executes.</para>
-        <programlisting>public void addGlobalTriggerListener(ComponentPlugin plugin) throws Exception;</programlisting>
-        <programlisting>public void addTriggerListener(ComponentPlugin plugin) throws Exception;</programlisting>
+        <programlisting language="java">public void addGlobalTriggerListener(ComponentPlugin plugin) throws Exception;</programlisting>
+        <programlisting language="java">public void addTriggerListener(ComponentPlugin plugin) throws Exception;</programlisting>
         <para>The component plugin for two methods above must be the type of <emphasis role="italic">org.quartz.TriggerListener</emphasis>. This trigger listener is used so that it will be informed when a <emphasis role="italic">org.quartz.Trigger</emphasis> fires.</para>
       </section>
       <section>
         <title>Run the project</title>
         <para>Create <emphasis role="italic">conf.portal</emphasis> package in your sample project. Add the configuration.xml file with the content as follows:</para>
-        <programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+        <programlisting language="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;configuration
   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
   xsi:schemaLocation=&quot;http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd&quot;

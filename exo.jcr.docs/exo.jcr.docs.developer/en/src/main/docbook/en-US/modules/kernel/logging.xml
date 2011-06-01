@@ -81,7 +81,8 @@
 
       <para><ulink url="http://logging.apache.org/log4j/">Log4J</ulink> is a
       very popular and flexible logging system. It is a good option for
-      JBoss.<programlisting>  &lt;component&gt;
+      JBoss.</para>
+      <programlisting language="xml">  &lt;component&gt;
     &lt;type&gt;org.exoplatform.services.log.LogConfigurationInitializer&lt;/type&gt;
     &lt;init-params&gt;
       &lt;value-param&gt;
@@ -105,33 +106,48 @@
         &lt;property name="log4j.appender.file.layout.ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} %m (%F, line %L) %n"/&gt;
       &lt;/properties-param &gt;
     &lt;/init-params&gt;
-  &lt;/component&gt;</programlisting></para>
+  &lt;/component&gt;</programlisting>
 
       <section>
         <title>Assigning logger level for classes or components</title>
 
         <para>You can set logger level for class or group of classes by
-        setting next property:<programlisting>&lt;property name="log4j.category.{component or class name}" value="DEBUG"/&gt;</programlisting></para>
+        setting next property:</para>
+        
+        <programlisting language="xml">&lt;property name="log4j.category.{component or class name}" value="DEBUG"/&gt;</programlisting>
 
-        <para>For example:<itemizedlist>
+        <para>For example:</para>
+        <itemizedlist>
             <listitem>
               <para>We want to log all debug messages for class
               <classname>org.exoplatform.services.jcr.impl.core.SessionDataManager</classname>,
               that lies in <package>exo.jcr.component.core</package>
-              component<programlisting>&lt;property name="log4j.category.exo.jcr.component.core.SessionDataManager" value="DEBUG"/&gt;</programlisting></para>
+              component</para>
             </listitem>
-
+          </itemizedlist>
+              
+              <programlisting language="xml">&lt;property name="log4j.category.exo.jcr.component.core.SessionDataManager" value="DEBUG"/&gt;</programlisting>
+            
+          <itemizedlist>
             <listitem>
-              <para>Or we want to log all debug messages for all classes in in
+              <para>Or we want to log all debug messages for all classes in
               <package>exo.jcr.component.core</package>
-              component<programlisting>&lt;property name="log4j.category.exo.jcr.component.core" value="DEBUG"/&gt;</programlisting></para>
+              component</para>
             </listitem>
-
+          </itemizedlist>    
+          
+              <programlisting language="xml">&lt;property name="log4j.category.exo.jcr.component.core" value="DEBUG"/&gt;</programlisting>
+            
+          <itemizedlist>
             <listitem>
               <para>Or we want to log all messages for all kernel
-              components<programlisting>&lt;property name="log4j.category.exo.kernel" value="DEBUG"/&gt;</programlisting></para>
+              components</para>
             </listitem>
-          </itemizedlist></para>
+          </itemizedlist>  
+              
+        <programlisting language="xml">&lt;property name="log4j.category.exo.kernel" value="DEBUG"/&gt;</programlisting>
+          
+          
       </section>
     </section>
 
@@ -139,16 +155,22 @@
       <title>JDK Logging</title>
 
       <para>JDK logging (aka JUL) is the builtin logging framework introduced
-      in JDK 1.4. It is a good option for Tomcat AS.<itemizedlist>
+      in JDK 1.4. It is a good option for Tomcat AS.</para>
+      <itemizedlist>
           <listitem>
             <para>Edit the variable <varname>LOG_OPTS</varname> in your
             <filename>eXo.sh</filename> or <filename>eXo.bat</filename>
-            :<programlisting>LOG_OPTS="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.Jdk14Logger"</programlisting></para>
+            :</para>
           </listitem>
-
+          </itemizedlist>
+        <programlisting>LOG_OPTS="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.Jdk14Logger"</programlisting>
+          
+        <itemizedlist>
           <listitem>
-            <para>Edit your <filename>logs-configuration.xml</filename>
-            :<programlisting>&lt;component&gt;
+            <para>Edit your <filename>logs-configuration.xml:</filename></para>
+          </listitem>
+        </itemizedlist>
+            <programlisting language="xml">&lt;component&gt;
     &lt;type&gt;org.exoplatform.services.log.LogConfigurationInitializer&lt;/type&gt;
     &lt;init-params&gt;
       &lt;value-param&gt;
@@ -167,9 +189,8 @@
         &lt;property name="java.util.logging.ConsoleHandler.level" value="FINE"/&gt;
       &lt;/properties-param&gt;
     &lt;/init-params&gt;
-  &lt;/component&gt;</programlisting></para>
-          </listitem>
-        </itemizedlist></para>
+  &lt;/component&gt;</programlisting>
+          
     </section>
 
     <section>
@@ -177,7 +198,8 @@
 
       <para>SimpleLog is a minimal logging system distributed with Commons
       Logging. To be used when nothing else is available or when you seek
-      simplicity.<programlisting>  &lt;component&gt;
+      simplicity.</para>
+      <programlisting language="xml">  &lt;component&gt;
     &lt;type&gt;org.exoplatform.services.log.LogConfigurationInitializer&lt;/type&gt;
     &lt;init-params&gt;
       &lt;value-param&gt;
@@ -195,7 +217,7 @@
         &lt;property name="org.apache.commons.logging.simplelog.showdatetime" value="true"/&gt;
       &lt;/properties-param&gt;
     &lt;/init-params&gt;
-  &lt;/component&gt;</programlisting></para>
+  &lt;/component&gt;</programlisting>
     </section>
   </section>
 
@@ -206,21 +228,26 @@
       <title>JBoss tips</title>
 
       <para>If you use log4j configuration, you can change the log
-      configuration directly at runtime in:
-      <filename>JBOSS_HOME/server/default/conf/jboss-log4j.xml</filename>.<itemizedlist>
-          <listitem>
-            <para>To enable debug logs :<programlisting> &lt;param name="Threshold" value="DEBUG"/&gt; </programlisting></para>
-          </listitem>
-
+      configuration directly at runtime in:</para>
+      <filename>JBOSS_HOME/server/default/conf/jboss-log4j.xml</filename>.
+      <itemizedlist>
+        <listitem>
+          <para>To enable debug logs:</para>
+        </listitem>
+      </itemizedlist>  
+      <programlisting language="xml"> &lt;param name="Threshold" value="DEBUG"/&gt; </programlisting>
+        
+        <itemizedlist>
           <listitem>
             <para>To exclude messages from unnecessary classes (server's
             internal) modify the threshold of these classes to "FATAL".</para>
           </listitem>
-        </itemizedlist><tip>
+        </itemizedlist>
+        <tip>
           <para>If you see only ERROR level logs while starting ear on jboss
           (4.2.2), you have to remove log4j*.jar from your ear and
           application.xml.</para>
-        </tip></para>
+        </tip>
     </section>
 
     <section>

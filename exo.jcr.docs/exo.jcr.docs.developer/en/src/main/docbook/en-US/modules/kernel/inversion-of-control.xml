@@ -54,16 +54,16 @@
 
     <para>Using a constructor:</para>
 
-    <programlisting>public ServiceA(ServiceB serviceB)</programlisting>
+    <programlisting language="java">public ServiceA(ServiceB serviceB)</programlisting>
 
     <para>Using setter methods:</para>
 
-    <programlisting>public void setServiceB(ServiceB serviceB)</programlisting>
+    <programlisting language="java">public void setServiceB(ServiceB serviceB)</programlisting>
 
     <para>When a client service can not be stored in the container then the
     service locator pattern is used:</para>
 
-    <programlisting>public ServiceA(){
+    <programlisting language="java">public ServiceA(){
    this.serviceB =Container.getSInstance().getService(ServiceB.class);
 }</programlisting>
   </section>

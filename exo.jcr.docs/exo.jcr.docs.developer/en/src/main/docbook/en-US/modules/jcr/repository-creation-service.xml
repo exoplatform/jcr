@@ -80,7 +80,7 @@
 
     <para>RepositoryCreationService configuration</para>
 
-    <programlisting>&lt;component&gt;
+    <programlisting language="xml">&lt;component&gt;
    &lt;key&gt;org.exoplatform.services.jcr.ext.backup.BackupManager&lt;/key&gt;
    &lt;type&gt;org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl&lt;/type&gt;
    &lt;init-params&gt;
@@ -146,7 +146,7 @@
   <section>
     <title>Repsitory Interface</title>
 
-    <programlisting>public interface RepositoryCreationService
+    <programlisting language="java">public interface RepositoryCreationService
 {
    /**
     * Reserves, validates and creates repository in a simplified form. 

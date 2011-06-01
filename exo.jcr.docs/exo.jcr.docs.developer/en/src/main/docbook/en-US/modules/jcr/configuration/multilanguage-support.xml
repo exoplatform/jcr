@@ -65,7 +65,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     <para>Create database with Unicode encoding and use Oracle dialect for the
     Workspace Container:</para>
 
-    <programlisting>&lt;workspace name="collaboration"&gt;
+    <programlisting language="xml">&lt;workspace name="collaboration"&gt;
           &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr" /&gt;
@@ -89,7 +89,9 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     <para>Example of UTF-8 database creation:<programlisting>DB2 CREATE DATABASE dbname USING CODESET UTF-8 TERRITORY US</programlisting></para>
 
     <para>Create database with UTF-8 encoding and use db2 dialect for
-    Workspace Container on DB2 v.9 and higher:<programlisting>&lt;workspace name="collaboration"&gt;
+    Workspace Container on DB2 v.9 and higher:</para>
+    
+    <programlisting language="xml">&lt;workspace name="collaboration"&gt;
           &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr" /&gt;
@@ -98,7 +100,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
               &lt;property name="max-buffer-size" value="200k" /&gt;
               &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
             &lt;/properties&gt;
-          .....</programlisting></para>
+          .....</programlisting>
 
     <note>
       <para>For DB2 v.8.x support change the property "dialect" to
@@ -120,7 +122,9 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     tested it only on latin1 database default charset.</para>
 
     <para>Repository configuration, workspace container entry
-    example:<programlisting>&lt;workspace name="collaboration"&gt;
+    example:</para>
+    
+    <programlisting language="xml">&lt;workspace name="collaboration"&gt;
           &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr" /&gt;
@@ -129,7 +133,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
               &lt;property name="max-buffer-size" value="200k" /&gt;
               &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
             &lt;/properties&gt;
-          .....</programlisting></para>
+          .....</programlisting>
   </section>
 
   <section>
@@ -156,7 +160,9 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
       </itemizedlist></para>
 
     <para>Create database with UTF-8 encoding and use PgSQL dialect for
-    Workspace Container:<programlisting>&lt;workspace name="collaboration"&gt;
+    Workspace Container:</para>
+    
+    <programlisting language="java">&lt;workspace name="collaboration"&gt;
           &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr" /&gt;
@@ -165,6 +171,6 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
               &lt;property name="max-buffer-size" value="200k" /&gt;
               &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
             &lt;/properties&gt;
-          .....</programlisting></para>
+          .....</programlisting>
   </section>
 </chapter>

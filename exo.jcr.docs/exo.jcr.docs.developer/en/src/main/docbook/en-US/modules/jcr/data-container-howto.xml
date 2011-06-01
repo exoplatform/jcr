@@ -89,7 +89,7 @@
     <para>Assuming that our new implementation class name is <emphasis
     role="bold">org.project.jcr.impl.storage.MyWorkspaceDataContainer</emphasis>.</para>
 
-    <programlisting>  &lt;repository-service default-repository="repository"&gt;
+    <programlisting language="xml">  &lt;repository-service default-repository="repository"&gt;
   &lt;repositories&gt;
     &lt;repository name="repository" system-workspace="production" default-workspace="production"&gt;
       .............
@@ -123,7 +123,7 @@
     role="bold">ValueStoragePluginProvider</emphasis> (e.g. via constructor),
     it's just a few methods to manipulate external Values data.</para>
 
-    <programlisting>// get channel for ValueData write (add or update)
+    <programlisting language="java">// get channel for ValueData write (add or update)
 ValueIOChannel channel = valueStorageProvider.getApplicableChannel(data,  i);
 if (channel == null) {
   // write

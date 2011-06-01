@@ -87,7 +87,7 @@
 
     <para>JCR service configuration looks like:</para>
 
-    <programlisting>&lt;component&gt;
+    <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.jcr.RepositoryService&lt;/key&gt;
   &lt;type&gt;org.exoplatform.services.jcr.impl.RepositoryServiceImpl&lt;/type&gt;
 &lt;/component&gt;
@@ -408,7 +408,7 @@
       configuration parameter.</para>
     </note>
 
-    <programlisting>&lt;!ELEMENT repository-service (repositories)&gt;
+    <programlisting language="xml">&lt;!ELEMENT repository-service (repositories)&gt;
 &lt;!ATTLIST repository-service default-repository NMTOKEN #REQUIRED&gt;
 &lt;!ELEMENT repositories (repository)&gt;
 &lt;!ELEMENT repository (security-domain,access-control,session-max-age,authentication-policy,workspaces)&gt;

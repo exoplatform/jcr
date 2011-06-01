@@ -23,7 +23,7 @@
 
       <para><emphasis role="bold">SQL</emphasis></para>
 
-      <programlisting>// get QueryManager
+      <programlisting language="java">// get QueryManager
 QueryManager queryManager = workspace.getQueryManager(); 
 // make SQL query
 Query query = queryManager.createQuery("SELECT * FROM nt:base ", Query.SQL);
@@ -32,7 +32,7 @@ QueryResult result = query.execute();</programlisting>
 
       <para><emphasis role="bold">XPath</emphasis></para>
 
-      <programlisting>// get QueryManager
+      <programlisting language="java">// get QueryManager
 QueryManager queryManager = workspace.getQueryManager(); 
 // make XPath query
 Query query = queryManager.createQuery("//element(*,nt:base)", Query.XPATH);
@@ -43,16 +43,16 @@ QueryResult result = query.execute();</programlisting>
     <section>
       <title>Query Result Processing</title>
 
-      <programlisting>// fetch query result
+      <programlisting language="java">// fetch query result
 QueryResult result = query.execute();</programlisting>
 
       <para>Now we can get result in an iterator of nodes:</para>
 
-      <programlisting>NodeIterator it = result.getNodes();</programlisting>
+      <programlisting language="java">NodeIterator it = result.getNodes();</programlisting>
 
       <para>or we get the result in a table:</para>
 
-      <programlisting>// get column names
+      <programlisting language="java">// get column names
 String[] columnNames = result.getColumnNames();
 // get column rows
 RowIterator rowIterator = result.getRows();

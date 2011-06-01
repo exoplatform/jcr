@@ -105,7 +105,9 @@
 
     <para>For example (standalone mode, two data containers
     <parameter>jdbcjcr</parameter> - local HSQLDB,
-    <parameter>jdbcjcr1</parameter> - remote MySQL):<programlisting>&lt;component&gt;
+    <parameter>jdbcjcr1</parameter> - remote MySQL):</para>
+    
+    <programlisting language="xml">&lt;component&gt;
     &lt;key&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/key&gt;
     &lt;type&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/type&gt;
     &lt;component-plugins&gt;
@@ -173,7 +175,8 @@
         &lt;value&gt;org.exoplatform.services.naming.SimpleContextFactory&lt;/value&gt;
       &lt;/value-param&gt;
     &lt;/init-params&gt;
-  &lt;/component&gt;</programlisting></para>
+  &lt;/component&gt;
+  </programlisting>
 
     <para>We configure the database connection parameters:<itemizedlist>
         <listitem>
@@ -222,8 +225,11 @@
     repository service. Each workspace will be configured for its own data
     container.</para>
 
-    <para>For example (two workspaces <parameter>ws</parameter> - jdbcjcr,
-    <parameter>ws1</parameter> - jdbcjcr1):<programlisting>&lt;workspaces&gt;
+    <para>For example (two workspaces 
+    <parameter>ws</parameter> - jdbcjcr,
+    <parameter>ws1</parameter> - jdbcjcr1):</para>
+    
+    <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
@@ -284,7 +290,10 @@
     &lt;/persister&gt;
     &lt;/lock-manager&gt;
   &lt;/workspace&gt;
-&lt;/workspaces&gt;</programlisting><itemizedlist>
+&lt;/workspaces&gt;
+</programlisting>
+
+      <itemizedlist>
         <listitem>
           <para><parameter>source-name</parameter>: A javax.sql.DataSource
           name configured in InitialContextInitializer component (was
@@ -313,7 +322,7 @@
           <para><parameter>swap-directory</parameter>: A path in the file
           system used to swap the pending changes.</para>
         </listitem>
-      </itemizedlist></para>
+      </itemizedlist>
 
     <para>In this way, we have configured two workspace which will be
     persisted in two different databases (ws in HSQLDB, ws1 in MySQL).</para>
@@ -333,7 +342,9 @@
     have to configure one naming resource.</para>
 
     <para>For example (embedded mode for <parameter>jdbcjcr</parameter> data
-    container):<programlisting>&lt;external-component-plugins&gt;
+    container):</para>
+    
+    <programlisting language="xml">&lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/target-component&gt;
     &lt;component-plugin&gt;
         &lt;name&gt;bind.datasource&lt;/name&gt;
@@ -365,14 +376,17 @@
           &lt;/properties-param&gt;
         &lt;/init-params&gt;
     &lt;/component-plugin&gt;
-  &lt;/external-component-plugins&gt;</programlisting></para>
+  &lt;/external-component-plugins&gt;
+  </programlisting>
 
     <para>And configure repository workspaces in repositories configuration
     with this one database. Parameter "multi-db" must be switched off (set
     value "false").</para>
 
     <para>For example (two workspaces <parameter>ws</parameter> - jdbcjcr,
-    <parameter>ws1</parameter> - jdbcjcr):<programlisting>&lt;workspaces&gt;
+    <parameter>ws1</parameter> - jdbcjcr):</para>
+    
+    <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
@@ -428,7 +442,8 @@
     &lt;/persister&gt;
     &lt;/lock-manager&gt;
   &lt;/workspace&gt;
-&lt;/workspaces&gt;</programlisting></para>
+&lt;/workspaces&gt;
+</programlisting>
 
     <para>In this way, we have configured two workspaces which will be
     persisted in one database (PostgreSQL).</para>
@@ -462,7 +477,7 @@
         use with JCR to prevent a database overload.</para>
       </note>
 
-      <programlisting>&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+      <programlisting language="xml">&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
   &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="dialect" value="hsqldb"/&gt;
@@ -504,20 +519,25 @@
     for reducing amount of database callings.</para>
 
     <para>Simple queries will be used if you chose
-    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer</classname>:<programlisting>&lt;workspaces&gt;
+    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer</classname>:</para>
+    
+    <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     ...
   &lt;/workspace&gt;
-&lt;/worksapces&gt;</programlisting></para>
+&lt;/worksapces&gt;
+</programlisting>
 
     <para>Complex queries will be used if you chose
-    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer</classname>:<programlisting>&lt;workspaces&gt;
+    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer</classname>:</para>
+    
+    <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
     ...
   &lt;/workspace&gt;
-&lt;/worksapces&gt;</programlisting></para>
+&lt;/worksapces&gt;</programlisting>
 
     <para>Why we should use a Complex Queries?<simplelist>
         <member>They are optimised to reduce amount of requests to
@@ -540,12 +560,14 @@
     important queries.</para>
 
     <para>To enable this option put next configuration
-    property:<programlisting>&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+    property:</para>
+    
+    <programlisting language="xml">&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
   &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="dialect" value="oracle"/&gt;
       &lt;property name="force.query.hints" value="true" /&gt;
-      ......</programlisting></para>
+      ......</programlisting>
 
     <para>Query hints enabled by default.</para>
 
@@ -583,10 +605,12 @@
         </listitem>
       </itemizedlist></para>
 
-    <para>A sample registry file is below:<programlisting>Windows Registry Editor Version 5.00
+    <para>A sample registry file is below:</para>
+    
+    <programlisting>Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters]
 "MaxUserPort"=dword:00001b58
-"TcpTimedWaitDelay"=dword:0000001e</programlisting></para>
+"TcpTimedWaitDelay"=dword:0000001e</programlisting>
   </section>
 </chapter>

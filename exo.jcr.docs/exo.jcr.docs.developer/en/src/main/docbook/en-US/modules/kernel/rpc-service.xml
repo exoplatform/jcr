@@ -64,7 +64,7 @@
 
     <para>See an example below:</para>
 
-    <programlisting>public class MyService implements Startable
+    <programlisting language="java">public class MyService implements Startable
 {
    private RPCService rpcService;
    private RemoteCommand sayHelloCommand;
@@ -131,7 +131,7 @@
     added only in a cluster environment. See below an example of
     configuration</para>
 
-    <programlisting>&lt;configuration&gt;
+    <programlisting language="xml">&lt;configuration&gt;
 ....  
   &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.rpc.RPCService&lt;/key&gt;
@@ -230,7 +230,7 @@
     proposed by default. This command will dynamically execute a method on a
     given object.</para>
 
-    <programlisting>// Register the command first (to be done before that the RPCService has been started)
+    <programlisting language="java">// Register the command first (to be done before that the RPCService has been started)
 RemoteCommand commandGetName = rpcService.registerCommand(new SingleMethodCallCommand(myService, "getName"));
 ...
 // Execute the command on the coordinator (can be done only after having started the RPCService)

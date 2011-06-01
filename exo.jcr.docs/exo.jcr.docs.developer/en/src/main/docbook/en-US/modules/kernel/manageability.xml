@@ -111,7 +111,7 @@
         registration time of a managed object to create the JMX object name.
         The template is formed of properties.</para>
 
-        <programlisting>@NameTemplate({
+        <programlisting language="java">@NameTemplate({
   @Property(key="container", value="workspace"),
   @Property(key="name", value="{Name}")})</programlisting>
       </section>
@@ -127,7 +127,7 @@
         different instances of the same class that would have the same object
         name otherwise.</para>
 
-        <programlisting>@NamingContext(@Property(key="workspace", value="{Name}"))</programlisting>
+        <programlisting language="java">@NamingContext(@Property(key="workspace", value="{Name}"))</programlisting>
       </section>
     </section>
   </section>
@@ -143,7 +143,7 @@
       when a new cache is created, it calls the CacheServiceManaged class in
       order to let the CacheServiceManaged object register the cache.</para>
 
-      <programlisting>@ManagedBy(CacheServiceManaged.class)
+      <programlisting language="java">@ManagedBy(CacheServiceManaged.class)
 public class CacheServiceImpl implements CacheService {
 
   CacheServiceManaged managed;
@@ -161,7 +161,7 @@ public class CacheServiceImpl implements CacheService {
       The @NameTemplate is used to produce object name values when ExoCache
       instance are registered.</para>
 
-      <programlisting>@Managed
+      <programlisting language="java">@Managed
 @NameTemplate({@Property(key="service", value="cache"), @Property(key="name", value="{Name}")})
 @ManagedDescription("Exo Cache")
 public interface ExoCache {
@@ -192,7 +192,7 @@ public interface ExoCache {
       receive a context to perform further registration of managed
       objects.</para>
 
-      <programlisting>@Managed
+      <programlisting language="java">@Managed
 public class CacheServiceManaged implements ManagementAware {
 
   /** . */

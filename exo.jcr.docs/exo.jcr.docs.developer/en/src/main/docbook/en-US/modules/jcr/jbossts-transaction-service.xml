@@ -26,7 +26,7 @@
 
     <para>Example configuration:</para>
 
-    <programlisting>  &lt;component&gt;
+    <programlisting language="xml">  &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
     &lt;type&gt;org.exoplatform.services.transaction.jbosscache.JBossTransactionsService&lt;/type&gt;
     &lt;init-params&gt;

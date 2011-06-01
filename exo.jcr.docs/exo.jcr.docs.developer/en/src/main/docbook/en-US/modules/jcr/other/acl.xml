@@ -123,7 +123,7 @@
         <para>A privilegeable node defines the permissions required for
         actions on this node. For this purpose, it contains an ACL.</para>
         <para>At JCR level, this is implemented by an <emphasis role="bold">exo:privilegeable</emphasis> mixin.</para>
-        <programlisting>&lt;nodeType name=&quot;exo:privilegeable&quot; isMixin=&quot;true&quot; hasOrderableChildNodes=&quot;false&quot; primaryItemName=&quot;&quot;&gt;
+        <programlisting language="xml">&lt;nodeType name=&quot;exo:privilegeable&quot; isMixin=&quot;true&quot; hasOrderableChildNodes=&quot;false&quot; primaryItemName=&quot;&quot;&gt;
    &lt;propertyDefinitions&gt;
       &lt;propertyDefinition name=&quot;exo:permissions&quot; requiredType=&quot;Permission&quot; autoCreated=&quot;true&quot; mandatory=&quot;true&quot;
                           onParentVersion=&quot;COPY&quot; protected=&quot;true&quot; multiple=&quot;true&quot;&gt;
@@ -161,7 +161,7 @@
         permissions set by exo:permissions. At JCR level, the ownership is
         implemented by an <emphasis role="bold">exo:owneable</emphasis> mixin.
         This mixin holds an owner property.</para>
-        <programlisting>&lt;nodeType name=&quot;exo:owneable&quot; isMixin=&quot;true&quot; hasOrderableChildNodes=&quot;false&quot; primaryItemName=&quot;&quot;&gt;
+        <programlisting language="xml">&lt;nodeType name=&quot;exo:owneable&quot; isMixin=&quot;true&quot; hasOrderableChildNodes=&quot;false&quot; primaryItemName=&quot;&quot;&gt;
    &lt;propertyDefinitions&gt;
       &lt;propertyDefinition name=&quot;exo:owner&quot; requiredType=&quot;String&quot; autoCreated=&quot;true&quot; mandatory=&quot;true&quot; onParentVersion=&quot;COPY&quot;
                           protected=&quot;true&quot; multiple=&quot;false&quot;&gt;
@@ -242,7 +242,7 @@
           separated by a whitespace, each whitespace is escaped by
           <emphasis>x0020</emphasis>.</para>
         </note>
-        <programlisting>&lt;Politics  jcr:primaryType=&quot;nt:unstructured&quot; jcr:mixinTypes=&quot;exo:owneable exo:datetime exo:privilegeable&quot; exo:dateCreated=&quot;2009-10-08T18:02:43.687+02:00&quot; 
+        <programlisting language="xml">&lt;Politics  jcr:primaryType=&quot;nt:unstructured&quot; jcr:mixinTypes=&quot;exo:owneable exo:datetime exo:privilegeable&quot; exo:dateCreated=&quot;2009-10-08T18:02:43.687+02:00&quot; 
 exo:dateModified=&quot;2009-10-08T18:02:43.703+02:00&quot; 
 exo:owner=&quot;root&quot; 
 exo:permissions=&quot;any_x0020_read *:/platform/administrators_x0020_read *:/platform/administrators_x0020_add_node *:/platform/administrators_x0020_set_property *:/platform/administrators_x0020_remove&quot;&gt;

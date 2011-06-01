@@ -25,7 +25,7 @@
     <para>- It's very simple, just mark your Listener implementation as
     <classname>@Asynchronous</classname>.</para>
 
-    <programlisting>@Asynchronous
+    <programlisting language="java">@Asynchronous
 class AsynchListenerWithException&lt;S,D&gt; extends Listener&lt;S,D&gt;
 {
    @Override
@@ -39,7 +39,9 @@ class AsynchListenerWithException&lt;S,D&gt; extends Listener&lt;S,D&gt;
     <classname>ExecutorService</classname>.</para>
 
     <para>By default, <classname>ExecutoreService</classname> configured with
-    thread pool size 1, you can change it in configuration:<programlisting>   &lt;component&gt;
+    thread pool size 1, you can change it in configuration:</para>
+    
+    <programlisting language="xml">   &lt;component&gt;
       &lt;key&gt;org.exoplatform.services.listener.ListenerService&lt;/key&gt;
       &lt;type&gt;org.exoplatform.services.listener.ListenerService&lt;/type&gt;
       
@@ -50,6 +52,6 @@ class AsynchListenerWithException&lt;S,D&gt; extends Listener&lt;S,D&gt;
          &lt;/value-param&gt;
       &lt;/init-params&gt;
 
-   &lt;/component&gt;</programlisting></para>
+   &lt;/component&gt;</programlisting>
   </section>
 </chapter>
