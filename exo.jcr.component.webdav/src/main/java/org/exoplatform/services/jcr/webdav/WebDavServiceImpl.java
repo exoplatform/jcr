@@ -528,14 +528,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
          else
          {
-            Session session = session(repoName, workspaceName(repoPath), null);
+            Session session = session(repoName, srcWorkspace, null);
 
             if (session.getRootNode().hasNode(TextUtil.relativizePath(repoPath)))
             {
                return Response.status(HTTPStatus.PRECON_FAILED)
                   .entity("Item exists on destination path, while overwriting is forbidden").build();
             }
-
          }
 
          if (depth.getStringValue().equalsIgnoreCase("infinity"))
@@ -545,14 +544,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             {
                Session session = session(repoName, destWorkspace, lockTokens);
                return new CopyCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).copy(
-                  session,
-                  srcNodePath, destNodePath);
+                  session, srcNodePath, destNodePath);
             }
 
             Session destSession = session(repoName, destWorkspace, lockTokens);
             return new CopyCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).copy(
-               destSession,
-               srcWorkspace, srcNodePath, destNodePath);
+               destSession, srcWorkspace, srcNodePath, destNodePath);
 
          }
          else if (depth.getIntValue() == 0)
@@ -576,6 +573,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (PreconditionException exc)
       {
          return Response.status(HTTPStatus.BAD_REQUEST).entity(exc.getMessage()).build();
+      }
+      catch (NoSuchWorkspaceException e)
+      {
+         log.error("NoSuchWorkspaceException " + e.getMessage(), e);
+         return Response.status(HTTPStatus.CONFLICT).entity(e.getMessage()).build();
       }
       catch (Exception exc)
       {
@@ -774,7 +776,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
 
       }
       catch (Exception exc)
@@ -864,7 +866,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
@@ -886,7 +888,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    {
       // to trace if an item on destination path exists
       boolean itemExisted = false;
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("MOVE " + repoName + "/" + repoPath);
@@ -915,7 +917,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          {
             return Response.status(HTTPStatus.BAD_GATEWAY).entity("Bad Gateway").build();
          }
-         
+
          destPath = normalizePath(repoIndex == -1 ? destPath : destPath.substring(repoIndex + repoName.length() + 1));
 
          String destWorkspace = workspaceName(destPath);
@@ -937,10 +939,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
          else
          {
-            Session session = session(repoName, workspaceName(repoPath), null);
+            Session session = session(repoName, srcWorkspace, null);
             String uri =
-               uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
-                  .toString();
+               uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(srcWorkspace).build().toString();
             Response prpfind = new PropFindCommand().propfind(session, destNodePath, body, depth.getIntValue(), uri);
             if (prpfind.getStatus() != HTTPStatus.NOT_FOUND)
             {
@@ -954,20 +955,25 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             if (srcWorkspace.equals(destWorkspace))
             {
                Session session = session(repoName, srcWorkspace, lockTokens);
-               return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).move(session,
-                  srcNodePath, destNodePath);
+               return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).move(
+                  session, srcNodePath, destNodePath);
             }
 
             Session srcSession = session(repoName, srcWorkspace, lockTokens);
             Session destSession = session(repoName, destWorkspace, lockTokens);
-            return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).move(srcSession,
-               destSession, srcNodePath, destNodePath);
+            return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).move(
+               srcSession, destSession, srcNodePath, destNodePath);
          }
          else
          {
             return Response.status(HTTPStatus.BAD_REQUEST).entity("Bad Request").build();
          }
 
+      }
+      catch (NoSuchWorkspaceException e)
+      {
+         log.error("NoSuchWorkspaceException " + e.getMessage(), e);
+         return Response.status(HTTPStatus.CONFLICT).entity(e.getMessage()).build();
       }
       catch (Exception exc)
       {
@@ -1058,7 +1064,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       }
       catch (NoSuchWorkspaceException exc)
       {
-         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
       catch (PreconditionException exc)
       {
@@ -1176,7 +1182,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
 
       }
       catch (NoSuchNodeTypeException exc)
@@ -1373,7 +1379,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @return current session
     * @throws Exception {@link Exception}
     */
-   protected Session session(String repoName, String wsName, List<String> lockTokens) throws Exception
+   protected Session session(String repoName, String wsName, List<String> lockTokens) throws Exception,
+      NoSuchWorkspaceException
    {
       ManageableRepository repo = this.repositoryService.getRepository(repoName);
       SessionProvider sp = sessionProviderService.getSessionProvider(null);

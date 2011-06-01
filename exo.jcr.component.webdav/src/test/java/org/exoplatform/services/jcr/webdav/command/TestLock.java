@@ -191,6 +191,20 @@ public class TestLock extends BaseStandaloneTest
       ((Node)session.getItem(path)).unlock();
    }
 
+   /**
+    * Here we're testing the case when we are trying to lock a resource C at a path /A/B/C
+    * and a A collection does not exist. According to the <a href=http://www.webdav.org/specs/rfc4918.html>
+    * RFC 4918</a> section we are to receive 409(conflict) HTTP status. 
+    * @throws Exception
+    */
+   public void testLockForNonExistingWorkspace() throws Exception
+   {
+      ContainerResponse response =
+         service(WebDAVMethods.LOCK, getPathWS() + "_" + path, "", null, lockRequestBody.getBytes());
+
+      assertEquals(HTTPStatus.CONFLICT, response.getStatus());
+   }
+
    @Override
    protected String getRepositoryName()
    {

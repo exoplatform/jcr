@@ -469,6 +469,21 @@ public class TestPropFind extends BaseStandaloneTest
 
    }
 
+   /**
+    * Here we're testing the case when we are trying to get some resource C property to a path /A/B/C
+    * and a A collection does not exist. According to the <a href=http://www.webdav.org/specs/rfc4918.html>
+    * RFC 4918</a> section we are to receive 409(conflict) HTTP status. 
+    * @throws Exception
+    */
+   public void testPropFindForNonExistingWorkspace() throws Exception
+   {
+      String file = TestUtils.getFileName();
+
+      ContainerResponse response =
+         service(WebDAVMethods.PROPFIND, getPathWS() + "_" + file, "", null, null);
+      assertEquals(HTTPStatus.CONFLICT, response.getStatus());
+   }
+
    @Override
    protected String getRepositoryName()
    {

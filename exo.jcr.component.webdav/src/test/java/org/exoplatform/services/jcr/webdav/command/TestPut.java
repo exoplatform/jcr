@@ -62,6 +62,22 @@ public class TestPut extends BaseStandaloneTest
 
    }
 
+   /**
+    * Here we're testing the case when we are trying to put some resource C to a path /A/B/C
+    * and a A collection does not exist. According to the <a href=http://www.webdav.org/specs/rfc4918.html>
+    * RFC 4918</a> section we are to receive 409(conflict) HTTP status. 
+    * @throws Exception
+    */
+   public void testPutToNonExistingWorkspace() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String path = TestUtils.getFileName();
+      ContainerResponse containerResponse =
+         service(WebDAVMethods.PUT, getPathWS() + "_" + path, "", null, content.getBytes());
+      assertEquals(HTTPStatus.CONFLICT, containerResponse.getStatus());
+
+   }
+
    public void testPutFileContentTypeHeader() throws Exception
    {
       String content = TestUtils.getFileContent();

@@ -304,6 +304,25 @@ public class TestMove extends BaseStandaloneTest
       assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(filename)));
    }
 
+   /**
+    * Here we're testing the case when we are trying to move a resource C to a path /A/B/C
+    * and a A collection does not exist. According to the <a href=http://www.webdav.org/specs/rfc4918.html#rfc.section.9.3.1>
+    * RFC 4918</a> section we are to receive 409(conflict) HTTP status. 
+    * @throws Exception
+    */
+   public void testMoveToNonCollectionToNonExistingWorkspace() throws Exception
+   {
+      String filename = TestUtils.getFileName();
+      String destFilename = TestUtils.getFileName();
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
+
+      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + "_" + filename, host, headers, null);
+
+      assertEquals(HTTPStatus.CONFLICT, response.getStatus());
+   }
+
    @Override
    protected String getRepositoryName()
    {

@@ -349,6 +349,66 @@ public class TestCopy extends BaseStandaloneTest
       assertEquals(content, getContentBase);
    }
 
+   /**
+    * Here we're testing the case when we are trying to copy a resource C to a path /A/B/C
+    * and a A collection does not exist. According to the <a href=http://www.webdav.org/specs/rfc4918.html#rfc.section.9.8.5>
+    * RFC 4918</a> section we are to receive 409(conflict) HTTP status. 
+    * @throws Exception
+    */
+   public void testCopyResourceToNonExistingWorkspace() throws Exception
+   {
+      String folderName = "new folder";
+      session.getRootNode().addNode(folderName, "nt:folder");
+      session.save();
+
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      String destFilename = TextUtil.unescape("/" + folderName + TestUtils.getFileName(), '%');
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      // add destination header with incorrect data
+      headers.add(ExtHttpHeaders.DESTINATION, WORKSPACE + "_" + destFilename);
+
+      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
+
+      assertEquals(HTTPStatus.CONFLICT, response.getStatus());
+
+      // add overwrite header to check the behavior
+      headers.add(ExtHttpHeaders.OVERWRITE, "T");
+      response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
+
+      assertEquals(HTTPStatus.CONFLICT, response.getStatus());
+
+      // clean up
+      session.getRootNode().getNode(folderName).remove();
+   }
+
+   /**
+    * Here we're testing the case when we are trying to copy a collection B to a path /A/B
+    * and a A collection does not exist. According to the <a href=http://www.webdav.org/specs/rfc4918.html#rfc.section.9.8.5>
+    * RFC 4918</a> section we are to receive 409(conflict) HTTP status. 
+    * @throws Exception
+    */
+   public void testCopyCollectionToNonExistingWorkspace() throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      // add destination header with incorrect data
+      headers.add(ExtHttpHeaders.DESTINATION, WORKSPACE + "_" + "/" + "test");
+
+      ContainerResponse response =
+         service(WebDAVMethods.COPY, getPathWS() + TestUtils.getFolderName(), host, headers, null);
+
+      assertEquals(HTTPStatus.CONFLICT, response.getStatus());
+
+      // add overwrite header to check the behavior
+      headers.add(ExtHttpHeaders.OVERWRITE, "T");
+      response = service(WebDAVMethods.COPY, getPathWS() + TestUtils.getFolderName(), host, headers, null);
+
+      assertEquals(HTTPStatus.CONFLICT, response.getStatus());
+   }
+
    @Override
    protected String getRepositoryName()
    {

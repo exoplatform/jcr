@@ -81,10 +81,17 @@ public class TestMkCol extends BaseStandaloneTest
 
    }
 
-   @Override
-   protected String getRepositoryName()
+   /**
+    * Here we're testing the case when we are trying to create a collection B at a path /A/B
+    * and a A collection does not exist. According to the <a href=http://www.webdav.org/specs/rfc4918.html#rfc.section.9.3.1>
+    * RFC 4918</a> section we are to receive 409(conflict) HTTP status. 
+    * @throws Exception
+    */
+   public void testMkColInNonExistingWorkspace() throws Exception
    {
-      return null;
+      String folder = TestUtils.getFolderName();
+      ContainerResponse response = service(WebDAVMethods.MKCOL, getPathWS() + "_" + folder, "", null, null);
+      assertEquals(HTTPStatus.CONFLICT, response.getStatus());
    }
 
    public void testConflict() throws Exception
@@ -94,4 +101,9 @@ public class TestMkCol extends BaseStandaloneTest
       assertEquals(HTTPStatus.CONFLICT, response.getStatus());
    }
 
+   @Override
+   protected String getRepositoryName()
+   {
+      return null;
+   }
 }
