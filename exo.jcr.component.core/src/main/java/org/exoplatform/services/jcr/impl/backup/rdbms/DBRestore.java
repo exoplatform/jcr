@@ -510,7 +510,7 @@ public class DBRestore implements DataRestore
                      ba.read(readBuffer);
 
                      String value = new String(readBuffer);
-                     insertNode.setBoolean(targetIndex + 1, value.equals("true"));
+                     insertNode.setBoolean(targetIndex + 1, value.equalsIgnoreCase("true"));
                   }
                   else if (columnType.get(i) == Types.VARBINARY || columnType.get(i) == Types.LONGVARBINARY
                      || columnType.get(i) == Types.BLOB || columnType.get(i) == Types.BINARY
