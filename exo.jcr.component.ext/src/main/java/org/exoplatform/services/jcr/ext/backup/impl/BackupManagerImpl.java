@@ -310,6 +310,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    class WorkspaceBackupAutoStopper extends Thread
    {
 
+      private boolean isToBeStopped = false;
+
       WorkspaceBackupAutoStopper(ExoContainerContext ctx)
       {
          super("WorkspaceBackupAutoStopper" + (ctx == null ? "" : " " + ctx.getName()));
@@ -321,7 +323,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       @Override
       public void run()
       {
-         while (true)
+         while (!isToBeStopped)
          {
             try
             {
@@ -360,10 +362,16 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
          }
       }
+
+      public void close()
+      {
+         isToBeStopped = true;
+      }
    }
 
    class RepositoryBackupAutoStopper extends Thread
    {
+      boolean isToBeStopped = false;
 
       RepositoryBackupAutoStopper(ExoContainerContext ctx)
       {
@@ -376,7 +384,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       @Override
       public void run()
       {
-         while (true)
+         while (!isToBeStopped)
          {
             try
             {
@@ -408,6 +416,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
                log.error("The unknown error", e);
             }
          }
+      }
+
+      public void close()
+      {
+         isToBeStopped = true;
       }
    }
 
@@ -921,6 +934,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public void stop()
    {
+      workspaceBackupStopper.close();
+      repositoryBackupStopper.close();
+      scheduler.cancelTimer();
+
       // 1. stop current backup chains
       // for (Iterator iterator = currentBackups.iterator(); iterator.hasNext();) {
       // BackupChain bc = (BackupChain) iterator.next();

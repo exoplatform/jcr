@@ -1135,4 +1135,12 @@ public class BackupScheduler
 
       return false;
    }
+
+   /**
+    * Simple method to release the thread used by timer used in scheduler
+    */
+   public void cancelTimer()
+   {
+      timer.cancel();
+   }
 }
