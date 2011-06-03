@@ -30,8 +30,14 @@
    <name>eXo JCR :: Component :: Core Service</name>
    <description>eXo JCR Service core component</description>
    <properties>
-      <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
+      <jcr.test.configuration.file>/conf/standalone/test-configuration-jbc.xml</jcr.test.configuration.file>
       <jbosscache.shareable>true</jbosscache.shareable>
+      <jbc.specific.1>**/jbc/**</jbc.specific.1>
+      <jbc.specific.2>**/jbosscache/**</jbc.specific.2>
+      <ispn.specific.1>**/ispn/**</ispn.specific.1>
+      <ispn.specific.2>**/infinispan/**</ispn.specific.2>
+      <impl.specific.exclude.1>${ispn.specific.1}</impl.specific.exclude.1>
+      <impl.specific.exclude.2>${ispn.specific.2}</impl.specific.exclude.2>
    </properties>
    <dependencies>
       <dependency>
@@ -162,6 +168,7 @@
       <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
+        <version>2.6.20.Final</version>
       </dependency>
       <dependency>
         <groupId>commons-logging</groupId>
@@ -201,10 +208,12 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cachestore-jdbc</artifactId>
+        <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>org.apache.jackrabbit</groupId>
@@ -701,7 +710,8 @@
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testConfiguration
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersionable
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
-                              org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace</value>
+                              org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace
+                              </value>
                         </property>
                      <!-- Uncomment the line below if you want to enable the statistics -->
                      <!--property>
@@ -757,6 +767,9 @@
                         <exclude>org/apache/jackrabbit/test/api/TestAll.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
+                        <!-- Implementation Specific Excludes -->
+                        <exclude>${impl.specific.exclude.1}</exclude>
+                        <exclude>${impl.specific.exclude.2}</exclude>
                      </excludes>
                   </configuration>
                </plugin>
@@ -823,5 +836,62 @@
             </plugins>
          </build>
       </profile>
+      <profile>
+         <id>sjdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc-jbc.xml</jcr.test.configuration.file>
+         </properties>
+      </profile>      
+      <profile>
+         <id>cluster</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-jbc.xml</jcr.test.configuration.file>
+         </properties>
+      </profile>      
+      <profile>
+         <id>ispn</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
+            <impl.specific.exclude.1>${jbc.specific.1}</impl.specific.exclude.1>
+            <impl.specific.exclude.2>${jbc.specific.2}</impl.specific.exclude.2>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>org.jgroups</groupId>
+               <artifactId>jgroups</artifactId>
+               <version>2.11.1.Final</version>
+            </dependency>
+         </dependencies>
+      </profile>      
+      <profile>
+         <id>ispn-sjdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc.xml</jcr.test.configuration.file>
+            <impl.specific.exclude.1>${jbc.specific.1}</impl.specific.exclude.1>
+            <impl.specific.exclude.2>${jbc.specific.2}</impl.specific.exclude.2>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>org.jgroups</groupId>
+               <artifactId>jgroups</artifactId>
+               <version>2.11.1.Final</version>
+            </dependency>
+         </dependencies>
+      </profile>      
+      <profile>
+         <id>ispn-cluster</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration.xml</jcr.test.configuration.file>
+            <impl.specific.exclude.1>${jbc.specific.1}</impl.specific.exclude.1>
+            <impl.specific.exclude.2>${jbc.specific.2}</impl.specific.exclude.2>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>org.jgroups</groupId>
+               <artifactId>jgroups</artifactId>
+               <version>2.11.1.Final</version>
+            </dependency>
+         </dependencies>
+      </profile>      
    </profiles>
 </project>

@@ -109,10 +109,6 @@
       <artifactId>commons-chain</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jgroups</groupId>
-      <artifactId>jgroups</artifactId>
-    </dependency>
-    <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>jsr311-api</artifactId>
     </dependency>
