@@ -74,12 +74,19 @@ public final class SessionRegistry implements Startable
    @ManagedDescription("Set the session time out in seconds")
    public void setTimeOut(long timeout)
    {
+      if (this.timeOut == timeout)
+      {
+         return;
+      }
+
+      // disable the cleaner
+      this.sessionCleaner.halt();
+      this.sessionCleaner = null;
+
       this.timeOut = timeout <= 0 ? 0 : timeout * 1000;
       if (timeOut == 0 && sessionCleaner != null)
       {
-         // We set a time out to 0 so we disable the cleaner
-         this.sessionCleaner.halt();
-         this.sessionCleaner = null;
+         // We set a time out to 0, no need to create new cleaner
          if (log.isDebugEnabled())
          {
             log.debug("Stop the previous session cleaner");
@@ -87,7 +94,7 @@ public final class SessionRegistry implements Startable
       }
       else if (timeOut > 0 && sessionCleaner == null)
       {
-         // We set a time out greater than 0, so we enable the cleaner
+         // We set a time out greater than 0, so we create new cleaner
          this.sessionCleaner = new SessionCleaner(repositoryId, DEFAULT_CLEANER_TIMEOUT, timeOut);      
          if (log.isDebugEnabled())
          {
