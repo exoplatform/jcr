@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
@@ -161,27 +160,26 @@ public class CASableWriteValue extends WriteValue
             }
             catch (RecordAlreadyExistsException e)
             {
-               if (tempFile != null && PrivilegedFileHelper.exists(tempFile) && !PrivilegedFileHelper.delete(tempFile))
+               if (tempFile != null && tempFile.exists() && !tempFile.delete())
                {
-                  LOG.warn("Can't delete CAS temp file. Added to file cleaner. "
-                     + PrivilegedFileHelper.getAbsolutePath(tempFile));
+                  LOG.warn("Can't delete CAS temp file. Added to file cleaner. " + tempFile.getAbsolutePath());
                   cleaner.addFile(tempFile);
                }
                throw new RecordAlreadyExistsException("Write error: " + e, e);
             }
 
-            if (!PrivilegedFileHelper.exists(vcasFile))
+            if (!vcasFile.exists())
             {
                // it's new CAS Value, we have to move temp to vcas location
                // use RENAME only, don't copy - as copy will means that destination already exists etc.
 
                // make sure parent dir exists
-               PrivilegedFileHelper.mkdirs(vcasFile.getParentFile());
+               vcasFile.getParentFile().mkdirs();
                // rename propetynamed file to hashnamed one
-               if (!PrivilegedFileHelper.renameTo(tempFile, vcasFile))
+               if (!tempFile.renameTo(vcasFile))
                {
-                  throw new VCASException("File " + PrivilegedFileHelper.getAbsolutePath(tempFile)
-                     + " can't be renamed to VCAS-named " + PrivilegedFileHelper.getAbsolutePath(vcasFile));
+                  throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
+                     + vcasFile.getAbsolutePath());
                }
             } // else - CASed Value already exists
 
@@ -195,7 +193,7 @@ public class CASableWriteValue extends WriteValue
          finally
          {
             // remove temp file
-            PrivilegedFileHelper.delete(tempFile); // should be ok without file cleaner
+            tempFile.delete(); // should be ok without file cleaner
 
             fileLock.unlock();
          }
@@ -211,7 +209,7 @@ public class CASableWriteValue extends WriteValue
          try
          {
             // delete temp file - it's new file add
-            PrivilegedFileHelper.delete(tempFile); // should be ok without file cleaner
+            tempFile.delete(); // should be ok without file cleaner
          }
          finally
          {

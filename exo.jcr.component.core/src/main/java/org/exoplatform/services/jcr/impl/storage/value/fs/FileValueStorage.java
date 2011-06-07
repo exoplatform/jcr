@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -46,7 +45,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    public final static String PATH = "path";
 
    /**
-    * Temporary directory name under storage root dir.
+    * Temporarory directopry name under stoprage root dir.
     */
    public static final String TEMP_DIR_NAME = "temp";
 
@@ -58,6 +57,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
 
    /**
     * FileValueStorage constructor.
+    * 
     */
    public FileValueStorage(FileCleaner cleaner)
    {
@@ -67,7 +67,6 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    /**
     * {@inheritDoc}
     */
-   @Override
    public void init(Properties props, ValueDataResourceHolder resources) throws IOException,
       RepositoryConfigurationException
    {
@@ -78,7 +77,6 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    /**
     * {@inheritDoc}
     */
-   @Override
    public void checkConsistency(WorkspaceStorageConnection dataConnection)
    {
 
@@ -107,23 +105,22 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    {
       this.rootDir = new File(rootDirPath);
 
-      if (!PrivilegedFileHelper.exists(rootDir))
+      if (!rootDir.exists())
       {
-         if (PrivilegedFileHelper.mkdirs(rootDir))
+         if (rootDir.mkdirs())
          {
-            log.info("Directory created: " + PrivilegedFileHelper.getAbsolutePath(rootDir));
+            log.info("Directory created: " + rootDir.getAbsolutePath());
 
             // create internal temp dir
             File tempDir = new File(rootDir, TEMP_DIR_NAME);
-            PrivilegedFileHelper.mkdirs(tempDir);
+            tempDir.mkdirs();
 
-            if (PrivilegedFileHelper.exists(tempDir) && PrivilegedFileHelper.isDirectory(tempDir))
+            if (tempDir.exists() && tempDir.isDirectory())
             {
                // care about storage temp dir cleanup
-               for (File tmpf : PrivilegedFileHelper.listFiles(tempDir))
-                  if (!PrivilegedFileHelper.delete(tmpf))
-                     log.warn("Storage temporary directory contains un-deletable file "
-                        + PrivilegedFileHelper.getAbsolutePath(tmpf)
+               for (File tmpf : tempDir.listFiles())
+                  if (!tmpf.delete())
+                     log.warn("Storage temporary directory contains un-deletable file " + tmpf.getAbsolutePath()
                         + ". It's recommended to leave this directory for JCR External Values Storage private use.");
             }
             else
@@ -132,12 +129,12 @@ public abstract class FileValueStorage extends ValueStoragePlugin
          }
          else
          {
-            log.warn("Directory IS NOT created: " + PrivilegedFileHelper.getAbsolutePath(rootDir));
+            log.warn("Directory IS NOT created: " + rootDir.getAbsolutePath());
          }
       }
       else
       {
-         if (!PrivilegedFileHelper.isDirectory(rootDir))
+         if (!rootDir.isDirectory())
          {
             throw new RepositoryConfigurationException("File exists but is not a directory " + rootDirPath);
          }

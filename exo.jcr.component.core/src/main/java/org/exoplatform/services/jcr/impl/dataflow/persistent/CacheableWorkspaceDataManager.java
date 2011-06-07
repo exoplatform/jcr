@@ -480,7 +480,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
-   public int getChildNodesCount(NodeData parent) throws RepositoryException
+   public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
       if (cache.isEnabled())
       {
@@ -490,8 +490,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             return childCount;
          }
       }
-
-      return super.getChildNodesCount(parent);
+      return executeAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws RepositoryException
+         {
+            return CacheableWorkspaceDataManager.super.getChildNodesCount(parent);
+         }
+      });
    }
 
    /**
@@ -606,7 +611,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       else
       {
-         return super.getItemData(parentData, name, itemType);
+         return executeAction(new PrivilegedExceptionAction<ItemData>()
+         {
+            public ItemData run() throws RepositoryException
+            {
+               return CacheableWorkspaceDataManager.super.getItemData(parentData, name, itemType);
+            }
+         });
       }
    }
 
@@ -663,7 +674,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       else
       {
-         return super.getItemData(identifier);
+         return executeAction(new PrivilegedExceptionAction<ItemData>()
+         {
+            public ItemData run() throws RepositoryException
+            {
+               return CacheableWorkspaceDataManager.super.getItemData(identifier);
+            }
+         });
       }
    }
 
@@ -999,12 +1016,18 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
-   protected List<NodeData> getChildNodesDataByPattern(NodeData parentData, List<QPathEntryFilter> patternFilters)
+   protected List<NodeData> getChildNodesDataByPattern(final NodeData parentData, final List<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {
       if (!cache.isEnabled())
       {
-         return super.getChildNodesData(parentData, patternFilters);
+         return executeAction(new PrivilegedExceptionAction<List<NodeData>>()
+         {
+            public List<NodeData> run() throws RepositoryException
+            {
+               return CacheableWorkspaceDataManager.super.getChildNodesData(parentData, patternFilters);
+            }
+         });
       }
 
       if (!cache.isPatternSupported())
@@ -1020,9 +1043,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          return childNodesList;
       }
 
-      Map<String, NodeData> childNodesMap = new HashMap<String, NodeData>();
+      final Map<String, NodeData> childNodesMap = new HashMap<String, NodeData>();
 
-      Set<QPathEntryFilter> uncachedPatterns = new HashSet<QPathEntryFilter>();
+      final Set<QPathEntryFilter> uncachedPatterns = new HashSet<QPathEntryFilter>();
       for (int i = 0; i < patternFilters.size(); i++)
       {
          if (patternFilters.get(i).isExactName())
@@ -1116,42 +1139,50 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             // execute all patterns and put result in cache
             if (!uncachedPatterns.isEmpty())
             {
-               List<NodeData> persistedItemList =
-                  super.getChildNodesData(parentData, new ArrayList<QPathEntryFilter>(uncachedPatterns));
-
-               if (persistedItemList.size() > 0)
+               executeAction(new PrivilegedExceptionAction<Void>()
                {
-                  NodeData parent = (NodeData)getItemData(parentData.getIdentifier());
-                  if (parent != null)
+                  public Void run() throws RepositoryException
                   {
-                     // filter nodes list for each exact name
-                     patternIterator = uncachedPatterns.iterator();
-                     while (patternIterator.hasNext())
+                     List<NodeData> persistedItemList =
+                        CacheableWorkspaceDataManager.super.getChildNodesData(parentData,
+                           new ArrayList<QPathEntryFilter>(uncachedPatterns));
+
+                     if (persistedItemList.size() > 0)
                      {
-                        QPathEntryFilter pattern = patternIterator.next();
-                        List<NodeData> persistedNodeData = (List<NodeData>)pattern.accept(persistedItemList);
-                        if (pattern.isExactName())
+                        NodeData parent = (NodeData)getItemData(parentData.getIdentifier());
+                        if (parent != null)
                         {
-                           if (persistedNodeData.isEmpty())
+                           // filter nodes list for each exact name
+                           Iterator<QPathEntryFilter> patternIterator = uncachedPatterns.iterator();
+                           while (patternIterator.hasNext())
                            {
-                              cache.put(new NullNodeData(parentData, pattern.getQPathEntry()));
+                              QPathEntryFilter pattern = patternIterator.next();
+                              List<NodeData> persistedNodeData = (List<NodeData>)pattern.accept(persistedItemList);
+                              if (pattern.isExactName())
+                              {
+                                 if (persistedNodeData.isEmpty())
+                                 {
+                                    cache.put(new NullNodeData(parentData, pattern.getQPathEntry()));
+                                 }
+                                 else
+                                 {
+                                    cache.put(persistedNodeData.get(0));
+                                 }
+                              }
+                              else
+                              {
+                                 cache.addChildNodes(parent, pattern, persistedNodeData);
+                              }
+                              for (NodeData node : persistedItemList)
+                              {
+                                 childNodesMap.put(node.getIdentifier(), node);
+                              }
                            }
-                           else
-                           {
-                              cache.put(persistedNodeData.get(0));
-                           }
-                        }
-                        else
-                        {
-                           cache.addChildNodes(parent, pattern, persistedNodeData);
-                        }
-                        for (NodeData node : persistedItemList)
-                        {
-                           childNodesMap.put(node.getIdentifier(), node);
                         }
                      }
+                     return null;
                   }
-               }
+               });
             }
          }
          finally
@@ -1286,12 +1317,18 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
-   protected List<PropertyData> getChildPropertiesDataByPattern(NodeData nodeData, List<QPathEntryFilter> patternFilters)
+   protected List<PropertyData> getChildPropertiesDataByPattern(final NodeData nodeData, final List<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {
       if (!cache.isEnabled())
       {
-         return super.getChildPropertiesData(nodeData, patternFilters);
+         return executeAction(new PrivilegedExceptionAction<List<PropertyData>>()
+         {
+            public List<PropertyData> run() throws RepositoryException
+            {
+               return CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData, patternFilters);
+            }
+         });
       }
 
       if (!cache.isPatternSupported())
@@ -1306,9 +1343,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          return childPropsList;
       }
 
-      Map<String, PropertyData> childPropsMap = new HashMap<String, PropertyData>();
+      final Map<String, PropertyData> childPropsMap = new HashMap<String, PropertyData>();
 
-      Set<QPathEntryFilter> uncachedPatterns = new HashSet<QPathEntryFilter>();
+      final Set<QPathEntryFilter> uncachedPatterns = new HashSet<QPathEntryFilter>();
       for (int i = 0; i < patternFilters.size(); i++)
       {
          if (patternFilters.get(i).isExactName())
@@ -1405,43 +1442,52 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             // execute all patterns and put result in cache
             if (!uncachedPatterns.isEmpty())
             {
-               List<PropertyData> persistedItemList =
-                  super.getChildPropertiesData(nodeData, new ArrayList<QPathEntryFilter>(uncachedPatterns));
-
-               if (persistedItemList.size() > 0)
+               executeAction(new PrivilegedExceptionAction<Void>()
                {
-                  NodeData parent = (NodeData)getItemData(nodeData.getIdentifier());
-                  if (parent != null)
+                  public Void run() throws RepositoryException
                   {
-                     // filter properties list for each exact name
-                     patternIterator = uncachedPatterns.iterator();
-                     while (patternIterator.hasNext())
-                     {
-                        QPathEntryFilter pattern = patternIterator.next();
-                        List<PropertyData> persistedPropData = (List<PropertyData>)pattern.accept(persistedItemList);
-                        if (pattern.isExactName())
-                        {
-                           if (persistedPropData.isEmpty())
-                           {
-                              cache.put(new NullPropertyData(parent, pattern.getQPathEntry()));
-                           }
-                           else
-                           {
-                              cache.put(persistedPropData.get(0));
-                           }
-                        }
-                        else
-                        {
-                           cache.addChildProperties(parent, pattern, persistedPropData);
-                        }
+                     List<PropertyData> persistedItemList =
+                        CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData,
+                           new ArrayList<QPathEntryFilter>(uncachedPatterns));
 
-                        for (PropertyData node : persistedItemList)
+                     if (persistedItemList.size() > 0)
+                     {
+                        NodeData parent = (NodeData)getItemData(nodeData.getIdentifier());
+                        if (parent != null)
                         {
-                           childPropsMap.put(node.getIdentifier(), node);
+                           // filter properties list for each exact name
+                           Iterator<QPathEntryFilter> patternIterator = uncachedPatterns.iterator();
+                           while (patternIterator.hasNext())
+                           {
+                              QPathEntryFilter pattern = patternIterator.next();
+                              List<PropertyData> persistedPropData =
+                                 (List<PropertyData>)pattern.accept(persistedItemList);
+                              if (pattern.isExactName())
+                              {
+                                 if (persistedPropData.isEmpty())
+                                 {
+                                    cache.put(new NullPropertyData(parent, pattern.getQPathEntry()));
+                                 }
+                                 else
+                                 {
+                                    cache.put(persistedPropData.get(0));
+                                 }
+                              }
+                              else
+                              {
+                                 cache.addChildProperties(parent, pattern, persistedPropData);
+                              }
+
+                              for (PropertyData node : persistedItemList)
+                              {
+                                 childPropsMap.put(node.getIdentifier(), node);
+                              }
+                           }
                         }
                      }
+                     return null;
                   }
-               }
+               });
             }
          }
          finally
@@ -1531,7 +1577,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @throws RepositoryException
     *           Repository error
     */
-   protected List<PropertyData> listChildPropertiesData(NodeData nodeData, boolean forcePersistentRead)
+   protected List<PropertyData> listChildPropertiesData(final NodeData nodeData, boolean forcePersistentRead)
       throws RepositoryException
    {
 
@@ -1559,18 +1605,25 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return propertiesList;
             }
          }
-         propertiesList = super.listChildPropertiesData(nodeData);
-         // TODO propertiesList.size() > 0 for SDB
-         if (propertiesList.size() > 0 && cache.isEnabled())
+         return executeAction(new PrivilegedExceptionAction<List<PropertyData>>()
          {
-            NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
-
-            if (parentData != null)
+            public List<PropertyData> run() throws RepositoryException
             {
-               cache.addChildPropertiesList(parentData, propertiesList);
+               List<PropertyData> propertiesList =
+                  CacheableWorkspaceDataManager.super.listChildPropertiesData(nodeData);
+               // TODO propertiesList.size() > 0 for SDB
+               if (propertiesList.size() > 0 && cache.isEnabled())
+               {
+                  NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
+
+                  if (parentData != null)
+                  {
+                     cache.addChildPropertiesList(parentData, propertiesList);
+                  }
+               }
+               return propertiesList;
             }
-         }
-         return propertiesList;
+         });
       }
       finally
       {

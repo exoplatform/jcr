@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -99,7 +98,7 @@ public class WriteValue extends ValueFileOperation
          try
          {
             // be sure the destination dir exists (case for Tree-style storage)
-            PrivilegedFileHelper.mkdirs(file.getParentFile());
+            file.getParentFile().mkdirs();
 
             // write value to the file
             writeValue(file, value);

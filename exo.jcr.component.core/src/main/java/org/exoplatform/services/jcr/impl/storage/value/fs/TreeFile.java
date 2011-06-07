@@ -18,14 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.security.PrivilegedAction;
 
 /**
  * Created by The eXo Platform SAS
@@ -57,16 +54,7 @@ public class TreeFile extends File
    @Override
    public boolean delete()
    {
-
-      PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
-      {
-         public Boolean run()
-         {
-            return TreeFile.super.delete();
-         }
-      };
-      boolean res = SecurityHelper.doPrivilegedAction(action);
-
+      boolean res = super.delete();
       if (res)
          deleteParent(new File(getParent()));
 
@@ -76,28 +64,27 @@ public class TreeFile extends File
    protected boolean deleteParent(File fp)
    {
       boolean res = false;
-      String fpPath = PrivilegedFileHelper.getAbsolutePath(fp);
-      String rootPath = PrivilegedFileHelper.getAbsolutePath(rootDir);
+      String fpPath = fp.getAbsolutePath();
+      String rootPath = rootDir.getAbsolutePath();
       if (fpPath.startsWith(rootPath) && fpPath.length() > rootPath.length())
          if (fp.isDirectory())
          {
-            String[] ls = PrivilegedFileHelper.list(fp);;
+            String[] ls = fp.list();
             if (ls != null && ls.length <= 0)
             {
-               if (res = PrivilegedFileHelper.delete(fp))
+               if (res = fp.delete())
                {
                   res = deleteParent(new File(fp.getParent()));
                }
                else
                {
-                  fLog.warn("Parent directory can not be deleted now. " + PrivilegedFileHelper.getAbsolutePath(fp));
-                  cleaner.addFile(new TreeFile(PrivilegedFileHelper.getAbsolutePath(fp), cleaner, rootDir));
+                  fLog.warn("Parent directory can not be deleted now. " + fp.getAbsolutePath());
+                  cleaner.addFile(new TreeFile(fp.getAbsolutePath(), cleaner, rootDir));
                }
             }
          }
          else
-            fLog.warn("Parent can not be a file but found " + PrivilegedFileHelper.getAbsolutePath(fp));
+            fLog.warn("Parent can not be a file but found " + fp.getAbsolutePath());
       return res;
    }
-
 }

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
@@ -73,9 +72,10 @@ public class ValueFileIOHelper
     * @throws IOException
     *           if error
     */
-   protected ValueData readValue(final File file, final int orderNum, final int maxBufferSize) throws IOException
+   protected ValueData readValue(File file, int orderNum, int maxBufferSize) throws IOException
    {
-      long fileSize = PrivilegedFileHelper.length(file);
+
+      long fileSize = file.length();
 
       if (fileSize > maxBufferSize)
       {
@@ -83,7 +83,7 @@ public class ValueFileIOHelper
       }
       else
       {
-         FileInputStream is = PrivilegedFileHelper.fileInputStream(file);
+         FileInputStream is = new FileInputStream(file);
          try
          {
             int buffSize = (int)fileSize;
@@ -137,9 +137,9 @@ public class ValueFileIOHelper
     * @throws IOException
     *           if error occurs
     */
-   protected void writeByteArrayValue(final File file, final ValueData value) throws IOException
+   protected void writeByteArrayValue(File file, ValueData value) throws IOException
    {
-      OutputStream out = PrivilegedFileHelper.fileOutputStream(file);
+      OutputStream out = new FileOutputStream(file);
       try
       {
          out.write(value.getAsByteArray());
@@ -160,9 +160,8 @@ public class ValueFileIOHelper
     * @throws IOException
     *           if error occurs
     */
-   protected void writeStreamedValue(final File file, final ValueData value) throws IOException
+   protected void writeStreamedValue(File file, ValueData value) throws IOException
    {
-      // do what you want
       // stream Value
       if (value instanceof StreamPersistedValueData)
       {
@@ -171,7 +170,7 @@ public class ValueFileIOHelper
          if (streamed.isPersisted())
          {
             // already persisted in another Value, copy it to this Value
-            copyClose(streamed.getAsStream(), PrivilegedFileHelper.fileOutputStream(file));
+            copyClose(streamed.getAsStream(), new FileOutputStream(file));
          }
          else
          {
@@ -180,23 +179,23 @@ public class ValueFileIOHelper
             if ((tempFile = streamed.getTempFile()) != null)
             {
                // it's spooled Value, try move its file to VS
-               if (!PrivilegedFileHelper.renameTo(tempFile, file))
+               if (!tempFile.renameTo(file))
                {
                   // not succeeded - copy bytes, temp file will be deleted by transient ValueData
                   if (LOG.isDebugEnabled())
                   {
-                     LOG.debug("Value spool file move (rename) to Values Storage is not succeeded. "
-                              + "Trying bytes copy. Spool file: " + PrivilegedFileHelper.getAbsolutePath(tempFile)
-                              + ". Destination: " + PrivilegedFileHelper.getAbsolutePath(file));
+                     LOG
+                        .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
+                           + tempFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
                   }
 
-                  copyClose(PrivilegedFileHelper.fileInputStream(tempFile), PrivilegedFileHelper.fileOutputStream(file));
+                  copyClose(new FileInputStream(tempFile), new FileOutputStream(file));
                }
             }
             else
             {
                // not spooled, use client InputStream
-               copyClose(streamed.getStream(), PrivilegedFileHelper.fileOutputStream(file));
+               copyClose(streamed.getStream(), new FileOutputStream(file));
             }
 
             // link this Value to file in VS
@@ -206,7 +205,7 @@ public class ValueFileIOHelper
       else
       {
          // copy from Value stream to the file, e.g. from FilePersistedValueData to this Value
-         copyClose(value.getAsStream(), PrivilegedFileHelper.fileOutputStream(file));
+         copyClose(value.getAsStream(), new FileOutputStream(file));
       }
    }
 
@@ -244,7 +243,7 @@ public class ValueFileIOHelper
                in = streamed.getStream();
                if (in == null)
                {
-                  in = PrivilegedFileHelper.fileInputStream(streamed.getTempFile());
+                  in = new FileInputStream(streamed.getTempFile());
                }
             }
          }

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
@@ -101,7 +100,7 @@ public class DeleteValues extends ValueFileOperation
          {
             for (File f : files)
             {
-               if (!PrivilegedFileHelper.delete(f))
+               if (!f.delete())
                   // TODO possible place of error: FileNotFoundException when we delete/update existing
                   // Value and then add/update again.
                   // After the time the Cleaner will delete the file which is mapped to the Value.

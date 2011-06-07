@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
@@ -53,26 +52,21 @@ public class TreeFileIOChannel extends FileIOChannel
    @Override
    protected File getFile(final String propertyId, final int orderNumber) throws IOException
    {
-
       final TreeFile tfile =
-         new TreeFile(PrivilegedFileHelper.getAbsolutePath(rootDir) + makeFilePath(propertyId, orderNumber), cleaner,
-            rootDir);
-
-      PrivilegedFileHelper.mkdirs(tfile.getParentFile());
-
+         new TreeFile(rootDir.getAbsolutePath() + makeFilePath(propertyId, orderNumber), cleaner, rootDir);
+      mkdirs(tfile.getParentFile()); // make dirs on path
       return tfile;
    }
 
    @Override
    protected File[] getFiles(final String propertyId) throws IOException
    {
-      final File dir = new File(PrivilegedFileHelper.getAbsolutePath(rootDir) + buildPath(propertyId));
-      String[] fileNames = PrivilegedFileHelper.list(dir);
+      final File dir = new File(rootDir.getAbsolutePath() + buildPath(propertyId));
+      String[] fileNames = dir.list();
       File[] files = new File[fileNames.length];
       for (int i = 0; i < fileNames.length; i++)
       {
-         files[i] =
-            new TreeFile(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + fileNames[i], cleaner, rootDir);
+         files[i] = new TreeFile(dir.getAbsolutePath() + File.separator + fileNames[i], cleaner, rootDir);
       }
       return files;
    }
@@ -164,14 +158,13 @@ public class TreeFileIOChannel extends FileIOChannel
       try
       {
          mkdirsLock.acquire();
-         return PrivilegedFileHelper.mkdirs(dir);
+         return dir.mkdirs();
       }
       catch (InterruptedException e)
       {
          // chLog.error("mkdirs error on " + dir.getAbsolutePath() + ". " + e, e);
          // return false;
-         throw new IllegalStateException("mkdirs error on " + PrivilegedFileHelper.getAbsolutePath(dir) + " due to "
-            + e, e);
+         throw new IllegalStateException("mkdirs error on " + dir.getAbsolutePath() + " due to " + e, e);
       }
       finally
       {

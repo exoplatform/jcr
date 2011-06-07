@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.ValueOperation;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileLockException;
@@ -32,8 +30,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS.
@@ -61,6 +57,26 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
     * Logger.
     */
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ValueFileOperation");
+
+   /**
+    * The local internet address
+    */
+   private static String LOCAL_ADDRESS;
+   static
+   {
+      // TODO this info may be is not necessary
+      try
+      {
+         // get the inet address
+         InetAddress local = InetAddress.getLocalHost();
+         LOCAL_ADDRESS = local.getHostAddress() + " (" + local.getHostName() + ")";
+      }
+      catch (UnknownHostException e)
+      {
+         LOG.warn("Cannot read host address " + e);
+         LOCAL_ADDRESS = "no address, " + e;
+      }      
+   }
 
    /**
     * File cleaner.
@@ -128,7 +144,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
          // lock file in temp directory
          lockFile = new File(tempDir, targetFile.getName() + LOCK_FILE_EXTENSION);
 
-         FileOutputStream lout = PrivilegedFileHelper.fileOutputStream(lockFile, true);
+         FileOutputStream lout = new FileOutputStream(lockFile, true);
          lout.write(operationInfo.getBytes()); // TODO write info
          lout.getChannel().lock(); // wait for unlock (on Windows will wait for this JVM too)
 
@@ -158,13 +174,13 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
          if (lockFileStream != null)
             lockFileStream.close();
 
-         if (!PrivilegedFileHelper.delete(lockFile))
+         if (!lockFile.delete())
          { // TODO don't use FileCleaner, delete should be enough
-            LOG.warn("Cannot delete lock file " + PrivilegedFileHelper.getAbsolutePath(lockFile)
-               + ". Add to the FileCleaner");
+            LOG.warn("Cannot delete lock file " + lockFile.getAbsolutePath() + ". Add to the FileCleaner");
             cleaner.addFile(lockFile);
          }
       }
+
    }
 
    /**
@@ -202,11 +218,11 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
          // lock in JVM (wait for unlock if required)
          try
          {
-            return resources.aquire(PrivilegedFileHelper.getAbsolutePath(file), new ValueFileLockHolder(file));
+            return resources.aquire(file.getAbsolutePath(), new ValueFileLockHolder(file));
          }
          catch (InterruptedException e)
          {
-            throw new FileLockException("Lock error on " + PrivilegedFileHelper.getAbsolutePath(file), e);
+            throw new FileLockException("Lock error on " + file.getAbsolutePath(), e);
          }
       }
 
@@ -219,7 +235,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
        */
       public boolean unlock() throws IOException
       {
-         return resources.release(PrivilegedFileHelper.getAbsolutePath(file));
+         return resources.release(file.getAbsolutePath());
       }
    }
 
@@ -241,48 +257,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
 
       this.tempDir = tempDir;
 
-      // TODO this info may be is not neccesary
-      String localAddr;
-      try
-      {
-         // get the inet address
-         InetAddress local = null;
-         PrivilegedExceptionAction<InetAddress> action = new PrivilegedExceptionAction<InetAddress>()
-         {
-            public InetAddress run() throws Exception
-            {
-               return InetAddress.getLocalHost();
-            }
-         };
-         try
-         {
-            local = SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof UnknownHostException)
-            {
-               throw (UnknownHostException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
-
-         localAddr = local.getHostAddress() + " (" + local.getHostName() + ")";
-      }
-      catch (UnknownHostException e)
-      {
-         LOG.warn("Cannot read host address " + e);
-         localAddr = "no address, " + e;
-      }
-      operationInfo = System.currentTimeMillis() + " " + localAddr;
+      operationInfo = System.currentTimeMillis() + " " + LOCAL_ADDRESS;
    }
 
    /**
