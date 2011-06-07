@@ -30,6 +30,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.naming.InitialContext;
+import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
 
 /**
@@ -231,13 +232,18 @@ public class TestUserTransaction extends JcrAPIBaseTest
          repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
       
       Node tx1 = s1.getRootNode().getNode("pretx").addNode("tx1");
-      s1.save();
       
       Node tx2 = s2.getRootNode().getNode("pretx").addNode("tx2");
-      s2.save();
 
+      // keep this change out of the current Tx, this is necessary since
+      // we have now auto-enlistment mechanism that is triggered at session save
+      Transaction tx = txService.getTransactionManager().suspend();
       s0.save(); // save that parent of tx1 removed
+      txService.getTransactionManager().resume(tx);
 
+      s1.save();
+      s2.save();
+      
       try
       {
          ut.commit();

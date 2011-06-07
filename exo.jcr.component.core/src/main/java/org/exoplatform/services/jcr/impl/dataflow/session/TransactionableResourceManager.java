@@ -144,7 +144,16 @@ public class TransactionableResourceManager implements XAResource
    public boolean isGlobalTxActive()
    {
       TransactionContext ctx;
-      return (ctx = contexts.get()) != null && ctx.getXidContext() != null;
+      try
+      {
+         // We need to check the status also to be able to manage properly suspend and resume
+         return (ctx = contexts.get()) != null && ctx.getXidContext() != null && tm.getStatus() != Status.STATUS_NO_TRANSACTION;
+      }
+      catch (SystemException e)
+      {
+         log.warn("Could not check if a global Tx has been started", e);
+      }
+      return false;
    }
 
    /**

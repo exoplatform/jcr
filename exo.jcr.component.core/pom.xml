@@ -228,6 +228,11 @@
          </exclusions>
       </dependency>
       <dependency>
+        <groupId>javax.resource</groupId>
+        <artifactId>connector-api</artifactId>
+        <scope>test</scope>
+      </dependency>      
+      <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
       </dependency>

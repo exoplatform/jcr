@@ -267,7 +267,8 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal"/>
+          <!-- MVCC configured to prevent possible deadlocks when a global Tx is active -->
+          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc"/>
           <property name="username" value="sa"/>
           <property name="password" value=""/>
         </properties-param>
