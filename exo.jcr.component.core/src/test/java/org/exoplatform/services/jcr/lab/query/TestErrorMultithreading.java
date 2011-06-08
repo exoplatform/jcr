@@ -15,11 +15,12 @@
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
 
-package org.exoplatform.services.jcr.impl.core.query;
+package org.exoplatform.services.jcr.lab.query;
 
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.BaseQueryTest;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;

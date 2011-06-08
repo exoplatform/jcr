@@ -251,6 +251,23 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
          // e.printStackTrace();
          // ok;
       }
+      catch (Throwable e)
+      {
+         boolean isRepoConfEx = false;
+         Throwable tempe = e;
+         do
+         {
+            if (tempe instanceof RepositoryConfigurationException)
+            {
+               isRepoConfEx = true;
+               break;
+            }
+            tempe = tempe.getCause();
+         }
+         while ((tempe != null));
+
+         assertTrue(isRepoConfEx);
+      }
    }
 
    public void testRemoveSystemWorkspace() throws Exception

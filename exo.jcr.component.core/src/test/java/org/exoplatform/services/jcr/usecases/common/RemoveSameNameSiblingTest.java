@@ -132,8 +132,14 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
       n2 = subRoot.getNode("child[2]");
       log.debug(">>>> SAME NAME start " + n2.getPath() + " " + n2.getIndex());
       n2.remove(); // reindex child[3] --> child[2]
-      // root.save();
+      session.save();
 
+      assertEquals("Same-name siblings path must be reindexed", "/u1/child[2]", n3.getPath());
+      assertEquals("Same-name siblings path must be reindexed", "/u1/child[3]/n1/n2", n3_n1n2.getPath());
+      session.refresh(true);
+      assertEquals("Same-name siblings path must be reindexed", "/u1/child[2]/n1/n2", n3_n1n2.getPath());
+
+      n3_n1n2 = n3.getNode("n1").getNode("n2");
       assertEquals("Same-name siblings path must be reindexed", "/u1/child[2]/n1/n2", n3_n1n2.getPath());
 
       try
@@ -390,7 +396,8 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
             // TODO there is a problem, we can't see deep subtree of reindexed same-name-siblings now.
             // after save it will be ok.
             // See http://jira.exoplatform.org/browse/JCR-340
-            assertEquals("/snsRemoveTest/_node/node3", node2.getNode("node3").getPath());
+            //assertEquals("/snsRemoveTest/_node/node3", node2.getNode("node3").getPath());
+            assertEquals("/snsRemoveTest/_node[2]/node3", node2.getNode("node3").getPath());
 
          }
          catch (RepositoryException e)
