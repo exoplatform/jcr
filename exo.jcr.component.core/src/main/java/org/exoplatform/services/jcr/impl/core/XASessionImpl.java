@@ -208,9 +208,9 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
       catch (TransactionException e)
       {
          commitException = e;
-         if (LOG.isDebugEnabled())
+         if (LOG.isErrorEnabled())
          {
-            LOG.debug("Commit Error. Xid:" + xid + ", session: " + getSessionInfo() + ", " + this, e);
+            LOG.error("Commit Error. Xid:" + xid + ", session: " + getSessionInfo() + ", " + this, e);
          }
 
          throw new XASessionException(e.toString(), e.getErrorCode());
