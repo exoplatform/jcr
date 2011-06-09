@@ -207,8 +207,8 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
       try
       {
          Query query =
-            session.getWorkspace().getQueryManager().createQuery(
-               "select * from nt:base where jcr:path like '/u1/child[3]/%'", Query.SQL);
+            session.getWorkspace().getQueryManager()
+               .createQuery("select * from nt:base where jcr:path like '/u1/child[3]/%'", Query.SQL);
          QueryResult queryResult = query.execute();
          NodeIterator iterator = queryResult.getNodes();
          while (iterator.hasNext())
@@ -217,8 +217,8 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
          }
 
          query =
-            session.getWorkspace().getQueryManager().createQuery(
-               "select * from nt:base where jcr:path like '/u1/child[2]/%'", Query.SQL);
+            session.getWorkspace().getQueryManager()
+               .createQuery("select * from nt:base where jcr:path like '/u1/child[2]/%'", Query.SQL);
          queryResult = query.execute();
          iterator = queryResult.getNodes();
          while (iterator.hasNext())
@@ -259,8 +259,8 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
       try
       {
          Query query =
-            session.getWorkspace().getQueryManager().createQuery("/jcr:root/u1/child[3]//element(*, nt:base)",
-               Query.XPATH);
+            session.getWorkspace().getQueryManager()
+               .createQuery("/jcr:root/u1/child[3]//element(*, nt:base)", Query.XPATH);
          QueryResult queryResult = query.execute();
          NodeIterator iterator = queryResult.getNodes();
          while (iterator.hasNext())
@@ -269,8 +269,8 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
          }
 
          query =
-            session.getWorkspace().getQueryManager().createQuery("/jcr:root/u1/child[2]//element(*, nt:base)",
-               Query.XPATH);
+            session.getWorkspace().getQueryManager()
+               .createQuery("/jcr:root/u1/child[2]//element(*, nt:base)", Query.XPATH);
          queryResult = query.execute();
          iterator = queryResult.getNodes();
          while (iterator.hasNext())
@@ -365,51 +365,6 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
       catch (RepositoryException e)
       {
          fail(e.getMessage());
-      }
-   }
-
-   public void testRemoveSameNameSiblings() throws Exception
-   {
-
-      Node testRoot = root.addNode("snsRemoveTest");
-      session.save();
-
-      try
-      {
-
-         Node node1 = testRoot.addNode("_node");
-         node1.setProperty("prop", "_data1");
-         Node node2 = testRoot.addNode("_node");
-         node2.setProperty("prop", "_data2");
-         Node node3 = node2.addNode("node3");
-         testRoot.save();
-
-         try
-         {
-            assertEquals("/snsRemoveTest/_node[2]/node3", node2.getNode("node3").getPath());
-            node1.remove(); // /snsRemoveTest/_node[2] -> /snsRemoveTest/_node[1]
-
-            // check
-            String n2p = node2.getProperty("prop").getString();
-            assertEquals("A property must be same ", "_data2", n2p);
-
-            // TODO there is a problem, we can't see deep subtree of reindexed same-name-siblings now.
-            // after save it will be ok.
-            // See http://jira.exoplatform.org/browse/JCR-340
-            //assertEquals("/snsRemoveTest/_node/node3", node2.getNode("node3").getPath());
-            assertEquals("/snsRemoveTest/_node[2]/node3", node2.getNode("node3").getPath());
-
-         }
-         catch (RepositoryException e)
-         {
-            e.printStackTrace();
-            fail("A property must exists on the node /snsRemoveTest/_node[1] " + e);
-         }
-      }
-      finally
-      {
-         testRoot.remove();
-         session.save();
       }
    }
 }

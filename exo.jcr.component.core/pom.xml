@@ -417,6 +417,7 @@
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
+                  <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                </excludes>
             </configuration>
@@ -757,6 +758,7 @@
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
+                        <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                         <!-- From TCK -->
                         <exclude>org/apache/jackrabbit/test/api/TestAll.java</exclude>
