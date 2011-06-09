@@ -141,17 +141,26 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
     * @param newActiveState true if the cache just became the coordinator, false if the cache stopped being the
     *                       coordinator.
     */
-   protected void activeStatusChanged(boolean newActiveState)
+   protected void activeStatusChanged(final boolean newActiveState)
    {
-      coordinator = newActiveState;
-
-      getModeHandler().setMode(coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY);
-      log.info("Set indexer io mode to:" + (coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY));
-
-      if (coordinator)
+      // originally came from EXOJCR-1345. 
+      // Deadlock occurs inside JGroups, if calling some operations inside the same thread,
+      // invoking ViewChanged. That's why, need to perform operation in separated async tread.
+      new Thread(new Runnable()
       {
-         doPushState();
-      }
+         public void run()
+         {
+            coordinator = newActiveState;
+
+            getModeHandler().setMode(coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY);
+            log.info("Set indexer io mode to:" + (coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY));
+
+            if (coordinator)
+            {
+               doPushState();
+            }
+         }
+      }, "JCR Indexer ActiveStatusChanged-handler").start();
    }
 
    /**

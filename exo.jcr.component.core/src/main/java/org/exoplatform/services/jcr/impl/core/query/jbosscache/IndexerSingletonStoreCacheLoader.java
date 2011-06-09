@@ -45,12 +45,28 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
     * @see org.jboss.cache.loader.SingletonStoreCacheLoader#activeStatusChanged(boolean)
     */
    @Override
-   protected void activeStatusChanged(boolean newActiveState) throws PushStateException
+   protected void activeStatusChanged(final boolean newActiveState) throws PushStateException
    {
-      // at first change indexer mode
-      setIndexerMode(newActiveState);
-      // and them push states if needed
-      super.activeStatusChanged(newActiveState);
+      // originally came from EXOJCR-1345. 
+      // Deadlock occurs inside JGroups, if calling some operations inside the same thread,
+      // invoking ViewChanged. That's why, need to perform operation in separated async tread.
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            // at first change indexer mode
+            setIndexerMode(newActiveState);
+            // and them push states if needed
+            try
+            {
+               IndexerSingletonStoreCacheLoader.super.activeStatusChanged(newActiveState);
+            }
+            catch (PushStateException e)
+            {
+               log.error("Failed to initiate PushState.", e);
+            }
+         }
+      }, "JCR Indexer ActiveStatusChanged-handler").start();
    }
 
    @Override
