@@ -1317,8 +1317,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
-   protected List<PropertyData> getChildPropertiesDataByPattern(final NodeData nodeData, final List<QPathEntryFilter> patternFilters)
-      throws RepositoryException
+   protected List<PropertyData> getChildPropertiesDataByPattern(final NodeData nodeData,
+      final List<QPathEntryFilter> patternFilters) throws RepositoryException
    {
       if (!cache.isEnabled())
       {
