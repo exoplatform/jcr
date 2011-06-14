@@ -419,6 +419,9 @@
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
                   <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
+                  <!-- Implementation Specific Excludes -->
+                  <exclude>${impl.specific.exclude.1}</exclude>
+                  <exclude>${impl.specific.exclude.2}</exclude>
                </excludes>
             </configuration>
          </plugin>
