@@ -22,7 +22,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.config</artifactId>
-      <version>1.14.0-GA-SNAPSHOT</version>
+      <version>1.14.0-CR3</version>
    </parent>
 
    <modelVersion>4.0.0</modelVersion>
@@ -40,7 +40,7 @@
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.ear</artifactId>
-         <version>1.14.0-GA-SNAPSHOT</version>
+         <version>1.14.0-CR3</version>
          <type>ear</type>
          <scope>runtime</scope>
       </dependency>
