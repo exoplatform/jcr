@@ -42,6 +42,7 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
+import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.xml.VersionHistoryRemover;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportItemData;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
@@ -595,8 +596,8 @@ public abstract class BaseXmlImporter implements ContentImporter
                      // If an incoming referenceable node has the same UUID as a node
                      // already existing in the workspace then a SAXException is thrown
                      // by the ContentHandler during deserialization.
-                     throw new ItemExistsException("An incoming referenceable node has the same "
-                        + "UUID as a node already existing in the workspace!");
+                     throw new JCRItemExistsException("An incoming referenceable node has the same "
+                        + "UUID as a node already existing in the workspace! UUID:" + identifier, identifier);
                   default :
                }
             }

@@ -29,12 +29,12 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.ItemImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
+import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.jcr.ItemExistsException;
 import javax.jcr.RepositoryException;
 
 /**
@@ -180,7 +180,8 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
             }
             else
             {
-               throw new ItemExistsException("Item exists id = " + identifier + " name " + relItem.getName());
+               throw new JCRItemExistsException("Item exists id = " + identifier + " name " + relItem.getName(),
+                  identifier);
             }
          }
          keepIdentifiers = true;

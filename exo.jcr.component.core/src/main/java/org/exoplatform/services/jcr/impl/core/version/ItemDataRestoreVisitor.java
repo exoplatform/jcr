@@ -43,6 +43,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
+import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -644,10 +645,10 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             // instance of C becomes the child of the restored N.
             if (!removeExisting)
             {
-               throw new ItemExistsException("Item with the same UUID " + versionableIdentifier
+               throw new JCRItemExistsException("Item with the same UUID " + versionableIdentifier
                   + " as versionable child node "
                   + userSession.getLocationFactory().createJCRPath(versionable.getQPath()).getAsString(false)
-                  + " already exists and removeExisting=false");
+                  + " already exists and removeExisting=false", versionableIdentifier);
             }
             // else - leaving existed unchanged
          }
