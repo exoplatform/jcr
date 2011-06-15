@@ -52,7 +52,7 @@
         </listitem>
 
         <listitem>
-          <para>HSQLDB (1.8.0.7)</para>
+          <para>HSQLDB (2.0.0)</para>
         </listitem>
       </itemizedlist></para>
 
@@ -66,6 +66,166 @@
     as a database dialect parameter. If you need a more detailed configuration
     of the database, it's possible to do that by editing the metadata
     SQL-script files.</para>
+
+    <para>SQL-scripts are located under
+    'jcr/trunk/exo.jcr.component.core/src/main/resources/conf/storage' path.
+    Or can be found at SVN <ulink
+    url="https://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk/exo.jcr.component.core/src/main/resources/conf/storage/">here.</ulink></para>
+
+    <para>In the next two tables correspondence between the scripts and
+    databases is shown.</para>
+
+    <table border="1">
+      <caption>Single-database</caption>
+
+      <tr>
+        <td>MySQL DB</td>
+
+        <td>jcr-sjdbc.mysql.sql</td>
+      </tr>
+
+      <tr>
+        <td>MySQL DB with utf-8</td>
+
+        <td>jcr-sjdbc.mysql-utf8.sql</td>
+      </tr>
+
+      <tr>
+        <td>MS SQL Server</td>
+
+        <td>jcr-sjdbc.mssql.sql</td>
+      </tr>
+
+      <tr>
+        <td>PostgresSQL</td>
+
+        <td>jcr-sjdbc.pqsql.sql</td>
+      </tr>
+
+      <tr>
+        <td>DB2 9.x</td>
+
+        <td>jcr-sjdbc.db2.sql</td>
+      </tr>
+
+      <tr>
+        <td>DB2 8.x</td>
+
+        <td>jcr-sjdbc.db2v8.sql</td>
+      </tr>
+
+      <tr>
+        <td>HSQLDB</td>
+
+        <td>jcr-sjdbc.h2.sql</td>
+      </tr>
+
+      <tr>
+        <td>Sybase</td>
+
+        <td>jcr-sjdbc.sybase.sql</td>
+      </tr>
+
+      <tr>
+        <td>Oracle DB</td>
+
+        <td>jcr-sjdbc.ora.sql</td>
+      </tr>
+
+      <tr>
+        <td>Oracle DB analyze</td>
+
+        <td>jcr-sjdbc.ora-analyze.sql</td>
+      </tr>
+
+      <tr>
+        <td>Ingres DB</td>
+
+        <td>jcr-sjdbc.ingres.sql</td>
+      </tr>
+
+      <tr>
+        <td>Derby DB</td>
+
+        <td>jcr-sjdbc.derby.sql</td>
+      </tr>
+    </table>
+
+    <table border="1">
+      <caption>Multi-database</caption>
+
+      <tr>
+        <td>MySQL DB</td>
+
+        <td>jcr-mjdbc.mysql.sql</td>
+      </tr>
+
+      <tr>
+        <td>MySQL DB with utf-8</td>
+
+        <td>jcr-mjdbc.mysql-utf8.sql</td>
+      </tr>
+
+      <tr>
+        <td>MS SQL Server</td>
+
+        <td>jcr-mjdbc.mssql.sql</td>
+      </tr>
+
+      <tr>
+        <td>PostgresSQL</td>
+
+        <td>jcr-mjdbc.pqsql.sql</td>
+      </tr>
+
+      <tr>
+        <td>DB2 9.x</td>
+
+        <td>jcr-mjdbc.db2.sql</td>
+      </tr>
+
+      <tr>
+        <td>DB2 8.x</td>
+
+        <td>jcr-mjdbc.db2v8.sql</td>
+      </tr>
+
+      <tr>
+        <td>HSQLDB</td>
+
+        <td>jcr-mjdbc.h2.sql</td>
+      </tr>
+
+      <tr>
+        <td>Sybase</td>
+
+        <td>jcr-mjdbc.sybase.sql</td>
+      </tr>
+
+      <tr>
+        <td>Oracle DB</td>
+
+        <td>jcr-mjdbc.ora.sql</td>
+      </tr>
+
+      <tr>
+        <td>Oracle DB analyze</td>
+
+        <td>jcr-mjdbc.ora-analyze.sql</td>
+      </tr>
+
+      <tr>
+        <td>Ingres DB</td>
+
+        <td>jcr-mjdbc.ingres.sql</td>
+      </tr>
+
+      <tr>
+        <td>Derby DB</td>
+
+        <td>jcr-mjdbc.derby.sql</td>
+      </tr>
+    </table>
 
     <para>In case the non-ANSI node name is used, it's necessary to use a
     database with MultiLanguage support[TODO link to MultiLanguage]. Some JDBC
@@ -106,7 +266,7 @@
     <para>For example (standalone mode, two data containers
     <parameter>jdbcjcr</parameter> - local HSQLDB,
     <parameter>jdbcjcr1</parameter> - remote MySQL):</para>
-    
+
     <programlisting language="xml">&lt;component&gt;
     &lt;key&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/key&gt;
     &lt;type&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/type&gt;
@@ -225,10 +385,9 @@
     repository service. Each workspace will be configured for its own data
     container.</para>
 
-    <para>For example (two workspaces 
-    <parameter>ws</parameter> - jdbcjcr,
+    <para>For example (two workspaces <parameter>ws</parameter> - jdbcjcr,
     <parameter>ws1</parameter> - jdbcjcr1):</para>
-    
+
     <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
@@ -293,36 +452,36 @@
 &lt;/workspaces&gt;
 </programlisting>
 
-      <itemizedlist>
-        <listitem>
-          <para><parameter>source-name</parameter>: A javax.sql.DataSource
-          name configured in InitialContextInitializer component (was
-          <parameter>sourceName</parameter> prior JCR 1.9);</para>
-        </listitem>
+    <itemizedlist>
+      <listitem>
+        <para><parameter>source-name</parameter>: A javax.sql.DataSource name
+        configured in InitialContextInitializer component (was
+        <parameter>sourceName</parameter> prior JCR 1.9);</para>
+      </listitem>
 
-        <listitem>
-          <para><parameter>dialect</parameter>: A database dialect, one of
-          "hsqldb", "mysql", "mysql-utf8", "pgsql", "oracle", "oracle-oci",
-          "mssql", "sybase", "derby", "db2", "db2v8" or "auto" for dialect
-          autodetection;</para>
-        </listitem>
+      <listitem>
+        <para><parameter>dialect</parameter>: A database dialect, one of
+        "hsqldb", "mysql", "mysql-utf8", "pgsql", "oracle", "oracle-oci",
+        "mssql", "sybase", "derby", "db2", "db2v8" or "auto" for dialect
+        autodetection;</para>
+      </listitem>
 
-        <listitem>
-          <para><parameter>multi-db</parameter>: Enable multi-database
-          container with this parameter (set value "true");</para>
-        </listitem>
+      <listitem>
+        <para><parameter>multi-db</parameter>: Enable multi-database container
+        with this parameter (set value "true");</para>
+      </listitem>
 
-        <listitem>
-          <para><parameter>max-buffer-size: A</parameter> a threshold (in
-          bytes) after which a javax.jcr.Value content will be swapped to a
-          file in a temporary storage. I.e. swap for pending changes.</para>
-        </listitem>
+      <listitem>
+        <para><parameter>max-buffer-size: A</parameter> a threshold (in bytes)
+        after which a javax.jcr.Value content will be swapped to a file in a
+        temporary storage. I.e. swap for pending changes.</para>
+      </listitem>
 
-        <listitem>
-          <para><parameter>swap-directory</parameter>: A path in the file
-          system used to swap the pending changes.</para>
-        </listitem>
-      </itemizedlist>
+      <listitem>
+        <para><parameter>swap-directory</parameter>: A path in the file system
+        used to swap the pending changes.</para>
+      </listitem>
+    </itemizedlist>
 
     <para>In this way, we have configured two workspace which will be
     persisted in two different databases (ws in HSQLDB, ws1 in MySQL).</para>
@@ -343,7 +502,7 @@
 
     <para>For example (embedded mode for <parameter>jdbcjcr</parameter> data
     container):</para>
-    
+
     <programlisting language="xml">&lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/target-component&gt;
     &lt;component-plugin&gt;
@@ -385,7 +544,7 @@
 
     <para>For example (two workspaces <parameter>ws</parameter> - jdbcjcr,
     <parameter>ws1</parameter> - jdbcjcr):</para>
-    
+
     <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
@@ -520,7 +679,7 @@
 
     <para>Simple queries will be used if you chose
     <classname>org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer</classname>:</para>
-    
+
     <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
@@ -531,7 +690,7 @@
 
     <para>Complex queries will be used if you chose
     <classname>org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer</classname>:</para>
-    
+
     <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
@@ -559,9 +718,8 @@
     for Orcale dialect, that uses query hints to increase performance for few
     important queries.</para>
 
-    <para>To enable this option put next configuration
-    property:</para>
-    
+    <para>To enable this option put next configuration property:</para>
+
     <programlisting language="xml">&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
   &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
@@ -606,7 +764,7 @@
       </itemizedlist></para>
 
     <para>A sample registry file is below:</para>
-    
+
     <programlisting>Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters]
