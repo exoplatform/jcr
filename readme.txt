@@ -636,7 +636,7 @@ JBoss-5.1.0.GA
 
   1. Configuration
 
-    * Copy jcr.ear and jcr-ds.xml into $jboss_home/server/default/deploy
+    * Copy exo.jcr.ear.ear and jcr-ds.xml into $jboss_home/server/default/deploy
     * Copy run.conf and run.conf.bato $jboss_home/bin
     * Create $jboss_home/server/default/conf/exo-conf folder if it doesn't exist.
     * Put exo-configuration.xml into $jboss_home/server/default/conf/exo-conf/exo-configuration.xml
