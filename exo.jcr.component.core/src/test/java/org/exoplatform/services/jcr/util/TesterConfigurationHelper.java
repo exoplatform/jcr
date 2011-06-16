@@ -27,10 +27,12 @@ import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.LockPersisterEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -38,8 +40,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -66,49 +66,188 @@ public class TesterConfigurationHelper
       System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "org.exoplatform.services.naming.SimpleContextFactory");
    }
 
-   public void createWorkspace(WorkspaceEntry workspaceEntry, ExoContainer container)
+   /**
+    * Add new workspace to repository.
+    */
+   public void addWorkspace(ManageableRepository repository, WorkspaceEntry workspaceEntry)
       throws RepositoryConfigurationException, RepositoryException
    {
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep;
-
-      defRep = (RepositoryImpl)service.getDefaultRepository();
-      defRep.configWorkspace(workspaceEntry);
-      defRep.createWorkspace(workspaceEntry.getName());
-
+      repository.configWorkspace(workspaceEntry);
+      repository.createWorkspace(workspaceEntry.getName());
    }
 
-   public String getNewDataSource(String type) throws Exception
+   /**
+    * Create new datasource. 
+    * 
+    * @return datasource name
+    */
+   public String createDatasource() throws Exception
    {
+      String dsName = IdGenerator.generate();
 
-      String newDS = IdGenerator.generate();
       Properties properties = new Properties();
-
       properties.setProperty("driverClassName", "org.hsqldb.jdbcDriver");
-      String newurl = "jdbc:hsqldb:file:target/temp/data/" + newDS;
-
-      log.info("New url " + newurl);
-
-      properties.setProperty("url", newurl);
+      properties.setProperty("url", "jdbc:hsqldb:file:target/temp/data/" + dsName);
       properties.setProperty("username", "sa");
       properties.setProperty("password", "");
-      DataSource bds = BasicDataSourceFactory.createDataSource(properties);
-      if (!newurl.contains("hsqldb"))
-      {
-         createDatabase(bds, newDS);
-      }
 
-      new InitialContext().bind(newDS, bds);
-      return newDS;
+      DataSource ds = BasicDataSourceFactory.createDataSource(properties);
+
+      new InitialContext().bind(dsName, ds);
+
+      return dsName;
 
    }
 
-   public WorkspaceEntry getNewWs(String wsName, boolean isMultiDb, String dsName, String vsPath, ContainerEntry entry)
+   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, String dsName)
       throws Exception
    {
-      return getNewWs(wsName, isMultiDb, dsName, vsPath, entry, true);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, dsName);
+      service.createRepository(repoEntry);
+
+      return service.getRepository(repoEntry.getName());
    }
 
+   public ManageableRepository createRepository(ExoContainer container, RepositoryEntry repoEntry) throws Exception
+   {
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      service.createRepository(repoEntry);
+
+      return service.getRepository(repoEntry.getName());
+   }
+
+   /**
+   * Create workspace entry. 
+   */
+   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName) throws Exception
+   {
+      // create system workspace entry
+      List<String> ids = new ArrayList<String>();
+      ids.add("id");
+      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids);
+
+      if (systemWSName != null)
+      {
+         wsEntry.setName(systemWSName);
+      }
+
+      RepositoryEntry repository = new RepositoryEntry();
+      repository.setSystemWorkspaceName(wsEntry.getName());
+      repository.setDefaultWorkspaceName(wsEntry.getName());
+      repository.setName("repo-" + IdGenerator.generate());
+      repository.setSessionTimeOut(3600000);
+      repository.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
+      repository.setSecurityDomain("exo-domain");
+      repository.addWorkspace(wsEntry);
+
+      return repository;
+   }
+
+   /**
+    * Create workspace entry. 
+    */
+   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName) throws Exception
+   {
+      List<String> ids = new ArrayList<String>();
+      ids.add("id");
+
+      return createWorkspaceEntry(isMultiDb, dsName, ids);
+   }
+
+   /**
+    * Create workspace entry. 
+    */
+   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds)
+      throws Exception
+   {
+      if (dsName == null)
+      {
+         dsName = createDatasource();
+      }
+
+      String id = IdGenerator.generate();
+      String wsName = "ws-" + id;
+
+      // container entry
+      List params = new ArrayList();
+      params.add(new SimpleParameterEntry("source-name", dsName));
+      params.add(new SimpleParameterEntry("multi-db", isMultiDb ? "true" : "false"));
+      params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
+      params.add(new SimpleParameterEntry("dialect", "auto"));
+      params.add(new SimpleParameterEntry("swap-directory", "target/temp/swap/" + wsName));
+
+      ContainerEntry containerEntry =
+         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
+            (ArrayList)params);
+      containerEntry.setParameters(params);
+
+      // value storage
+      ArrayList list = new ArrayList();
+      if (valueStorageIds != null)
+      {
+         for (String vsId : valueStorageIds)
+         {
+            ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
+            ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
+            filterEntry.setPropertyType("Binary");
+            vsparams.add(filterEntry);
+
+            ValueStorageEntry valueStorageEntry =
+               new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage",
+                  vsparams);
+            ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
+            spe.add(new SimpleParameterEntry("path", "target/temp/values/" + wsName + "-" + vsId));
+            valueStorageEntry.setId(vsId);
+            valueStorageEntry.setParameters(spe);
+            valueStorageEntry.setFilters(vsparams);
+
+            // containerEntry.setValueStorages();
+            containerEntry.setParameters(params);
+            list.add(valueStorageEntry);
+         }
+      }
+
+      containerEntry.setValueStorages(list);
+
+      // Indexer
+      params = new ArrayList();
+      params.add(new SimpleParameterEntry("index-dir", "target/temp/index/" + wsName));
+      QueryHandlerEntry qEntry =
+         new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", params);
+
+      // Cache
+      ArrayList cacheParams = new ArrayList();
+      cacheParams.add(new SimpleParameterEntry("maxSize", "2000"));
+      cacheParams.add(new SimpleParameterEntry("liveTime", "20m"));
+      CacheEntry cacheEntry = new CacheEntry(cacheParams);
+      cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
+
+      WorkspaceEntry workspaceEntry = new WorkspaceEntry();
+      workspaceEntry.setContainer(containerEntry);
+      workspaceEntry.setCache(cacheEntry);
+      workspaceEntry.setQueryHandler(qEntry);
+      workspaceEntry.setName(wsName);
+      workspaceEntry.setUniqueName(wsName);
+
+      return workspaceEntry;
+   }
+
+   public List<String> getValueStorageIds(ArrayList<ValueStorageEntry> entries)
+   {
+      List<String> ids = new ArrayList<String>();
+      if (entries != null)
+      {
+         for (ValueStorageEntry entry : entries)
+         {
+            ids.add(entry.getId());
+         }
+      }
+
+      return ids;
+   }
+
+   @Deprecated
    public WorkspaceEntry getNewWs(String wsName, boolean isMultiDb, String dsName, String vsPath, ContainerEntry entry,
       boolean newMultiDbDS) throws Exception
    {
@@ -129,7 +268,7 @@ public class TesterConfigurationHelper
 
       if (newMultiDbDS && (isMultiDb || dsName == null))
       {
-         dsName = getNewDataSource("");
+         dsName = createDatasource();
       }
 
       List params = new ArrayList();
@@ -220,124 +359,20 @@ public class TesterConfigurationHelper
       return workspaceEntry;
    }
 
-   //   public WorkspaceEntry getNewWsOnDataSource(String wsName, boolean isMultiDb, String dsName, String vsPath,
-   //      ContainerEntry entry) throws Exception
-   //   {
-   //
-   //      String dbDialect = null;
-   //      if (dsName != null)
-   //      {
-   //         DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-   //         if (ds != null)
-   //         {
-   //            Connection jdbcConn = null;
-   //
-   //            jdbcConn = ds.getConnection();
-   //            dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
-   //         }
-   //      }
-   //
-   //      List params = new ArrayList();
-   //
-   //      if (isMultiDb && dsName == null)
-   //      {
-   //         dsName = getNewDataSource("");
-   //      }
-   //
-   //      params.add(new SimpleParameterEntry("sourceName", dsName));
-   //      params.add(new SimpleParameterEntry("db-type", "generic"));
-   //      params.add(new SimpleParameterEntry("multi-db", isMultiDb ? "true" : "false"));
-   //      params.add(new SimpleParameterEntry("update-storage", "true"));
-   //      params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
-   //
-   //      if (dbDialect != null)
-   //      {
-   //         params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_DIALECT, dbDialect));
-   //      }
-   //      else if (entry.getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT) != null)
-   //      {
-   //         params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_DIALECT, entry
-   //            .getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT)));
-   //      }
-   //
-   //      String oldSwap = entry.getParameterValue("swap-directory");
-   //      String newSwap = oldSwap.substring(0, oldSwap.lastIndexOf('/')) + '/' + wsName;
-   //
-   //      params.add(new SimpleParameterEntry("swap-directory", newSwap));
-   //
-   //      ContainerEntry containerEntry =
-   //         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
-   //            (ArrayList)params);
-   //      containerEntry.setParameters(params);
-   //
-   //      if (vsPath != null)
-   //      {
-   //
-   //         ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
-   //         ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
-   //         filterEntry.setPropertyType("Binary");
-   //         vsparams.add(filterEntry);
-   //
-   //         ValueStorageEntry valueStorageEntry =
-   //            new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage", vsparams);
-   //         ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
-   //         spe.add(new SimpleParameterEntry("path", vsPath));
-   //         valueStorageEntry.setId(IdGenerator.generate());
-   //         valueStorageEntry.setParameters(spe);
-   //         valueStorageEntry.setFilters(vsparams);
-   //
-   //         // containerEntry.setValueStorages();
-   //         containerEntry.setParameters(params);
-   //         ArrayList list = new ArrayList(1);
-   //         list.add(valueStorageEntry);
-   //
-   //         containerEntry.setValueStorages(list);
-   //
-   //      }
-   //
-   //      // Indexer
-   //      ArrayList qParams = new ArrayList();
-   //      qParams.add(new SimpleParameterEntry("indexDir", "../temp/index/" + IdGenerator.generate()));
-   //      QueryHandlerEntry qEntry =
-   //         new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
-   //
-   //      WorkspaceEntry workspaceEntry =
-   //         new WorkspaceEntry(wsName != null ? wsName : IdGenerator.generate(), "nt:unstructured");
-   //      workspaceEntry.setContainer(containerEntry);
-   //
-   //      ArrayList cacheParams = new ArrayList();
-   //
-   //      cacheParams.add(new SimpleParameterEntry("maxSize", "2000"));
-   //      cacheParams.add(new SimpleParameterEntry("liveTime", "20m"));
-   //      CacheEntry cacheEntry = new CacheEntry(cacheParams);
-   //      cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
-   //
-   //      workspaceEntry.setCache(cacheEntry);
-   //
-   //      workspaceEntry.setQueryHandler(qEntry);
-   //
-   //      LockManagerEntry lockManagerEntry = new LockManagerEntry();
-   //      lockManagerEntry.setTimeout(900000);
-   //      LockPersisterEntry persisterEntry = new LockPersisterEntry();
-   //      persisterEntry.setType("org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister");
-   //      ArrayList lpParams = new ArrayList();
-   //      lpParams.add(new SimpleParameterEntry("path", "../temp/lock"));
-   //      persisterEntry.setParameters(lpParams);
-   //      lockManagerEntry.setPersister(persisterEntry);
-   //      workspaceEntry.setLockManager(lockManagerEntry);
-   //
-   //      // workspaceEntry
-   //      return workspaceEntry;
-   //   }
-
-   private void createDatabase(DataSource ds, String dbName) throws SQLException
+   @Deprecated
+   public void createWorkspace(WorkspaceEntry workspaceEntry, ExoContainer container)
+      throws RepositoryConfigurationException, RepositoryException
    {
-      Connection connection = ds.getConnection();
-      PreparedStatement st = connection.prepareStatement("create database " + dbName);
-      st.executeQuery();
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryImpl defRep;
+
+      defRep = (RepositoryImpl)service.getDefaultRepository();
+      defRep.configWorkspace(workspaceEntry);
+      defRep.createWorkspace(workspaceEntry.getName());
+
    }
 
-   public static TesterConfigurationHelper getInstence()
+   public static TesterConfigurationHelper getInstance()
    {
       if (instance == null)
       {

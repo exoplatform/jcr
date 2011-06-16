@@ -59,7 +59,7 @@ public class TestDBCleaner extends JcrImplBaseTest
    public TestDBCleaner()
    {
       super();
-      this.helper = TesterConfigurationHelper.getInstence();
+      this.helper = TesterConfigurationHelper.getInstance();
    }
 
    @SuppressWarnings("deprecation")

@@ -412,9 +412,6 @@
                   <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceRestore.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
                   <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
@@ -756,9 +753,6 @@
                         <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceRestore.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
                         <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
