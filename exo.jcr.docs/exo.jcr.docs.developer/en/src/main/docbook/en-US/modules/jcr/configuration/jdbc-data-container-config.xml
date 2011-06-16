@@ -52,9 +52,15 @@
         </listitem>
 
         <listitem>
+          <para>Sybase 15.0.3 Driver: Sybase jConnect JDBC driver v7 (Build 26502)</para>
+        </listitem>
+
+        <listitem>
           <para>HSQLDB (2.0.0)</para>
         </listitem>
+  
       </itemizedlist></para>
+
 
     <para><note>
         <para>Please note, that JCR requires at least READ_COMMITED isolation
@@ -67,9 +73,9 @@
     of the database, it's possible to do that by editing the metadata
     SQL-script files.</para>
 
-    <para>SQL-scripts are located under
-    'jcr/trunk/exo.jcr.component.core/src/main/resources/conf/storage' path.
-    Or can be found at SVN <ulink
+    <para>SQL-scripts you can obtain from jar-file
+    exo.jcr.component.core-XXX.XXX.jar:conf/storage/. They also can be
+    found at SVN <ulink
     url="https://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk/exo.jcr.component.core/src/main/resources/conf/storage/">here.</ulink></para>
 
     <para>In the next two tables correspondence between the scripts and
@@ -91,39 +97,9 @@
       </tr>
 
       <tr>
-        <td>MS SQL Server</td>
-
-        <td>jcr-sjdbc.mssql.sql</td>
-      </tr>
-
-      <tr>
         <td>PostgresSQL</td>
 
         <td>jcr-sjdbc.pqsql.sql</td>
-      </tr>
-
-      <tr>
-        <td>DB2 9.x</td>
-
-        <td>jcr-sjdbc.db2.sql</td>
-      </tr>
-
-      <tr>
-        <td>DB2 8.x</td>
-
-        <td>jcr-sjdbc.db2v8.sql</td>
-      </tr>
-
-      <tr>
-        <td>HSQLDB</td>
-
-        <td>jcr-sjdbc.h2.sql</td>
-      </tr>
-
-      <tr>
-        <td>Sybase</td>
-
-        <td>jcr-sjdbc.sybase.sql</td>
       </tr>
 
       <tr>
@@ -133,28 +109,35 @@
       </tr>
 
       <tr>
-        <td>Oracle DB analyze</td>
+        <td>DB2 9.7</td>
 
-        <td>jcr-sjdbc.ora-analyze.sql</td>
+        <td>jcr-sjdbc.db2.sql</td>
       </tr>
 
       <tr>
-        <td>Ingres DB</td>
+        <td>MS SQL Server</td>
 
-        <td>jcr-sjdbc.ingres.sql</td>
+        <td>jcr-sjdbc.mssql.sql</td>
       </tr>
 
       <tr>
-        <td>Derby DB</td>
+        <td>Sybase</td>
 
-        <td>jcr-sjdbc.derby.sql</td>
+        <td>jcr-sjdbc.sybase.sql</td>
       </tr>
+
+      <tr>
+        <td>HSQLDB</td>
+
+        <td>jcr-sjdbc.sql</td>
+      </tr>
+
     </table>
 
     <table border="1">
       <caption>Multi-database</caption>
 
-      <tr>
+        <tr>
         <td>MySQL DB</td>
 
         <td>jcr-mjdbc.mysql.sql</td>
@@ -167,39 +150,9 @@
       </tr>
 
       <tr>
-        <td>MS SQL Server</td>
-
-        <td>jcr-mjdbc.mssql.sql</td>
-      </tr>
-
-      <tr>
         <td>PostgresSQL</td>
 
         <td>jcr-mjdbc.pqsql.sql</td>
-      </tr>
-
-      <tr>
-        <td>DB2 9.x</td>
-
-        <td>jcr-mjdbc.db2.sql</td>
-      </tr>
-
-      <tr>
-        <td>DB2 8.x</td>
-
-        <td>jcr-mjdbc.db2v8.sql</td>
-      </tr>
-
-      <tr>
-        <td>HSQLDB</td>
-
-        <td>jcr-mjdbc.h2.sql</td>
-      </tr>
-
-      <tr>
-        <td>Sybase</td>
-
-        <td>jcr-mjdbc.sybase.sql</td>
       </tr>
 
       <tr>
@@ -209,21 +162,27 @@
       </tr>
 
       <tr>
-        <td>Oracle DB analyze</td>
+        <td>DB2 9.7</td>
 
-        <td>jcr-mjdbc.ora-analyze.sql</td>
+        <td>jcr-mjdbc.db2.sql</td>
       </tr>
 
       <tr>
-        <td>Ingres DB</td>
+        <td>MS SQL Server</td>
 
-        <td>jcr-mjdbc.ingres.sql</td>
+        <td>jcr-mjdbc.mssql.sql</td>
       </tr>
 
       <tr>
-        <td>Derby DB</td>
+        <td>Sybase</td>
 
-        <td>jcr-mjdbc.derby.sql</td>
+        <td>jcr-mjdbc.sybase.sql</td>
+      </tr>
+
+      <tr>
+        <td>HSQLDB</td>
+
+        <td>jcr-mjdbc.sql</td>
       </tr>
     </table>
 
