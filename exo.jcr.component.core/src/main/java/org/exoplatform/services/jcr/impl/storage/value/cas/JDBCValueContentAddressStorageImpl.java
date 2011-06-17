@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -222,10 +223,8 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                "SELECT DISTINCT C.PROPERTY_ID AS PROPERTY_ID FROM " + tableName + " C, " + tableName + " P "
                   + "WHERE C.CAS_ID=P.CAS_ID AND C.PROPERTY_ID<>P.PROPERTY_ID AND P.PROPERTY_ID=?";
 
-            // init database objects
-            ResultSet trs = dbMetaData.getTables(null, null, tableName, null);
             // check if table already exists
-            if (!trs.next())
+            if (!JDBCUtils.tableExists(tableName, conn))
             {
                st = conn.createStatement();
 

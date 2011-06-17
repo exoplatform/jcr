@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2011 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,75 +16,73 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.init;
+package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import java.io.IOException;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Created by The eXo Platform SAS
+ * This class provides JDBC tools
  * 
- * 22.03.2007
- * 
- * For statistic compute on a user schema (PL/SQL): exec
- * DBMS_STATS.GATHER_SCHEMA_STATS(ownname=>'exoadmin')
- * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: OracleDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
+ * @version $Id$
+ *
  */
-public class OracleDBInitializer extends StorageDBInitializer
+public class JDBCUtils
 {
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCUtils");
 
-   public OracleDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
-      throws IOException
+   private JDBCUtils()
    {
-      super(containerName, connection, scriptPath, multiDb);
    }
 
-   @Override
-   protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
+   /**
+    * Indicates whether or not a given table exists
+    * @param tableName the name of the table to check
+    * @param con the connection to use
+    * @return <code>true</code> if it exists, <code>false</code> otherwise
+    */
+   public static boolean tableExists(String tableName, Connection con)
    {
-      ResultSet srs = null;
-      Statement st = null;
+      Statement stmt = null;
+      ResultSet trs = null;
       try
       {
-         st = conn.createStatement();
-         srs = st.executeQuery("SELECT " + sequenceName + ".nextval FROM DUAL");
-         if (srs.next())
-         {
-            return true;
-         }
-         return false;
+         stmt = con.createStatement();
+         trs = stmt.executeQuery("SELECT count(*) FROM " + tableName);
+         return trs.next();
       }
       catch (SQLException e)
       {
-         // check: ORA-02289: sequence does not exist
-         if (e.getMessage().indexOf("ORA-02289") >= 0)
-            return false;
-         throw e;
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("SQLException occurs while checking the table " + tableName, e);
+         }
+         return false;
       }
       finally
       {
-         if (srs != null)
+         if (trs != null)
          {
             try
             {
-               srs.close();
+               trs.close();
             }
             catch (SQLException e)
             {
                LOG.error("Can't close the ResultSet: " + e);
             }
          }
-
-         if (st != null)
+         if (stmt != null)
          {
             try
             {
-               st.close();
+               stmt.close();
             }
             catch (SQLException e)
             {

@@ -48,15 +48,6 @@ public class IngresSQLDBInitializer extends StorageDBInitializer
     * {@inheritDoc}
     */
    @Override
-   protected boolean isIndexExists(Connection conn, String tableName, String indexName) throws SQLException
-   {
-      return super.isIndexExists(conn, tableName.toUpperCase().toLowerCase(), indexName.toUpperCase().toLowerCase());
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    protected boolean isTableExists(Connection conn, String tableName) throws SQLException
    {
       return super.isTableExists(conn, tableName.toUpperCase().toLowerCase());

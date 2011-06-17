@@ -18,13 +18,13 @@ package org.exoplatform.services.jcr.impl.clean.rdbms;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -194,27 +194,7 @@ public class DBClean
     */
    protected boolean isTableExists(Connection conn, String tableName) throws SQLException
    {
-      ResultSet trs = conn.getMetaData().getTables(null, null, tableName, null);
-      try
-      {
-         boolean res = false;
-         while (trs.next())
-         {
-            res = true; // check for columns/table type matching etc.
-         }
-         return res;
-      }
-      finally
-      {
-         try
-         {
-            trs.close();
-         }
-         catch (SQLException e)
-         {
-            LOG.error("Can't close the ResultSet: " + e);
-         }
-      }
+      return JDBCUtils.tableExists(tableName, conn);
    }
 
    /**

@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -31,6 +32,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -220,36 +222,14 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
     */
    protected boolean isDbInitialized(final Connection con)
    {
-      try
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
       {
-         ResultSet trs = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
-         {
-            public ResultSet run() throws Exception
-            {
-               return con.getMetaData().getTables(null, null, configTableName, null);
-            }
-         });
 
-         try
+         public Boolean run()
          {
-            return trs.next();
+            return JDBCUtils.tableExists(configTableName, con);
          }
-         finally
-         {
-            try
-            {
-               trs.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error("Can't close the ResultSet: " + e);
-            }
-         }
-      }
-      catch (SQLException e)
-      {
-         return false;
-      }
+      });
    }
 
    public boolean hasConfig() throws RepositoryConfigurationException

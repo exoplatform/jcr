@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -28,10 +29,10 @@ import java.io.InputStreamReader;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -173,76 +174,21 @@ public class DBInitializer
 
    protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
    {
-      ResultSet trs = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
       {
-         public ResultSet run() throws Exception
+         public Boolean run()
          {
-            return conn.getMetaData().getTables(null, null, tableName, null);
+            return JDBCUtils.tableExists(tableName, conn);
          }
       });
-
-      try
-      {
-         boolean res = false;
-         while (trs.next())
-         {
-            res = true; // check for columns/table type matching etc.
-         }
-         return res;
-      }
-      finally
-      {
-         try
-         {
-            trs.close();
-         }
-         catch (SQLException e)
-         {
-            LOG.error("Can't close the ResultSet: " + e);
-         }
-      }
    }
-
-   protected boolean isIndexExists(Connection conn, String tableName, String indexName) throws SQLException
-   {
-      ResultSet irs = conn.getMetaData().getIndexInfo(null, null, tableName, false, true);
-      try
-      {
-         boolean res = false;
-         while (irs.next())
-         {
-            if (irs.getShort("TYPE") != DatabaseMetaData.tableIndexStatistic
-               && irs.getString("INDEX_NAME").equalsIgnoreCase(indexName))
-            {
-               res = true; // check for index params matching etc.
-            }
-         }
-         return res;
-      }
-      finally
-      {
-         try
-         {
-            irs.close();
-         }
-         catch (SQLException e)
-         {
-            LOG.error("Can't close the ResultSet: " + e);
-         }
-      }
-   }
-
+ 
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
    {
       return false;
    }
 
-   protected boolean isTriggerExists(Connection conn, String triggerName) throws SQLException
-   {
-      return false;
-   }
-
-   public boolean isObjectExists(Connection conn, String sql) throws SQLException
+   private boolean isObjectExists(Connection conn, String sql, Set<String> existingTables) throws SQLException
    {
       Matcher tMatcher = creatTablePattern.matcher(sql);
       if (tMatcher.find())
@@ -259,6 +205,7 @@ public class DBInitializer
                {
                   LOG.debug("Table is already exists " + tableName);
                }
+               existingTables.add(tableName);
                return true;
             }
          }
@@ -277,6 +224,7 @@ public class DBInitializer
                {
                   LOG.debug("View is already exists " + tableName);
                }
+               existingTables.add(tableName);
                return true;
             }
          }
@@ -295,11 +243,11 @@ public class DBInitializer
                if ((tMatcher = dbObjectNamePattern.matcher(onTableName)).find())
                {
                   String tableName = onTableName.substring(tMatcher.start(), tMatcher.end());
-                  if (isIndexExists(conn, tableName, indexName))
+                  if (existingTables.contains(tableName))
                   {
                      if (LOG.isDebugEnabled())
                      {
-                        LOG.debug("Index is already exists " + indexName);
+                        LOG.debug("The table " + tableName + " already exists so we assume that the index " + indexName + " exists also.");
                      }
                      return true;
                   }
@@ -343,11 +291,11 @@ public class DBInitializer
          {
             // got trigger name
             String triggerName = sql.substring(tMatcher.start(), tMatcher.end());
-            if (isTriggerExists(conn, triggerName))
+            if (!existingTables.isEmpty())
             {
                if (LOG.isDebugEnabled())
                {
-                  LOG.debug("Trigger is already exists " + triggerName);
+                  LOG.debug("At least one table has been created so we assume that the trigger " + triggerName + " exists also");
                }
                return true;
             }
@@ -394,6 +342,7 @@ public class DBInitializer
 
       String sql = null;
       Statement st = null;
+      Set<String> existingTables = new HashSet<String>();
       try
       {
          st = connection.createStatement();
@@ -404,7 +353,7 @@ public class DBInitializer
             String s = cleanWhitespaces(scr.trim());
             if (s.length() > 0)
             {
-               if (isObjectExists(connection, sql = s))
+               if (isObjectExists(connection, sql = s, existingTables))
                {
                   continue;
                }
@@ -445,7 +394,7 @@ public class DBInitializer
          boolean isAlreadyCreated = false;
          try
          {
-            isAlreadyCreated = isObjectExists(connection, sql);
+            isAlreadyCreated = isObjectExists(connection, sql, existingTables);
          }
          catch (SQLException ce)
          {
