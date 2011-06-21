@@ -435,7 +435,7 @@ public class SessionDataManager implements ItemDataConsumer
       ItemImpl item = null;
       try
       {
-         return item = readItem(getItemData(parent, name, skipCheckInPersistence, itemType), pool);
+         return item = readItem(getItemData(parent, name, skipCheckInPersistence, itemType), parent, pool, true);
       }
       finally
       {
