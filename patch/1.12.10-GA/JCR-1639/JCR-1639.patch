@@ -2,16 +2,22 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java	(revision 4550)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java	(working copy)
-@@ -373,10 +373,9 @@
+@@ -373,12 +373,17 @@
        {
           closeStatements();
  
 -         // If READ-ONLY status back it to READ-WRITE (we assume it was original state)
--         if (readOnly)
-+         if (dbConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
++         // If READ-ONLY status back it to READ-WRITE (we assume it was original state) 
+          if (readOnly)
           {
--            dbConnection.setReadOnly(true);
-+            dbConnection.rollback();
+             dbConnection.setReadOnly(true);
           }
  
++         if (dbConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
++         {
++            dbConnection.rollback();
++         }
++
           dbConnection.close();
+       }
+       catch (SQLException e)
