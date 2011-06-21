@@ -61,7 +61,7 @@ public class JDBCUtils
          // set autoCommit to true
          con.setAutoCommit(false);
          // make a savepoint (snapshot)
-         savePoint = con.setSavepoint("");
+         savePoint = con.setSavepoint(Thread.currentThread().getName()+System.currentTimeMillis());
          stmt = con.createStatement();
          trs = stmt.executeQuery("SELECT count(*) FROM " + tableName);
          return trs.next();
