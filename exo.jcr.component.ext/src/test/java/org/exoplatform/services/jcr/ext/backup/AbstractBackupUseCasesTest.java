@@ -221,7 +221,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       }
    }
 
-   public void testAutoStopBackupIncrRepetion() throws Exception
+   public void _testAutoStopBackupIncrRepetion() throws Exception
    {
       // prepare
       ManageableRepository repository = helper.createRepository(container, true, null);
@@ -499,7 +499,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       checkConent(repositoryService.getRepository(newRE.getName()), newRE.getSystemWorkspaceName());
    }
 
-   public void testAutoStopRepositoryBackupIncrRepetion() throws Exception
+   public void _testAutoStopRepositoryBackupIncrRepetion() throws Exception
    {
       // prepare
       ManageableRepository repository = helper.createRepository(container, true, null);
@@ -538,7 +538,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.restore(bchLog, newRE, workspaceMapping, true);
       waitEndOfRestore(newRE.getName());
 
-      Thread.sleep(30000);
+      Thread.sleep(60000);
       assertEquals(backup.getCurrentRepositoryBackups().size(), 0);
    }
 
