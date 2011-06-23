@@ -36,12 +36,13 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS.<p>
+ * This feature is deprecated and going to be removed in 1.15 version.
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: StorageUpdateManager.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-
+@Deprecated
 public class StorageUpdateManager
 {
 
@@ -258,12 +259,15 @@ public class StorageUpdateManager
 
    /**
     * Check current storage version and update if updateNow==true
+    * <p>
+    * This feature is deprecated and going to be removed in 1.15 version.
     * 
     * @param ds
     * @param updateNow
     * @return
     * @throws RepositoryException
     */
+   @Deprecated
    public static synchronized String checkVersion(String sourceName, Connection connection, boolean multiDB,
       boolean updateNow) throws RepositoryException
    {

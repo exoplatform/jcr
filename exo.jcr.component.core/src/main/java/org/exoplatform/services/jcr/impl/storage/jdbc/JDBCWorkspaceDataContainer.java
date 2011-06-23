@@ -460,21 +460,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
       initDatabase();
 
-      String suParam = null;
+      // enableStorageUpdate left unchanged since it is never used in StorageUpdateManager.checkVersion
       boolean enableStorageUpdate = false;
-      try
-      {
-         suParam = wsConfig.getContainer().getParameterValue("update-storage");
-         enableStorageUpdate = Boolean.parseBoolean(suParam);
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         if (LOG.isDebugEnabled())
-         {
-            LOG.debug("update-storage parameter is not set " + dbSourceName);
-         }
-      }
-
       this.storageVersion =
          StorageUpdateManager.checkVersion(dbSourceName, this.connFactory.getJdbcConnection(), multiDb,
             enableStorageUpdate);
