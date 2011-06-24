@@ -184,8 +184,9 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
          configTableName = configTableName.toUpperCase().toLowerCase(); // ingres needs it
          binType = "LONG BYTE";
       }
-      else if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect) 
-               || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect)) {
+      else if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect))
+      {
          binType = "LONGBLOB";
       }
 
@@ -322,12 +323,16 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
                   return config.getStream();
                }
                else
+               {
                   throw new ConfigurationNotFoundException("No configuration data is found in database. Source name "
                      + sourceName);
+               }
             }
             else
+            {
                throw new ConfigurationNotInitializedException(
                   "Configuration table not is found in database. Source name " + sourceName);
+            }
 
          }
          finally
@@ -385,12 +390,10 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
          PreparedStatement ps = null;
          try
          {
-
-            con.setAutoCommit(false);
-
             if (!isDbInitialized(con))
             {
                // init db
+               con.setAutoCommit(true);
                Statement st = con.createStatement();
                st.executeUpdate(sql = initSQL);
                st.close();
@@ -400,8 +403,8 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
 
                // one new conn
                con = openConnection();
-               con.setAutoCommit(false);
             }
+            con.setAutoCommit(false);
 
             if (isDbInitialized(con))
             {
@@ -425,15 +428,15 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
                if (ps.executeUpdate() <= 0)
                {
                   LOG.warn("Repository service configuration doesn't stored ok. "
-                           + "No rows was affected in JDBC operation. Datasource " + sourceName + ". SQL: " + sql);
+                     + "No rows was affected in JDBC operation. Datasource " + sourceName + ". SQL: " + sql);
                }
             }
             else
+            {
                throw new ConfigurationNotInitializedException(
                   "Configuration table can not be created in database. Source name " + sourceName + ". SQL: " + sql);
-
+            }
             con.commit();
-
          }
          finally
          {
@@ -448,7 +451,6 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
                   LOG.error("Can't close the Statement: " + e);
                }
             }
-
             con.close();
          }
       }

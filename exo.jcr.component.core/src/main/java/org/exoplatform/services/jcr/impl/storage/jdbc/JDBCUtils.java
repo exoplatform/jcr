@@ -24,7 +24,6 @@ import org.exoplatform.services.log.Log;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.sql.Statement;
 
 /**
@@ -52,36 +51,14 @@ public class JDBCUtils
    {
       Statement stmt = null;
       ResultSet trs = null;
-      Savepoint savePoint = null;
-      Boolean autoCommit = null;
       try
       {
-         // safe get autoCommit value
-         autoCommit = con.getAutoCommit();
-         // set autoCommit to true
-         con.setAutoCommit(false);
-         // make a savepoint (snapshot)
-         savePoint = con.setSavepoint(Thread.currentThread().getName()+System.currentTimeMillis());
          stmt = con.createStatement();
          trs = stmt.executeQuery("SELECT count(*) FROM " + tableName);
          return trs.next();
       }
       catch (SQLException e)
       {
-         if (savePoint != null)
-         {
-            try
-            {
-               // revert state to savePoint after failed query in transaction. This will allow following queries to 
-               // be executed in an ordinary way, like no failed query existed.
-               // Obligatory operation for PostgreSQL.
-               con.rollback(savePoint);
-            }
-            catch (SQLException e1)
-            {
-               LOG.error("Can't rollback to savePoint", e1);
-            }
-         }
          if (LOG.isDebugEnabled())
          {
             LOG.debug("SQLException occurs while checking the table " + tableName, e);
@@ -90,17 +67,6 @@ public class JDBCUtils
       }
       finally
       {
-         if (autoCommit != null)
-         {
-            try
-            {
-               con.setAutoCommit(autoCommit);
-            }
-            catch (SQLException e)
-            {
-               LOG.error("Can't set autoCommit value back", e);
-            }
-         }
          if (trs != null)
          {
             try

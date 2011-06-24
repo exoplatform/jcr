@@ -182,7 +182,7 @@ public class DBInitializer
          }
       });
    }
- 
+
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
    {
       return false;
@@ -247,7 +247,8 @@ public class DBInitializer
                   {
                      if (LOG.isDebugEnabled())
                      {
-                        LOG.debug("The table " + tableName + " already exists so we assume that the index " + indexName + " exists also.");
+                        LOG.debug("The table " + tableName + " already exists so we assume that the index " + indexName
+                           + " exists also.");
                      }
                      return true;
                   }
@@ -295,7 +296,8 @@ public class DBInitializer
             {
                if (LOG.isDebugEnabled())
                {
-                  LOG.debug("At least one table has been created so we assume that the trigger " + triggerName + " exists also");
+                  LOG.debug("At least one table has been created so we assume that the trigger " + triggerName
+                     + " exists also");
                }
                return true;
             }
@@ -346,8 +348,10 @@ public class DBInitializer
       try
       {
          st = connection.createStatement();
-         connection.setAutoCommit(false);
-
+         // all DDL queries executed in separated transactions
+         // Required for SyBase, when checking table existence 
+         // and performing DDLs inside single transaction. 
+         connection.setAutoCommit(true);
          for (String scr : scripts)
          {
             String s = cleanWhitespaces(scr.trim());
@@ -376,20 +380,18 @@ public class DBInitializer
          }
 
          postInit(connection);
-
          connection.commit();
          LOG.info("DB schema of DataSource: '" + containerName + "' initialized succesfully");
       }
       catch (SQLException e)
       {
-         try
+         if (LOG.isDebugEnabled())
          {
-            connection.rollback();
+            LOG.error("Problem creating database structure.", e);
          }
-         catch (SQLException re)
-         {
-            LOG.error("Rollback error " + e, e);
-         }
+         LOG
+            .warn("Some tables were created and not rolled back. Please make sure to drop them manually in datasource : '"
+               + containerName + "'");
 
          boolean isAlreadyCreated = false;
          try
