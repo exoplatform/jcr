@@ -130,6 +130,6 @@ public class SybaseConnectionFactory extends GenericCQConnectionFactory
    @Override
    public boolean isReindexingSupport()
    {
-      return false;
+      return true;
    }    
 }
