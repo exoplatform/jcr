@@ -380,7 +380,6 @@ public class DBInitializer
          }
 
          postInit(connection);
-         connection.commit();
          LOG.info("DB schema of DataSource: '" + containerName + "' initialized succesfully");
       }
       catch (SQLException e)

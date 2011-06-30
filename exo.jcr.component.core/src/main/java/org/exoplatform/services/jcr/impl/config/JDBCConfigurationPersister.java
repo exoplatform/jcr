@@ -398,7 +398,6 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
                st.executeUpdate(sql = initSQL);
                st.close();
 
-               con.commit();
                con.close();
 
                // one new conn
