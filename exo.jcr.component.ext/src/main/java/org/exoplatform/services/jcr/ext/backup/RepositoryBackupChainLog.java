@@ -18,6 +18,7 @@ package org.exoplatform.services.jcr.ext.backup;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.ext.backup.server.RepositoryRestoreExeption;
@@ -476,7 +477,7 @@ public class RepositoryBackupChainLog
                         }
                         else
                         {
-                           conf.setBackupDir(new File(dir));
+                           conf.setBackupDir(new File(Deserializer.resolveVariables(dir)));
                         }
                      }
                      else

@@ -17,14 +17,20 @@
 package org.exoplatform.services.jcr.ext.backup;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 
 /**
@@ -1189,4 +1195,154 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       checkConent(repositoryService.getRepository(config.getRepository()),
          repositoryService.getRepository(config.getRepository()).getConfiguration().getSystemWorkspaceName());
    }
+   
+   public void testEnvironmentVariablesToBackupDir() throws Exception
+   {
+      // prepare stage #1
+      ManageableRepository repository = helper.createRepository(container, true, null);
+      addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
+
+      String tempDir = PrivilegedSystemHelper.getProperty("java.io.tmpdir");
+
+      // backup
+      File backDir = new File(tempDir);
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      // prepare stage #2
+      String repositoryBackupChainLogPath = bch.getLogFilePath();
+
+      String backupDitEnv = backDir.getCanonicalPath();
+
+      String newBackupDir =
+               "\\${java.io.tmpdir}"
+                        + bch.getBackupConfig().getBackupDir().getCanonicalPath()
+                        .replaceAll(backupDitEnv, "");
+
+      File dest = new File(repositoryBackupChainLogPath + ".xml");
+      dest.createNewFile();
+
+      RepositoryBackupChainLog newRepositoryBackupChainLog = null;
+      try
+      {
+         String sConfig =
+                  setNewBackupDirInRepositoryBackupChainLog(new File(repositoryBackupChainLogPath), dest, newBackupDir);
+
+         assertTrue(sConfig.contains(newBackupDir.subSequence(1, newBackupDir.length())));
+
+         // check
+         newRepositoryBackupChainLog = new RepositoryBackupChainLog(dest);
+
+         assertEquals(bch.getBackupConfig().getBackupDir().getCanonicalPath(),
+                  newRepositoryBackupChainLog.getBackupConfig().getBackupDir().getCanonicalPath());
+
+      }
+      finally
+      {
+         newRepositoryBackupChainLog = null;
+         dest.delete();
+         
+         deleteFolder(bch.getBackupConfig().getBackupDir());
+      }
+   }
+
+   public void testRelativeBackupDir() throws Exception
+   {
+      // prepare stage #1
+      ManageableRepository repository = helper.createRepository(container, true, null);
+      addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
+
+      // backup
+      File backDir = new File("target");
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      // prepare stage #2
+      String repositoryBackupChainLogPath = bch.getLogFilePath();
+
+      String relativePrefixBackupDir = backDir.getCanonicalFile().getParent() + File.separator;
+
+      String newBackupDir =
+               bch.getBackupConfig().getBackupDir().getCanonicalPath().replaceAll(relativePrefixBackupDir, "");
+
+      File dest = new File(repositoryBackupChainLogPath + ".xml");
+      dest.createNewFile();
+
+      RepositoryBackupChainLog newRepositoryBackupChainLog = null;
+
+      String sConfig =
+               setNewBackupDirInRepositoryBackupChainLog(new File(repositoryBackupChainLogPath), dest, newBackupDir);
+
+      assertTrue(sConfig.contains(newBackupDir));
+
+      // check
+      newRepositoryBackupChainLog = new RepositoryBackupChainLog(dest);
+
+      assertEquals(bch.getBackupConfig().getBackupDir().getCanonicalPath(), newRepositoryBackupChainLog
+               .getBackupConfig().getBackupDir().getCanonicalPath());
+   }
+
+   /**
+    * Set new backup directory in RepositoryBackupChainLog
+    * 
+    * @param src
+    *          source file of RepositoryBackupChainLog
+    * @param dest
+    *          destination file of RepositoryBackupChainLog
+    * @param newBackupDir
+    * @return  String
+    *            the content of file destination  
+    * @throws IOException 
+    */
+   protected String setNewBackupDirInRepositoryBackupChainLog(File src, File dest, String newBackupDir)
+            throws IOException
+   {
+      InputStream in = PrivilegedFileHelper.fileInputStream(src);
+      OutputStream out = PrivilegedFileHelper.fileOutputStream(dest);
+
+      byte[] buf = new byte[(int) (PrivilegedFileHelper.length(src))];
+      in.read(buf);
+
+      String sConfig = new String(buf, Constants.DEFAULT_ENCODING);
+      sConfig = sConfig.replaceAll("<backup-dir>.+</backup-dir>", "<backup-dir>" + newBackupDir + "</backup-dir>");
+
+      out.write(sConfig.getBytes(Constants.DEFAULT_ENCODING));
+
+      in.close();
+      out.close();
+
+      return sConfig;
+   }
+
+   protected void deleteFolder(File f)
+   {
+      if (f.isDirectory())
+      {
+         for (File file : f.listFiles())
+         {
+            deleteFolder(file);
+         }
+
+         f.delete();
+      }
+      else
+      {
+         f.delete();
+      }
+   }
+   
 }

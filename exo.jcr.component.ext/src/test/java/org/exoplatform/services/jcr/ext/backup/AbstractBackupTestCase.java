@@ -110,13 +110,25 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       }
    }
 
-   @Override
+   /**
+    * {@inheritDoc}
+    */
    public void setUp() throws Exception
    {
       super.setUp();// this
 
       backup = getBackupManager();
       blob = createBLOBTempFile(300);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+
+      blob.delete();
    }
 
    protected abstract ExtendedBackupManager getBackupManager();
