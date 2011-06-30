@@ -18,6 +18,8 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -47,6 +49,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: SystemSearchManager.java 13891 2008-05-05 16:02:30Z pnedonosko
  *          $
  */
+@NameTemplate(@Property(key = "service", value = "SystemSearchManager"))
 public class SystemSearchManager extends SearchManager
 {
 
