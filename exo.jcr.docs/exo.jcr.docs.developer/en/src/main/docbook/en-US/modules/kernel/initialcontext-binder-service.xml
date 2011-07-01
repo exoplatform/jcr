@@ -16,7 +16,7 @@
   <section>
     <title>API</title>
 
-    <para>Service provide methods for binding reference.</para>
+    <para>Service provide methods for binding reference:</para>
 
     <programlisting language="java">public void bind(String bindName, String className, String factory, String factoryLocation, Map&lt;String, String&gt; refAddr) throws NamingException, FileNotFoundException, XMLStreamExcept</programlisting>
 
@@ -43,5 +43,9 @@
         <para>refAddr - object's properties map</para>
       </listitem>
     </itemizedlist>
+
+    <para>Returns reference associated with defined name:</para>
+
+    <programlisting language="java">public Reference getReference(String bindName)</programlisting>
   </section>
 </chapter>
