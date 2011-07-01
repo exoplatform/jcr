@@ -45,7 +45,7 @@ import javax.jcr.RepositoryException;
  */
 
 @Managed
-@NameTemplate({@Property(key = "container", value = "workspace"), @Property(key = "name", value = "{Name}")})
+@NameTemplate(@Property(key = "workspace", value = "{Name}"))
 @NamingContext(@Property(key = "workspace", value = "{Name}"))
 public class WorkspaceContainer extends ExoContainer
 {

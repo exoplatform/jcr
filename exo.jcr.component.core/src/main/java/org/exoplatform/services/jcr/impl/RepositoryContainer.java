@@ -86,7 +86,7 @@ import javax.naming.NameNotFoundException;
  * @version $Id: RepositoryContainer.java 13986 2008-05-08 10:48:43Z pnedonosko $
  */
 @Managed
-@NameTemplate({@Property(key = "container", value = "repository"), @Property(key = "name", value = "{Name}")})
+@NameTemplate(@Property(key = "repository", value = "{Name}"))
 @NamingContext(@Property(key = "repository", value = "{Name}"))
 public class RepositoryContainer extends ExoContainer
 {
