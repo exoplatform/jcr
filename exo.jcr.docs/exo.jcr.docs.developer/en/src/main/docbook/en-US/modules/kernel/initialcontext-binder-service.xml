@@ -44,6 +44,8 @@
       </listitem>
     </itemizedlist>
 
+    <programlisting language="java">public void bind(String bindName, Reference ref) throws NamingException, FileNotFoundException, XMLStreamExcept</programlisting>
+
     <para>Returns reference associated with defined name:</para>
 
     <programlisting language="java">public Reference getReference(String bindName)</programlisting>
