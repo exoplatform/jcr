@@ -505,7 +505,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          // bind data-source
          try
          {
-            initialContextInitializer.bind(dataSource, "javax.sql.DataSource",
+            initialContextInitializer.getInitialContextBinder().bind(dataSource, "javax.sql.DataSource",
                "org.apache.commons.dbcp.BasicDataSourceFactory", null, refAddr);
          }
          catch (NamingException e)
@@ -604,7 +604,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             // bind data-source
             try
             {
-               initialContextInitializer.bind(dataSource, "javax.sql.DataSource",
+               initialContextInitializer.getInitialContextBinder().bind(dataSource, "javax.sql.DataSource",
                   "org.apache.commons.dbcp.BasicDataSourceFactory", null, refAddr);
             }
             catch (NamingException e)
