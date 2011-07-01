@@ -30,6 +30,20 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 public interface RepositoryCreationService
 {
    /**
+    * Reserves, validates and creates repository in a simplified form.
+    * 
+    * @param rEntry - repository Entry - note that datasource must not exist.
+    * @param backupId - backup id
+    * @param creationProps - storage creation properties 
+    * @throws RepositoryConfigurationException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
+    * @throws RepositoryCreationServiceException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
+    */
+   void createRepository(String backupId, RepositoryEntry rEntry, StorageCreationProperties creationProps)
+      throws RepositoryConfigurationException, RepositoryCreationException;
+
+   /**
     * Reserves, validates and creates repository in a simplified form. 
     * 
     * @param rEntry - repository Entry - note that datasource must not exist.
@@ -53,7 +67,23 @@ public interface RepositoryCreationService
    String reserveRepositoryName(String repositoryName) throws RepositoryCreationException;
 
    /**
-    * Creates  repository, using token of already reserved repository name. Good for cases, 
+    * Creates repository, using token of already reserved repository name. 
+    * Good for cases, when repository creation should be delayed or made asynchronously in dedicated thread. 
+    * 
+    * @param rEntry - repository entry - note, that datasource must not exist
+    * @param backupId - backup id
+    * @param rToken - token
+    * @param creationProps - storage creation properties
+    * @throws RepositoryConfigurationException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
+    * @throws RepositoryCreationServiceException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
+    */
+   void createRepository(String backupId, RepositoryEntry rEntry, String rToken, StorageCreationProperties creationProps)
+      throws RepositoryConfigurationException, RepositoryCreationException;
+
+   /**
+    * Creates repository, using token of already reserved repository name. Good for cases, 
     * when repository creation should be delayed or made asynchronously in dedicated thread. 
     * 
     * @param rEntry - repository entry - note, that datasource must not exist

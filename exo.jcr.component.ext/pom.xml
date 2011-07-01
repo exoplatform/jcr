@@ -139,7 +139,12 @@
       <version>8.3-606.jdbc3</version>
       <scope>test</scope>
     </dependency>
-                                              
+    <dependency>
+       <groupId>mysql</groupId>
+       <artifactId>mysql-connector-java</artifactId>
+       <version>5.1.14</version>
+       <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -199,6 +204,7 @@
               <exclude>**/replication/external/BaseTestCaseChecker.java</exclude>
               <exclude>**/access/*.java</exclude>
               <exclude>**/LocalStorageMultithreadTest.java</exclude>
+              <include>**/repository/creation/cluster.java</include>
             </excludes>
           </configuration>
         </plugin>

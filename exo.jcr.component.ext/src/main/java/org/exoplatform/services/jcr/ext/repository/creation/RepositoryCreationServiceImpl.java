@@ -17,6 +17,9 @@
 package org.exoplatform.services.jcr.ext.repository.creation;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.configuration.ConfigurationException;
+import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.database.creator.DBConnectionInfo;
 import org.exoplatform.services.database.creator.DBCreator;
 import org.exoplatform.services.database.creator.DBCreatorException;
@@ -79,6 +82,9 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     */
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RepositoryCreationService");
 
+   /**
+    * The Repository service.
+    */
    private final RepositoryService repositoryService;
 
    /**
@@ -92,9 +98,10 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    private final BackupManager backupManager;
 
    /**
-    * DBCreator used to create database. Only database not tables, indexes, etc.
+    * Exo container context;
     */
-   private final DBCreator dbCreator;
+   private ExoContainerContext context;
+
 
    /**
     * InitalContextInitalizer used to bind new datasource.
@@ -116,102 +123,104 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     * Constructor RepositoryCreationServiceImpl.
     */
    public RepositoryCreationServiceImpl(RepositoryService repositoryService, BackupManager backupManager,
-      DBCreator dbCreator, InitialContextInitializer initialContextInitializer)
+      ExoContainerContext context, InitialContextInitializer initialContextInitializer)
    {
-      this.repositoryService = repositoryService;
-      this.backupManager = backupManager;
-      this.rpcService = null;
-      this.dbCreator = dbCreator;
-      this.initialContextInitializer = initialContextInitializer;
-
-      LOG.warn("RepositoryCreationService initialized without RPCService, so other cluser nodes will"
-         + " not be notified about new repositories.");
+      this(repositoryService, backupManager, context, initialContextInitializer, null);
    }
 
    /**
     * Constructor RepositoryCreationServiceImpl.
     */
    public RepositoryCreationServiceImpl(RepositoryService repositoryService, BackupManager backupManager,
-      DBCreator dbCreator, InitialContextInitializer initialContextInitializer, final RPCService rpcService)
+      ExoContainerContext context, InitialContextInitializer initialContextInitializer, final RPCService rpcService)
    {
       this.repositoryService = repositoryService;
       this.backupManager = backupManager;
       this.rpcService = rpcService;
-      this.dbCreator = dbCreator;
+      this.context = context;
       this.initialContextInitializer = initialContextInitializer;
 
-      // register commands
-      reserveRepositoryName = rpcService.registerCommand(new RemoteCommand()
+      if (rpcService != null)
       {
-
-         public String getId()
+         // register commands
+         reserveRepositoryName = rpcService.registerCommand(new RemoteCommand()
          {
-            return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-reserveRepositoryName";
-         }
 
-         public Serializable execute(Serializable[] args) throws Throwable
-         {
-            String repositoryName = (String)args[0];
-            return reserveRepositoryNameLocally(repositoryName);
-         }
-      });
-
-      createRepository = rpcService.registerCommand(new RemoteCommand()
-      {
-
-         public String getId()
-         {
-            return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-createRepository";
-         }
-
-         public Serializable execute(Serializable[] args) throws Throwable
-         {
-            //String backupId, RepositoryEntry rEntry, String rToken
-            String backupId = (String)args[0];
-            String stringRepositoryEntry = (String)args[1];
-            String rToken = (String)args[2];
-
-            try
+            public String getId()
             {
-               RepositoryEntry rEntry =
-                  (RepositoryEntry)(getObject(RepositoryEntry.class, stringRepositoryEntry
-                     .getBytes(Constants.DEFAULT_ENCODING)));
+               return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-reserveRepositoryName";
+            }
 
-               createRepositoryLocally(backupId, rEntry, rToken);
+            public Serializable execute(Serializable[] args) throws Throwable
+            {
+               String repositoryName = (String)args[0];
+               return reserveRepositoryNameLocally(repositoryName);
+            }
+         });
+
+         createRepository = rpcService.registerCommand(new RemoteCommand()
+         {
+
+            public String getId()
+            {
+               return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-createRepository";
+            }
+
+            public Serializable execute(Serializable[] args) throws Throwable
+            {
+               String backupId = (String)args[0];
+               String stringRepositoryEntry = (String)args[1];
+               String rToken = (String)args[2];
+               DBCreationProperties creationProps = (DBCreationProperties)args[3];
+
+               try
+               {
+                  RepositoryEntry rEntry =
+                     (RepositoryEntry)(getObject(RepositoryEntry.class,
+                        stringRepositoryEntry.getBytes(Constants.DEFAULT_ENCODING)));
+
+                  createRepositoryLocally(backupId, rEntry, rToken, creationProps);
+                  return null;
+               }
+               finally
+               {
+                  // release tokens
+                  pendingRepositories.remove(rToken);
+               }
+            }
+         });
+
+         startRepository = rpcService.registerCommand(new RemoteCommand()
+         {
+            public String getId()
+            {
+               return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-startRepository";
+            }
+
+            public Serializable execute(Serializable[] args) throws Throwable
+            {
+               // must not be executed on coordinator node, since coordinator node already created the repository
+               if (!rpcService.isCoordinator())
+               {
+                  //RepositoryEntry (as String) rEntry
+                  String stringRepositoryEntry = (String)args[0];
+                  RepositoryEntry rEntry =
+                     (RepositoryEntry)(getObject(RepositoryEntry.class,
+                        stringRepositoryEntry.getBytes(Constants.DEFAULT_ENCODING)));
+
+                  DBCreationProperties creationProps = (DBCreationProperties)args[1];
+
+                  startRepository(rEntry, creationProps);
+               }
                return null;
             }
-            finally
-            {
-               // release tokens
-               pendingRepositories.remove(rToken);
-            }
-         }
-      });
-
-      startRepository = rpcService.registerCommand(new RemoteCommand()
+         });
+      }
+      else
       {
-         public String getId()
-         {
-            return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-startRepository";
-         }
-
-         public Serializable execute(Serializable[] args) throws Throwable
-         {
-            // must not be executed on coordinator node, since coordinator node already created the repository
-            if (!rpcService.isCoordinator())
-            {
-               //RepositoryEntry (as String) rEntry
-               String stringRepositoryEntry = (String)args[0];
-               RepositoryEntry rEntry =
-                  (RepositoryEntry)(getObject(RepositoryEntry.class, stringRepositoryEntry
-                     .getBytes(Constants.DEFAULT_ENCODING)));
-
-               startRepository(rEntry);
-            }
-            return null;
-         }
-      });
-
+         LOG.warn("RepositoryCreationService initialized without RPCService, so other cluser nodes will"
+            + " not be notified about new repositories.");
+      }
    }
 
    /**
@@ -221,14 +230,57 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       RepositoryCreationException
    {
       String rToken = reserveRepositoryName(rEntry.getName());
-      createRepository(backupId, rEntry, rToken);
+      createRepositoryInternally(backupId, rEntry, rToken, null);
    }
 
    /**
     * {@inheritDoc}
     */
-   public void createRepository(String backupId, RepositoryEntry rEntry, String rToken)
+   public void createRepository(String backupId, RepositoryEntry rEntry, StorageCreationProperties creationProps)
       throws RepositoryConfigurationException, RepositoryCreationException
+   {
+      String rToken = reserveRepositoryName(rEntry.getName());
+
+      if (creationProps instanceof DBCreationProperties)
+      {
+         createRepositoryInternally(backupId, rEntry, rToken, (DBCreationProperties)creationProps);
+      }
+      else
+      {
+         throw new RepositoryCreationException("creationProps should be the instance of DBCreationProperties");
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void createRepository(String backupId, RepositoryEntry rEntry, String rToken) throws RepositoryConfigurationException, RepositoryCreationException
+   {
+      createRepositoryInternally(backupId, rEntry, rToken, null);
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void createRepository(String backupId, RepositoryEntry rEntry, String rToken,
+      StorageCreationProperties creationProps) throws RepositoryConfigurationException, RepositoryCreationException
+   {
+      if (creationProps instanceof DBCreationProperties)
+      {
+         createRepositoryInternally(backupId, rEntry, rToken, (DBCreationProperties)creationProps);
+      }
+      else
+      {
+         throw new RepositoryCreationException("creationProps should be the instance of DBCreationProperties");
+      }
+
+   }
+
+   /**
+    * Create repository internally. serverUrl and connProps contain specific properties for db creation.
+    */
+   protected void createRepositoryInternally(String backupId, RepositoryEntry rEntry, String rToken,
+      DBCreationProperties creationProps) throws RepositoryConfigurationException, RepositoryCreationException
    {
       if (rpcService != null)
       {
@@ -248,7 +300,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          try
          {
             Object result =
-               rpcService.executeCommandOnCoordinator(createRepository, true, backupId, stringRepositoryEntry, rToken);
+               rpcService.executeCommandOnCoordinator(createRepository, true, backupId, stringRepositoryEntry, rToken,
+                  creationProps);
 
             if (result != null)
             {
@@ -275,7 +328,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          // execute startRepository at all cluster nodes (coordinator will ignore this command)
          try
          {
-            List<Object> results = rpcService.executeCommandOnAllNodes(startRepository, true, stringRepositoryEntry);
+            List<Object> results =
+               rpcService.executeCommandOnAllNodes(startRepository, true, stringRepositoryEntry, creationProps);
 
             for (Object result : results)
             {
@@ -307,7 +361,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       {
          try
          {
-            createRepositoryLocally(backupId, rEntry, rToken);
+            createRepositoryLocally(backupId, rEntry, rToken, creationProps);
          }
          finally
          {
@@ -408,8 +462,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       }
    }
 
-   protected void createRepositoryLocally(String backupId, RepositoryEntry rEntry, String rToken)
-      throws RepositoryConfigurationException, RepositoryCreationException
+   protected void createRepositoryLocally(String backupId, RepositoryEntry rEntry, String rToken,
+      DBCreationProperties creationProps) throws RepositoryConfigurationException, RepositoryCreationException
    {
       // check does token registered
       if (!this.pendingRepositories.containsKey(rToken))
@@ -427,8 +481,14 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          Map<String, String> refAddr = null;
          try
          {
-            DBConnectionInfo dbConnectionInfo =
-               dbCreator.createDatabase(rEntry.getName() + (dataSourceNames.size() == 1 ? "" : "_" + dataSource));
+            // db name will be the same as repository name if only one datasource exists
+            String dbName = rEntry.getName() + (dataSourceNames.size() == 1 ? "" : "_" + dataSource);
+
+            // get DBCreator
+            DBCreator dbCreator = getDBCreator(creationProps);
+            
+            // create database
+            DBConnectionInfo dbConnectionInfo = dbCreator.createDatabase(dbName);
 
             refAddr = dbConnectionInfo.getProperties();
          }
@@ -436,6 +496,10 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          {
             throw new RepositoryCreationException("Can not create new database for " + rEntry.getName()
                + " repository.", e);
+         }
+         catch (ConfigurationException e)
+         {
+            throw new RepositoryCreationException("Can not get instance of DBCreator", e);
          }
 
          // bind data-source
@@ -502,7 +566,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       }
    }
 
-   protected void startRepository(RepositoryEntry repositoryEntry) throws RepositoryCreationException
+   protected void startRepository(RepositoryEntry repositoryEntry, DBCreationProperties creationProps)
+      throws RepositoryCreationException
    {
       try
       {
@@ -515,8 +580,15 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             Map<String, String> refAddr = null;
             try
             {
-               DBConnectionInfo dbConnectionInfo =
-                  dbCreator.getDBConnectionInfo(repositoryEntry.getName() + "_" + dataSource);
+               // db name will be the same as repository name if only one datasource exists
+               String dbName = repositoryEntry.getName() + (dataSourceNames.size() == 1 ? "" : "_" + dataSource);
+
+               // get DBCreator
+               DBCreator dbCreator = getDBCreator(creationProps);
+
+               // get connection info
+               DBConnectionInfo dbConnectionInfo = dbCreator.getDBConnectionInfo(dbName);
+
                refAddr = dbConnectionInfo.getProperties();
             }
             catch (DBCreatorException e)
@@ -524,6 +596,11 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
                throw new RepositoryCreationException("Can not fetch database information associated with "
                   + repositoryEntry.getName() + " repository and " + dataSource + " datasource.", e);
             }
+            catch (ConfigurationException e)
+            {
+               throw new RepositoryCreationException("Can't get instance of DBCreator", e);
+            }
+
             // bind data-source
             try
             {
@@ -626,7 +703,6 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     */
    public void start()
    {
-      // do nothing
    }
 
    /**
@@ -640,5 +716,19 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          this.rpcService.unregisterCommand(createRepository);
          this.rpcService.unregisterCommand(startRepository);
       }
+   }
+
+   private DBCreator getDBCreator(DBCreationProperties creationProps) throws ConfigurationException
+   {
+      if (creationProps == null)
+      {
+         return (DBCreator)context.getContainer().getComponentInstanceOfType(DBCreator.class);
+      }
+
+      ConfigurationManager cm =
+         (ConfigurationManager)context.getContainer().getComponentInstanceOfType(ConfigurationManager.class);
+
+      return new DBCreator(creationProps.getServerUrl(), creationProps.getConnProps(), creationProps.getDBScriptPath(),
+         creationProps.getDBUserName(), creationProps.getDBPassword(), cm);
    }
 }

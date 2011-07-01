@@ -29,6 +29,8 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS.
@@ -135,6 +137,69 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       newRE.addWorkspace(newWSEntry);
 
       creatorService.createRepository(bch.getBackupId(), newRE, repoToken);
+
+      // check
+      ManageableRepository restoredRepository = repositoryService.getRepository(tenantName);
+      assertNotNull(restoredRepository);
+
+      checkConent(restoredRepository, wsEntry.getName());
+
+      //check repositoryConfiguration
+      RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
+      assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
+   }
+
+   public void testCreateRepositorySingleDBWithSpecificCreationProps() throws Exception
+   {
+      Map<String, String> connProps = new HashMap<String, String>();
+      connProps.put("driverClassName", "org.hsqldb.jdbcDriver");
+      connProps.put("username", "sa");
+      connProps.put("password", "");
+
+      DBCreationProperties creationProps =
+         new DBCreationProperties("jdbc:hsqldb:file:target/temp/data_2/", connProps, "src/test/resources/test.sql",
+            "sa", "");
+
+      // prepare
+      String dsName = helper.createDatasource();
+      ManageableRepository repository = helper.createRepository(container, false, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      helper.addWorkspace(repository, wsEntry);
+      addConent(repository, wsEntry.getName());
+
+      // backup
+      File backDir = new File("target/backup");
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      // restore with RepositoryCreatorService
+      RepositoryCreationService creatorService =
+         (RepositoryCreationService)container.getComponentInstanceOfType(RepositoryCreationService.class);
+      assertNotNull(creatorService);
+
+      String tenantName = "new_repository_single-db-specific-props";
+      String repoToken = creatorService.reserveRepositoryName(tenantName);
+
+      // restore             
+      String newDSName = IdGenerator.generate();
+
+      RepositoryEntry newRE =
+         helper.createRepositoryEntry(false, repository.getConfiguration().getSystemWorkspaceName(), newDSName);
+      newRE.setName(tenantName);
+
+      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(false, newDSName);
+      newWSEntry.setName(wsEntry.getName());
+      newRE.addWorkspace(newWSEntry);
+
+      creatorService.createRepository(bch.getBackupId(), newRE, repoToken, creationProps);
 
       // check
       ManageableRepository restoredRepository = repositoryService.getRepository(tenantName);

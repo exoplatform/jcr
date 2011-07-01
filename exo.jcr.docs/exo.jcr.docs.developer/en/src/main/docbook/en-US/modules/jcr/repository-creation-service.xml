@@ -22,8 +22,8 @@
     <itemizedlist>
       <listitem>
         <para><link linkend="Core.DBCreatorService">DBCreator</link> -
-        DBCreator used to create new database for each unbinded datasource.
-        </para>
+        DBCreator used to create new database for each unbinded
+        datasource.</para>
       </listitem>
 
       <listitem>
@@ -33,7 +33,7 @@
 
       <listitem>
         <para><link linkend="Kernel.RPCService">RPCService</link> - RPCService
-        used for communication between cluster-nodes </para>
+        used for communication between cluster-nodes</para>
 
         <note>
           <para>RPCService may not be configured - in this case,
@@ -48,23 +48,23 @@
 
     <itemizedlist>
       <listitem>
-        <para> User executes reserveRepositoryName(String repositoryName) -
+        <para>User executes reserveRepositoryName(String repositoryName) -
         client-node calls coordinator-node to reserve repositoryName. If this
         name is already reserved or repository with this name exist,
         client-node will fetch RepositoryCreationException. If not Client will
-        get token string. </para>
+        get token string.</para>
       </listitem>
 
       <listitem>
         <para>than user executes createRepository(String backupId,
         RepositoryEntry rEntry, String token). Coordinator-node checks the
-        token, and creates Repository. </para>
+        token, and creates Repository.</para>
       </listitem>
 
       <listitem>
-        <para> whan repository become created - user-node broadcast message to
+        <para>whan repository become created - user-node broadcast message to
         all clusterNodes with RepositoryEntry, so each cluster node starts new
-        Repository. </para>
+        Repository.</para>
       </listitem>
     </itemizedlist>
 
@@ -72,7 +72,7 @@
     call createRepository(String backupId, RepositoryEntry); or reserve
     repositoryName at first (reserveRepositoryName(String repositoryName)),
     than create reserved repository (createRepository(String backupId,
-    RepositoryEntry rEntry, String token)). </para>
+    RepositoryEntry rEntry, String token)).</para>
   </section>
 
   <section>
@@ -149,6 +149,20 @@
     <programlisting language="java">public interface RepositoryCreationService
 {
    /**
+    * Reserves, validates and creates repository in a simplified form.
+    * 
+    * @param rEntry - repository Entry - note that datasource must not exist.
+    * @param backupId - backup id
+    * @param creationProps - storage creation properties 
+    * @throws RepositoryConfigurationException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
+    * @throws RepositoryCreationServiceException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
+    */
+   void createRepository(String backupId, RepositoryEntry rEntry, StorageCreationProperties creationProps)
+      throws RepositoryConfigurationException, RepositoryCreationException;n
+
+   /**
     * Reserves, validates and creates repository in a simplified form. 
     * 
     * @param rEntry - repository Entry - note that datasource must not exist.
@@ -170,6 +184,22 @@
     * @throws RepositoryCreationServiceException if can't reserve name
     */
    String reserveRepositoryName(String repositoryName) throws RepositoryCreationException;
+
+   /**
+    * Creates repository, using token of already reserved repository name. 
+    * Good for cases, when repository creation should be delayed or made asynchronously in dedicated thread. 
+    * 
+    * @param rEntry - repository entry - note, that datasource must not exist
+    * @param backupId - backup id
+    * @param rToken - token
+    * @param creationProps - storage creation properties
+    * @throws RepositoryConfigurationException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
+    * @throws RepositoryCreationServiceException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
+    */
+   void createRepository(String backupId, RepositoryEntry rEntry, String rToken, StorageCreationProperties creationProps)
+      throws RepositoryConfigurationException, RepositoryCreationException;
 
    /**
     * Creates  repository, using token of already reserved repository name. Good for cases, when repository creation should be delayed or 
@@ -196,7 +226,7 @@
         <para>Each datasource in RepositoryEntry of new Repository must have
         unbinded datasources. Thats mean, such datasource must have not
         databases behind them. This restriction exists to avoid corruption of
-        existing repositories data. </para>
+        existing repositories data.</para>
       </listitem>
 
       <listitem>

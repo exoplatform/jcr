@@ -67,7 +67,7 @@ import javax.jcr.Workspace;
 public abstract class BaseStandaloneTest extends TestCase
 {
 
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BaseStandaloneTest");
+   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BaseStandaloneTest");
 
    public static final String WS_NAME = "ws";
 
