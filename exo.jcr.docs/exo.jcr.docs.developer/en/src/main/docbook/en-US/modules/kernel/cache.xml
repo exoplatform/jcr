@@ -236,12 +236,12 @@
       <title>FutureExoCache</title>
 
       <para>If the data that you want to store into your eXo Cache instance
-      and/or you would like to prevent multiple concurrent loading of the same
-      data at the same time, you can use
+      takes a lot of time to load and/or you would like to prevent multiple
+      concurrent loading of the same data at the same time, you can use
       <emphasis>org.exoplatform.services.cache.future.FutureExoCache</emphasis>
       on top of your eXo Cache instance in order to delegate the loading of
       your data to a loader that will be called only once whatever the total
-      amount of concurrent thread looking for it. See below an example of how
+      amount of concurrent threads looking for it. See below an example of how
       the FutureExoCache can be used:</para>
 
       <programlisting language="java">import org.exoplatform.services.cache.future.Loader;
