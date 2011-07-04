@@ -20,7 +20,7 @@
     create new <envar>ExoCache</envar> instances. See the below example of
     <envar>org.exoplatform.services.cache.CacheService</envar>
     definition:</para>
-    
+
     <programlisting language="xml">  &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.cache.CacheService&lt;/key&gt;
     &lt;jmx-name&gt;cache:type=CacheService&lt;/jmx-name&gt;
@@ -40,16 +40,17 @@
     &lt;/init-params&gt;
   &lt;/component&gt;</programlisting>
 
-      <note>
-        <para>The <envar>ExoCacheConfig</envar> which name is
-        <envar>default</envar>, will be the default configuration of all the
-        <envar>ExoCache</envar> instances that don't have dedicated
-        configuration.</para>
-      </note>
-      <para> See the below example about how to define a new
+    <note>
+      <para>The <envar>ExoCacheConfig</envar> which name is
+      <envar>default</envar>, will be the default configuration of all the
+      <envar>ExoCache</envar> instances that don't have dedicated
+      configuration.</para>
+    </note>
+
+    <para>See the below example about how to define a new
     <envar>ExoCacheConfig</envar> thanks to a
     <emphasis>external-component-plugin</emphasis>:</para>
-    
+
     <programlisting language="xml">  &lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.cache.CacheService&lt;/target-component&gt;
     &lt;component-plugin&gt;
@@ -125,14 +126,14 @@
             <entry>distributed</entry>
 
             <entry>Indicates if the cache is distributed. This field is
-            optional. This field is used for backward compatibility.</entry>
+            optional. This field is deprecated.</entry>
           </row>
 
           <row>
             <entry>replicated</entry>
 
             <entry>Indicates if the cache is replicated. This field is
-            optional. This field is deprecated.</entry>
+            optional. </entry>
           </row>
 
           <row>
@@ -141,11 +142,95 @@
             <entry>Indicates if the log is enabled. This field is optional.
             This field is used for backward compatibility.</entry>
           </row>
+
+          <row>
+            <entry>avoidValueReplication</entry>
+
+            <entry>Indicates whether the values of the cache should be
+            replicated or not in case of a replicated cache. This field is
+            optional. By default it is disabled. Find more details about this
+            field in the next section.</entry>
+          </row>
         </tbody>
       </tgroup>
     </table>
+  </section>
 
-    <para></para>
+  <section>
+    <title>Advanced concepts</title>
+
+    <section>
+      <title>Invalidation</title>
+
+      <para>In case, you have big values or non serializable values and you
+      need a replicated cache to at list invalidate the data when it is
+      needed, you can use the invalidation mode that will work on top of any
+      replicated cache implementations. This is possible thanks to the class
+      <emphasis>InvalidationExoCache</emphasis> which is actually a decorator
+      whose idea is to replicate the the hash code of the value in order to
+      know if it is needed or not to invalidate the local data, if the new
+      hash code of the value is the same as the old value, we assume that it
+      is the same value so we don't invalidate the old value. This is required
+      to avoid the following infinite loop that we will face with invalidation
+      mode proposed out of the box by JBoss Cache for example:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Cluster node #1 puts (key1, value1) into the cache</para>
+        </listitem>
+
+        <listitem>
+          <para>On cluster node #2 key1 is invalidated by put call in node
+          #1</para>
+        </listitem>
+
+        <listitem>
+          <para>Node #2 re-loads key1 and puts (key1, value1) into the
+          cache</para>
+        </listitem>
+
+        <listitem>
+          <para>On cluster node #1 key1 is invalidated, so we get back to step
+          #1</para>
+        </listitem>
+      </orderedlist>
+
+      <para>In the use case above, thanks to the
+      <emphasis>InvalidationExoCache</emphasis> since the value loaded at step
+      #3 has the same hash code as the value loaded as step #1, the step #4
+      won't invalidate the data on the cluster node #1.</para>
+
+      <para>It exists 2 ways to use the invalidation mode which are the
+      following:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>By configuration: For this you simply need to set the
+          parameter <emphasis>avoidValueReplication</emphasis> to
+          <emphasis>true</emphasis> in your eXo cache configuration, this will
+          indicate the CacheService to wrap your eXo cache instance into an
+          <emphasis>InvalidationExoCache</emphasis>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Programmatically; You can wrap your eXo cache instance into an
+          <emphasis>org.exoplatform.services.cache.impl.InvalidationExoCache</emphasis>
+          yourself using the public constructors that are available. Please
+          note that if you use <emphasis>CacheListeners</emphasis> add them to
+          the InvalidationExoCache instance instead of the nested eXo Cache
+          because the nested eXo Cache will contain only hash codes so the
+          related listeners will get hash codes instead of the real
+          values.</para>
+        </listitem>
+      </orderedlist>
+
+      <note>
+        <para>The invalidation will be efficient if and only if the hash code
+        method is properly implemented, in other words 2 value objects
+        representing the same data will return the same hash code otherwise
+        the infinite loop described above will still be effective.</para>
+      </note>
+    </section>
   </section>
 
   <section>
@@ -158,7 +243,7 @@
 
     <para>You just need to implement your own <envar>ExoCacheFactory</envar>
     and register it in an eXo container, as described below:</para>
-    
+
     <programlisting language="java">package org.exoplatform.services.cache;
 ...
 public interface ExoCacheFactory {
@@ -178,7 +263,7 @@ public interface ExoCacheFactory {
     can simply register your factory by adding a file
     <emphasis>conf/portal/configuration.xml</emphasis> with a content of the
     following type:</para>
-    
+
     <programlisting language="xml">&lt;configuration&gt;
   &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.cache.ExoCacheFactory&lt;/key&gt;
@@ -188,14 +273,14 @@ public interface ExoCacheFactory {
 &lt;/configuration&gt;
 </programlisting>
 
-<note>
-        <para>Since kernel 2.3.0-CR1, if the configuration is not a sub class
-        of <envar>ExoCacheConfig</envar> and the implementation given in the
-        configuration is the full qualified name of an existing implementation
-        of eXo Cache, we will assume that the user expects to have an instance
-        of this eXo Cache type so we won't use the configured cache
-        factory.</para>
-      </note>
+    <note>
+      <para>Since kernel 2.3.0-CR1, if the configuration is not a sub class of
+      <envar>ExoCacheConfig</envar> and the implementation given in the
+      configuration is the full qualified name of an existing implementation
+      of eXo Cache, we will assume that the user expects to have an instance
+      of this eXo Cache type so we won't use the configured cache
+      factory.</para>
+    </note>
   </section>
 
   <section>
@@ -210,7 +295,7 @@ public interface ExoCacheFactory {
       wish as you can do with any components.</para>
 
       <para>The default configuration of the factory is:</para>
-      
+
       <programlisting language="xml">&lt;configuration&gt;  
   &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.cache.ExoCacheFactory&lt;/key&gt;
@@ -278,7 +363,7 @@ public interface ExoCacheFactory {
       <para>If for a given reason, you need to use a specific configuration
       for a cache, you can register one thanks to an "<emphasis>external
       plugin</emphasis>", see an example below:</para>
-      
+
       <programlisting language="xml">&lt;configuration&gt;
   ...
   &lt;external-component-plugins&gt;
@@ -323,9 +408,8 @@ public interface ExoCacheFactory {
         <title>Understanding a cache creator</title>
 
         <para>The factory for jboss cache, delegates the cache creation to
-        <envar>ExoCacheCreator</envar> that is defined as
-        below:</para>
-        
+        <envar>ExoCacheCreator</envar> that is defined as below:</para>
+
         <programlisting language="java">package org.exoplatform.services.cache.impl.jboss;
 ...
 public interface ExoCacheCreator {
@@ -387,9 +471,8 @@ public interface ExoCacheCreator {
         <title>Registering a cache creator</title>
 
         <para>You can register any cache creator that you want thanks to an
-        <emphasis>"external plugin"</emphasis>, see an example
-        below:</para>
-        
+        <emphasis>"external plugin"</emphasis>, see an example below:</para>
+
         <programlisting language="xml">  &lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.cache.ExoCacheFactory&lt;/target-component&gt;
     &lt;component-plugin&gt;
@@ -483,7 +566,6 @@ public interface ExoCacheCreator {
  &lt;object type="org.exoplatform.services.cache.impl.jboss.fifo.FIFOExoCacheCreator"&gt;&lt;/object&gt;
 &lt;/object-param&gt;
 ...</programlisting>
-
         </section>
 
         <section>
@@ -496,7 +578,6 @@ public interface ExoCacheCreator {
   &lt;object type="org.exoplatform.services.cache.impl.jboss.mru.MRUExoCacheCreator"&gt;&lt;/object&gt;
 &lt;/object-param&gt;
 ...</programlisting>
-
         </section>
 
         <section>
@@ -707,56 +788,54 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt; 
 ...</programlisting>
 
-<table>
-                <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-                <tgroup cols="2">
-                  <tbody>
-                    <row>
-                      <entry>maxNodes</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxNodes</entry>
 
-                      <entry>This is the maximum number of nodes allowed in
-                      this region. 0 denotes immediate expiry, -1 denotes no
-                      limit.</entry>
-                    </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                    <row>
-                      <entry>minTimeToLive</entry>
+              <row>
+                <entry>minTimeToLive</entry>
 
-                      <entry>The minimum amount of time (in milliseconds) that
-                      a node must be allowed to live after being accessed
-                      before it is allowed to be considered for eviction. 0
-                      denotes that this feature is disabled, which is the
-                      default value.</entry>
-                    </row>
+                <entry>The minimum amount of time (in milliseconds) that a
+                node must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
 
-                    <row>
-                      <entry>maxAge</entry>
+              <row>
+                <entry>maxAge</entry>
 
-                      <entry>Lifespan of a node (in milliseconds) regardless
-                      of idle time before the node is swept away. 0 denotes
-                      immediate expiry, -1 denotes no limit.</entry>
-                    </row>
+                <entry>Lifespan of a node (in milliseconds) regardless of idle
+                time before the node is swept away. 0 denotes immediate
+                expiry, -1 denotes no limit.</entry>
+              </row>
 
-                    <row>
-                      <entry>timeToLive</entry>
+              <row>
+                <entry>timeToLive</entry>
 
-                      <entry>The amount of time that a node is not written to
-                      or read (in milliseconds) before the node is swept away.
-                      0 denotes immediate expiry, -1 denotes no limit.</entry>
-                    </row>
-                  </tbody>
-                </tgroup>
-              </table>
-             
-          <itemizedlist>
+                <entry>The amount of time that a node is not written to or
+                read (in milliseconds) before the node is swept away. 0
+                denotes immediate expiry, -1 denotes no limit.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
 
+        <itemizedlist>
           <listitem>
             <para>Old configuration</para>
           </listitem>
-          </itemizedlist>
+        </itemizedlist>
 
-          <programlisting language="xml">...
+        <programlisting language="xml">...
       &lt;object-param&gt;
         &lt;name&gt;lru-with-old-config&lt;/name&gt;
         &lt;description&gt;The lru cache configuration&lt;/description&gt;
@@ -769,38 +848,36 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt; 
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxSize</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxSize</entry>
 
-                    <entry>This is the maximum number of nodes allowed in this
-                    region. 0 denotes immediate expiry, -1 denotes no
-                    limit.</entry>
-                  </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                  <row>
-                    <entry>liveTime</entry>
+              <row>
+                <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in seconds) that a node
-                    must be allowed to live after being accessed before it is
-                    allowed to be considered for eviction. 0 denotes that this
-                    feature is disabled, which is the default value.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
+                <entry>The minimum amount of time (in seconds) that a node
+                must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
 
-            <note>
-                <para>For the fields <emphasis>maxAge</emphasis> and
-                <emphasis>timeToLive</emphasis> needed by JBoss cache, we will
-                use the default values provided by the creator.</para>
-            </note>
-         
-       
+        <note>
+          <para>For the fields <emphasis>maxAge</emphasis> and
+          <emphasis>timeToLive</emphasis> needed by JBoss cache, we will use
+          the default values provided by the creator.</para>
+        </note>
       </section>
 
       <section>
@@ -811,8 +888,8 @@ public interface ExoCacheCreator {
             <para>New configuration</para>
           </listitem>
         </itemizedlist>
-            
-            <programlisting language="xml">...
+
+        <programlisting language="xml">...
        &lt;object-param&gt;
         &lt;name&gt;fifo&lt;/name&gt;
         &lt;description&gt;The fifo cache configuration&lt;/description&gt;
@@ -824,38 +901,38 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt;
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxNodes</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxNodes</entry>
 
-                    <entry>This is the maximum number of nodes allowed in this
-                    region. 0 denotes immediate expiry, -1 denotes no
-                    limit.</entry>
-                  </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                  <row>
-                    <entry>minTimeToLive</entry>
+              <row>
+                <entry>minTimeToLive</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) that a
-                    node must be allowed to live after being accessed before
-                    it is allowed to be considered for eviction. 0 denotes
-                    that this feature is disabled, which is the default
-                    value.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
-            <itemizedlist>
-              <listitem>
-                <para>Old configuration</para>
-              </listitem>
-            </itemizedlist>
-            
-            <programlisting language="xml">...
+                <entry>The minimum amount of time (in milliseconds) that a
+                node must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <itemizedlist>
+          <listitem>
+            <para>Old configuration</para>
+          </listitem>
+        </itemizedlist>
+
+        <programlisting language="xml">...
        &lt;object-param&gt;
         &lt;name&gt;fifo-with-old-config&lt;/name&gt;
         &lt;description&gt;The fifo cache configuration&lt;/description&gt;
@@ -868,30 +945,30 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt;
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxSize</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxSize</entry>
 
-                    <entry>This is the maximum number of nodes allowed in this
-                    region. 0 denotes immediate expiry, -1 denotes no
-                    limit.</entry>
-                  </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                  <row>
-                    <entry>liveTime</entry>
+              <row>
+                <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in seconds) that a node
-                    must be allowed to live after being accessed before it is
-                    allowed to be considered for eviction. 0 denotes that this
-                    feature is disabled, which is the default value.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
+                <entry>The minimum amount of time (in seconds) that a node
+                must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
       </section>
 
       <section>
@@ -902,8 +979,8 @@ public interface ExoCacheCreator {
             <para>New configuration</para>
           </listitem>
         </itemizedlist>
-            
-            <programlisting language="xml">...
+
+        <programlisting language="xml">...
        &lt;object-param&gt;
         &lt;name&gt;mru&lt;/name&gt;
         &lt;description&gt;The mru cache configuration&lt;/description&gt;
@@ -915,39 +992,38 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt; 
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxNodes</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxNodes</entry>
 
-                    <entry>This is the maximum number of nodes allowed in this
-                    region. 0 denotes immediate expiry, -1 denotes no
-                    limit.</entry>
-                  </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                  <row>
-                    <entry>minTimeToLive</entry>
+              <row>
+                <entry>minTimeToLive</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) that a
-                    node must be allowed to live after being accessed before
-                    it is allowed to be considered for eviction. 0 denotes
-                    that this feature is disabled, which is the default
-                    value.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
-          
+                <entry>The minimum amount of time (in milliseconds) that a
+                node must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
         <itemizedlist>
           <listitem>
             <para>Old configuration</para>
           </listitem>
         </itemizedlist>
-            
-            <programlisting language="xml">...
+
+        <programlisting language="xml">...
       &lt;object-param&gt;
         &lt;name&gt;mru-with-old-config&lt;/name&gt;
         &lt;description&gt;The mru cache configuration&lt;/description&gt;
@@ -960,30 +1036,30 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt; 
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxSize</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxSize</entry>
 
-                    <entry>This is the maximum number of nodes allowed in this
-                    region. 0 denotes immediate expiry, -1 denotes no
-                    limit.</entry>
-                  </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                  <row>
-                    <entry>liveTime</entry>
+              <row>
+                <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in seconds) that a node
-                    must be allowed to live after being accessed before it is
-                    allowed to be considered for eviction. 0 denotes that this
-                    feature is disabled, which is the default value.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
+                <entry>The minimum amount of time (in seconds) that a node
+                must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
       </section>
 
       <section>
@@ -994,8 +1070,8 @@ public interface ExoCacheCreator {
             <para>New configuration</para>
           </listitem>
         </itemizedlist>
-            
-            <programlisting language="xml">...
+
+        <programlisting language="xml">...
        &lt;object-param&gt;
         &lt;name&gt;lfu&lt;/name&gt;
         &lt;description&gt;The lfu cache configuration&lt;/description&gt;
@@ -1008,49 +1084,49 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt; 
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxNodes</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxNodes</entry>
 
-                    <entry>This is the maximum number of nodes allowed in this
-                    region. 0 denotes immediate expiry, -1 denotes no
-                    limit.</entry>
-                  </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                  <row>
-                    <entry>minNodes</entry>
+              <row>
+                <entry>minNodes</entry>
 
-                    <entry>This is the minimum number of nodes allowed in this
-                    region. This value determines what the eviction queue
-                    should prune down to per pass. e.g. If minNodes is 10 and
-                    the cache grows to 100 nodes, the cache is pruned down to
-                    the 10 most frequently used nodes when the eviction timer
-                    makes a pass through the eviction algorithm.</entry>
-                  </row>
+                <entry>This is the minimum number of nodes allowed in this
+                region. This value determines what the eviction queue should
+                prune down to per pass. e.g. If minNodes is 10 and the cache
+                grows to 100 nodes, the cache is pruned down to the 10 most
+                frequently used nodes when the eviction timer makes a pass
+                through the eviction algorithm.</entry>
+              </row>
 
-                  <row>
-                    <entry>minTimeToLive</entry>
+              <row>
+                <entry>minTimeToLive</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) that a
-                    node must be allowed to live after being accessed before
-                    it is allowed to be considered for eviction. 0 denotes
-                    that this feature is disabled, which is the default
-                    value.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
-          <itemizedlist>          
-            <listitem>
-              <para>Old configuration</para>
-            </listitem>
-          </itemizedlist>
-          
-            <programlisting language="xml">...
+                <entry>The minimum amount of time (in milliseconds) that a
+                node must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <itemizedlist>
+          <listitem>
+            <para>Old configuration</para>
+          </listitem>
+        </itemizedlist>
+
+        <programlisting language="xml">...
       &lt;object-param&gt;
         &lt;name&gt;lfu-with-old-config&lt;/name&gt;
         &lt;description&gt;The lfu cache configuration&lt;/description&gt;
@@ -1063,37 +1139,36 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt; 
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxSize</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxSize</entry>
 
-                    <entry>This is the maximum number of nodes allowed in this
-                    region. 0 denotes immediate expiry, -1 denotes no
-                    limit.</entry>
-                  </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                  <row>
-                    <entry>liveTime</entry>
+              <row>
+                <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) that a
-                    node must be allowed to live after being accessed before
-                    it is allowed to be considered for eviction. 0 denotes
-                    that this feature is disabled, which is the default
-                    value.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
+                <entry>The minimum amount of time (in milliseconds) that a
+                node must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
 
-            <para><note>
-                <para>For the fields <emphasis>minNodes</emphasis> and
-                <emphasis>timeToLive</emphasis> needed by JBoss cache, we will
-                use the default values provided by the creator.</para>
-              </note></para>
+        <para><note>
+            <para>For the fields <emphasis>minNodes</emphasis> and
+            <emphasis>timeToLive</emphasis> needed by JBoss cache, we will use
+            the default values provided by the creator.</para>
+          </note></para>
       </section>
 
       <section>
@@ -1104,8 +1179,8 @@ public interface ExoCacheCreator {
             <para>New configuration</para>
           </listitem>
         </itemizedlist>
-            
-            <programlisting language="xml">...
+
+        <programlisting language="xml">...
        &lt;object-param&gt;
         &lt;name&gt;ea&lt;/name&gt;
         &lt;description&gt;The ea cache configuration&lt;/description&gt;
@@ -1118,46 +1193,45 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt; 
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxNodes</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxNodes</entry>
 
-                    <entry>This is the maximum number of nodes allowed in this
-                    region. 0 denotes immediate expiry, -1 denotes no
-                    limit.</entry>
-                  </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                  <row>
-                    <entry>minTimeToLive</entry>
+              <row>
+                <entry>minTimeToLive</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) that a
-                    node must be allowed to live after being accessed before
-                    it is allowed to be considered for eviction. 0 denotes
-                    that this feature is disabled, which is the default
-                    value.</entry>
-                  </row>
+                <entry>The minimum amount of time (in milliseconds) that a
+                node must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
 
-                  <row>
-                    <entry>expirationTimeout</entry>
+              <row>
+                <entry>expirationTimeout</entry>
 
-                    <entry>This is the timeout after which the cache entry
-                    must be evicted.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
-          
+                <entry>This is the timeout after which the cache entry must be
+                evicted.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
         <itemizedlist>
           <listitem>
             <para>Old configuration</para>
           </listitem>
         </itemizedlist>
-        
-            <programlisting language="xml">...
+
+        <programlisting language="xml">...
       &lt;object-param&gt;
         &lt;name&gt;ea-with-old-config&lt;/name&gt;
         &lt;description&gt;The ea cache configuration&lt;/description&gt;
@@ -1170,38 +1244,36 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt; 
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxSize</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxSize</entry>
 
-                    <entry>This is the maximum number of nodes allowed in this
-                    region. 0 denotes immediate expiry, -1 denotes no
-                    limit.</entry>
-                  </row>
+                <entry>This is the maximum number of nodes allowed in this
+                region. 0 denotes immediate expiry, -1 denotes no
+                limit.</entry>
+              </row>
 
-                  <row>
-                    <entry>liveTime</entry>
+              <row>
+                <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) that a
-                    node must be allowed to live after being accessed before
-                    it is allowed to be considered for eviction. 0 denotes
-                    that this feature is disabled, which is the default
-                    value.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
+                <entry>The minimum amount of time (in milliseconds) that a
+                node must be allowed to live after being accessed before it is
+                allowed to be considered for eviction. 0 denotes that this
+                feature is disabled, which is the default value.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
 
-            <para><note>
-                <para>For the fields <emphasis>expirationTimeout</emphasis>
-                needed by JBoss cache, we will use the default values provided
-                by the creator.</para>
-              </note></para>
-         
+        <para><note>
+            <para>For the fields <emphasis>expirationTimeout</emphasis> needed
+            by JBoss cache, we will use the default values provided by the
+            creator.</para>
+          </note></para>
       </section>
     </section>
   </section>
@@ -1218,7 +1290,7 @@ public interface ExoCacheCreator {
       if you wish as you can do with any components.</para>
 
       <para>The default configuration of the factory is:</para>
-      
+
       <programlisting language="xml">&lt;configuration&gt;  
   &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.cache.ExoCacheFactory&lt;/key&gt;
@@ -1241,12 +1313,13 @@ public interface ExoCacheCreator {
 
       <para>The default configuration template aims to be the skeleton from
       which we will create any type of infinispan cache instance, thus it must
-      be very generic.</para> 
+      be very generic.</para>
+
       <note>
-          <para>All the cache instances that will rely on this cache
-          configuration will share the same
-          <envar>EmbeddedCacheManager.</envar></para>
-        </note>
+        <para>All the cache instances that will rely on this cache
+        configuration will share the same
+        <envar>EmbeddedCacheManager.</envar></para>
+      </note>
     </section>
 
     <section>
@@ -1255,7 +1328,7 @@ public interface ExoCacheCreator {
       <para>If for a given reason, you need to use a specific configuration
       for a cache, you can register one thanks to an "<emphasis>external
       plugin</emphasis>", see an example below:</para>
-      
+
       <programlisting language="xml">&lt;configuration&gt;
   ...
   &lt;external-component-plugins&gt;
@@ -1306,9 +1379,8 @@ public interface ExoCacheCreator {
         <title>Understanding a cache creator</title>
 
         <para>The factory for infinispan, delegates the cache creation to
-        <envar>ExoCacheCreator</envar> that is defined as
-        below:</para>
-        
+        <envar>ExoCacheCreator</envar> that is defined as below:</para>
+
         <programlisting language="java">package org.exoplatform.services.cache.impl.infinispan;
 ...
 public interface ExoCacheCreator {
@@ -1374,9 +1446,8 @@ public interface ExoCacheCreator {
         <title>Register a cache creator</title>
 
         <para>You can register any cache creator you want thanks to an
-        <emphasis>"external plugin"</emphasis>, see an example
-        below:</para>
-        
+        <emphasis>"external plugin"</emphasis>, see an example below:</para>
+
         <programlisting language="xml">  &lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.cache.ExoCacheFactory&lt;/target-component&gt;
     &lt;component-plugin&gt;
@@ -1535,8 +1606,8 @@ public interface ExoCacheCreator {
             <para>New configuration</para>
           </listitem>
         </itemizedlist>
-            
-            <programlisting language="xml">...
+
+        <programlisting language="xml">...
        &lt;object-param&gt;
         &lt;name&gt;myCache&lt;/name&gt;
         &lt;description&gt;My cache configuration&lt;/description&gt;
@@ -1550,67 +1621,65 @@ public interface ExoCacheCreator {
         &lt;/object&gt;
       &lt;/object-param&gt; 
 ...</programlisting>
-              <table>
-                <title>Fields description</title>
 
-                <tgroup cols="2">
-                  <tbody>
-                    <row>
-                      <entry>strategy</entry>
+        <table>
+          <title>Fields description</title>
 
-                      <entry>The name of the strategy to use such as
-                      'UNORDERED', 'FIFO', 'LRU', 'LIRS' and 'NONE' (to
-                      disable eviction).</entry>
-                    </row>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>strategy</entry>
 
-                    <row>
-                      <entry>maxEntries</entry>
+                <entry>The name of the strategy to use such as 'UNORDERED',
+                'FIFO', 'LRU', 'LIRS' and 'NONE' (to disable
+                eviction).</entry>
+              </row>
 
-                      <entry>Maximum number of entries in a cache instance. If
-                      selected value is not a power of two the actual value
-                      will default to the least power of two larger than
-                      selected value. -1 means no limit which is also the
-                      default value.</entry>
-                    </row>
+              <row>
+                <entry>maxEntries</entry>
 
-                    <row>
-                      <entry>lifespan</entry>
+                <entry>Maximum number of entries in a cache instance. If
+                selected value is not a power of two the actual value will
+                default to the least power of two larger than selected value.
+                -1 means no limit which is also the default value.</entry>
+              </row>
 
-                      <entry>Maximum lifespan of a cache entry, after which
-                      the entry is expired cluster-wide, in milliseconds. -1
-                      means the entries never expire which is also the default
-                      value.</entry>
-                    </row>
+              <row>
+                <entry>lifespan</entry>
 
-                    <row>
-                      <entry>maxIdle</entry>
+                <entry>Maximum lifespan of a cache entry, after which the
+                entry is expired cluster-wide, in milliseconds. -1 means the
+                entries never expire which is also the default value.</entry>
+              </row>
 
-                      <entry>Maximum idle time a cache entry will be
-                      maintained in the cache, in milliseconds. If the idle
-                      time is exceeded, the entry will be expired
-                      cluster-wide. -1 means the entries never expire which is
-                      also the default value.</entry>
-                    </row>
+              <row>
+                <entry>maxIdle</entry>
 
-                    <row>
-                      <entry>wakeUpInterval</entry>
+                <entry>Maximum idle time a cache entry will be maintained in
+                the cache, in milliseconds. If the idle time is exceeded, the
+                entry will be expired cluster-wide. -1 means the entries never
+                expire which is also the default value.</entry>
+              </row>
 
-                      <entry>Interval between subsequent eviction runs, in
-                      milliseconds. If you wish to disable the periodic
-                      eviction process altogether, set wakeupInterval to -1.
-                      The default value is 5000.</entry>
-                    </row>
-                  </tbody>
-                </tgroup>
-              </table>
-          
+              <row>
+                <entry>wakeUpInterval</entry>
+
+                <entry>Interval between subsequent eviction runs, in
+                milliseconds. If you wish to disable the periodic eviction
+                process altogether, set wakeupInterval to -1. The default
+                value is 5000.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
         <itemizedlist>
           <listitem>
             <para>Old configuration</para>
           </listitem>
         </itemizedlist>
 
-            <programlisting language="xml">...
+        <programlisting language="xml">...
       &lt;object-param&gt;
         &lt;name&gt;myCache&lt;/name&gt;
         &lt;description&gt;My cache configuration&lt;/description&gt;
@@ -1622,48 +1691,45 @@ public interface ExoCacheCreator {
       &lt;/object-param&gt; 
 ...</programlisting>
 
-            <table>
-              <title>Fields description</title>
+        <table>
+          <title>Fields description</title>
 
-              <tgroup cols="2">
-                <tbody>
-                  <row>
-                    <entry>maxSize</entry>
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>maxSize</entry>
 
-                    <entry>Maximum number of entries in a cache instance. If
-                    selected value is not a power of two the actual value will
-                    default to the least power of two larger than selected
-                    value. -1 means no limit which is also the default
-                    value.</entry>
-                  </row>
+                <entry>Maximum number of entries in a cache instance. If
+                selected value is not a power of two the actual value will
+                default to the least power of two larger than selected value.
+                -1 means no limit which is also the default value.</entry>
+              </row>
 
-                  <row>
-                    <entry>liveTime</entry>
+              <row>
+                <entry>liveTime</entry>
 
-                    <entry>Maximum lifespan of a cache entry, after which the
-                    entry is expired cluster-wide, in milliseconds. -1 means
-                    the entries never expire which is also the default
-                    value.</entry>
-                  </row>
+                <entry>Maximum lifespan of a cache entry, after which the
+                entry is expired cluster-wide, in milliseconds. -1 means the
+                entries never expire which is also the default value.</entry>
+              </row>
 
-                  <row>
-                    <entry>implementation</entry>
+              <row>
+                <entry>implementation</entry>
 
-                    <entry>The name of the implementation to use the expected
-                    value is one of the eviction strategies defined in the
-                    field <emphasis>implementations</emphasis> of the generic
-                    cache creator.</entry>
-                  </row>
-                </tbody>
-              </tgroup>
-            </table>
+                <entry>The name of the implementation to use the expected
+                value is one of the eviction strategies defined in the field
+                <emphasis>implementations</emphasis> of the generic cache
+                creator.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
 
-            <para><note>
-                <para>For the fields <emphasis>maxIdle</emphasis> and
-                <emphasis>wakeUpInterval</emphasis> needed by infinispan, we
-                will use the default values provided by the creator.</para>
-              </note></para>
-             
+        <para><note>
+            <para>For the fields <emphasis>maxIdle</emphasis> and
+            <emphasis>wakeUpInterval</emphasis> needed by infinispan, we will
+            use the default values provided by the creator.</para>
+          </note></para>
       </section>
     </section>
   </section>
