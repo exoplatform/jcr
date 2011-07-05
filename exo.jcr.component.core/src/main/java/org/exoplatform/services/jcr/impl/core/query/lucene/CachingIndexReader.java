@@ -448,7 +448,11 @@ class CachingIndexReader extends FilterIndexReader
        */
       private void initializeParents(IndexReader reader) throws IOException
       {
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          final Map docs = new HashMap();
          // read UUIDs
          collectTermDocs(reader, new Term(FieldNames.UUID, ""), new TermDocsCollector()

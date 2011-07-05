@@ -182,7 +182,11 @@ public class QueryImpl extends AbstractQueryImpl
    public QueryResult execute() throws RepositoryException
    {
       checkInitialized();
-      long time = System.currentTimeMillis();
+      long time = 0;
+      if (log.isDebugEnabled())
+      {
+         time = System.currentTimeMillis();
+      }
       QueryResult result = query.execute(offset, limit);
       if (log.isDebugEnabled())
       {

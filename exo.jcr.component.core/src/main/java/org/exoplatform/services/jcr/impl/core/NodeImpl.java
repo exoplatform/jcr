@@ -1037,9 +1037,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public NodeIterator getNodes() throws RepositoryException
    {
 
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (LOG.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          LOG.debug("getNodes() >>>>>");
       }
 
@@ -1086,9 +1087,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public NodeIterator getNodes(String namePattern) throws RepositoryException
    {
 
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (LOG.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          LOG.debug("getNodes(String) >>>>>");
       }
 
@@ -1197,9 +1199,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public PropertyIterator getProperties() throws RepositoryException
    {
 
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (LOG.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          LOG.debug("getProperties() >>>>>");
       }
 
@@ -1252,9 +1255,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public PropertyIterator getProperties(String namePattern) throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (LOG.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          LOG.debug("getProperties(String) >>>>>");
       }
 

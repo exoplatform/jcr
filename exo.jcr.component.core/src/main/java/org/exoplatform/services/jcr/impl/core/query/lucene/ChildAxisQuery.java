@@ -716,10 +716,17 @@ class ChildAxisQuery extends Query implements JcrQuery
             //NodeId id = new NodeId(UUID.fromString(uuid));
             try
             {
-               long time = System.currentTimeMillis();
+               long time = 0;
+               if (log.isDebugEnabled())
+               {
+                  time = System.currentTimeMillis();
+               }
                NodeData state = (NodeData)itemMgr.getItemData(uuid);
-               time = System.currentTimeMillis() - time;
-               log.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));
+               if (log.isDebugEnabled())
+               {
+                  time = System.currentTimeMillis() - time;
+                  log.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));                  
+               }
                Iterator<NodeData> entries;
                if (nameTest != null)
                {
@@ -813,7 +820,11 @@ class ChildAxisQuery extends Query implements JcrQuery
       @Override
       public Hits getHits() throws IOException
       {
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          Hits childrenHits = new AdaptingHits();
          Hits nameHits = new ScorerHits(nameTestScorer);
          int[] docs = new int[1];
@@ -839,9 +850,11 @@ class ChildAxisQuery extends Query implements JcrQuery
                }
             }
          }
-         time = System.currentTimeMillis() - time;
-
-         log.debug("Filtered hits in {} ms.", new Long(time));
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis() - time;
+            log.debug("Filtered hits in {} ms.", new Long(time));            
+         }
          return childrenHits;
       }
    }

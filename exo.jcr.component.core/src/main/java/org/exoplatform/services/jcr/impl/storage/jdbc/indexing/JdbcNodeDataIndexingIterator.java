@@ -115,7 +115,11 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
             currentLastNodeId = lastNodeId.get();
             currentPage = page.incrementAndGet();
          }
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (PropertyManager.isDevelopping())
+         {
+            time = System.currentTimeMillis();
+         }
          List<NodeDataIndexing> result = conn.getNodesAndProperties(currentLastNodeId, currentOffset, pageSize);
          if (PropertyManager.isDevelopping())
          {

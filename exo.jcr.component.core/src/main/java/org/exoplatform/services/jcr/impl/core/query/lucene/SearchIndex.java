@@ -1881,7 +1881,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          {
             return;
          }
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          int found = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
          {
             public Integer run()
@@ -1937,8 +1941,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                return found;
             }
          });
-         time = System.currentTimeMillis() - time;
-         log.debug("Retrieved {} aggregate roots in {} ms.", new Integer(found), new Long(time));
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis() - time;
+            log.debug("Retrieved {} aggregate roots in {} ms.", new Integer(found), new Long(time));            
+         }
       }
    }
 

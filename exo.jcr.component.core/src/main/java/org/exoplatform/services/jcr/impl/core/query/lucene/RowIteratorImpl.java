@@ -781,11 +781,18 @@ class RowIteratorImpl implements RowIterator
          }
          try
          {
-            long time = System.currentTimeMillis();
+            long time = 0;
+            if (log.isDebugEnabled())
+            {
+               time = System.currentTimeMillis();
+            }
             String excerpt = excerptProvider.getExcerpt(id, 3, 150);
-
-            time = System.currentTimeMillis() - time;
-            log.debug("Created excerpt in {} ms.", new Long(time));
+            
+            if (log.isDebugEnabled())
+            {
+               time = System.currentTimeMillis() - time;
+               log.debug("Created excerpt in {} ms.", new Long(time));               
+            }
             if (excerpt != null)
             {
                return valueFactory.createValue(excerpt);
@@ -815,10 +822,17 @@ class RowIteratorImpl implements RowIterator
          HighlightingExcerptProvider hep = (HighlightingExcerptProvider)excerptProvider;
          try
          {
-            long time = System.currentTimeMillis();
+            long time = 0;
+            if (log.isDebugEnabled())
+            {
+               time = System.currentTimeMillis();
+            }
             text = hep.highlight(text);
-            time = System.currentTimeMillis() - time;
-            log.debug("Highlighted text in {} ms.", new Long(time));
+            if (log.isDebugEnabled())
+            {
+               time = System.currentTimeMillis() - time;
+               log.debug("Highlighted text in {} ms.", new Long(time));               
+            }
             return valueFactory.createValue(text);
          }
          catch (IOException e)

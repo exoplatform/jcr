@@ -517,8 +517,11 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // save state
             if (itemState.isPersisted())
             {
-               long start = System.currentTimeMillis();
-
+               long start = 0;
+               if (LOG.isDebugEnabled())
+               {
+                  start = System.currentTimeMillis();
+               }
                ItemData data = itemState.getData();
 
                WorkspaceStorageConnection conn;

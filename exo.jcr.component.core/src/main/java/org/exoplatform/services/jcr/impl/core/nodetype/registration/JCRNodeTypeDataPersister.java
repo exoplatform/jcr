@@ -151,8 +151,12 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
       PlainChangesLog changesLog = new PlainChangesLogImpl();
       TransientNodeData jcrNodetypes;
 
-      long start = System.currentTimeMillis();
-
+      long start = 0;
+      if (log.isDebugEnabled())
+      {
+         start = System.currentTimeMillis();
+      }
+      
       if (addACL)
       {
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};

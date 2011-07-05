@@ -56,11 +56,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -1153,7 +1153,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       if (handler.isInitializeHierarchyCache())
       {
          // force initializing of caches
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
@@ -1162,8 +1166,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                return null;
             }
          });
-         time = System.currentTimeMillis() - time;
-         log.debug("hierarchy cache initialized in {} ms", new Long(time));
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis() - time;
+            log.debug("hierarchy cache initialized in {} ms", new Long(time));            
+         }
       }
 
       synchronized (this)
@@ -1754,7 +1761,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       if (volatileIndex.getNumDocuments() > 0)
       {
 
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          // create index
          CreateIndex create = new CreateIndex(getTransactionId(), null);
          executeAndLog(create);
@@ -1769,8 +1780,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // create new volatile index
          resetVolatileIndex();
 
-         time = System.currentTimeMillis() - time;
-         log.debug("Committed in-memory index in " + time + "ms.");
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis() - time;
+            log.debug("Committed in-memory index in " + time + "ms.");            
+         }
       }
    }
 

@@ -172,7 +172,11 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
       {
          return;
       }
-      long time = System.currentTimeMillis();
+      long time = 0;
+      if (log.isDebugEnabled())
+      {
+         time = System.currentTimeMillis();
+      }
       ScoreNode[][] nodes = (ScoreNode[][])scoreNodes.toArray(new ScoreNode[scoreNodes.size()][]);
 
       final Set<String> invalidIDs = new HashSet<String>(2);

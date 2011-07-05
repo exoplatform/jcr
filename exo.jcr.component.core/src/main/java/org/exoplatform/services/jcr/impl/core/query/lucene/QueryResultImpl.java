@@ -308,9 +308,16 @@ public abstract class QueryResultImpl implements QueryResult
       MultiColumnQueryHits result = null;
       try
       {
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          result = executeQuery(maxResultSize);
-         log.debug("query executed in {} ms", new Long(System.currentTimeMillis() - time));
+         if (log.isDebugEnabled())
+         {
+            log.debug("query executed in {} ms", new Long(System.currentTimeMillis() - time));            
+         }
          // set selector names
          selectorNames = result.getSelectorNames();
 
@@ -325,9 +332,15 @@ public abstract class QueryResultImpl implements QueryResult
             result.skip(start);
          }
 
-         time = System.currentTimeMillis();
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();            
+         }
          collectScoreNodes(result, resultNodes, maxResultSize);
-         log.debug("retrieved ScoreNodes in {} ms", new Long(System.currentTimeMillis() - time));
+         if (log.isDebugEnabled())
+         {
+            log.debug("retrieved ScoreNodes in {} ms", new Long(System.currentTimeMillis() - time));            
+         }
 
          // update numResults
          numResults = result.getSize();

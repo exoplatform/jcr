@@ -364,9 +364,10 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType, boolean apiRead)
       throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
       }
 
@@ -426,9 +427,10 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, boolean skipCheckInPersistence,
       ItemType itemType) throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
       }
 
@@ -485,9 +487,10 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItem(NodeData parent, QPathEntry[] relPath, boolean pool, ItemType itemType)
       throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          String debugPath = "";
          for (QPathEntry rp : relPath)
          {
@@ -529,9 +532,10 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public ItemImpl getItem(QPath path, boolean pool) throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getItem(" + path.getAsString() + " ) >>>>>");
       }
 
@@ -649,9 +653,10 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public ItemImpl getItemByIdentifier(String identifier, boolean pool, boolean apiRead) throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getItemByIdentifier(" + identifier + " ) >>>>>");
       }
 
@@ -850,9 +855,10 @@ public class SessionDataManager implements ItemDataConsumer
    public List<NodeImpl> getChildNodes(NodeData parent, boolean pool) throws RepositoryException, AccessDeniedException
    {
 
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getChildNodes(" + parent.getQPath().getAsString() + ") >>>>>");
       }
 
@@ -903,9 +909,10 @@ public class SessionDataManager implements ItemDataConsumer
       AccessDeniedException
    {
 
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getChildProperties(" + parent.getQPath().getAsString() + ") >>>>>");
       }
 
@@ -941,9 +948,10 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") >>>>>");
       }
 
@@ -967,9 +975,10 @@ public class SessionDataManager implements ItemDataConsumer
    public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getChildNodesData(" + parent.getQPath().getAsString() + " , itemDataFilter) >>>>>");
       }
 
@@ -1113,9 +1122,10 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public AccessControlList getACL(QPath path) throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getACL(" + path.getAsString() + " ) >>>>>");
       }
 
@@ -1178,9 +1188,10 @@ public class SessionDataManager implements ItemDataConsumer
 
    public AccessControlList getACL(NodeData parent, QPathEntry name) throws RepositoryException
    {
-      long start = System.currentTimeMillis();
+      long start = 0;
       if (log.isDebugEnabled())
       {
+         start = System.currentTimeMillis();
          log.debug("getACL(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
       }
 

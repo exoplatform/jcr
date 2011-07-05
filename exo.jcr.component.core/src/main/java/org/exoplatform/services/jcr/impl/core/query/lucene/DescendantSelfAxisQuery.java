@@ -587,7 +587,11 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       {
          if (!contextHitsCalculated)
          {
-            long time = System.currentTimeMillis();
+            long time = 0;
+            if (log.isDebugEnabled())
+            {
+               time = System.currentTimeMillis();
+            }
             contextScorer.score(new AbstractHitCollector()
             {
                @Override
@@ -597,9 +601,9 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
                }
             }); // find all
             contextHitsCalculated = true;
-            time = System.currentTimeMillis() - time;
             if (log.isDebugEnabled())
             {
+               time = System.currentTimeMillis() - time;
                log.debug("Collected {} context hits in {} ms for {}", new Object[]{
                   new Integer(contextHits.cardinality()), new Long(time), DescendantSelfAxisQuery.this});
             }
