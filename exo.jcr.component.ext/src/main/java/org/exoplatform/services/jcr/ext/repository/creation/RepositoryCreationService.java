@@ -101,8 +101,10 @@ public interface RepositoryCreationService
     * Remove previously created repository. 
     * 
     * @param repositoryName - the repository name to delete
+    * @param forceCloseSessions - indicates if need to close sessions before repository removing, if
+    * sessions are opened is it not possbile to remove repository and exception will be thrown
     * @throws RepositoryCreationServiceException
     *          if some exception occurred during repository removing occurred
     */
-   void removeRepository(String repositoryName) throws RepositoryCreationException;
+   void removeRepository(String repositoryName, boolean forceCloseSessions) throws RepositoryCreationException;
 }

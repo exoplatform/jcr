@@ -231,7 +231,9 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             public Serializable execute(Serializable[] args) throws Throwable
             {
                String repositoryName = (String)args[0];
-               removeRepositoryLocally(repositoryName);
+               boolean forceCloseSessions = (Boolean)args[1];
+
+               removeRepositoryLocally(repositoryName, forceCloseSessions);
 
                return null;
             }
@@ -733,13 +735,14 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    /**
     * {@inheritDoc}
     */
-   public void removeRepository(String repositoryName) throws RepositoryCreationException
+   public void removeRepository(String repositoryName, boolean forceCloseSessions) throws RepositoryCreationException
    {
       if (rpcService != null)
       {
          try
          {
-            List<Object> results = rpcService.executeCommandOnAllNodes(removeRepository, true, repositoryName);
+            List<Object> results =
+               rpcService.executeCommandOnAllNodes(removeRepository, true, repositoryName, forceCloseSessions);
 
             for (Object result : results)
             {
@@ -764,7 +767,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       }
       else
       {
-         removeRepositoryLocally(repositoryName);
+         removeRepositoryLocally(repositoryName, forceCloseSessions);
       }
    }
 
@@ -773,9 +776,12 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     * 
     * @param repositoryName
     *          the repository name
+    * @param forceCloseSessions - indicates if need to close session before repository removing, if
+    * sessions are opened is it not possbile to remove repository and exception will be throw          
     * @throws RepositoryCreationException
     */
-   protected void removeRepositoryLocally(String repositoryName) throws RepositoryCreationException
+   protected void removeRepositoryLocally(String repositoryName, boolean forceCloseSessions)
+      throws RepositoryCreationException
    {
       try
       {
@@ -783,13 +789,16 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          ManageableRepository repositorty = repositoryService.getRepository(repositoryName);
          Set<String> datasources = extractDataSourceNames(repositorty.getConfiguration(), false);
 
-         // close all opened sessions
-         for (String workspaceName : repositorty.getWorkspaceNames())
+         if (forceCloseSessions)
          {
-            WorkspaceContainerFacade wc = repositorty.getWorkspaceContainer(workspaceName);
-            SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
+            // close all opened sessions
+            for (String workspaceName : repositorty.getWorkspaceNames())
+            {
+               WorkspaceContainerFacade wc = repositorty.getWorkspaceContainer(workspaceName);
+               SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
 
-            sessionRegistry.closeSessions(workspaceName);
+               sessionRegistry.closeSessions(workspaceName);
+            }
          }
 
          // remove repository from configuration
