@@ -122,6 +122,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
 
    private RemoteCommand startRepository;
 
+   private RemoteCommand removeRepository;
+
    /**
     * Constructor RepositoryCreationServiceImpl.
     */
@@ -218,6 +220,22 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
                return null;
             }
          });
+
+         removeRepository = rpcService.registerCommand(new RemoteCommand()
+         {
+            public String getId()
+            {
+               return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-removeRepository";
+            }
+
+            public Serializable execute(Serializable[] args) throws Throwable
+            {
+               String repositoryName = (String)args[0];
+               removeRepositoryLocally(repositoryName);
+
+               return null;
+            }
+         });
       }
       else
       {
@@ -308,7 +326,15 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
 
             if (result != null)
             {
-               throw new RepositoryCreationException("CreateRepository command must not return any results.");
+               if (result instanceof Throwable)
+               {
+                  throw new RepositoryCreationException("Can't create repository " + rEntry.getName(),
+                     (Throwable)result);
+               }
+               else
+               {
+                  throw new RepositoryCreationException("createRepository command returned uknown result type.");
+               }
             }
          }
          catch (RPCException e)
@@ -336,21 +362,17 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
 
             for (Object result : results)
             {
-               if (result instanceof RPCException)
+               if (result != null)
                {
-                  Throwable cause = ((RPCException)result).getCause();
-                  if (cause instanceof RepositoryCreationException)
+                  if (result instanceof Throwable)
                   {
                      throw new RepositoryCreationException("Repository " + rEntry.getName()
-                        + " created on coordinator, but can not be started at other cluster nodes: "
-                        + cause.getMessage(), cause);
+                        + " created on coordinator, but can not be started at other cluster nodes", ((Throwable)result));
                   }
-               }
-               if (result instanceof Throwable)
-               {
-                  throw new RepositoryCreationException("Repository " + rEntry.getName()
-                     + " created on coordinator, but can not be started at other cluster nodes: "
-                     + ((Throwable)result).getMessage(), ((Throwable)result));
+                  else
+                  {
+                     throw new RepositoryCreationException("startRepository command returns uknown result type");
+                  }
                }
             }
          }
@@ -388,6 +410,10 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             if (result instanceof String)
             {
                return (String)result;
+            }
+            else if (result instanceof Throwable)
+            {
+               throw new RepositoryCreationException("Can't reserve repository " + repositoryName, (Throwable)result);
             }
             else
             {
@@ -700,6 +726,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          this.rpcService.unregisterCommand(reserveRepositoryName);
          this.rpcService.unregisterCommand(createRepository);
          this.rpcService.unregisterCommand(startRepository);
+         this.rpcService.unregisterCommand(removeRepository);
       }
    }
 
@@ -708,7 +735,37 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     */
    public void removeRepository(String repositoryName) throws RepositoryCreationException
    {
-      removeRepositoryLocally(repositoryName);
+      if (rpcService != null)
+      {
+         try
+         {
+            List<Object> results = rpcService.executeCommandOnAllNodes(removeRepository, true, repositoryName);
+
+            for (Object result : results)
+            {
+               if (result != null)
+               {
+                  if (result instanceof Throwable)
+                  {
+                     throw new RepositoryCreationException("Can't remove repository " + repositoryName,
+                        (Throwable)result);
+                  }
+                  else
+                  {
+                     throw new RepositoryCreationException("removeRepository command returned uknown result type");
+                  }
+               }
+            }
+         }
+         catch (RPCException e)
+         {
+            throw new RepositoryCreationException("Can't remove repository " + repositoryName, e);
+         }
+      }
+      else
+      {
+         removeRepositoryLocally(repositoryName);
+      }
    }
 
    /**

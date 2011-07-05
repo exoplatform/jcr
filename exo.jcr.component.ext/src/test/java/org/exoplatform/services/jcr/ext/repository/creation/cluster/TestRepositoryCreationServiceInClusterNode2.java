@@ -16,10 +16,13 @@
  */
 package org.exoplatform.services.jcr.ext.repository.creation.cluster;
 
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.AbstractBackupTestCase;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -36,7 +39,7 @@ public class TestRepositoryCreationServiceInClusterNode2 extends AbstractBackupT
       log.info("Node2: Waits for the repository creation");
       Thread.sleep(60000);
       
-      String tenantName = "tenant_2";
+      String tenantName = "tenant_4";
 
       // check
       ManageableRepository restoredRepository = repositoryService.getRepository(tenantName);
@@ -48,7 +51,21 @@ public class TestRepositoryCreationServiceInClusterNode2 extends AbstractBackupT
       session.getRootNode();
 
       log.info("Node2: test passed. I have root node");
-      Thread.sleep(100000);
+      Thread.sleep(120000);
+
+      RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
+
+      try
+      {
+         repoService.getRepository(tenantName);
+         fail("Exception should be thrown");
+      }
+      catch (RepositoryException e)
+      {
+         // expected behavior, repository should be missing 
+      }
+
+      log.info("Node2: Repository removed");
    }
 
    @Override

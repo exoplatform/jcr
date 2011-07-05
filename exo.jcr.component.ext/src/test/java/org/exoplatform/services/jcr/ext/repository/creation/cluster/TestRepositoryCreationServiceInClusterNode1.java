@@ -32,6 +32,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -53,8 +55,8 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
       connProps.put("password", "24635457");
 
       DBCreationProperties creationProps =
-         new DBCreationProperties("jdbc:mysql://localhost/", connProps,
-            "src/test/resources/test-mysql.sql", "user1", "pass1");
+         new DBCreationProperties("jdbc:mysql://localhost/", connProps, "src/test/resources/test-mysql.sql", "user3",
+            "pass3");
 
       // prepare
       String dsName = helper.createDatasource();
@@ -81,7 +83,7 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
          (RepositoryCreationService)container.getComponentInstanceOfType(RepositoryCreationService.class);
       assertNotNull(creatorService);
 
-      String tenantName = "tenant_2";
+      String tenantName = "tenant_4";
       String repoToken = creatorService.reserveRepositoryName(tenantName);
 
       // restore             
@@ -106,7 +108,22 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
 
       log.info("Node1: Repository has been created");
-      Thread.sleep(100000);
+      Thread.sleep(60000);
+      
+      // remove repository
+      creatorService.removeRepository(tenantName);
+
+      try
+      {
+         repoService.getRepository(tenantName);
+         fail("Exception should be thrown");
+      }
+      catch (RepositoryException e)
+      {
+         // expected behavior, repository should be missing 
+      }
+      
+      log.info("Node1: Repository removed");
    }
 
    @Override
