@@ -35,7 +35,6 @@ import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
-import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -557,9 +556,6 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
          throw new RepositoryRestoreExeption("Current repository configuration " + repositoryName + " did not found");
       }
 
-      boolean isDefault =
-               repositoryService.getDefaultRepository().getConfiguration().getName().equals(repositoryEntry.getName());
-
       //Create local copy of WorkspaceEntry for all workspaces
       ArrayList<WorkspaceEntry> workspaceList = new ArrayList<WorkspaceEntry>();
       workspaceList.addAll(repositoryEntry.getWorkspaceEntries());
@@ -574,14 +570,7 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
          repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName();
 
       //remove repository
-      if (isDefault)
-      {
-         ((RepositoryServiceImpl)repositoryService).removeDefaultRepository();
-      }
-      else
-      {
-         repositoryService.removeRepository(repositoryEntry.getName());
-      }
+      repositoryService.removeRepository(repositoryEntry.getName());
 
       // clean data
       for (WorkspaceEntry wEntry : workspaceList)

@@ -46,8 +46,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import javax.jcr.RepositoryException;
 
@@ -116,14 +116,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       {
          managerStartChanges.addPlugin((RepositoryChangesListenerRegisterPlugin)plugin);
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean canRemoveRepository(String name) throws RepositoryException
-   {
-      return canRemoveRepository(name, false);
    }
 
    /**
@@ -232,14 +224,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       return (ManageableRepository)repositoryContainer.getComponentInstanceOfType(ManageableRepository.class);
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public void removeRepository(String name) throws RepositoryException
-   {
-      removeRepository(name, false);
-   }
-
    public void setCurrentRepositoryName(String repositoryName) throws RepositoryConfigurationException
    {
       // Need privileges to manage repository.
@@ -310,17 +294,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       addNamespacesPlugins.clear();
       addNodeTypePlugins.clear();
       managerStartChanges.cleanup();
-   }
-
-   /**
-    * Remove default repository.
-    * 
-    * @throws RepositoryException
-    *          if any Exception occurred during removing
-    */
-   public void removeDefaultRepository() throws RepositoryException
-   {
-      removeRepository(config.getDefaultRepositoryName(), true);
    }
 
    private void init(ExoContainer container) throws RepositoryConfigurationException, RepositoryException
@@ -396,16 +369,9 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
    }
 
    /**
-    * Remove repository with specific name.
-    * 
-    * @param name
-    *          repository name
-    * @param allowRemoveDefaultRepository
-    *          allow to remove default repository
-    * @throws RepositoryException
-    *          if any Exception occurred
+    * {@inheritDoc}
     */
-   private void removeRepository(String name, boolean allowRemoveDefaultRepository) throws RepositoryException
+   public void removeRepository(String name) throws RepositoryException
    {
       // Need privileges to manage repository.
       SecurityManager security = System.getSecurityManager();
@@ -414,7 +380,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      if (!canRemoveRepository(name, allowRemoveDefaultRepository))
+      if (!canRemoveRepository(name))
          throw new RepositoryException("Repository " + name + " in use. If you want to "
             + " remove repository close all open sessions");
 
@@ -458,24 +424,10 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
    }
 
    /**
-    * Indicates if repository with specific name can be removed.
-    * 
-    * @param name
-    *          repository name
-    * @param allowRemoveDefaultRepository
-    *          allow to remove default repository 
-    * @return
-    *          true if repository can be removed or false in other case
-    * @throws RepositoryException
-    *          if any Exception occurred
+    * {@inheritDoc}
     */
-   private boolean canRemoveRepository(String name, boolean allowRemoveDefaultRepository) throws RepositoryException
+   public boolean canRemoveRepository(String name) throws RepositoryException
    {
-      if (!allowRemoveDefaultRepository && name.equals(config.getDefaultRepositoryName()))
-      {
-         return false;
-      }
-
       RepositoryImpl repo = (RepositoryImpl)getRepository(name);
       try
       {

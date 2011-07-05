@@ -32,6 +32,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -93,6 +95,19 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       //check repositoryConfiguration
       RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
+
+      // remove repository
+      creatorService.removeRepository(tenantName);
+
+      try
+      {
+         repoService.getRepository(tenantName);
+         fail("Exception should be thrown");
+      }
+      catch (RepositoryException e)
+      {
+         // expected behavior, repository should be missing 
+      }
    }
 
    public void testCreateRepositorySingleDB() throws Exception
@@ -147,6 +162,19 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       //check repositoryConfiguration
       RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
+
+      // remove repository 
+      creatorService.removeRepository(tenantName);
+
+      try
+      {
+         repoService.getRepository(tenantName);
+         fail("Exception should be thrown");
+      }
+      catch (RepositoryException e)
+      {
+         // expected behavior, repository should be missing 
+      }
    }
 
    public void testCreateRepositorySingleDBWithSpecificCreationProps() throws Exception
@@ -210,6 +238,19 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       //check repositoryConfiguration
       RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
+
+      // remove repository
+      creatorService.removeRepository(tenantName);
+
+      try
+      {
+         repoService.getRepository(tenantName);
+         fail("Exception should be thrown");
+      }
+      catch (RepositoryException e)
+      {
+         // expected behavior, repository should be missing 
+      }
    }
 
    public void testReserveRepositoryNameException() throws Exception

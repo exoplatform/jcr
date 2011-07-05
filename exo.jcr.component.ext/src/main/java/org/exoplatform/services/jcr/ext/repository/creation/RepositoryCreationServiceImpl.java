@@ -27,11 +27,14 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupConfigurationException;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -377,24 +380,6 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    {
       if (rpcService != null)
       {
-         // check does repository already created
-         try
-         {
-            if (repositoryService.getRepository(repositoryName) != null)
-            {
-               throw new RepositoryCreationException("Repository " + repositoryName + " already exists.");
-            }
-         }
-         catch (RepositoryConfigurationException e)
-         {
-            throw new RepositoryCreationException("Can not check does repository " + repositoryName + " exists: "
-               + e.getMessage(), e);
-         }
-         catch (RepositoryException e)
-         {
-            //ok - repository does not exists
-         }
-
          // reserve RepositoryName at coordinator-node
          try
          {
@@ -715,6 +700,49 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          this.rpcService.unregisterCommand(reserveRepositoryName);
          this.rpcService.unregisterCommand(createRepository);
          this.rpcService.unregisterCommand(startRepository);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void removeRepository(String repositoryName) throws RepositoryCreationException
+   {
+      removeRepositoryLocally(repositoryName);
+   }
+
+   /**
+    * Remove repository locally.
+    * 
+    * @param repositoryName
+    *          the repository name
+    * @throws RepositoryCreationException
+    */
+   protected void removeRepositoryLocally(String repositoryName) throws RepositoryCreationException
+   {
+      try
+      {
+         // close all opened sessions
+         ManageableRepository repositorty = repositoryService.getRepository(repositoryName);
+         for (String workspaceName : repositorty.getWorkspaceNames())
+         {
+            WorkspaceContainerFacade wc = repositorty.getWorkspaceContainer(workspaceName);
+            SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
+
+            sessionRegistry.closeSessions(workspaceName);
+         }
+
+         // remove repository from configuration
+         repositoryService.removeRepository(repositoryName);
+         repositoryService.getConfig().retain();
+      }
+      catch (RepositoryException e)
+      {
+         throw new RepositoryCreationException("Can't remove repository", e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RepositoryCreationException("Can't remove repository", e);
       }
    }
 

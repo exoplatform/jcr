@@ -96,4 +96,13 @@ public interface RepositoryCreationService
     */
    void createRepository(String backupId, RepositoryEntry rEntry, String rToken)
       throws RepositoryConfigurationException, RepositoryCreationException;
+
+   /**
+    * Remove previously created repository. 
+    * 
+    * @param repositoryName - the repository name to delete
+    * @throws RepositoryCreationServiceException
+    *          if some exception occurred during repository removing occurred
+    */
+   void removeRepository(String repositoryName) throws RepositoryCreationException;
 }

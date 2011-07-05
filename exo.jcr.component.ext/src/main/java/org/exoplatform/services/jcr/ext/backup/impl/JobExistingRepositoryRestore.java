@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
-import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 
@@ -101,14 +100,7 @@ public class JobExistingRepositoryRestore extends JobRepositoryRestore
          }
 
          //remove repository
-         if (isDefault)
-         {
-            ((RepositoryServiceImpl)repositoryService).removeDefaultRepository();
-         }
-         else
-         {
-            repositoryService.removeRepository(repositoryEntry.getName());
-         }
+         repositoryService.removeRepository(repositoryEntry.getName());
 
          // clean
          for (Backupable component : backupable)
