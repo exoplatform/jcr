@@ -779,8 +779,11 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    {
       try
       {
-         // close all opened sessions
+         // extract list of all datasources
          ManageableRepository repositorty = repositoryService.getRepository(repositoryName);
+         Set<String> datasources = extractDataSourceNames(repositorty.getConfiguration(), false);
+
+         // close all opened sessions
          for (String workspaceName : repositorty.getWorkspaceNames())
          {
             WorkspaceContainerFacade wc = repositorty.getWorkspaceContainer(workspaceName);
@@ -792,12 +795,30 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          // remove repository from configuration
          repositoryService.removeRepository(repositoryName);
          repositoryService.getConfig().retain();
+         
+         // unbind datasource
+         for (String ds : datasources)
+         {
+            initialContextInitializer.getInitialContextBinder().unbind(ds);
+         }
       }
       catch (RepositoryException e)
       {
          throw new RepositoryCreationException("Can't remove repository", e);
       }
       catch (RepositoryConfigurationException e)
+      {
+         throw new RepositoryCreationException("Can't remove repository", e);
+      }
+      catch (FileNotFoundException e)
+      {
+         throw new RepositoryCreationException("Can't remove repository", e);
+      }
+      catch (NamingException e)
+      {
+         throw new RepositoryCreationException("Can't remove repository", e);
+      }
+      catch (XMLStreamException e)
       {
          throw new RepositoryCreationException("Can't remove repository", e);
       }
