@@ -1224,7 +1224,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       String newBackupDir =
                "\\${java.io.tmpdir}"
                         + bch.getBackupConfig().getBackupDir().getCanonicalPath()
-                        .replaceAll(backupDitEnv, "");
+                        .replace(backupDitEnv, "");
 
       File dest = new File(repositoryBackupChainLogPath + ".xml");
       dest.createNewFile();
