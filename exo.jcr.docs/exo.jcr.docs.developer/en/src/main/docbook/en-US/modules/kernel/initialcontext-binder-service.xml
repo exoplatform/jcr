@@ -49,5 +49,9 @@
     <para>Returns reference associated with defined name:</para>
 
     <programlisting language="java">public Reference getReference(String bindName)</programlisting>
+
+    <para>Unbind the Reference with defined name:</para>
+
+    <programlisting language="java">public void unbind(String bindName) throws NamingException, FileNotFoundException, XMLStreamException</programlisting>
   </section>
 </chapter>
