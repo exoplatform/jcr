@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.ext.repository.creation.DBCreationProperties;
+import org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationException;
 import org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationService;
 
 import java.io.File;
@@ -110,6 +111,17 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
       log.info("Node1: Repository has been created");
       Thread.sleep(60000);
       
+      // remove repository
+      try
+      {
+         creatorService.removeRepository(tenantName, false);
+         fail("Exception should be thrown");
+      }
+      catch (RepositoryCreationException e)
+      {
+         // repository in use
+      }
+
       // remove repository
       creatorService.removeRepository(tenantName, true);
 

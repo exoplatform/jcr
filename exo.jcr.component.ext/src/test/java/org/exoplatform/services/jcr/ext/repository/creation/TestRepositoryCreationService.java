@@ -97,6 +97,17 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
 
       // remove repository
+      try
+      {
+         creatorService.removeRepository(tenantName, false);
+         fail("Exception should be thrown");
+      }
+      catch (RepositoryCreationException e)
+      {
+         // repository in use
+      }
+
+      // remove repository
       creatorService.removeRepository(tenantName, true);
 
       try
@@ -162,6 +173,17 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       //check repositoryConfiguration
       RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
+
+      // remove repository
+      try
+      {
+         creatorService.removeRepository(tenantName, false);
+         fail("Exception should be thrown");
+      }
+      catch (RepositoryCreationException e)
+      {
+         // repository in use
+      }
 
       // remove repository 
       creatorService.removeRepository(tenantName, true);
@@ -238,6 +260,17 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       //check repositoryConfiguration
       RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
+
+      // remove repository
+      try
+      {
+         creatorService.removeRepository(tenantName, false);
+         fail("Exception should be thrown");
+      }
+      catch (RepositoryCreationException e)
+      {
+         // repository in use
+      }
 
       // remove repository
       creatorService.removeRepository(tenantName, true);
