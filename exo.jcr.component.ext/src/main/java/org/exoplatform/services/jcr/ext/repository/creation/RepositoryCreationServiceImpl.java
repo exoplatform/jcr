@@ -124,6 +124,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
 
    private RemoteCommand removeRepository;
 
+   private RemoteCommand canRemoveRepository;
+
    /**
     * Constructor RepositoryCreationServiceImpl.
     */
@@ -136,7 +138,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    /**
     * Constructor RepositoryCreationServiceImpl.
     */
-   public RepositoryCreationServiceImpl(RepositoryService repositoryService, BackupManager backupManager,
+   public RepositoryCreationServiceImpl(final RepositoryService repositoryService, BackupManager backupManager,
       ExoContainerContext context, InitialContextInitializer initialContextInitializer, final RPCService rpcService)
    {
       this.repositoryService = repositoryService;
@@ -231,11 +233,25 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             public Serializable execute(Serializable[] args) throws Throwable
             {
                String repositoryName = (String)args[0];
-               boolean forceCloseSessions = (Boolean)args[1];
 
-               removeRepositoryLocally(repositoryName, forceCloseSessions);
+               removeRepositoryLocally(repositoryName);
 
                return null;
+            }
+         });
+
+         canRemoveRepository = rpcService.registerCommand(new RemoteCommand()
+         {
+            public String getId()
+            {
+               return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-checkRepositoryInUse";
+            }
+
+            public Serializable execute(Serializable[] args) throws Throwable
+            {
+               String repositoryName = (String)args[0];
+               
+               return new Boolean(repositoryService.canRemoveRepository(repositoryName));
             }
          });
       }
@@ -729,21 +745,49 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          this.rpcService.unregisterCommand(createRepository);
          this.rpcService.unregisterCommand(startRepository);
          this.rpcService.unregisterCommand(removeRepository);
+         this.rpcService.unregisterCommand(canRemoveRepository);
       }
    }
 
    /**
     * {@inheritDoc}
     */
-   public void removeRepository(String repositoryName, boolean forceCloseSessions) throws RepositoryCreationException
+   public void removeRepository(String repositoryName, boolean forceRemove) throws RepositoryCreationException
    {
       if (rpcService != null)
       {
          try
          {
-            List<Object> results =
-               rpcService.executeCommandOnAllNodes(removeRepository, true, repositoryName, forceCloseSessions);
+            if (!forceRemove)
+            {
+               List<Object> results = rpcService.executeCommandOnAllNodes(canRemoveRepository, true, repositoryName);
+               for (Object result : results)
+               {
+                  if (result != null)
+                  {
+                     if (result instanceof Throwable)
+                     {
+                        throw new RepositoryCreationException("It is not possible to check is repository "
+                           + repositoryName + " in usage or not", (Throwable)result);
+                     }
+                     else if (result instanceof Boolean)
+                     {
+                        if (!(Boolean)result)
+                        {
+                           throw new RepositoryCreationException("Can't remove repository " + repositoryName
+                              + ". The repository in use.");
+                        }
+                     }
+                     else
+                     {
+                        throw new RepositoryCreationException(
+                           "checkRepositoryInUse command returned uknown result type");
+                     }
+                  }
+               }
+            }
 
+            List<Object> results = rpcService.executeCommandOnAllNodes(removeRepository, true, repositoryName);
             for (Object result : results)
             {
                if (result != null)
@@ -767,7 +811,23 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       }
       else
       {
-         removeRepositoryLocally(repositoryName, forceCloseSessions);
+         if (!forceRemove)
+         {
+            try
+            {
+               if (!repositoryService.canRemoveRepository(repositoryName))
+               {
+                  throw new RepositoryCreationException("Can't remove repository " + repositoryName
+                     + ". The repository in use.");
+               }
+            }
+            catch (RepositoryException e)
+            {
+               throw new RepositoryCreationException("It is not possible to check is repository " + repositoryName + " in usage or not", e);
+            }
+         }
+
+         removeRepositoryLocally(repositoryName);
       }
    }
 
@@ -776,11 +836,9 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     * 
     * @param repositoryName
     *          the repository name
-    * @param forceCloseSessions - indicates if need to close session before repository removing, if
-    * sessions are opened is it not possbile to remove repository and exception will be throw          
     * @throws RepositoryCreationException
     */
-   protected void removeRepositoryLocally(String repositoryName, boolean forceCloseSessions)
+   protected void removeRepositoryLocally(String repositoryName)
       throws RepositoryCreationException
    {
       try
@@ -789,16 +847,13 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          ManageableRepository repositorty = repositoryService.getRepository(repositoryName);
          Set<String> datasources = extractDataSourceNames(repositorty.getConfiguration(), false);
 
-         if (forceCloseSessions)
+         // close all opened sessions
+         for (String workspaceName : repositorty.getWorkspaceNames())
          {
-            // close all opened sessions
-            for (String workspaceName : repositorty.getWorkspaceNames())
-            {
-               WorkspaceContainerFacade wc = repositorty.getWorkspaceContainer(workspaceName);
-               SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
+            WorkspaceContainerFacade wc = repositorty.getWorkspaceContainer(workspaceName);
+            SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
 
-               sessionRegistry.closeSessions(workspaceName);
-            }
+            sessionRegistry.closeSessions(workspaceName);
          }
 
          // remove repository from configuration
