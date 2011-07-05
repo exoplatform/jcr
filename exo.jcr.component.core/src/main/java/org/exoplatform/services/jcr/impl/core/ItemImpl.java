@@ -478,7 +478,7 @@ public abstract class ItemImpl implements Item
       {
          // update of the property
          prevProp = (PropertyImpl)prevItem;
-         prevProperty = new PropertyImpl(prevProp.getData(), prevProp.parentData(), prevProp.getSession());
+         prevProperty = new AuditPropertyImpl(prevProp.getData(), prevProp.getSession());
          isMultiValue = prevProp.isMultiValued();
          defs =
             ntm.getPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
