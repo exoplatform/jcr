@@ -40,6 +40,8 @@ import javax.jcr.RepositoryException;
 public class StreamPersistedValueData extends FilePersistedValueData
 {
 
+   private static final long serialVersionUID = -5831609242005946202L;
+
    protected InputStream stream;
 
    protected SpoolFile tempFile;
