@@ -111,7 +111,7 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
       Thread.sleep(60000);
       
       // remove repository
-      creatorService.removeRepository(tenantName);
+      creatorService.removeRepository(tenantName, true);
 
       try
       {

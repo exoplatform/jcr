@@ -97,7 +97,7 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
 
       // remove repository
-      creatorService.removeRepository(tenantName);
+      creatorService.removeRepository(tenantName, true);
 
       try
       {
@@ -164,7 +164,7 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
 
       // remove repository 
-      creatorService.removeRepository(tenantName);
+      creatorService.removeRepository(tenantName, true);
 
       try
       {
@@ -240,7 +240,7 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
 
       // remove repository
-      creatorService.removeRepository(tenantName);
+      creatorService.removeRepository(tenantName, true);
 
       try
       {
