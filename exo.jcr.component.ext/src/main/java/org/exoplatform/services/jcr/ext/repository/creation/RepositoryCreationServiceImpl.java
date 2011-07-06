@@ -20,6 +20,7 @@ import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationException;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.database.creator.DBConnectionInfo;
 import org.exoplatform.services.database.creator.DBCreator;
 import org.exoplatform.services.database.creator.DBCreatorException;
@@ -86,6 +87,21 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RepositoryCreationService");
 
    /**
+    * The parameter name in service's configuration.
+    */
+   private final static String FACTORY_CLASSS_NAME_PARAM = "factory-class-name";
+
+   /**
+    * The default factory class name.
+    */
+   private static final String BASIC_DATA_SOURCE_FACTORY = "org.apache.commons.dbcp.BasicDataSourceFactory";
+
+   /**
+    * The factory class name to create object.
+    */
+   private String factoryClassName = BASIC_DATA_SOURCE_FACTORY;
+
+   /**
     * The Repository service.
     */
    private final RepositoryService repositoryService;
@@ -129,18 +145,25 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    /**
     * Constructor RepositoryCreationServiceImpl.
     */
-   public RepositoryCreationServiceImpl(RepositoryService repositoryService, BackupManager backupManager,
-      ExoContainerContext context, InitialContextInitializer initialContextInitializer)
+   public RepositoryCreationServiceImpl(InitParams initParams, RepositoryService repositoryService,
+      BackupManager backupManager, ExoContainerContext context, InitialContextInitializer initialContextInitializer)
    {
-      this(repositoryService, backupManager, context, initialContextInitializer, null);
+      this(initParams, repositoryService, backupManager, context, initialContextInitializer, null);
    }
 
    /**
     * Constructor RepositoryCreationServiceImpl.
     */
-   public RepositoryCreationServiceImpl(final RepositoryService repositoryService, BackupManager backupManager,
-      ExoContainerContext context, InitialContextInitializer initialContextInitializer, final RPCService rpcService)
+   public RepositoryCreationServiceImpl(InitParams initParams, final RepositoryService repositoryService,
+      BackupManager backupManager, ExoContainerContext context, InitialContextInitializer initialContextInitializer,
+      final RPCService rpcService)
    {
+      if (initParams != null)
+      {
+         // set reference class name for datasource binding from initialization parameters
+         factoryClassName = initParams.getValueParam(FACTORY_CLASSS_NAME_PARAM).getValue();
+      }
+      
       this.repositoryService = repositoryService;
       this.backupManager = backupManager;
       this.rpcService = rpcService;
@@ -535,7 +558,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          try
          {
             initialContextInitializer.getInitialContextBinder().bind(dataSource, "javax.sql.DataSource",
-               "org.apache.commons.dbcp.BasicDataSourceFactory", null, refAddr);
+               factoryClassName, null, refAddr);
          }
          catch (NamingException e)
          {
@@ -634,7 +657,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             try
             {
                initialContextInitializer.getInitialContextBinder().bind(dataSource, "javax.sql.DataSource",
-                  "org.apache.commons.dbcp.BasicDataSourceFactory", null, refAddr);
+                  factoryClassName, null, refAddr);
             }
             catch (NamingException e)
             {
@@ -860,10 +883,10 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          repositoryService.removeRepository(repositoryName);
          repositoryService.getConfig().retain();
          
-         // unbind datasource
-         for (String ds : datasources)
+         // unbind datasource and close connections
+         for (String dsName : datasources)
          {
-            initialContextInitializer.getInitialContextBinder().unbind(ds);
+            initialContextInitializer.getInitialContextBinder().unbind(dsName);
          }
       }
       catch (RepositoryException e)

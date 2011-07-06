@@ -382,6 +382,12 @@
    <component>
       <key>org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationService</key>
       <type>org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl</type>
+      <!--init-params>
+         <value-param>
+            <name>factory-class-name</name>
+            <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+         </value-param>
+      </init-params-->
    </component>
 
    <component>
