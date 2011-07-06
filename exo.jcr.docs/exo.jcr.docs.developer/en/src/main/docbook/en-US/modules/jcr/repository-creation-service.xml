@@ -140,11 +140,24 @@
    &lt;type&gt;
       org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl
    &lt;/type&gt;
+     &lt;init-params&gt; 
+         &lt;value-param&gt; 
+            &lt;name&gt;factory-class-name&lt;/name&gt; 
+            &lt;value&gt;org.apache.commons.dbcp.BasicDataSourceFactory&lt;/value&gt; 
+         &lt;/value-param&gt; 
+      &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
+
+    <itemizedlist>
+      <listitem>
+        <para>factory-class-name - is not mandatory parameter, indicates what
+        the factory need to use to create DataSource objects</para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section>
-    <title>Repsitory Interface</title>
+    <title>RepositoryCreationService Interface</title>
 
     <programlisting language="java">public interface RepositoryCreationService
 {
