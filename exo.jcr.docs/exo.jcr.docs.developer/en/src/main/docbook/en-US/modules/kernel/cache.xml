@@ -209,12 +209,13 @@
           parameter <emphasis>avoidValueReplication</emphasis> to
           <emphasis>true</emphasis> in your eXo cache configuration, this will
           indicate the CacheService to wrap your eXo cache instance into an
-          <emphasis>InvalidationExoCache</emphasis>.</para>
+          <emphasis>InvalidationExoCache</emphasis> in case the cache is
+          defined as replicated or distributed.</para>
         </listitem>
 
         <listitem>
           <para>Programmatically; You can wrap your eXo cache instance into an
-          <emphasis>org.exoplatform.services.cache.impl.InvalidationExoCache</emphasis>
+          <emphasis>org.exoplatform.services.cache.invalidation.InvalidationExoCache</emphasis>
           yourself using the public constructors that are available. Please
           note that if you use <emphasis>CacheListeners</emphasis> add them to
           the InvalidationExoCache instance instead of the nested eXo Cache
@@ -227,7 +228,7 @@
       <note>
         <para>The invalidation will be efficient if and only if the hash code
         method is properly implemented, in other words 2 value objects
-        representing the same data will return the same hash code otherwise
+        representing the same data need to return the same hash code otherwise
         the infinite loop described above will still be effective.</para>
       </note>
     </section>
