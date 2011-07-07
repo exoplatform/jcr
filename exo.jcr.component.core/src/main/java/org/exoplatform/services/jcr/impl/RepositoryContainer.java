@@ -499,6 +499,16 @@ public class RepositoryContainer extends ExoContainer
    }
 
    /**
+    * {@inheritDoc}
+    */
+   @Override
+   public synchronized void stop()
+   {
+      super.stop();
+      super.unregisterAllComponents();
+   }
+
+   /**
     * Initialize worspaces (root node and jcr:system for system workspace).
     * <p>
     * Runs on container start.

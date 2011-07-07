@@ -93,4 +93,13 @@ public class WorkspaceContainer extends ExoContainer
       return (WorkspaceInitializer)getComponentInstanceOfType(WorkspaceInitializer.class);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public synchronized void stop()
+   {
+      super.stop();
+      super.unregisterAllComponents();
+   }
 }
