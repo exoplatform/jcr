@@ -93,7 +93,9 @@ public class PersistedValueDataReader
       // read id
       int key;
       if ((key = in.readInt()) != SerializationConstants.PERSISTED_VALUE_DATA)
+      {
          throw new UnknownClassIdException("There is unexpected class [" + key + "]");
+      }
 
       int orderNumber = in.readInt();
 
@@ -115,8 +117,12 @@ public class PersistedValueDataReader
          SerializationSpoolFile sf = holder.get(id);
          if (sf == null)
          {
+            // Deleted ItemState usecase 
+            if (length == SerializationConstants.NULL_FILE)
+            {
+               return new StreamPersistedValueData(orderNumber, (SerializationSpoolFile)null);
+            }
             sf = new SerializationSpoolFile(tempDirectory, id, holder);
-            // TODO optimize writeToFile - use channels or streams
             writeToFile(in, sf, length);
             holder.put(id, sf);
             return new StreamPersistedValueData(orderNumber, sf);
@@ -130,7 +136,9 @@ public class PersistedValueDataReader
 
                // skip data in input stream
                if (in.skip(length) != length)
+               {
                   throw new IOException("Content isn't skipped correctly.");
+               }
 
                return vd;
             }

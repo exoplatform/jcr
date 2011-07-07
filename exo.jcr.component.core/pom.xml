@@ -412,8 +412,6 @@
                   <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
                   <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                   <!-- Implementation Specific Excludes -->
@@ -753,8 +751,6 @@
                         <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
                         <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                         <!-- From TCK -->

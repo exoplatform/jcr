@@ -18,12 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Calendar;
-import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.Value;
@@ -54,6 +51,7 @@ public class TestJCRSerializationStream extends JcrImplSerializationBaseTest
       contentNode.setProperty("jcr:mimeType", "application/octet-stream");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       session.save();
+      checkResults(pl.getAndReset());
 
       test.setProperty("creator", new String[]{"Creator 1", "Creator 2", "Creator 3"});
 
@@ -67,21 +65,15 @@ public class TestJCRSerializationStream extends JcrImplSerializationBaseTest
       test.setProperty("language", new String[]{"language 1", "language 2", "language3", "language 4", "language5"});
 
       session.save();
+      checkResults(pl.getAndReset());
 
       // delete
       Node srcParent = test.getParent();
       srcParent.remove();
       session.save();
 
-      List<TransactionChangesLog> srcLog = pl.pushChanges();
-
-      File jcrfile = super.serializeLogs(srcLog);
-
-      List<TransactionChangesLog> destLog = super.deSerializeLogs(jcrfile);
-
-      assertEquals(srcLog.size(), destLog.size());
-
-      for (int i = 0; i < srcLog.size(); i++)
-         checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      checkResults(pl.getAndReset());
+      // unregister listener
+      pl.pushChanges();
    }
 }

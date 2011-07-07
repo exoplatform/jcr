@@ -89,6 +89,11 @@ public class SerializationConstants
    public static final int PERSISTED_VALUE_DATA = 11;
 
    /**
+    * Null file
+    */
+   public static final int NULL_FILE = -1;
+
+   /**
     * Null data.
     */
    public static final byte NULL_DATA = 0;

@@ -18,13 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Calendar;
-import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.version.Version;
@@ -49,23 +46,35 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       srcVersionNode.addMixin("mix:versionable");
       session.save();
 
+      checkResults(pl.getAndReset());
+
       srcVersionNode.checkin();
       session.save();
+
+      checkResults(pl.getAndReset());
 
       srcVersionNode.checkout();
       srcVersionNode.setProperty("jcr:data", "version 1");
       session.save();
 
+      checkResults(pl.getAndReset());
+
       srcVersionNode.checkin();
       session.save();
+
+      checkResults(pl.getAndReset());
 
       srcVersionNode.checkout();
       srcVersionNode.setProperty("jcr:data", "version 2");
       session.save();
 
+      checkResults(pl.getAndReset());
+
       Version baseVersion = srcVersionNode.getBaseVersion();
       srcVersionNode.restore(baseVersion, true);
       session.save();
+
+      checkResults(pl.getAndReset());
 
       Version baseVersion1 = srcVersionNode.getBaseVersion();
       Version[] predesessors = baseVersion1.getPredecessors();
@@ -74,21 +83,15 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       srcVersionNode.restore(restoreToBaseVersion, true);
       session.save();
 
-      List<TransactionChangesLog> srcLog = pl.pushChanges();
-
-      File jcrfile = super.serializeLogs(srcLog);
-
-      List<TransactionChangesLog> destLog = super.deSerializeLogs(jcrfile);
-
-      assertEquals(srcLog.size(), destLog.size());
-
-      for (int i = 0; i < srcLog.size(); i++)
-         checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      checkResults(pl.getAndReset());
+      // unregister listener
+      pl.pushChanges();
    }
 
    public void testBigFileRestore() throws Exception
    {
       TesterItemsPersistenceListener pl = new TesterItemsPersistenceListener(this.session);
+      //List<TransactionChangesLog> srcLog = new ArrayList<TransactionChangesLog>();
 
       File tempFile = File.createTempFile("tempFile", "doc");
       File tempFile2 = File.createTempFile("tempFile", "doc");
@@ -129,24 +132,36 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
 
       session.save();
 
+      checkResults(pl.getAndReset());
+
       Node srcVersion = root.getNode("nt_file_node");
       srcVersion.checkin();
       session.save();
+
+      checkResults(pl.getAndReset());
 
       srcVersion.checkout();
       srcVersionNode.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile2));
       session.save();
 
+      checkResults(pl.getAndReset());
+
       srcVersion.checkin();
       session.save();
+
+      checkResults(pl.getAndReset());
 
       srcVersion.checkout();
       srcVersionNode.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile3));
       session.save();
 
+      checkResults(pl.getAndReset());
+
       Version baseVersion = srcVersion.getBaseVersion();
       srcVersion.restore(baseVersion, true);
       session.save();
+
+      checkResults(pl.getAndReset());
 
       Version baseVersion1 = srcVersion.getBaseVersion();
       Version[] predesessors = baseVersion1.getPredecessors();
@@ -155,6 +170,8 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       srcVersion.restore(restoreToBaseVersion, true);
       session.save();
 
+      checkResults(pl.getAndReset());
+
       Version baseVersion2 = srcVersion.getBaseVersion();
       Version[] predesessors2 = baseVersion2.getSuccessors();
       Version restoreToBaseVersion_2 = predesessors2[0];
@@ -162,16 +179,9 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       srcVersion.restore(restoreToBaseVersion_2, true);
       session.save();
 
-      List<TransactionChangesLog> srcLog = pl.pushChanges();
-
-      File jcrfile = super.serializeLogs(srcLog);
-
-      List<TransactionChangesLog> destLog = super.deSerializeLogs(jcrfile);
-
-      assertEquals(srcLog.size(), destLog.size());
-
-      for (int i = 0; i < srcLog.size(); i++)
-         checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      checkResults(pl.getAndReset());
+      // unregister listener
+      pl.pushChanges();
    }
 
 }

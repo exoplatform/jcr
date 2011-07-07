@@ -70,6 +70,18 @@ public class TesterItemsPersistenceListener implements ItemsPersistenceListener
       return logsList;
    }
 
+   /**
+    * Returns collected changes and resets listener without unregistering
+    *
+    * @return List of TransactionChangesLog
+    */
+   public List<TransactionChangesLog> getAndReset()
+   {
+      List<TransactionChangesLog> logs = new ArrayList<TransactionChangesLog>(logsList);
+      logsList.clear();
+      return logs;
+   }
+
    public List<TransactionChangesLog> getCurrentLogList()
    {
       return logsList;
