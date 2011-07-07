@@ -621,6 +621,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public void stop()
    {
       handler.close();
+      // ChangesFiler instance is one for both SearchManagers and close() must be invoked only once,  
+      if (parentSearchManager != null)
+      {
+         changesFilter.close();
+      }
       log.info("Search manager stopped");
    }
 

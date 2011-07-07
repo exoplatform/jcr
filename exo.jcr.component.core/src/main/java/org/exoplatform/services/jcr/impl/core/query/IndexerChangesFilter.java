@@ -161,6 +161,13 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    }
 
    /**
+    * Frees resources associated with changes filter
+    */
+   public void close()
+   {
+   }
+
+   /**
     * @param removedNodes
     * @param addedNodes
     * @param updatedNodes
@@ -245,7 +252,7 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    {
       return log;
    }
-   
+
    protected void logErrorChanges(QueryHandler logHandler, Set<String> removedNodes, Set<String> addedNodes)
    {
       try

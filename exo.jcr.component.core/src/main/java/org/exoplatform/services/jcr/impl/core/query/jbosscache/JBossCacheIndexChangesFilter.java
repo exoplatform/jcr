@@ -202,11 +202,11 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       return true;
    }
 
-   /**
-    * @see java.lang.Object#finalize()
+    /**
+    * {@inheritDoc}
     */
    @Override
-   protected void finalize() throws Throwable
+   public void close()
    {
       try
       {
@@ -222,9 +222,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
             });
          }
       }
-      finally
-      {
-         super.finalize();         
+      catch (Exception e) {
+         log.warn("Not all JBoss Cache MBeans were unregistered.");
       }
    } 
 }
