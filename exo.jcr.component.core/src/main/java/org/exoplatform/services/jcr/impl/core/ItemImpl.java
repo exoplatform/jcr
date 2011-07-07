@@ -603,7 +603,7 @@ public abstract class ItemImpl implements Item
          prop = (PropertyImpl)dataManager.update(itemState, true);
 
          // launch event: post-set 
-         session.getActionHandler().postSetProperty(prevProperty, prop, state);
+         session.getActionHandler().postSetProperty(prevProperty, prop, parentNode.nodeData(), state);
       }
       else
       {

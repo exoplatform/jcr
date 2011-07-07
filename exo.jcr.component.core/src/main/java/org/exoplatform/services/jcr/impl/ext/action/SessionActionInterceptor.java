@@ -257,7 +257,7 @@ public class SessionActionInterceptor
       }
    }
 
-   public void postSetProperty(PropertyImpl previousProperty, PropertyImpl currentProperty, int state)
+   public void postSetProperty(PropertyImpl previousProperty, PropertyImpl currentProperty, NodeData parent, int state)
       throws RepositoryException
    {
       if (catalog == null)
@@ -289,7 +289,7 @@ public class SessionActionInterceptor
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, event);
          conditions.put(SessionEventMatcher.PATH_KEY, currentProperty.getInternalPath());
-         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames(currentProperty.parentData()));
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames(parent));
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, currentProperty);
