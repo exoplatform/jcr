@@ -26,6 +26,7 @@ import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
@@ -175,9 +176,16 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             File sourceConfig = new File(filePath.toURI());
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
             File backUp = new File(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
-            if (!PrivilegedFileHelper.renameTo(sourceConfig, backUp))
+            try
+            {
+               DirectoryHelper.renameFile(sourceConfig, backUp);
+            }
+            catch (IOException ioe)
+            {
                throw new RepositoryException("Can't back up configuration on path "
-                  + PrivilegedFileHelper.getAbsolutePath(sourceConfig));
+                        + PrivilegedFileHelper.getAbsolutePath(sourceConfig), ioe);
+            }
+
             saveStream = PrivilegedFileHelper.fileOutputStream(sourceConfig);
          }
 

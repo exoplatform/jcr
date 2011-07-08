@@ -288,4 +288,73 @@ public class DirectoryHelper
          }
       }
    }
+
+   /**
+    * Rename file.
+    * 
+    * @param srcFile
+    *          source file
+    * @param dstFile
+    *          destination file 
+    * @throws IOException
+    *          if any exception occurred 
+    */
+   public static synchronized void renameFile(File srcFile, File dstFile) throws IOException
+   {
+      /* This is not atomic.  If the program crashes between the call to
+         delete() and the call to renameTo() then we're screwed, but I've
+         been unable to figure out how else to do this... */
+
+      if (PrivilegedFileHelper.exists(dstFile))
+         if (!PrivilegedFileHelper.delete(dstFile))
+            throw new IOException("Cannot delete " + dstFile);
+
+      // Rename the srcFile file to the new one. Unfortunately, the renameTo()
+      // method does not work reliably under some JVMs.  Therefore, if the
+      // rename fails, we manually rename by copying the srcFile file to the new one
+      if (!PrivilegedFileHelper.renameTo(srcFile, dstFile))
+      {
+         java.io.InputStream in = null;
+         java.io.OutputStream out = null;
+         byte buffer[] = null;
+         try
+         {
+            in = PrivilegedFileHelper.fileInputStream(srcFile);
+            out = PrivilegedFileHelper.fileOutputStream(dstFile);
+            // see if the buffer needs to be initialized. Initialization is
+            // only done on-demand since many VM's will never run into the renameTo
+            // bug and hence shouldn't waste 1K of mem for no reason.
+            if (buffer == null)
+            {
+               buffer = new byte[1024];
+            }
+            int len;
+            while ((len = in.read(buffer)) >= 0)
+            {
+               out.write(buffer, 0, len);
+            }
+
+            // delete the srcFile file.
+            PrivilegedFileHelper.delete(srcFile);
+         }
+         catch (IOException ioe)
+         {
+            IOException newExc = new IOException("Cannot rename " + srcFile + " to " + dstFile);
+            newExc.initCause(ioe);
+            throw newExc;
+         }
+         finally
+         {
+            if (in != null)
+            {
+               in.close();
+            }
+
+            if (out != null)
+            {
+               out.close();
+            }
+         }
+      }
+   }
 }
