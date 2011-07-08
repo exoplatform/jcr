@@ -373,10 +373,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          closeStatements();
 
-         // If READ-ONLY status back it to READ-WRITE (we assume it was original state)
+         // If READ-ONLY status back it to READ-WRITE (we assume it was original state) 
          if (readOnly)
          {
             dbConnection.setReadOnly(true);
+         }
+
+         if (dbConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
+         {
+            dbConnection.rollback();
          }
 
          dbConnection.close();
