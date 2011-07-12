@@ -1222,9 +1222,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       String backupDitEnv = backDir.getCanonicalPath();
 
       String newBackupDir =
-               "\\${java.io.tmpdir}"
-                        + bch.getBackupConfig().getBackupDir().getCanonicalPath()
-                        .replace(backupDitEnv, "");
+         "\\${java.io.tmpdir}" + bch.getBackupConfig().getBackupDir().getCanonicalPath().replace(backupDitEnv, "");
 
       File dest = new File(repositoryBackupChainLogPath + ".xml");
       dest.createNewFile();
@@ -1235,7 +1233,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
          String sConfig =
                   setNewBackupDirInRepositoryBackupChainLog(new File(repositoryBackupChainLogPath), dest, newBackupDir);
 
-         assertTrue(sConfig.contains(newBackupDir.subSequence(1, newBackupDir.length())));
+         assertTrue(sConfig.contains("${java.io.tmpdir}"
+            + bch.getBackupConfig().getBackupDir().getCanonicalPath().replace(backupDitEnv, "")));
 
          // check
          newRepositoryBackupChainLog = new RepositoryBackupChainLog(dest);
@@ -1277,7 +1276,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       String relativePrefixBackupDir = backDir.getCanonicalFile().getParent() + File.separator;
 
       String newBackupDir =
-               bch.getBackupConfig().getBackupDir().getCanonicalPath().replaceAll(relativePrefixBackupDir, "");
+         bch.getBackupConfig().getBackupDir().getCanonicalPath().replace(relativePrefixBackupDir, "");
 
       File dest = new File(repositoryBackupChainLogPath + ".xml");
       dest.createNewFile();
