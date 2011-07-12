@@ -121,6 +121,14 @@
     <programlisting language="xml">  &lt;component&gt;
     &lt;type&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/type&gt;
     &lt;init-params&gt;
+      &lt;value-param&gt;.
+        &lt;name&gt;bindings-store-path&lt;/name&gt;.
+        &lt;value&gt;bind-references.xml&lt;/value&gt;.
+      &lt;/value-param&gt;.
+      &lt;value-param&gt; 
+        &lt;name&gt;overload-context-factory&lt;/name&gt; 
+        &lt;value&gt;true&lt;/value&gt; 
+      &lt;/value-param&gt;
       &lt;properties-param&gt;
         &lt;name&gt;default-properties&lt;/name&gt;
         &lt;description&gt;Default initial context properties&lt;/description&gt;
@@ -131,10 +139,6 @@
         &lt;description&gt;Mandatory initial context properties&lt;/description&gt;
         &lt;property name="java.naming.provider.url" value="rmi://localhost:9999"/&gt;
       &lt;/properties-param&gt;
-      &lt;value-param&gt;.
-        &lt;name&gt;bindings-store-path&lt;/name&gt;.
-        &lt;value&gt;bind-references.xml&lt;/value&gt;.
-      &lt;/value-param&gt;.
     &lt;/init-params&gt;
   &lt;/component&gt;</programlisting>
 
@@ -142,6 +146,13 @@
 
     <para><emphasis role="bold">binding-store-path</emphasis> is file path
     which stores binded datasources in runtime</para>
+
+    <para><emphasis role="bold">overload-context-factory</emphasis> allows to
+    overload the default initial context factory by a context factory that is
+    ExoContainer aware and that is able to delegate to the original initial
+    context factory if it detects that it is not in the eXo scope. By default
+    the feature is disabled since it is only required on AS that don't share
+    the objects by default like tomcat but unlike JBoss AS</para>
 
     <para>The <envar>BindReferencePlugin</envar> component plugin
     configuration example (for JDBC datasource):</para>

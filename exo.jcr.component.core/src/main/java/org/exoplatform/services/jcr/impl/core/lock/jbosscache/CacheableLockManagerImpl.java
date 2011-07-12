@@ -212,9 +212,6 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          }
 
          createStructuredNode(lockRoot);
-
-         // Context recall is a workaround of JDBCCacheLoader starting. 
-         context.recall();
       }
       else
       {

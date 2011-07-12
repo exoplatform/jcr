@@ -280,6 +280,7 @@
           <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcrtest"/>
           <property name="username" value="sa"/>
           <property name="password" value=""/>
+          <property name="maxActive" value="100" />
         </properties-param>
       </init-params>
     </component-plugin>
@@ -442,6 +443,7 @@
           <property name="url" value="jdbc:hsqldb:file:target/temp/data/testdbcleaner"/>
           <property name="username" value="sa"/>
           <property name="password" value=""/>
+          <property name="maxActive" value="20" />
         </properties-param>
       </init-params>
     </component-plugin>

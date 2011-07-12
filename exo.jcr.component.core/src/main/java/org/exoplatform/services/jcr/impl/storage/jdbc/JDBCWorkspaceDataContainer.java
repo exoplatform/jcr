@@ -63,6 +63,7 @@ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.jdbc.DataSourceProvider;
+import org.exoplatform.services.jdbc.impl.ManagedDataSource;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -255,11 +256,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException, NamingException,
       RepositoryException, IOException
    {
-
-      // This recall is workaround for tenants creation. There is a trouble in visibility datasource
-      // binded in one tomcat context from another tomcat context. 
-      contextInit.recall();
-
       checkIntegrity(wsConfig, repConfig);
       this.wsConfig = wsConfig;
       this.containerName = wsConfig.getName();
