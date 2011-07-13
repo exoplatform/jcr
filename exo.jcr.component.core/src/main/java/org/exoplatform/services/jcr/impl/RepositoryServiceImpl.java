@@ -191,6 +191,14 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       return config;
    }
 
+   /**
+    * @return Name of current repository if exists or null in other case
+    */
+   public String getCurrentRepositoryName()
+   {
+      return currentRepositoryName.get();
+   }
+
    public ManageableRepository getCurrentRepository() throws RepositoryException
    {
       if (currentRepositoryName.get() == null)
