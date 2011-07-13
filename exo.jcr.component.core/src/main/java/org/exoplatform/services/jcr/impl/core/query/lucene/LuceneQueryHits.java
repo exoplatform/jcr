@@ -41,10 +41,31 @@ public class LuceneQueryHits implements QueryHits
     */
    private final Scorer scorer;
 
+   /**
+    * Release IndexReader on LuceneQueryHits.close().
+    */
+   private final boolean releaseReaderOnClose;
+
    public LuceneQueryHits(IndexReader reader, IndexSearcher searcher, Query query) throws IOException
+   {
+      this(reader, searcher, query, false);
+   }
+
+   /**
+    * Constructor.
+    * 
+    * @param reader IndexReader
+    * @param searcher IndexSearcher
+    * @param query Query
+    * @param releaseReaderOnClose - release IndexReader on LuceneQueryHits.close().
+    * @throws IOException
+    */
+   public LuceneQueryHits(IndexReader reader, IndexSearcher searcher, Query query, boolean releaseReaderOnClose)
+      throws IOException
    {
       this.reader = reader;
       this.scorer = query.weight(searcher).scorer(reader, true, false);
+      this.releaseReaderOnClose = releaseReaderOnClose;
    }
 
    /**
@@ -66,8 +87,16 @@ public class LuceneQueryHits implements QueryHits
     */
    public void close() throws IOException
    {
-      // make sure scorer frees resources
-      scorer.skipTo(Integer.MAX_VALUE);
+      if (scorer != null)
+      {
+         // make sure scorer frees resources
+         scorer.advance(Integer.MAX_VALUE);
+      }
+
+      if (releaseReaderOnClose && reader != null && reader instanceof ReleaseableIndexReader)
+      {
+         ((ReleaseableIndexReader)reader).release();
+      }
    }
 
    /**

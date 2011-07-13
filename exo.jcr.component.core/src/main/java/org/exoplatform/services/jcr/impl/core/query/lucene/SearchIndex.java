@@ -3054,7 +3054,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       IndexSearcher searcher = new IndexSearcher(reader);
       searcher.setSimilarity(getSimilarity());
 
-      return new LuceneQueryHits(reader, searcher, query);
+      return new LuceneQueryHits(reader, searcher, query, true);
    }
 
    /**

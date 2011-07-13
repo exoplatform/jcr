@@ -971,17 +971,17 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    private Set<String> getNodes(final org.apache.lucene.search.Query query) throws RepositoryException
    {
       Set<String> result = new HashSet<String>();
+      QueryHits hits = null;
       try
       {
-         QueryHits hits = handler.executeQuery(query);
+         hits = handler.executeQuery(query);
 
          ScoreNode sn;
-
          while ((sn = hits.nextScoreNode()) != null)
          {
-            // Node node = session.getNodeById(sn.getNodeId());
             result.add(sn.getNodeId());
          }
+         return result;
       }
       catch (IndexOfflineIOException e)
       {
@@ -991,7 +991,20 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          throw new RepositoryException(e.getLocalizedMessage(), e);
       }
-      return result;
+      finally
+      {
+         if (hits != null)
+         {
+            try
+            {
+               hits.close();
+            }
+            catch (IOException e)
+            {
+               log.error("Can not close QueryHits.", e);
+            }
+         }
+      }
    }
 
    private boolean isPrefixMatch(final InternalQName value, final String prefix) throws RepositoryException
