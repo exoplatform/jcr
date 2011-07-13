@@ -1221,8 +1221,14 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       String backupDitEnv = backDir.getCanonicalPath();
 
-      String newBackupDir =
-         "\\${java.io.tmpdir}" + bch.getBackupConfig().getBackupDir().getCanonicalPath().replace(backupDitEnv, "");
+      String relativePath = bch.getBackupConfig().getBackupDir().getCanonicalPath().replace(backupDitEnv, "");
+      String relativePathForWrite = relativePath;
+      if (File.separator.equals("\\"))
+      {
+         relativePathForWrite = relativePath.replaceAll("\\\\", "\\\\\\\\");
+      }
+
+      String newBackupDir = "\\${java.io.tmpdir}" + relativePathForWrite;
 
       File dest = new File(repositoryBackupChainLogPath + ".xml");
       dest.createNewFile();
@@ -1231,10 +1237,9 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       try
       {
          String sConfig =
-                  setNewBackupDirInRepositoryBackupChainLog(new File(repositoryBackupChainLogPath), dest, newBackupDir);
+            setNewBackupDirInRepositoryBackupChainLog(new File(repositoryBackupChainLogPath), dest, newBackupDir);
 
-         assertTrue(sConfig.contains("${java.io.tmpdir}"
-            + bch.getBackupConfig().getBackupDir().getCanonicalPath().replace(backupDitEnv, "")));
+         assertTrue(sConfig.contains("${java.io.tmpdir}" + relativePath));
 
          // check
          newRepositoryBackupChainLog = new RepositoryBackupChainLog(dest);
@@ -1277,6 +1282,11 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       String newBackupDir =
          bch.getBackupConfig().getBackupDir().getCanonicalPath().replace(relativePrefixBackupDir, "");
+      String newBackupDirForWrite = newBackupDir;
+      if (File.separator.equals("\\"))
+      {
+         newBackupDirForWrite = newBackupDir.replaceAll("\\\\", "\\\\\\\\");
+      }
 
       File dest = new File(repositoryBackupChainLogPath + ".xml");
       dest.createNewFile();
@@ -1284,7 +1294,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       RepositoryBackupChainLog newRepositoryBackupChainLog = null;
 
       String sConfig =
-               setNewBackupDirInRepositoryBackupChainLog(new File(repositoryBackupChainLogPath), dest, newBackupDir);
+         setNewBackupDirInRepositoryBackupChainLog(new File(repositoryBackupChainLogPath), dest, newBackupDirForWrite);
 
       assertTrue(sConfig.contains(newBackupDir));
 
