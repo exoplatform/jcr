@@ -634,7 +634,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             {
                try
                {
-                  getIndexReader().release();
+                  releaseMultiReader();
                }
                catch (IOException e)
                {
@@ -768,7 +768,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             {
                try
                {
-                  getIndexReader().release();
+                  releaseMultiReader();
                }
                catch (IOException e)
                {
