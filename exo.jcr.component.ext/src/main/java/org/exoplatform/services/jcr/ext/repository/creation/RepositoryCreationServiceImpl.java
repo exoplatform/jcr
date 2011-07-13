@@ -38,6 +38,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.jdbc.impl.CloseableDataSource;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -94,12 +95,12 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    /**
     * The default factory class name.
     */
-   private static final String BASIC_DATA_SOURCE_FACTORY = "org.apache.commons.dbcp.BasicDataSourceFactory";
+   private static final String DEFAULT_DATA_SOURCE_FACTORY = "org.apache.commons.dbcp.BasicDataSourceFactory";
 
    /**
     * The factory class name to create object.
     */
-   private String factoryClassName = BASIC_DATA_SOURCE_FACTORY;
+   private String factoryClassName = DEFAULT_DATA_SOURCE_FACTORY;
 
    /**
     * The Repository service.
@@ -861,8 +862,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     *          the repository name
     * @throws RepositoryCreationException
     */
-   protected void removeRepositoryLocally(String repositoryName)
-      throws RepositoryCreationException
+   protected void removeRepositoryLocally(String repositoryName) throws RepositoryCreationException
    {
       try
       {
@@ -886,7 +886,30 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          // unbind datasource and close connections
          for (String dsName : datasources)
          {
-            initialContextInitializer.getInitialContextBinder().unbind(dsName);
+            try
+            {
+               // we suppose that lookup() method returns the same instance of datasource by the same name
+               DataSource ds = (DataSource)initialContextInitializer.getInitialContext().lookup(dsName);
+               initialContextInitializer.getInitialContextBinder().unbind(dsName);
+
+               // close datasource
+               if (ds instanceof CloseableDataSource)
+               {
+                  ((CloseableDataSource)ds).close();
+               }
+            }
+            catch (NamingException e)
+            {
+               LOG.error("Can't unbind datasource " + dsName, e);
+            }
+            catch (FileNotFoundException e)
+            {
+               LOG.error("Can't unbind datasource " + dsName, e);
+            }
+            catch (XMLStreamException e)
+            {
+               LOG.error("Can't unbind datasource " + dsName, e);
+            }
          }
       }
       catch (RepositoryException e)
@@ -894,18 +917,6 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          throw new RepositoryCreationException("Can't remove repository", e);
       }
       catch (RepositoryConfigurationException e)
-      {
-         throw new RepositoryCreationException("Can't remove repository", e);
-      }
-      catch (FileNotFoundException e)
-      {
-         throw new RepositoryCreationException("Can't remove repository", e);
-      }
-      catch (NamingException e)
-      {
-         throw new RepositoryCreationException("Can't remove repository", e);
-      }
-      catch (XMLStreamException e)
       {
          throw new RepositoryCreationException("Can't remove repository", e);
       }
