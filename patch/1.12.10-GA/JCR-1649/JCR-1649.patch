@@ -1,0 +1,211 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/LuceneQueryHits.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/LuceneQueryHits.java	(revision 4627)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/LuceneQueryHits.java	(working copy)
+@@ -23,67 +23,98 @@
+ 
+ import java.io.IOException;
+ 
+-
+ /**
+  * Wraps a lucene query result and adds a close method that allows to release
+  * resources after a query has been executed and the results have been read
+  * completely.
+  */
+-public class LuceneQueryHits implements QueryHits {
++public class LuceneQueryHits implements QueryHits
++{
+ 
+-    /**
+-     * The IndexReader in use by the lucene hits.
+-     */
+-    private final IndexReader reader;
++   /**
++    * The IndexReader in use by the lucene hits.
++    */
++   private final IndexReader reader;
+ 
+-    /**
+-     * The scorer for the query.
+-     */
+-    private final Scorer scorer;
++   /**
++    * The scorer for the query.
++    */
++   private final Scorer scorer;
+ 
+-    public LuceneQueryHits(IndexReader reader,
+-                           IndexSearcher searcher,
+-                           Query query)
+-            throws IOException {
+-        this.reader = reader;
+-        this.scorer = query.weight(searcher).scorer(reader);
+-    }
++   /**
++    * Release IndexReader on LuceneQueryHits.close().
++    */
++   private final boolean releaseReaderOnClose;
+ 
+-    /**
+-     * {@inheritDoc}
+-     */
+-    public ScoreNode nextScoreNode() throws IOException {
+-        if (!scorer.next()) {
+-            return null;
+-        }
+-        int doc = scorer.doc();
+-        String uuid = reader.document(doc).get(FieldNames.UUID);
+-        return new ScoreNode(uuid, scorer.score(), doc);
+-    }
++   public LuceneQueryHits(IndexReader reader, IndexSearcher searcher, Query query) throws IOException
++   {
++      this(reader, searcher, query, false);
++   }
+ 
+-    /**
+-     * {@inheritDoc}
+-     */
+-    public void close() throws IOException {
+-        // make sure scorer frees resources
+-        scorer.skipTo(Integer.MAX_VALUE);
+-    }
++   /**
++    * Constructor.
++    * 
++    * @param reader IndexReader
++    * @param searcher IndexSearcher
++    * @param query Query
++    * @param releaseReaderOnClose - release IndexReader on LuceneQueryHits.close().
++    * @throws IOException
++    */
++   public LuceneQueryHits(IndexReader reader, IndexSearcher searcher, Query query, boolean releaseReaderOnClose)
++      throws IOException
++   {
++      this.reader = reader;
++      this.scorer = query.weight(searcher).scorer(reader);
++      this.releaseReaderOnClose = releaseReaderOnClose;
++   }
+ 
+-    /**
+-     * @return always -1.
+-     */
+-    public int getSize() {
+-        return -1;
+-    }
++   /**
++    * {@inheritDoc}
++    */
++   public ScoreNode nextScoreNode() throws IOException
++   {
++      if (!scorer.next())
++      {
++         return null;
++      }
++      int doc = scorer.doc();
++      String uuid = reader.document(doc).get(FieldNames.UUID);
++      return new ScoreNode(uuid, scorer.score(), doc);
++   }
+ 
+-    /**
+-     * {@inheritDoc}
+-     */
+-    public void skip(int n) throws IOException {
+-        while (n-- > 0) {
+-            if (nextScoreNode() == null) {
+-                return;
+-            }
+-        }
+-    }
++   /**
++    * {@inheritDoc}
++    */
++   public void close() throws IOException
++   {
++      // make sure scorer frees resources
++      scorer.skipTo(Integer.MAX_VALUE);
++
++      if (releaseReaderOnClose && reader != null && reader instanceof ReleaseableIndexReader)
++      {
++         ((ReleaseableIndexReader)reader).release();
++      }
++   }
++
++   /**
++    * @return always -1.
++    */
++   public int getSize()
++   {
++      return -1;
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public void skip(int n) throws IOException
++   {
++      while (n-- > 0)
++      {
++         if (nextScoreNode() == null)
++         {
++            return;
++         }
++      }
++   }
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 4627)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
+@@ -2716,7 +2716,7 @@
+       IndexSearcher searcher = new IndexSearcher(reader);
+       searcher.setSimilarity(getSimilarity());
+ 
+-      return new LuceneQueryHits(reader, searcher, query);
++      return new LuceneQueryHits(reader, searcher, query, true);
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 4627)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(working copy)
+@@ -756,9 +756,10 @@
+    private Set<String> getNodes(final org.apache.lucene.search.Query query) throws RepositoryException
+    {
+       Set<String> result = new HashSet<String>();
++      QueryHits hits = null;
+       try
+       {
+-         QueryHits hits = handler.executeQuery(query);
++         hits = handler.executeQuery(query);
+ 
+          ScoreNode sn;
+ 
+@@ -767,12 +768,26 @@
+             // Node node = session.getNodeById(sn.getNodeId());
+             result.add(sn.getNodeId());
+          }
++         return result;
+       }
+       catch (IOException e)
+       {
+          throw new RepositoryException(e.getLocalizedMessage(), e);
+       }
+-      return result;
++      finally
++      {
++         if (hits != null)
++         {
++            try
++            {
++               hits.close();
++            }
++            catch (IOException e)
++            {
++               log.error("Can not close QueryHits.", e);
++            }
++         }
++      }
+    }
+ 
+    private boolean isPrefixMatch(final InternalQName value, final String prefix) throws RepositoryException
