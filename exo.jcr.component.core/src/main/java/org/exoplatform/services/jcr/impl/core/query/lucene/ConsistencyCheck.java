@@ -17,14 +17,12 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.document.Document;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -121,15 +119,8 @@ class ConsistencyCheck
          {
             if (error.repairable())
             {
-               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-               {
-                  public Object run() throws Exception
-                  {
-                     // running in privileged mode
-                     error.repair();
-                     return null;
-                  }
-               });
+               // running in privileged mode
+               error.repair();
             }
             else
             {
@@ -180,7 +171,7 @@ class ConsistencyCheck
       Set multipleEntries = new HashSet();
       // collect all documents UUIDs
       documentUUIDs = new HashSet();
-      final CachingMultiIndexReader reader = index.getIndexReader();
+      CachingMultiIndexReader reader = index.getIndexReader();
       try
       {
          for (int i = 0; i < reader.maxDoc(); i++)
@@ -195,14 +186,7 @@ class ConsistencyCheck
                continue;
             }
             final int currentIndex = i;
-            Document d = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Document>()
-            {
-               public Document run() throws Exception
-               {
-                  return reader.document(currentIndex, FieldSelectors.UUID);
-               }
-            });
-
+            Document d = reader.document(currentIndex, FieldSelectors.UUID);
             String uuid = d.get(FieldNames.UUID);
             if (stateMgr.getItemData(uuid) != null)
             {
@@ -219,14 +203,7 @@ class ConsistencyCheck
       }
       finally
       {
-         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               reader.release();
-               return null;
-            }
-         });
+         reader.release();
       }
 
       // create multiple entries errors
@@ -235,30 +212,23 @@ class ConsistencyCheck
          errors.add(new MultipleEntries((String)it.next()));
       }
 
-      final CachingMultiIndexReader newReader = index.getIndexReader();
+      reader = index.getIndexReader();
       try
       {
          // run through documents again and check parent
-         for (int i = 0; i < newReader.maxDoc(); i++)
+         for (int i = 0; i < reader.maxDoc(); i++)
          {
-            if (i > 10 && i % (newReader.maxDoc() / 5) == 0)
+            if (i > 10 && i % (reader.maxDoc() / 5) == 0)
             {
-               long progress = Math.round((100.0 * i) / (newReader.maxDoc() * 2f));
+               long progress = Math.round((100.0 * i) / (reader.maxDoc() * 2f));
                log.info("progress: " + (progress + 50) + "%");
             }
-            if (newReader.isDeleted(i))
+            if (reader.isDeleted(i))
             {
                continue;
             }
             final int currentIndex = i;
-            Document d = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Document>()
-            {
-               public Document run() throws Exception
-               {
-                  return newReader.document(currentIndex, FieldSelectors.UUID_AND_PARENT);
-               }
-            });
-
+            Document d = reader.document(currentIndex, FieldSelectors.UUID_AND_PARENT);
             String uuid = d.get(FieldNames.UUID);
             String parentUUIDString = d.get(FieldNames.PARENT);
 
@@ -281,14 +251,7 @@ class ConsistencyCheck
       }
       finally
       {
-         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               newReader.release();
-               return null;
-            }
-         });
+         reader.release();
       }
    }
 

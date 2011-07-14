@@ -18,21 +18,17 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -101,29 +97,22 @@ public class ErrorLog
     */
    private void openFile(final File log) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      // set file size;
+      if (!PrivilegedFileHelper.exists(log))
       {
-         public Object run() throws Exception
-         {
-            // set file size;
-            if (!log.exists())
-            {
-               log.getParentFile().mkdirs();
-               log.createNewFile();
+         PrivilegedFileHelper.mkdirs(log.getParentFile());
+         PrivilegedFileHelper.createNewFile(log);
 
-               out = PrivilegedFileHelper.fileOutputStream(log).getChannel();
-               out.position(1024 * fileSize - 1);
-               out.write(ByteBuffer.wrap(new byte[]{0}));
-               out.position(0);
-               out.force(false);
-            }
-            else
-            {
-               out = new FileOutputStream(log, true).getChannel();
-            }
-            return null;
-         }
-      });
+         out = PrivilegedFileHelper.fileOutputStream(log).getChannel();
+         out.position(1024 * fileSize - 1);
+         out.write(ByteBuffer.wrap(new byte[]{0}));
+         out.position(0);
+         out.force(false);
+      }
+      else
+      {
+         out = PrivilegedFileHelper.fileOutputStream(log, true).getChannel();
+      }
    }
 
    /**
@@ -137,14 +126,7 @@ public class ErrorLog
    public void append(final String action, final String uuid) throws IOException
    {
       initOut();
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            out.write(ByteBuffer.wrap((action + " " + uuid + "\n").getBytes()));
-            return null;
-         }
-      });
+      out.write(ByteBuffer.wrap((action + " " + uuid + "\n").getBytes()));
    }
 
    /**
@@ -155,17 +137,10 @@ public class ErrorLog
     */
    public void flush() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (out != null)
       {
-         public Object run() throws Exception
-         {
-            if (out != null)
-            {
-               out.force(false);
-            }
-            return null;
-         }
-      });
+         out.force(false);
+      }
    }
 
    /**
@@ -176,23 +151,16 @@ public class ErrorLog
     */
    public void clear() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (out != null)
       {
-         public Object run() throws Exception
-         {
-            if (out != null)
-            {
-               out.truncate(0);
-               out.close();
-               out = new FileOutputStream(logFile).getChannel();
-               out.position(1024 * fileSize - 1);
-               out.write(ByteBuffer.wrap(new byte[]{0}));
-               out.position(0);
-               out.force(false);
-            }
-            return null;
-         }
-      });
+         out.truncate(0);
+         out.close();
+         out = PrivilegedFileHelper.fileOutputStream(logFile).getChannel();
+         out.position(1024 * fileSize - 1);
+         out.write(ByteBuffer.wrap(new byte[]{0}));
+         out.position(0);
+         out.force(false);
+      }
    }
 
    /**
@@ -203,18 +171,11 @@ public class ErrorLog
     */
    private void initOut() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (out == null)
       {
-         public Object run() throws Exception
-         {
-            if (out == null)
-            {
-               FileOutputStream os = new FileOutputStream(logFile, false);
-               out = os.getChannel();
-            }
-            return null;
-         }
-      });
+         FileOutputStream os = PrivilegedFileHelper.fileOutputStream(logFile, false);
+         out = os.getChannel();
+      }
    }
 
    /**
@@ -225,42 +186,36 @@ public class ErrorLog
     */
    public List<String> readList() throws IOException
    {
-      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<List<String>>()
+      InputStream in = PrivilegedFileHelper.fileInputStream(logFile);
+      try
       {
-         public List<String> run() throws Exception
+         List<String> list = new ArrayList<String>();
+         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+         String line;
+         while ((line = reader.readLine()) != null)
          {
-            InputStream in = new FileInputStream(logFile);
-            try
+            if (!line.matches("\\x00++"))
             {
-               List<String> list = new ArrayList<String>();
-               BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-               String line;
-               while ((line = reader.readLine()) != null)
-               {
-                  if (!line.matches("\\x00++"))
-                  {
-                     list.add(line);
-                  }
-               }
-               return list;
-
-            }
-            finally
-            {
-               if (in != null)
-               {
-                  try
-                  {
-                     in.close();
-                  }
-                  catch (IOException e)
-                  {
-                     LOG.warn("Exception while closing error log: " + e.toString());
-                  }
-               }
+               list.add(line);
             }
          }
-      });
+         return list;
+
+      }
+      finally
+      {
+         if (in != null)
+         {
+            try
+            {
+               in.close();
+            }
+            catch (IOException e)
+            {
+               LOG.warn("Exception while closing error log: " + e.toString());
+            }
+         }
+      }
    }
 
    public void readChanges(Set<String> rem, Set<String> add) throws IOException
@@ -317,24 +272,17 @@ public class ErrorLog
     */
    public void close()
    {
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+      if (out != null)
       {
-         public Object run()
+         try
          {
-            if (out != null)
-            {
-               try
-               {
-                  out.close();
-               }
-               catch (IOException e)
-               {
-                  out = null;
-               }
-            }
-            return null;
+            out.close();
          }
-      });
+         catch (IOException e)
+         {
+            out = null;
+         }
+      }
    }
 
 }

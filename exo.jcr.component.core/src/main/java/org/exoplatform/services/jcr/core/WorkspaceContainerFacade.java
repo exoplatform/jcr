@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.core;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.ReadOnlySupport;
 import org.exoplatform.services.jcr.impl.WorkspaceContainer;
@@ -25,6 +26,8 @@ import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
 
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
 
@@ -163,7 +166,7 @@ public final class WorkspaceContainerFacade
     * @param state
     * @throws RepositoryException
     */
-   public void setState(int state) throws RepositoryException
+   public void setState(final int state) throws RepositoryException
    {
       // Need privileges to manage repository.
       SecurityManager security = System.getSecurityManager();
@@ -172,21 +175,43 @@ public final class WorkspaceContainerFacade
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
       
-      switch (state)
+      try
       {
-         case ManageableRepository.ONLINE :
-            setOnline();
-            break;
-         case ManageableRepository.OFFLINE :
-            break;
-         case ManageableRepository.READONLY :
-            setReadOnly(true);
-            break;
-         case ManageableRepository.SUSPENDED :
-            suspend();
-            break;
-         default :
-            return;
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws RepositoryException
+            {
+               switch (state)
+               {
+                  case ManageableRepository.ONLINE :
+                     setOnline();
+                     break;
+                  case ManageableRepository.OFFLINE :
+                     break;
+                  case ManageableRepository.READONLY :
+                     setReadOnly(true);
+                     break;
+                  case ManageableRepository.SUSPENDED :
+                     suspend();
+                     break;
+                  default :
+                     return null;
+               }
+               return null;
+            }
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof RepositoryException)
+         {
+            throw new RepositoryException(cause);
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
       }
    }
 

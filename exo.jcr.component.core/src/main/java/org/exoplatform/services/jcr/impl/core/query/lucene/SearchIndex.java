@@ -76,8 +76,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -585,39 +583,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          indexDirectory = new File(path);
 
-         try
-         {
-            SecurityHelper.doPrivilegedExceptionAction((new PrivilegedExceptionAction<Object>()
+            if (!indexDirectory.exists())
             {
-               public Object run() throws Exception
+               if (!indexDirectory.mkdirs())
                {
-                  if (!indexDirectory.exists())
-                  {
-                     if (!indexDirectory.mkdirs())
-                     {
-                        throw new RepositoryException("fail to create index dir " + path);
-                     }
-                  }
-                  return null;
+                  throw new RepositoryException("fail to create index dir " + path);
                }
-            }));
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof RepositoryException)
-            {
-               throw (RepositoryException)cause;
             }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
       }
       else
       {
@@ -644,15 +616,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       else
       {
          // read local namespace mappings
-         final File mapFile = new File(indexDirectory, NS_MAPPING_FILE);
-         boolean fileExists = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
-         {
-            public Boolean run()
-            {
-               return mapFile.exists();
-            }
-         });
-         if (fileExists)
+         File mapFile = new File(indexDirectory, NS_MAPPING_FILE);
+         if (mapFile.exists())
          {
             // be backward compatible and use ns_mappings.properties from
             // index folder
@@ -1597,15 +1562,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          try
          {
-            spCheck = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<SpellChecker>()
-            {
-               public SpellChecker run() throws Exception
-               {
-                  SpellChecker spCheck = spellCheckerClass.newInstance();
-                  spCheck.init(SearchIndex.this, spellCheckerMinDistance, spellCheckerMorePopular);
-                  return spCheck;
-               }
-            });
+            spCheck = spellCheckerClass.newInstance();
+            spCheck.init(SearchIndex.this, spellCheckerMinDistance, spellCheckerMorePopular);
          }
          catch (Exception e)
          {

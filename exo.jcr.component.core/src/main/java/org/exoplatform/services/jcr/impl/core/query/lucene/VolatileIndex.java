@@ -16,15 +16,15 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.Map;
-
 import org.apache.commons.collections.map.LinkedMap;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.RAMDirectory;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Implements an in-memory index with a pending buffer.
@@ -114,7 +114,7 @@ class VolatileIndex extends AbstractIndex
       else
       {
          // remove document from index
-         num = super.removeDocument(idTerm);
+         num = super.getIndexReader().deleteDocuments(idTerm);
       }
       numDocs -= num;
       return num;

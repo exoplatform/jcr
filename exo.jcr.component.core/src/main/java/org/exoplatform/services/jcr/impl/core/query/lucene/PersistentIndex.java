@@ -23,11 +23,9 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
 
 /**
  * Implements a lucene index which is based on a
@@ -64,14 +62,7 @@ class PersistentIndex extends AbstractIndex
       this.name = name;
       if (isExisting())
       {
-         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               IndexMigration.migrate(PersistentIndex.this, directoryManager);
-               return null;
-            }
-         });
+         IndexMigration.migrate(PersistentIndex.this, directoryManager);
       }
    }
 
@@ -98,17 +89,10 @@ class PersistentIndex extends AbstractIndex
     * @param readers the readers of indexes to add.
     * @throws IOException if an error occurs while adding indexes.
     */
-   void addIndexes(final IndexReader[] readers) throws IOException
+   void addIndexes(IndexReader[] readers) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            getIndexWriter().addIndexes(readers);
-            getIndexWriter().optimize();
-            return null;
-         }
-      });
+      getIndexWriter().addIndexes(readers);
+      getIndexWriter().optimize();
    }
 
    /**
@@ -121,47 +105,40 @@ class PersistentIndex extends AbstractIndex
     */
    void copyIndex(final AbstractIndex index) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      // commit changes to directory on other index.
+      index.commit(true);
+      // simply copy over the files
+      byte[] buffer = new byte[1024];
+      Directory dir = index.getDirectory();
+      Directory dest = getDirectory();
+      String[] files = dir.list();
+      for (int i = 0; i < files.length; i++)
       {
-         public Object run() throws Exception
+         IndexInput in = dir.openInput(files[i]);
+         try
          {
-            // commit changes to directory on other index.
-            index.commit(true);
-            // simply copy over the files
-            byte[] buffer = new byte[1024];
-            Directory dir = index.getDirectory();
-            Directory dest = getDirectory();
-            String[] files = dir.list();
-            for (int i = 0; i < files.length; i++)
+            IndexOutput out = dest.createOutput(files[i]);
+            try
             {
-               IndexInput in = dir.openInput(files[i]);
-               try
+               long remaining = in.length();
+               while (remaining > 0)
                {
-                  IndexOutput out = dest.createOutput(files[i]);
-                  try
-                  {
-                     long remaining = in.length();
-                     while (remaining > 0)
-                     {
-                        int num = (int)Math.min(remaining, buffer.length);
-                        in.readBytes(buffer, 0, num);
-                        out.writeBytes(buffer, num);
-                        remaining -= num;
-                     }
-                  }
-                  finally
-                  {
-                     out.close();
-                  }
-               }
-               finally
-               {
-                  in.close();
+                  int num = (int)Math.min(remaining, buffer.length);
+                  in.readBytes(buffer, 0, num);
+                  out.writeBytes(buffer, num);
+                  remaining -= num;
                }
             }
-            return null;
+            finally
+            {
+               out.close();
+            }
          }
-      });
+         finally
+         {
+            in.close();
+         }
+      }
    }
 
    /**

@@ -21,7 +21,6 @@ import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
@@ -31,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
@@ -151,21 +149,14 @@ public class Util
     */
    public static void closeOrRelease(final IndexReader reader) throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (reader instanceof ReleaseableIndexReader)
       {
-         public Object run() throws Exception
-         {
-            if (reader instanceof ReleaseableIndexReader)
-            {
-               ((ReleaseableIndexReader)reader).release();
-            }
-            else
-            {
-               reader.close();
-            }
-            return null;
-         }
-      });
+         ((ReleaseableIndexReader)reader).release();
+      }
+      else
+      {
+         reader.close();
+      }
    }
 
    /**

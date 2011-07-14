@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.store.Directory;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +25,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -121,27 +118,20 @@ class IndexingQueueStore
     */
    public void close()
    {
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+      if (pending.isEmpty())
       {
-         public Object run()
+         try
          {
-            if (pending.isEmpty())
+            if (dir.fileExists(INDEXING_QUEUE_FILE))
             {
-               try
-               {
-                  if (dir.fileExists(INDEXING_QUEUE_FILE))
-                  {
-                     dir.deleteFile(INDEXING_QUEUE_FILE);
-                  }
-               }
-               catch (IOException e)
-               {
-                  log.warn("unable to delete " + INDEXING_QUEUE_FILE);
-               }
+               dir.deleteFile(INDEXING_QUEUE_FILE);
             }
-            return null;
          }
-      });
+         catch (IOException e)
+         {
+            log.warn("unable to delete " + INDEXING_QUEUE_FILE);
+         }
+      }
    }
 
    //----------------------------< internal >----------------------------------
@@ -154,52 +144,45 @@ class IndexingQueueStore
     */
    private void readStore() throws IOException
    {
-      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (dir.fileExists(INDEXING_QUEUE_FILE))
       {
-         public Object run() throws Exception
+         InputStream in = new IndexInputStream(dir.openInput(INDEXING_QUEUE_FILE));
+         BufferedReader reader = new BufferedReader(new InputStreamReader(in, ENCODING));
+         try
          {
-            if (dir.fileExists(INDEXING_QUEUE_FILE))
+            String line;
+            while ((line = reader.readLine()) != null)
             {
-               InputStream in = new IndexInputStream(dir.openInput(INDEXING_QUEUE_FILE));
-               BufferedReader reader = new BufferedReader(new InputStreamReader(in, ENCODING));
-               try
+               int idx = line.indexOf(' ');
+               if (idx == -1)
                {
-                  String line;
-                  while ((line = reader.readLine()) != null)
+                  // invalid line
+                  log.warn("invalid line in {}: {}", INDEXING_QUEUE_FILE, line);
+               }
+               else
+               {
+                  String cmd = line.substring(0, idx);
+                  String uuid = line.substring(idx + 1, line.length());
+                  if (ADD.equals(cmd))
                   {
-                     int idx = line.indexOf(' ');
-                     if (idx == -1)
-                     {
-                        // invalid line
-                        log.warn("invalid line in {}: {}", INDEXING_QUEUE_FILE, line);
-                     }
-                     else
-                     {
-                        String cmd = line.substring(0, idx);
-                        String uuid = line.substring(idx + 1, line.length());
-                        if (ADD.equals(cmd))
-                        {
-                           pending.add(uuid);
-                        }
-                        else if (REMOVE.equals(cmd))
-                        {
-                           pending.remove(uuid);
-                        }
-                        else
-                        {
-                           // invalid line
-                           log.warn("invalid line in {}: {}", INDEXING_QUEUE_FILE, line);
-                        }
-                     }
+                     pending.add(uuid);
+                  }
+                  else if (REMOVE.equals(cmd))
+                  {
+                     pending.remove(uuid);
+                  }
+                  else
+                  {
+                     // invalid line
+                     log.warn("invalid line in {}: {}", INDEXING_QUEUE_FILE, line);
                   }
                }
-               finally
-               {
-                  in.close();
-               }
             }
-            return null;
          }
-      });
+         finally
+         {
+            in.close();
+         }
+      }
    }
 }

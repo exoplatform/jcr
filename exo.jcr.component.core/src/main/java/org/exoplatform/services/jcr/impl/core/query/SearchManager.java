@@ -22,7 +22,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
@@ -88,8 +87,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -517,7 +514,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}
     */
-   public void onSaveItems(ItemStateChangesLog itemStates)
+   public void onSaveItems(final ItemStateChangesLog itemStates)
    {
       //skip empty
       if (itemStates.getSize() > 0)
@@ -1454,35 +1451,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
       if (handler instanceof Suspendable)
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               ((Suspendable)handler).resume();
-               return null;
-            }
-         };
-         try
-         {
-            SecurityHelper.doPrivilegedExceptionAction(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-
-            if (cause instanceof ResumeException)
-            {
-               throw (ResumeException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }         
+         ((Suspendable)handler).resume();
       }
 
       isSuspended = false;
