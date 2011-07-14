@@ -253,6 +253,7 @@
           <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc"/>
           <property name="username" value="sa"/>
           <property name="password" value=""/>
+          <property name="maxActive" value="20" />
         </properties-param>
       </init-params>
     </component-plugin>
