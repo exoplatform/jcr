@@ -57,7 +57,6 @@ public class PatternQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public boolean isExactName()
    {
       return false;
@@ -66,7 +65,6 @@ public class PatternQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public QPathEntry getQPathEntry()
    {
       return entry;
@@ -75,7 +73,6 @@ public class PatternQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public boolean accept(ItemData item)
    {
       if (localNameHasWildcard && localNamePattern == null)
@@ -108,7 +105,6 @@ public class PatternQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public List<? extends ItemData> accept(List<? extends ItemData> itemData)
    {
 
@@ -189,7 +185,6 @@ public class PatternQPathEntryFilter implements QPathEntryFilter
       return entry.hashCode();
    }
 
-   @Override
    public void writeExternal(ObjectOutput out) throws IOException
    {
       byte[] buf = entry.getNamespace().getBytes(Constants.DEFAULT_ENCODING);
@@ -206,7 +201,6 @@ public class PatternQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       byte[] buf = new byte[in.readInt()];

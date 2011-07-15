@@ -25,7 +25,10 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.TestWorkspaceStorageCacheInClusterMode;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
@@ -35,20 +38,35 @@ import java.util.ArrayList;
 public class TestISPNCacheWorkspaceStorageCacheInClusterMode extends TestWorkspaceStorageCacheInClusterMode<ISPNCacheWorkspaceStorageCache>
 {
 
+   @SuppressWarnings({"rawtypes", "unchecked"})
    public ISPNCacheWorkspaceStorageCache getCacheImpl() throws Exception
    {
+      // Clear the Cache Factory to avoid getting several times the same cache
+      Field singletonField = ISPNCacheFactory.class.getDeclaredField("CACHE_MANAGERS");
+      singletonField.setAccessible(true);
+      Map map = (Map)singletonField.get(null);
+      Map backupMap = new HashMap(map);
+      map.clear();
       ArrayList<SimpleParameterEntry> list = new ArrayList<SimpleParameterEntry>();
       list.add(new SimpleParameterEntry(ISPNCacheFactory.INFINISPAN_CONFIG,
          "jar:/conf/standalone/cluster/test-infinispan-config.xml"));
       list.add(new SimpleParameterEntry("infinispan-cluster-name", "TestISPNCacheWorkspaceStorageCacheInClusterMode"));
-      list.add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/udp-mux.xml"));
+      list.add(new SimpleParameterEntry("jgroups-configuration", "classpath:/flush-udp.xml"));
       
       CacheEntry entry = new CacheEntry(list);
       entry.setEnabled(true);
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
       workspaceEntry.setCache(entry);
       workspaceEntry.setUniqueName("MyWorkspace");
-      return new ISPNCacheWorkspaceStorageCache(workspaceEntry, new ConfigurationManagerImpl());
+      try
+      {
+         return new ISPNCacheWorkspaceStorageCache(workspaceEntry, new ConfigurationManagerImpl());
+      }
+      finally
+      {
+         map.clear();
+         map.putAll(backupMap);
+      }
    }
    
    protected void finalize(ISPNCacheWorkspaceStorageCache cache)

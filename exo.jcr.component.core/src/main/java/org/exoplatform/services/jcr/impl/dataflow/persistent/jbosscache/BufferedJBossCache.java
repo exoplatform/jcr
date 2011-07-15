@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -33,6 +33,7 @@ import org.jboss.cache.Node;
 import org.jboss.cache.NodeNotExistsException;
 import org.jboss.cache.Region;
 import org.jboss.cache.config.Configuration;
+import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.interceptors.base.CommandInterceptor;
 import org.jgroups.Address;
@@ -1052,6 +1053,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             LOG.error("Unexpected object found by FQN:" + getFqn() + " and key:" + key + ". Expected Set, but found:"
                + existingObject.getClass().getName());
          }
+         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
+            cache.put(fqn, key, null);
+         }
       }
       
       @Override
@@ -1084,6 +1091,13 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public void apply()
       {
+         if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes to reload them from the db
+            cache.removeNode(fqn);
+            return;
+         }
          // force writeLock on next read
          cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
 
@@ -1092,6 +1106,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          {
             Object name = patternNames.next();
             Fqn<Object> patternFqn = Fqn.fromRelativeElements(fqn, name);
+            cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
             Object patternObject = cache.get(patternFqn, patternKey);
             if (!(patternObject instanceof QPathEntryFilter))
             {
@@ -1102,6 +1117,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             QPathEntryFilter nameFilter = (QPathEntryFilter)patternObject;
             if (nameFilter.accept((ItemData)value))
             {
+               cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
                Object setObject = cache.get(patternFqn, listKey);
                if (!(setObject instanceof Set))
                {
@@ -1203,6 +1219,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          while (patternNames.hasNext())
          {
             Fqn<Object> patternFqn = Fqn.fromRelativeElements(fqn, patternNames.next());
+            cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
             Object patternObject = cache.get(patternFqn, patternKey);
             if (!(patternObject instanceof QPathEntryFilter))
             {
@@ -1213,6 +1230,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             QPathEntryFilter nameFilter = (QPathEntryFilter)patternObject;
             if (nameFilter.accept((ItemData)value))
             {
+               cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
                Object setObject = cache.get(patternFqn, listKey);
                if (!(setObject instanceof Set))
                {

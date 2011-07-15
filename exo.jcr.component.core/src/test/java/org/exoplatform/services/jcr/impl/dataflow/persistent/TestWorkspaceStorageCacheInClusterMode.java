@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.commons.utils.QName;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
@@ -34,6 +35,8 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.PatternQPathEntry;
+import org.exoplatform.services.jcr.impl.core.itemfilters.PatternQPathEntryFilter;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
@@ -43,6 +46,7 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -60,7 +64,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
 {
    public abstract T getCacheImpl() throws Exception;
 
-   public void testRaceConditions() throws Exception
+   public void testRaceConditionsNConsistency() throws Exception
    {
       T cache1 = null, cache2 = null;
       try
@@ -85,11 +89,11 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          {
             public void execute(NodeData parentNode) throws Exception
             {
-               PlainChangesLog chlog = new PlainChangesLogImpl();            
+               PlainChangesLog chlog = new PlainChangesLogImpl();
                cwdm.getChildNodesData(parentNode);
                chlog.add(ItemState.createAddedState(new PersistedNodeData("id-node" + parentNode.getIdentifier(), QPath.makeChildPath(parentNode.getQPath(), new InternalQName(null, "node")), parentNode.getIdentifier(), 1, 0,
                   Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
-               cwdm.save(chlog);            
+               cwdm.save(chlog);
             }
          };
          executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
@@ -116,16 +120,16 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          {
             public void execute(NodeData parentNode) throws Exception
             {
-               PlainChangesLog chlog = new PlainChangesLogImpl();            
+               PlainChangesLog chlog = new PlainChangesLogImpl();
                cwdm.getChildPropertiesData(parentNode);
                chlog.add(ItemState.createAddedState(new PersistedPropertyData("id-property" + parentNode.getIdentifier(), QPath.makeChildPath(
                   parentNode.getQPath(), new InternalQName(null, "property")), parentNode.getIdentifier(), 0,
                   PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8"))))));
                cwdm.save(chlog);
             }
-         };      
+         };
          parentNode = new PersistedNodeData("parent-id3", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node3")), Constants.ROOT_UUID, 1, 0,
-            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);      
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
          executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
          assertNotNull(cwdmNode1.getChildPropertiesData(parentNode));
          assertEquals(2, cwdmNode1.getChildPropertiesData(parentNode).size());
@@ -150,16 +154,16 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          {
             public void execute(NodeData parentNode) throws Exception
             {
-               PlainChangesLog chlog = new PlainChangesLogImpl();            
+               PlainChangesLog chlog = new PlainChangesLogImpl();
                cwdm.getReferencesData(parentNode.getIdentifier(), false);
                chlog.add(ItemState.createAddedState(new PersistedPropertyData("id-reference" + parentNode.getIdentifier(), QPath.makeChildPath(
                   parentNode.getQPath(), new InternalQName(null, "reference")), parentNode.getIdentifier(), 0,
                   PropertyType.REFERENCE, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8"))))));
                cwdm.save(chlog);
             }
-         };      
+         };
          parentNode = new PersistedNodeData("parent-id5", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node5")), Constants.ROOT_UUID, 1, 0,
-            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);      
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
          executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
          assertNotNull(cwdmNode1.getReferencesData(parentNode.getIdentifier(), false));
          assertEquals(2, cwdmNode1.getReferencesData(parentNode.getIdentifier(), false).size());
@@ -191,9 +195,9 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
                   Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
                cwdm.save(chlog);
             }
-         };      
+         };
          parentNode = new PersistedNodeData("parent-id7", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node7")), Constants.ROOT_UUID, 1, 0,
-            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);      
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
          executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
          assertNotNull(cwdmNode1.getItemData(parentNode.getIdentifier()));
          assertEquals(2, cwdmNode1.getItemData(parentNode.getIdentifier()).getPersistedVersion());
@@ -206,7 +210,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          assertEquals(2, cwdmNode1.getItemData(parentNode.getIdentifier()).getPersistedVersion());
          assertNotNull(cwdmNode2.getItemData(parentNode.getIdentifier()));
          assertEquals(2, cwdmNode2.getItemData(parentNode.getIdentifier()).getPersistedVersion()); 
-              
+         
          // Test getItemData by Path
          final QPathEntry qpe = new QPathEntry(null, "my-property", 1);
          readAction = new Action(cwdmNode2)
@@ -228,9 +232,9 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
                   .asList((ValueData)new ByteArrayPersistedValueData(0, "some new data".getBytes("UTF-8"))))));
                cwdm.save(chlog);
             }
-         };      
+         };
          parentNode = new PersistedNodeData("parent-id9", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node9")), Constants.ROOT_UUID, 1, 0,
-            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);      
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
          executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
          assertNotNull(cwdmNode1.getItemData(parentNode, qpe, ItemType.PROPERTY));
          assertEquals(2, cwdmNode1.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
@@ -243,6 +247,235 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          assertEquals(2, cwdmNode1.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
          assertNotNull(cwdmNode2.getItemData(parentNode, qpe, ItemType.PROPERTY));
          assertEquals(2, cwdmNode2.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
+         
+         // Test getChildNodesData by patterns
+         final List<QPathEntryFilter> nodePatterns =
+            Collections.singletonList((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
+               "my-node", -1)));
+         readAction = new Action(cwdmNode2)
+         {
+            public void execute(NodeData parentNode) throws Exception
+            {
+               cwdm.getChildNodesData(parentNode, nodePatterns);
+            }
+         };
+         writeAction = new Action(cwdmNode1)
+         {
+            public void execute(NodeData parentNode) throws Exception
+            {
+               PlainChangesLog chlog = new PlainChangesLogImpl();
+               cwdm.getChildNodesData(parentNode, nodePatterns);
+               chlog.add(ItemState.createAddedState(new PersistedNodeData("my-node2" + parentNode.getIdentifier(),
+                  QPath.makeChildPath(parentNode.getQPath(), new QName("", "my-node"), 2), parentNode.getIdentifier(), 1, 2,
+                  Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
+               cwdm.save(chlog);
+            }
+         };
+         con.setCanModify(true);
+         parentNode = new PersistedNodeData("parent-id11", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node11")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
+         assertNotNull(cwdmNode1.getChildNodesData(parentNode, nodePatterns));
+         assertEquals(2, cwdmNode1.getChildNodesData(parentNode, nodePatterns).size());
+         assertNotNull(cwdmNode2.getChildNodesData(parentNode, nodePatterns));
+         assertEquals(2, cwdmNode2.getChildNodesData(parentNode, nodePatterns).size());
+         parentNode = new PersistedNodeData("parent-id12", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node12")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.WRITE_FIRST, parentNode);
+         assertNotNull(cwdmNode1.getChildNodesData(parentNode, nodePatterns));
+         assertEquals(2, cwdmNode1.getChildNodesData(parentNode, nodePatterns).size());
+         assertNotNull(cwdmNode2.getChildNodesData(parentNode, nodePatterns));
+         assertEquals(2, cwdmNode2.getChildNodesData(parentNode, nodePatterns).size());
+         
+         // Test getChildPropertiesData by patterns
+         final List<QPathEntryFilter> propPatterns =
+            Collections.singletonList((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
+               "my-property*", -1)));
+         readAction = new Action(cwdmNode2)
+         {
+            public void execute(NodeData parentNode) throws Exception
+            {
+               cwdm.getChildPropertiesData(parentNode, propPatterns);
+            }
+         };
+         writeAction = new Action(cwdmNode1)
+         {
+            public void execute(NodeData parentNode) throws Exception
+            {
+               PlainChangesLog chlog = new PlainChangesLogImpl();
+               cwdm.getChildPropertiesData(parentNode, propPatterns);
+               chlog.add(ItemState.createAddedState(new PersistedPropertyData("id-property" + parentNode.getIdentifier(), QPath.makeChildPath(
+                  parentNode.getQPath(), new InternalQName(null, "my-property1")), parentNode.getIdentifier(), 0,
+                  PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8"))))));
+               cwdm.save(chlog);
+            }
+         };
+         parentNode = new PersistedNodeData("parent-id13", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node13")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.READ_FIRST, parentNode);
+         assertNotNull(cwdmNode1.getChildPropertiesData(parentNode, propPatterns));
+         assertEquals(2, cwdmNode1.getChildPropertiesData(parentNode, propPatterns).size());
+         assertNotNull(cwdmNode2.getChildPropertiesData(parentNode, propPatterns));
+         assertEquals(2, cwdmNode2.getChildPropertiesData(parentNode, propPatterns).size());
+         parentNode = new PersistedNodeData("parent-id14", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node14")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         executeConcurrentReadNWrite(con, readAction, writeAction, Mode.WRITE_FIRST, parentNode);
+         assertNotNull(cwdmNode1.getChildPropertiesData(parentNode, propPatterns));
+         assertEquals(2, cwdmNode1.getChildPropertiesData(parentNode, propPatterns).size());
+         assertNotNull(cwdmNode2.getChildPropertiesData(parentNode, propPatterns));
+         assertEquals(2, cwdmNode2.getChildPropertiesData(parentNode, propPatterns).size());
+
+         // testConsistency
+         con = new MyWorkspaceStorageConnection(true);
+         wdc = new MyWorkspaceDataContainer(con);
+         cwdmNode1 =
+            new CacheableWorkspaceDataManager(wdc, cache1, new SystemDataContainerHolder(wdc));
+         cwdmNode2 =
+            new CacheableWorkspaceDataManager(wdc, cache2, new SystemDataContainerHolder(wdc));
+         parentNode = new PersistedNodeData("parent2-id", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         // Test getChildNodesData
+         con.setParentNode(parentNode);
+         cwdmNode2.getChildNodesData(parentNode);
+         PlainChangesLog chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createAddedState(new PersistedNodeData("id-node" + parentNode.getIdentifier(), QPath.makeChildPath(parentNode.getQPath(), new InternalQName(null, "node")), parentNode.getIdentifier(), 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getChildNodesData(parentNode));
+         assertEquals(2, cwdmNode1.getChildNodesData(parentNode).size());
+         assertNotNull(cwdmNode2.getChildNodesData(parentNode));
+         assertEquals(2, cwdmNode2.getChildNodesData(parentNode).size());
+         parentNode = new PersistedNodeData("parent2-id2", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node2")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         con.setParentNode(parentNode);
+         cwdmNode2.getChildNodesData(parentNode);
+         chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createDeletedState(new PersistedNodeData("id-node2" + parentNode.getIdentifier(), QPath.makeChildPath(parentNode.getQPath(), new InternalQName(null, "node2")), parentNode.getIdentifier(), 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getChildNodesData(parentNode));
+         assertEquals(0, cwdmNode1.getChildNodesData(parentNode).size());
+         assertNotNull(cwdmNode2.getChildNodesData(parentNode));
+         assertEquals(0, cwdmNode2.getChildNodesData(parentNode).size());
+        
+         // Test getChildPropertiesData
+         parentNode = new PersistedNodeData("parent2-id3", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node3")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         con.setParentNode(parentNode);
+         cwdmNode2.getChildPropertiesData(parentNode);
+         chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createAddedState(new PersistedPropertyData("id-property" + parentNode.getIdentifier(), QPath.makeChildPath(
+            parentNode.getQPath(), new InternalQName(null, "property")), parentNode.getIdentifier(), 0,
+            PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8"))))));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getChildPropertiesData(parentNode));
+         assertEquals(2, cwdmNode1.getChildPropertiesData(parentNode).size());
+         assertNotNull(cwdmNode2.getChildPropertiesData(parentNode));
+         assertEquals(2, cwdmNode2.getChildPropertiesData(parentNode).size());
+         parentNode = new PersistedNodeData("parent2-id4", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node4")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         con.setParentNode(parentNode);
+         cwdmNode2.getChildPropertiesData(parentNode);
+         chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createDeletedState(new PersistedPropertyData("id-property2" + parentNode.getIdentifier(), QPath.makeChildPath(
+            parentNode.getQPath(), new InternalQName(null, "property2")), parentNode.getIdentifier(), 0,
+            PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8"))))));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getChildPropertiesData(parentNode));
+         assertEquals(0, cwdmNode1.getChildPropertiesData(parentNode).size());
+         assertNotNull(cwdmNode2.getChildPropertiesData(parentNode));
+         assertEquals(0, cwdmNode2.getChildPropertiesData(parentNode).size());
+
+         // Test getReferencesData
+         parentNode = new PersistedNodeData("parent2-id5", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node5")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         con.setParentNode(parentNode);
+         cwdmNode2.getReferencesData(parentNode.getIdentifier(), false);
+         chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createAddedState(new PersistedPropertyData("id-reference" + parentNode.getIdentifier(), QPath.makeChildPath(
+            parentNode.getQPath(), new InternalQName(null, "reference")), parentNode.getIdentifier(), 0,
+            PropertyType.REFERENCE, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8"))))));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getReferencesData(parentNode.getIdentifier(), false));
+         assertEquals(2, cwdmNode1.getReferencesData(parentNode.getIdentifier(), false).size());
+         assertNotNull(cwdmNode2.getReferencesData(parentNode.getIdentifier(), false));
+         assertEquals(2, cwdmNode2.getReferencesData(parentNode.getIdentifier(), false).size());
+         parentNode = new PersistedNodeData("parent2-id6", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node6")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         con.setParentNode(parentNode);
+         cwdmNode2.getReferencesData(parentNode.getIdentifier(), false);
+         chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createDeletedState(new PersistedPropertyData("id-reference2" + parentNode.getIdentifier(), QPath.makeChildPath(
+            parentNode.getQPath(), new InternalQName(null, "reference2")), parentNode.getIdentifier(), 0,
+            PropertyType.REFERENCE, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8"))))));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getReferencesData(parentNode.getIdentifier(), false));
+         assertEquals(0, cwdmNode1.getReferencesData(parentNode.getIdentifier(), false).size());
+         assertNotNull(cwdmNode2.getReferencesData(parentNode.getIdentifier(), false));
+         assertEquals(0, cwdmNode2.getReferencesData(parentNode.getIdentifier(), false).size());
+         
+         // Test getChildNodesData by patterns
+         final List<QPathEntryFilter> patterns =
+            Collections.singletonList((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
+               "my-node", -1)));
+         parentNode = new PersistedNodeData("parent2-id11", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node11")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         con.setParentNode(parentNode);
+         cwdmNode2.getChildNodesData(parentNode, patterns);
+         chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createAddedState(new PersistedNodeData("my-node2" + parentNode.getIdentifier(),
+            QPath.makeChildPath(parentNode.getQPath(), new QName("", "my-node"), 2), parentNode.getIdentifier(), 1, 2,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getChildNodesData(parentNode, patterns));
+         assertEquals(2, cwdmNode1.getChildNodesData(parentNode, patterns).size());
+         assertNotNull(cwdmNode2.getChildNodesData(parentNode, patterns));
+         assertEquals(2, cwdmNode2.getChildNodesData(parentNode, patterns).size());
+         parentNode = new PersistedNodeData("parent2-id12", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node12")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         con.setParentNode(parentNode);
+         cwdmNode2.getChildNodesData(parentNode, patterns);
+         chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createDeletedState(new PersistedNodeData("my-node" + parentNode.getIdentifier(), QPath
+            .makeChildPath(parentNode.getQPath(), new QName("", "my-node"), 1), parentNode.getIdentifier(), 1, 1,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getChildNodesData(parentNode, patterns));
+         assertEquals(0, cwdmNode1.getChildNodesData(parentNode, patterns).size());
+         assertNotNull(cwdmNode2.getChildNodesData(parentNode, patterns));
+         assertEquals(0, cwdmNode2.getChildNodesData(parentNode, patterns).size());
+         
+         
+         // Test getChildPropertiesData by patterns
+         final List<QPathEntryFilter> propPattern2s =
+            Collections.singletonList((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
+               "my-property*", -1)));
+         parentNode = new PersistedNodeData("parent2-id13", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node13")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         con.setParentNode(parentNode);
+         cwdmNode2.getChildPropertiesData(parentNode, propPattern2s);
+         chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createAddedState(new PersistedPropertyData("id-property" + parentNode.getIdentifier(), QPath.makeChildPath(
+            parentNode.getQPath(), new InternalQName(null, "my-property1")), parentNode.getIdentifier(), 0,
+            PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8"))))));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getChildPropertiesData(parentNode, propPattern2s));
+         assertEquals(2, cwdmNode1.getChildPropertiesData(parentNode, propPattern2s).size());
+         assertNotNull(cwdmNode2.getChildPropertiesData(parentNode, propPattern2s));
+         assertEquals(2, cwdmNode2.getChildPropertiesData(parentNode, propPattern2s).size());
+         parentNode = new PersistedNodeData("parent2-id14", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node14")), Constants.ROOT_UUID, 1, 0,
+            Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+         con.setParentNode(parentNode);
+         cwdmNode2.getChildPropertiesData(parentNode, propPattern2s);
+         chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createDeletedState(new PersistedPropertyData("id-property2" + parentNode.getIdentifier(), QPath.makeChildPath(
+            parentNode.getQPath(), new InternalQName(null, "my-property2")), parentNode.getIdentifier(), 0,
+            PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8"))))));
+         cwdmNode1.save(chlog);
+         assertNotNull(cwdmNode1.getChildPropertiesData(parentNode, propPattern2s));
+         assertEquals(0, cwdmNode1.getChildPropertiesData(parentNode, propPattern2s).size());
+         assertNotNull(cwdmNode2.getChildPropertiesData(parentNode, propPattern2s));
+         assertEquals(0, cwdmNode2.getChildPropertiesData(parentNode, propPattern2s).size());
       }
       finally
       {
@@ -269,7 +502,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             }
          }
       }
-   }
+   }   
    
    protected void finalize(T cache)
    {
@@ -302,13 +535,14 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             }
             catch (Exception e)
             {
-               e.printStackTrace();               
+               e.printStackTrace();
                ex.set(e);
             }
             finally
             {
                if (mode == Mode.WRITE_FIRST) goSignal.countDown();
                doneSignal.countDown();
+               con.wait.remove();
             }
          }
       };
@@ -332,7 +566,8 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             {
                if (mode == Mode.READ_FIRST) goSignal.countDown();
                doneSignal.countDown();
-            }            
+               con.wait.remove();
+            }
          }
       };
       reader.start();
@@ -355,12 +590,32 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
    {
       READ_FIRST, WRITE_FIRST;
    }
-   private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
+   public static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
    {
       public ThreadLocal<Boolean> wait = new ThreadLocal<Boolean>();
       private NodeData parentNode;
       private CountDownLatch goSignal;
+      private ItemData itemAdded;
+      private boolean canModify;
+      private boolean itemDeleted;
       
+      public MyWorkspaceStorageConnection()
+      {         
+      }
+      
+      public MyWorkspaceStorageConnection(boolean canModify)
+      {
+         this.canModify = canModify;
+      }
+      
+      /**
+       * @param canModify the canModify to set
+       */
+      public void setCanModify(boolean canModify)
+      {
+         this.canModify = canModify;
+      }
+
       public CountDownLatch initCountDownLatch()
       {
          return this.goSignal = new CountDownLatch(1);
@@ -369,16 +624,20 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
       public void setParentNode(NodeData parentNode)
       {
          this.parentNode = parentNode;
+         this.itemAdded = null;
+         this.itemDeleted = false;
       }
       
       public void add(NodeData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {
+         this.itemAdded = data;
       }
 
       public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {
+         this.itemAdded = data;
       }
 
       public void close() throws IllegalStateException, RepositoryException
@@ -396,18 +655,20 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             catch (InterruptedException e)
             {
                Thread.currentThread().interrupt();
-            }            
+            }
          }
       }
 
       public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {
+         this.itemDeleted = true;
       }
 
       public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {
+         this.itemDeleted = true;
       }
 
       public int getChildNodesCount(NodeData parent) throws RepositoryException
@@ -426,11 +687,18 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             catch (InterruptedException e)
             {
                Thread.currentThread().interrupt();
-            }            
+            }
          }
          List<NodeData> children = new ArrayList<NodeData>();
-         children.add(new PersistedNodeData("id-node2" + parentNode.getIdentifier(), QPath.makeChildPath(parent.getQPath(), new InternalQName(null, "node2")), parent.getIdentifier(), 1, 0,
-                  Constants.NT_UNSTRUCTURED, new InternalQName[0], null));
+         if (!canModify || !itemDeleted)
+         {
+            children.add(new PersistedNodeData("id-node2" + parentNode.getIdentifier(), QPath.makeChildPath(parent.getQPath(), new InternalQName(null, "node2")), parent.getIdentifier(), 1, 0,
+               Constants.NT_UNSTRUCTURED, new InternalQName[0], null));            
+         }
+         if (canModify && itemAdded != null)
+         {
+            children.add((NodeData)itemAdded);
+         }
          return children;
       }
 
@@ -446,14 +714,21 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             catch (InterruptedException e)
             {
                Thread.currentThread().interrupt();
-            }            
+            }
          }
          List<PropertyData> children = new ArrayList<PropertyData>();
          try
          {
-            children.add(new PersistedPropertyData("id-property2" + parentNode.getIdentifier(), QPath.makeChildPath(
-               parentNode.getQPath(), new InternalQName(null, "property2")), parentNode.getIdentifier(), 0,
-               PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8")))));
+            if (!canModify || !itemDeleted)
+            {
+               children.add(new PersistedPropertyData("id-property2" + parentNode.getIdentifier(), QPath.makeChildPath(
+                  parentNode.getQPath(), new InternalQName(null, "property2")), parentNode.getIdentifier(), 0,
+                  PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8")))));               
+            }
+            if (canModify && itemAdded != null)
+            {
+               children.add((PropertyData)itemAdded);
+            }
          }
          catch (UnsupportedEncodingException e)
          {
@@ -465,7 +740,36 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
       public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
          IllegalStateException
       {
-         return getChildPropertiesData(parent);
+         if (wait.get() != null && wait.get())
+         {
+            try
+            {
+               goSignal.await();
+            }
+            catch (InterruptedException e)
+            {
+               Thread.currentThread().interrupt();
+            }
+         }
+         List<PropertyData> children = new ArrayList<PropertyData>();
+         try
+         {
+            if (!canModify || !itemDeleted)
+            {
+               children.add(new PersistedPropertyData("id-property2" + parentNode.getIdentifier(), QPath.makeChildPath(
+                  parentNode.getQPath(), new InternalQName(null, "my-property2")), parentNode.getIdentifier(), 0,
+                  PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8")))));               
+            }
+            if (canModify && itemAdded != null)
+            {
+               children.add((PropertyData)itemAdded);
+            }
+         }
+         catch (UnsupportedEncodingException e)
+         {
+            e.printStackTrace();
+         }
+         return children;
       }
 
       /**
@@ -489,7 +793,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             catch (InterruptedException e)
             {
                Thread.currentThread().interrupt();
-            }            
+            }
          }
          if (itemType == ItemType.NODE)
          {
@@ -521,7 +825,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             catch (InterruptedException e)
             {
                Thread.currentThread().interrupt();
-            }            
+            }
          }
          return parentNode;
       }
@@ -538,14 +842,21 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             catch (InterruptedException e)
             {
                Thread.currentThread().interrupt();
-            }            
+            }
          }
          List<PropertyData> children = new ArrayList<PropertyData>();
          try
          {
-            children.add(new PersistedPropertyData("id-reference2" + parentNode.getIdentifier(), QPath.makeChildPath(
-               parentNode.getQPath(), new InternalQName(null, "reference2")), parentNode.getIdentifier(), 0,
-               PropertyType.REFERENCE, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8")))));
+            if (!canModify || !itemDeleted)
+            {
+               children.add(new PersistedPropertyData("id-reference2" + parentNode.getIdentifier(), QPath.makeChildPath(
+                  parentNode.getQPath(), new InternalQName(null, "reference2")), parentNode.getIdentifier(), 0,
+                  PropertyType.REFERENCE, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8")))));               
+            }
+            if (canModify && itemAdded != null)
+            {
+               children.add((PropertyData)itemAdded);
+            }            
          }
          catch (UnsupportedEncodingException e)
          {
@@ -595,8 +906,32 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
       public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
          IllegalStateException
       {
-         return getChildNodesData(parent);
+         if (wait.get() != null && wait.get())
+         {
+            try
+            {
+               goSignal.await();
+            }
+            catch (InterruptedException e)
+            {
+               Thread.currentThread().interrupt();
+            }
+         }
+         List<NodeData> children = new ArrayList<NodeData>();
+         if (!canModify || !itemDeleted)
+         {
+            children.add(new PersistedNodeData("my-node" + parent.getIdentifier(), QPath.makeChildPath(parent.getQPath(), new QName("","my-node"), 1), parent.getIdentifier(), 1, 1,
+               Constants.NT_UNSTRUCTURED, new InternalQName[0], null));            
+         }
+         if (canModify && itemAdded != null)
+         {
+            children.add((NodeData)itemAdded);
+         }
+         
+         return children;
       }
+      
+      
    };
    
    private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase
@@ -656,5 +991,5 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
       {
          return "MyWorkspaceDataContainer";
       }
-   };   
+   };
 }
