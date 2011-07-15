@@ -198,7 +198,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
    private final RegistryService registryService;
 
-   private FileCleaner fileCleaner;
 
    private BackupScheduler scheduler;
 
@@ -846,20 +845,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public void start()
    {
-      // get FileCleaner from container's component FileCleanerHolder
-      try
-      {
-         ManageableRepository repository = repoService.getCurrentRepository();
-         String workspaceName = repository.getConfiguration().getSystemWorkspaceName();
-
-         this.fileCleaner =
-            ((FileCleanerHolder)repository.getWorkspaceContainer(workspaceName).getComponent(FileCleanerHolder.class))
-               .getFileCleaner();
-      }
-      catch (RepositoryException e)
-      {
-         // do nothing. should not happens
-      }
 
       //remove if exists all old jcrrestorewi*.tmp files.
       File[] files = PrivilegedFileHelper.listFiles(tempDir, new JcrRestoreWiFilter());
@@ -1008,10 +993,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       throws RepositoryException, RepositoryConfigurationException, BackupOperationException, FileNotFoundException,
       IOException, ClassNotFoundException
    {
+      WorkspaceContainerFacade workspaceContainer = repoService.getRepository(repositoryName).getWorkspaceContainer(workspaceName);
       WorkspacePersistentDataManager dataManager =
-         (WorkspacePersistentDataManager)repoService.getRepository(repositoryName).getWorkspaceContainer(workspaceName)
+         (WorkspacePersistentDataManager)workspaceContainer
             .getComponent(WorkspacePersistentDataManager.class);
-
+      FileCleaner fileCleaner = ((FileCleanerHolder)workspaceContainer.getComponent(FileCleanerHolder.class)).getFileCleaner();
       JCRRestore restorer = new JCRRestore(dataManager, fileCleaner);
       restorer.incrementalRestore(new File(pathBackupFile));
    }
