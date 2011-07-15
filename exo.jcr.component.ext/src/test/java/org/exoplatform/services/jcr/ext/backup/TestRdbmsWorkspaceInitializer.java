@@ -24,11 +24,11 @@ import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
 import org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob;
 import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
-import org.exoplatform.services.jcr.impl.core.TesterRdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
+import org.exoplatform.services.jcr.util.TesterRdbmsWorkspaceInitializer;
 
 import java.io.File;
 import java.net.URL;

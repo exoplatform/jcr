@@ -18,28 +18,19 @@
  */
 package org.exoplatform.services.jcr.ext.access;
 
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ObjectParameter;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration;
-import org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin;
-import org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog;
-import org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin.ActionsConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
-import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -53,75 +44,6 @@ public class AccessContextTest extends BaseStandaloneTest
    private final static int MULTI_THIARD_OPERATIONS = 100;
 
    private final static int THREAD_COUNT = 300;
-
-   @Override
-   public void setUp() throws Exception
-   {
-
-      super.setUp();
-      setContextAction();
-   }
-
-   private void setContextAction()
-   {
-      SessionActionCatalog catalog =
-         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
-      ActionConfiguration ac =
-         new ActionConfiguration("org.exoplatform.services.jcr.ext.access.SetAccessControlContextAction",
-            "addProperty,changeProperty,removeProperty,read", null, true, null, null);
-      List actionsList = new ArrayList();
-      ActionsConfig actions = new ActionsConfig();
-      actions.setActions(actionsList);
-      actionsList.add(ac);
-      InitParams params = new InitParams();
-      ObjectParameter op = new ObjectParameter();
-      op.setObject(actions);
-      op.setName("actions");
-      params.addParameter(op);
-
-      AddActionsPlugin aap = new AddActionsPlugin(params);
-      catalog.clear();
-      catalog.addPlugin(aap);
-   };
-
-   public void testSetAccessContext() throws RepositoryException
-   {
-      setContextAction();
-      Node testNode = root.addNode("test");
-      session.save();
-      testNode.setProperty("p1", 9);
-      assertEquals(9, testNode.getProperty("p1").getValue().getLong());
-
-      testNode.setProperty("p1", 10);
-      session.save();
-      testNode.setProperty("p1", (Value)null);
-      session.save();
-   }
-
-   public void testDenyAccessMenager() throws RepositoryException
-   {
-      Node tNode = root.addNode("testNode");
-      tNode.setProperty("deny", "value");
-      session.save();
-      try
-      {
-         tNode.getProperty("deny");
-         fail("AccessDeniedException scheduled to be");
-      }
-      catch (AccessDeniedException e)
-      {
-         // Ok
-      }
-      SessionImpl sysSession = repository.getSystemSession();
-      try
-      {
-         sysSession.getRootNode().getNode("testNode").getProperty("deny");
-      }
-      catch (AccessDeniedException e)
-      {
-         fail("AccessDeniedException ");
-      }
-   }
 
    public void testAccessMenedgerContextMultiThread() throws RepositoryException, InterruptedException
    {

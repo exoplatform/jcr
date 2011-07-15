@@ -141,12 +141,9 @@ public class TestLoadBackup extends BaseStandaloneTest
 
       Thread.sleep(10 * 1000);
 
-      System.out.println(" ============ BACKUP START ============");
-
       // backup
       File backDir = new File("target/backup/ws1");
       backDir.mkdirs();
-      BackupChain bch = null;
 
       backupManagerImpl.start();
 
@@ -156,9 +153,7 @@ public class TestLoadBackup extends BaseStandaloneTest
       config.setBackupType(BACKUP_TYPE);
       config.setBackupDir(backDir);
 
-      backupManagerImpl.startBackup(config);
-
-      bch = backupManagerImpl.findBackup(REPOSITORY_NAME_SINGLE_DB, WORKSPACE_NAME);
+      BackupChain bch = backupManagerImpl.startBackup(config);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -167,17 +162,10 @@ public class TestLoadBackup extends BaseStandaloneTest
          Thread.sleep(30);
       }
 
-      System.out.println(" ============ FULL BACKUP FINISHED ============");
-
       if (BACKUP_TYPE == BackupManager.FULL_AND_INCREMENTAL)
       {
          Thread.sleep(5 * 1000);
       }
-
-      //      for (Thread thread : threads)
-      //      {
-      //         thread.interrupt();
-      //      }
 
       if (BACKUP_TYPE == BackupManager.FULL_AND_INCREMENTAL)
       {
@@ -195,8 +183,6 @@ public class TestLoadBackup extends BaseStandaloneTest
       }
       Thread.sleep(10 * 1000);
 
-      System.out.println(" ============ BACKUP FINISHED ============");
-
       // restore
       WorkspaceEntry ws1back = makeWorkspaceEntry("ws1back", "jdbcjcr_to_repository_restore_singel_db");
 
@@ -204,8 +190,6 @@ public class TestLoadBackup extends BaseStandaloneTest
       if (backLog.exists())
       {
          BackupChainLog bchLog = new BackupChainLog(backLog);
-
-         System.out.println(" ============ RESTORE START ============");
 
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
@@ -232,8 +216,6 @@ public class TestLoadBackup extends BaseStandaloneTest
       {
          fail("There are no backup files in " + backDir.getAbsolutePath());
       }
-
-      System.out.println(" ============ CHECKING INTEGRITY ============");
 
       checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).login(credentials, "ws1back")
          .getRootNode());
@@ -276,7 +258,6 @@ public class TestLoadBackup extends BaseStandaloneTest
       // backup
       File backDir = new File("target/backup/ws1");
       backDir.mkdirs();
-      BackupChain bch = null;
 
       backupManagerImpl.start();
 
@@ -288,11 +269,8 @@ public class TestLoadBackup extends BaseStandaloneTest
 
       Thread.sleep(5 * 1000);
 
-      System.out.println(" ============ BACKUP START ============");
 
-      backupManagerImpl.startBackup(config);
-
-      bch = backupManagerImpl.findBackup(REPOSITORY_NAME_SINGLE_DB, WORKSPACE_NAME);
+      BackupChain bch = backupManagerImpl.startBackup(config);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -310,15 +288,11 @@ public class TestLoadBackup extends BaseStandaloneTest
          fail("Can't get fullBackup chain");
       }
 
-      System.out.println(" ============ BACKUP FINISHED ============");
-
       // restore
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
       {
          BackupChainLog bchLog = new BackupChainLog(backLog);
-
-         System.out.println(" ============ RESTORE START ============");
 
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
@@ -345,8 +319,6 @@ public class TestLoadBackup extends BaseStandaloneTest
       {
          fail("There are no backup files in " + backDir.getAbsolutePath());
       }
-
-      System.out.println(" ============ CHECKING INTEGRITY ============");
 
       checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB)
          .login(credentials, WORKSPACE_NAME)
@@ -380,7 +352,6 @@ public class TestLoadBackup extends BaseStandaloneTest
       // backup
       File backDir = new File("target/backup/db7");
       backDir.mkdirs();
-      RepositoryBackupChain bch = null;
 
       backupManagerImpl.start();
 
@@ -391,11 +362,7 @@ public class TestLoadBackup extends BaseStandaloneTest
 
       Thread.sleep(5 * 1000);
 
-      System.out.println(" ============ BACKUP START ============");
-
-      backupManagerImpl.startBackup(config);
-
-      bch = backupManagerImpl.findRepositoryBackup(REPOSITORY_NAME_SINGLE_DB);
+      RepositoryBackupChain bch = backupManagerImpl.startBackup(config);
 
       // wait till full backup will be stopped
       while (bch.getState() != BackupJob.FINISHED)
@@ -409,15 +376,11 @@ public class TestLoadBackup extends BaseStandaloneTest
          backupManagerImpl.stopBackup(bch);
       }
 
-      System.out.println(" ============ BACKUP FINISHED ============");
-
       // restore
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
       {
          RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
-
-         System.out.println(" ============ RESTORE START ============");
 
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
@@ -445,8 +408,6 @@ public class TestLoadBackup extends BaseStandaloneTest
       {
          fail("There are no backup files in " + backDir.getAbsolutePath());
       }
-
-      System.out.println(" ============ CHECKING INTEGRITY ============");
 
       for (String wsName : repositoryService.getRepository(REPOSITORY_NAME_SINGLE_DB).getWorkspaceNames())
       {
@@ -492,7 +453,6 @@ public class TestLoadBackup extends BaseStandaloneTest
       // backup
       File backDir = new File("target/backup/ws1");
       backDir.mkdirs();
-      BackupChain bch = null;
 
       backupManagerImpl.start();
 
@@ -504,11 +464,7 @@ public class TestLoadBackup extends BaseStandaloneTest
 
       Thread.sleep(5 * 1000);
 
-      System.out.println(" ============ BACKUP START ============");
-
-      backupManagerImpl.startBackup(config);
-
-      bch = backupManagerImpl.findBackup(REPOSITORY_NAME_MULTI_DB, WORKSPACE_NAME);
+      BackupChain bch = backupManagerImpl.startBackup(config);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -526,15 +482,11 @@ public class TestLoadBackup extends BaseStandaloneTest
          fail("Can't get fullBackup chain");
       }
 
-      System.out.println(" ============ BACKUP FINISHED ============");
-
       // restore
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
       {
          BackupChainLog bchLog = new BackupChainLog(backLog);
-
-         System.out.println(" ============ RESTORE START ============");
 
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
@@ -561,8 +513,6 @@ public class TestLoadBackup extends BaseStandaloneTest
       {
          fail("There are no backup files in " + backDir.getAbsolutePath());
       }
-
-      System.out.println(" ============ CHECKING INTEGRITY ============");
 
       checkIntegrity((NodeImpl)repositoryService.getRepository(REPOSITORY_NAME_MULTI_DB)
          .login(credentials, WORKSPACE_NAME)

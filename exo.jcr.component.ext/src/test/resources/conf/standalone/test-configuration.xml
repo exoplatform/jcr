@@ -409,30 +409,6 @@
                   <object type="org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin$ActionsConfig">
                      <field name="actions">
                         <collection type="java.util.ArrayList">
-                           <!-- an example
-                           <value>
-                              <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
-                                 <field name="eventTypes">
-                                    <string>addNode</string>
-                                 </field>
-                                 <field name="path">
-                                    <string>/test</string>
-                                 </field>
-                                 <field name="isDeep">
-                                    <boolean>true</boolean>
-                                 </field>
-                                 <field name="nodeTypes">
-                                    <string>nt:unstructured</string>
-                                 </field>
-                                 <field name="workspace">
-                                    <string>production</string>
-                                 </field>
-                                 <field name="actionClassName">
-                                    <string>org.exoplatform.services.jcr.ext.DummyAction</string>
-                                 </field>
-                              </object>
-                           </value>
-                           -->
                            <value>
                               <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
                                  <field name="eventTypes">

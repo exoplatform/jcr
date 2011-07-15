@@ -178,20 +178,8 @@
           <configuration>
             <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
             <includes>
-              <include>**/actions/*Test.java</include>
-              <include>**/metadata/*Test.java</include>
-              <include>**/owner/*Test.java</include>
-              <include>**/registry/*Test.java</include>
-              <include>**/app/*Test.java</include>
-              <include>**/resource/*Test.java</include>
-              <include>**/groovy/*Test.java</include>
-              <include>**/replication/*.java</include>
-              <include>**/replication/external/*.java</include>
-              <include>**/replication/async/**/*.java</include>
-              <include>**/backup/load/TestLoadBackup.java</include>
-              <include>**/backup/*.java</include>
-              <include>**/backup/server/*.java</include>
-              <include>**/repository/creation/*.java</include>
+              <include>org/exoplatform/services/jcr/ext/**/Test*.java</include>
+              <include>org/exoplatform/services/jcr/ext/**/*Test.java</include>
             </includes>
             <excludes>
               <exclude>**/BaseStandaloneTest.java</exclude>
@@ -199,12 +187,10 @@
               <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>
               <exclude>**/backup/TestBackupScheduler.java</exclude>
               <exclude>**/backup/TestBackupRestart.java</exclude>
-              <exclude>**/replication/*.java</exclude>
-              <exclude>**/replication/external/*.java</exclude>
-              <exclude>**/replication/external/BaseTestCaseChecker.java</exclude>
-              <exclude>**/access/*.java</exclude>
+              <exclude>**/backup/load/TestLoadBackup.java*</exclude>
+              <exclude>**/replication/**</exclude>
               <exclude>**/LocalStorageMultithreadTest.java</exclude>
-              <include>**/repository/creation/cluster.java</include>
+              <include>**/repository/creation/cluster/**</include>
             </excludes>
           </configuration>
         </plugin>
