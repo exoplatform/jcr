@@ -189,7 +189,6 @@
               <exclude>**/backup/TestBackupRestart.java</exclude>
               <exclude>**/backup/load/TestLoadBackup.java*</exclude>
               <exclude>**/replication/**</exclude>
-              <exclude>**/LocalStorageMultithreadTest.java</exclude>
               <include>**/repository/creation/cluster/**</include>
             </excludes>
           </configuration>
