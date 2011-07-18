@@ -1,6 +1,6 @@
 Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestMove.java
 ===================================================================
---- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestMove.java	(revision 4383)
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestMove.java	(revision 4614)
 +++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestMove.java	(working copy)
 @@ -182,6 +182,98 @@
  
@@ -103,7 +103,7 @@ Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webda
     {
 Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestCopy.java
 ===================================================================
---- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestCopy.java	(revision 4383)
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestCopy.java	(revision 4614)
 +++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestCopy.java	(working copy)
 @@ -194,9 +194,130 @@
        ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
@@ -238,7 +238,7 @@ Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webda
     {
 Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java
 ===================================================================
---- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 4383)
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 4614)
 +++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(working copy)
 @@ -72,6 +72,7 @@
  import java.lang.annotation.Annotation;
@@ -308,7 +308,7 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
  
           String destWorkspace = workspaceName(destPath);
           String destNodePath = path(destPath);
-@@ -1335,4 +1339,18 @@
+@@ -1338,4 +1342,18 @@
        return lockTokens;
     }
  

@@ -182,6 +182,98 @@ public class TestMove extends BaseStandaloneTest
 
    }
 
+   public void testMoveHeaderBeginsFromWorkspaceName() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      String destFilename = TestUtils.getFileName();
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+
+      headers.add(ExtHttpHeaders.DESTINATION, WORKSPACE + destFilename);
+      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+      assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
+
+      Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));
+      assertTrue(nodeDest.hasNode("jcr:content"));
+
+      Node nodeDestContent = nodeDest.getNode("jcr:content");
+      assertTrue(nodeDestContent.hasProperty("jcr:data"));
+
+      ByteArrayInputStream streamDest = (ByteArrayInputStream)nodeDestContent.getProperty("jcr:data").getStream();
+      String getContentDest = TestUtils.stream2string(streamDest, null);
+      assertEquals(content, getContentDest);
+      assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(filename)));
+   }
+
+   public void testMoveToFolderWithSpace() throws Exception
+   {
+      String folderNameWithSpace = "new folder - testMoveToFolderWithSpace";
+      session.getRootNode().addNode(folderNameWithSpace, "nt:folder");
+      session.save();
+
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      String destFilename = "/" + folderNameWithSpace + TestUtils.getFileName();
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+
+      headers.add(ExtHttpHeaders.DESTINATION, WORKSPACE + destFilename);
+      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+      assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
+
+      Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));
+      assertTrue(nodeDest.hasNode("jcr:content"));
+
+      Node nodeDestContent = nodeDest.getNode("jcr:content");
+      assertTrue(nodeDestContent.hasProperty("jcr:data"));
+
+      ByteArrayInputStream streamDest = (ByteArrayInputStream)nodeDestContent.getProperty("jcr:data").getStream();
+      String getContentDest = TestUtils.stream2string(streamDest, null);
+      assertEquals(content, getContentDest);
+      assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(filename)));
+   }
+
+   public void testMoveToFolderWithSpaceUnescapedChars() throws Exception
+   {
+      String folderNameWithSpace = "new folder - testMoveToFolderWithSpaceUnescapedChars";
+      session.getRootNode().addNode(folderNameWithSpace, "nt:folder");
+      session.save();
+
+      String content = TestUtils.getFileContent();
+      String filename = TestUtils.getFileName();
+      InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+      TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      String destFilename = TextUtil.unescape("/" + folderNameWithSpace + TestUtils.getFileName(), '%');
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+
+      headers.add(ExtHttpHeaders.DESTINATION, WORKSPACE + destFilename);
+      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+      assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
+
+      Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));
+      assertTrue(nodeDest.hasNode("jcr:content"));
+
+      Node nodeDestContent = nodeDest.getNode("jcr:content");
+      assertTrue(nodeDestContent.hasProperty("jcr:data"));
+
+      ByteArrayInputStream streamDest = (ByteArrayInputStream)nodeDestContent.getProperty("jcr:data").getStream();
+      String getContentDest = TestUtils.stream2string(streamDest, null);
+      assertEquals(content, getContentDest);
+      assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(filename)));
+   }
+
    @Override
    protected String getRepositoryName()
    {
