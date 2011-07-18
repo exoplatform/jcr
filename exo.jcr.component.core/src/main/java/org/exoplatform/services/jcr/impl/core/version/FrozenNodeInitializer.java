@@ -88,6 +88,20 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
       this.contextNodes.push(frozen);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   protected void visitChildNodes(NodeData node) throws RepositoryException
+   {
+      // It is not necessary to traverse child nodes since parent is null (OnParentVersion=IGNORE case)
+      if (currentNode() == null)
+      {
+         return;
+      }
+
+      super.visitChildNodes(node);
+   }
+
    @Override
    protected void entering(PropertyData property, int level) throws RepositoryException
    {

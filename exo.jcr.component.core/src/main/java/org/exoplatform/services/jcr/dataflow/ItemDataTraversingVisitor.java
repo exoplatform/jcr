@@ -88,10 +88,10 @@ public abstract class ItemDataTraversingVisitor implements ItemDataVisitor
          if (maxLevel == INFINITE_DEPTH || currentLevel < maxLevel)
          {
             currentLevel++;
-            for (PropertyData data : dataManager.getChildPropertiesData(node))
-               data.accept(this);
-            for (NodeData data : dataManager.getChildNodesData(node))
-               data.accept(this);
+
+            visitChildProperties(node);
+            visitChildNodes(node);
+
             currentLevel--;
          }
          leaving(node, currentLevel);
@@ -101,7 +101,24 @@ public abstract class ItemDataTraversingVisitor implements ItemDataVisitor
          currentLevel = 0;
          throw re;
       }
+   }
 
+   /**
+    * Visit all child properties.
+    */
+   protected void visitChildProperties(NodeData node) throws RepositoryException
+   {
+      for (PropertyData data : dataManager.getChildPropertiesData(node))
+         data.accept(this);
+   }
+
+   /**
+    * Visit all child nodes.
+    */
+   protected void visitChildNodes(NodeData node) throws RepositoryException
+   {
+      for (NodeData data : dataManager.getChildNodesData(node))
+         data.accept(this);
    }
 
    /**
