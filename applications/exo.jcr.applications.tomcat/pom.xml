@@ -113,7 +113,7 @@
                     </mapper>
                   </move>
                   <copy todir="${exo.projects.directory.working}/exo-tomcat/lib/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/target/lib-binary.dir/" excludes="**/*.war" />
+                     <fileset dir="${basedir}/target/lib-binary.dir/" includes="**/*.jar" />
                   </copy>
                   <copy todir="${exo.projects.directory.working}/exo-tomcat/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/tomcat/" />
