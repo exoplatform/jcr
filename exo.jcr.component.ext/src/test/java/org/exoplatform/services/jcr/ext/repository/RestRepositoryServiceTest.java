@@ -357,7 +357,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
    public void testRemoveRepository() throws Exception
    {
       ManageableRepository repository = helper.createRepository(container, true, null);
-      
+
       String wsName = repository.getConfiguration().getSystemWorkspaceName();
       String repoName = repository.getConfiguration().getName();
 
@@ -439,7 +439,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
       // Indexer
       ArrayList qParams = new ArrayList();
-      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + wsName));
+      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + skipInvalidCharacters(wsName)));
       QueryHandlerEntry qEntry = new QueryHandlerEntry(defWEntry.getQueryHandler().getType(), qParams);
 
       ws1back.setQueryHandler(qEntry);
@@ -453,7 +453,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
          if (newp.getName().equals("source-name"))
             newp.setValue(sourceName);
          else if (newp.getName().equals("swap-directory"))
-            newp.setValue("target/temp/swap/" + wsName);
+            newp.setValue("target/temp/swap/" + skipInvalidCharacters(wsName));
          else if (newp.getName().equals("multi-db"))
             newp.setValue(Boolean.toString(multiDb));
 
@@ -464,5 +464,18 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       ws1back.setContainer(ce);
 
       return ws1back;
+   }
+
+   private String skipInvalidCharacters(String s)
+   {
+      if (File.separator.equals("\\"))
+      {
+         return s.replaceAll("[:,?]", "_");
+      }
+      else
+      {
+         return s;
+      }
+
    }
 }
