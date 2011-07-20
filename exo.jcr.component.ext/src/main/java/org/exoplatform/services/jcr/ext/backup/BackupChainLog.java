@@ -578,7 +578,34 @@ public class BackupChainLog
                      + PrivilegedFileHelper.getCanonicalPath(getBackupConfig().getBackupDir()));
          }
 
-         IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IBindingFactory factory;
+         try
+         {
+            factory = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
+            {
+               public IBindingFactory run() throws Exception
+               {
+                  return BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof JiBXException)
+            {
+               throw (JiBXException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
          RepositoryServiceConfiguration conf =
                   (RepositoryServiceConfiguration) uctx.unmarshalDocument(PrivilegedFileHelper
