@@ -1006,7 +1006,8 @@ public class SessionDataManager implements ItemDataConsumer
    public int getLastOrderNumber(NodeData parent) throws RepositoryException
    {
       int lastOrderNumber = changesLog.getLastChildOrderNumber(parent.getIdentifier());
-      int lastPersistedNodeOrderNumber = isNew(parent.getIdentifier()) ? -1 : transactionableManager.getLastOrderNumber(parent);
+      int lastPersistedNodeOrderNumber =
+         isNew(parent.getIdentifier()) ? -1 : transactionableManager.getLastOrderNumber(parent);
 
       return Math.max(lastPersistedNodeOrderNumber, lastOrderNumber);
    }
@@ -1017,7 +1018,8 @@ public class SessionDataManager implements ItemDataConsumer
    public int getChildNodesCount(NodeData parent) throws RepositoryException
    {
       int childsCount =
-         changesLog.getChildNodesCount(parent.getIdentifier()) + (isNew(parent.getIdentifier()) ? 0 : transactionableManager.getChildNodesCount(parent));
+         changesLog.getChildNodesCount(parent.getIdentifier())
+            + (isNew(parent.getIdentifier()) ? 0 : transactionableManager.getChildNodesCount(parent));
       if (childsCount < 0)
       {
          throw new InvalidItemStateException("Node's child nodes were changed in another Session "
@@ -1219,6 +1221,8 @@ public class SessionDataManager implements ItemDataConsumer
       }
    }
 
+   // TODO: review. Won't work if renamed states for descendants are not fired
+   // Node will be only updated with the same NodeData with same outdated path
    void reloadPool(ItemData fromItem) throws RepositoryException
    {
       Collection<ItemImpl> pooledItems = itemsPool.getAll();
@@ -1267,7 +1271,18 @@ public class SessionDataManager implements ItemDataConsumer
 
       changesLog.addAll(initializer.getAllStates());
 
-      reloadPool(srcData);
+      // reload items pool
+      for (ItemState state : initializer.getItemAddStates())
+      {
+         if (state.isUpdated() || state.isRenamed())
+         {
+            ItemImpl item = reloadItem(state.getData());
+            if (item != null)
+            {
+               invalidated.add(item);
+            }
+         }
+      }
    }
 
    /**
@@ -1305,8 +1320,8 @@ public class SessionDataManager implements ItemDataConsumer
       if (itemData.isNode())
       {
          checkRemoveChildVersionStorages =
-            !session.getWorkspace().getNodeTypesHolder()
-               .isNodeType(Constants.NT_VERSIONHISTORY, ((NodeData)itemData).getPrimaryTypeName());
+            !session.getWorkspace().getNodeTypesHolder().isNodeType(Constants.NT_VERSIONHISTORY,
+               ((NodeData)itemData).getPrimaryTypeName());
       }
 
       boolean rootAdded = false;
@@ -1450,7 +1465,7 @@ public class SessionDataManager implements ItemDataConsumer
                   // We can't remove this VH now.
                   return;
                } // else -- if we has a references in workspace where the VH is being
-                 // deleted we can remove VH now.
+               // deleted we can remove VH now.
             }
          }
          finally
@@ -1875,8 +1890,8 @@ public class SessionDataManager implements ItemDataConsumer
    {
 
       Collection<ItemDefinitionData> mandatoryItemDefs =
-         session.getWorkspace().getNodeTypesHolder()
-            .getManadatoryItemDefs(nData.getPrimaryTypeName(), nData.getMixinTypeNames());
+         session.getWorkspace().getNodeTypesHolder().getManadatoryItemDefs(nData.getPrimaryTypeName(),
+            nData.getMixinTypeNames());
       for (ItemDefinitionData itemDefinitionData : mandatoryItemDefs)
       {
          if (getItemData(nData, new QPathEntry(itemDefinitionData.getName(), 0), ItemType.UNKNOWN) == null)
@@ -1995,8 +2010,8 @@ public class SessionDataManager implements ItemDataConsumer
                   {
                      QPathEntry[] path = pooled.getData().getQPath().getEntries();
                      persisted =
-                        transactionableManager.getItemData(parent, path[path.length - 1],
-                           ItemType.getItemType(pooled.getData()));
+                        transactionableManager.getItemData(parent, path[path.length - 1], ItemType.getItemType(pooled
+                           .getData()));
                   } // else, the item has an invalid state, will be throwed on save
                }
                if (persisted != null)
@@ -2320,7 +2335,7 @@ public class SessionDataManager implements ItemDataConsumer
             List<PropertyData> childProps =
                listOnly ? dataManager.listChildPropertiesData((NodeData)parent) : dataManager
                   .getChildPropertiesData((NodeData)parent);
-            outer : for (int i = 0, length = childProps.size(); i < length; i++) 
+            outer : for (int i = 0, length = childProps.size(); i < length; i++)
             {
                PropertyData childProp = childProps.get(i);
                for (ItemState transientState : transientDescendants)

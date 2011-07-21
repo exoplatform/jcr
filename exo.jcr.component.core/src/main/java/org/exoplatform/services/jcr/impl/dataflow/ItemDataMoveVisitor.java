@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
@@ -63,6 +64,11 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
     * The stack. In the top it contains a parent node.
     */
    protected Stack<NodeData> parents;
+
+   /**
+    * Contains instance of source parent
+    */
+   protected NodeData srcParent;
 
    /**
     * The list of added item states
@@ -103,8 +109,9 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
     * @param triggerEventsForDescendents 
     *          - Trigger events for descendents.          
     */
-   public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeTypeDataManager nodeTypeManager,
-      SessionDataManager srcDataManager, boolean keepIdentifiers, boolean triggerEventsForDescendents)
+   public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeData srcParent,
+      NodeTypeDataManager nodeTypeManager, SessionDataManager srcDataManager, boolean keepIdentifiers,
+      boolean triggerEventsForDescendents)
    {
       super(srcDataManager, triggerEventsForDescendents ? INFINITE_DEPTH : 0);
       this.keepIdentifiers = keepIdentifiers;
@@ -113,6 +120,7 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
 
       this.parents = new Stack<NodeData>();
       this.parents.add(parent);
+      this.srcParent = srcParent;
       this.triggerEventsForDescendents = triggerEventsForDescendents;
    }
 
@@ -127,10 +135,10 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
     * @param skipEventsForDescendents - Don't generate events for the 
     *          descendants. 
     */
-   public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeTypeDataManager nodeTypeManager,
-      SessionDataManager srcDataManager, boolean keepIdentifiers)
+   public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeData srcParent,
+      NodeTypeDataManager nodeTypeManager, SessionDataManager srcDataManager, boolean keepIdentifiers)
    {
-      this(parent, dstNodeName, nodeTypeManager, srcDataManager, keepIdentifiers, true);
+      this(parent, dstNodeName, srcParent, nodeTypeManager, srcDataManager, keepIdentifiers, true);
    }
 
    @Override
@@ -142,7 +150,7 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
          ancestorToSave = QPath.getCommonAncestorPath(curParent().getQPath(), node.getQPath());
       }
 
-      NodeData parent = curParent();
+      NodeData destParent = curParent();
 
       int destIndex; // index for path
       int destOrderNum; // order number
@@ -152,9 +160,8 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
       {
          qname = destNodeName;
 
-         List<NodeData> destChilds = dataManager.getChildNodesData(parent);
+         List<NodeData> destChilds = dataManager.getChildNodesData(destParent);
          List<NodeData> srcChilds;
-         NodeData srcParent;
 
          destIndex = 1;
 
@@ -164,31 +171,23 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
          // node list.
          destOrderNum = destChilds.size() > 0 ? destChilds.get(destChilds.size() - 1).getOrderNumber() + 1 : 0;
 
-         if (parent.getIdentifier().equals(node.getParentIdentifier()))
+         if (destParent == srcParent)// (destParent.getIdentifier().equals(node.getParentIdentifier()))
          {
             // move to same parent
             srcChilds = destChilds;
-            srcParent = parent;
          }
          else
          {
             // move to another parent
+            srcChilds = dataManager.getChildNodesData(srcParent);
             // find index on destination
             for (NodeData dchild : destChilds)
             {
-               if (dchild.getQPath().getName().equals(qname))
+               if (dchild.getQPath().getName().equals(destNodeName))
+               {
                   destIndex++;
+               }
             }
-
-            // for fix SNSes on source
-            srcParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
-            if (srcParent == null)
-            {
-               throw new RepositoryException("FATAL: parent Node not for " + node.getQPath().getAsString()
-                  + ", parent id: " + node.getParentIdentifier());
-            }
-
-            srcChilds = dataManager.getChildNodesData(srcParent);
          }
 
          int srcIndex = 1;
@@ -199,25 +198,22 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
             NodeData child = srcChilds.get(i);
             if (!child.getIdentifier().equals(node.getIdentifier()))
             {
-               if (child.getQPath().getName().equals(qname))
+               if ((child.getQPath().getName()).getAsString().equals((node.getQPath().getName()).getAsString()))
                {
                   QPath siblingPath = QPath.makeChildPath(srcParent.getQPath(), child.getQPath().getName(), srcIndex);
                   TransientNodeData sibling =
-                     new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1,
-                        child.getPrimaryTypeName(), child.getMixinTypeNames(), child.getOrderNumber(),
-                        child.getParentIdentifier(), child.getACL());
-
+                     new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1, child
+                        .getPrimaryTypeName(), child.getMixinTypeNames(), child.getOrderNumber(), child
+                        .getParentIdentifier(), child.getACL());
                   addStates.add(new ItemState(sibling, ItemState.UPDATED, true, ancestorToSave, false, true));
-
                   srcIndex++;
                }
+               // find index on destination in case when destination the same as source
+               if (srcChilds == destChilds && (child.getQPath().getName().equals(destNodeName)))
+               {
+                  destIndex++;
+               }
             }
-         }
-
-         // in case of moving to the same parent destination index is calculated above
-         if (srcChilds == destChilds)
-         {
-            destIndex = srcIndex;
          }
       }
       else
@@ -229,9 +225,9 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
 
       String id = keepIdentifiers ? node.getIdentifier() : IdGenerator.generate();
 
-      QPath qpath = QPath.makeChildPath(parent.getQPath(), qname, destIndex);
+      QPath qpath = QPath.makeChildPath(destParent.getQPath(), qname, destIndex);
 
-      AccessControlList acl = parent.getACL();
+      AccessControlList acl = destParent.getACL();
 
       boolean isPrivilegeable =
          ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
@@ -242,16 +238,16 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
       if (isPrivilegeable || isOwneable)
       {
          List<AccessControlEntry> permissionEntries = new ArrayList<AccessControlEntry>();
-         permissionEntries.addAll((isPrivilegeable ? node.getACL() : parent.getACL()).getPermissionEntries());
+         permissionEntries.addAll((isPrivilegeable ? node.getACL() : destParent.getACL()).getPermissionEntries());
 
-         String owner = isOwneable ? node.getACL().getOwner() : parent.getACL().getOwner();
+         String owner = isOwneable ? node.getACL().getOwner() : destParent.getACL().getOwner();
 
          acl = new AccessControlList(owner, permissionEntries);
       }
 
       TransientNodeData newNode =
          new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), destOrderNum,
-            parent.getIdentifier(), acl);
+            destParent.getIdentifier(), acl);
 
       parents.push(newNode);
 

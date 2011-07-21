@@ -123,7 +123,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       {
          log.info("The JCR will throw an exception anytime we will try to use a dead session.");
       }
-   }   
+   }
 
    public static final int DEFAULT_LAZY_READ_THRESHOLD = 100;
 
@@ -152,9 +152,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    protected final String workspaceName;
 
    private boolean live;
-   
+
    private boolean expired;
-   
+
    private Exception closedByCallStack;
 
    private final List<SessionLifecycleListener> lifecycleListeners;
@@ -179,7 +179,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     * Transaction resources manager.
     */
    private final TransactionableResourceManager txResourceManager;
-   
+
    /**
     * The local timeout of the session, by default it will use the global timeout defined at repository configuration level
     */
@@ -193,7 +193,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.live = true;
       this.id = IdGenerator.generate();
       this.userState = userState;
-      this.txResourceManager = (TransactionableResourceManager)container.getComponentInstanceOfType(TransactionableResourceManager.class);
+      this.txResourceManager =
+         (TransactionableResourceManager)container.getComponentInstanceOfType(TransactionableResourceManager.class);
 
       this.repository = (RepositoryImpl)container.getComponentInstanceOfType(RepositoryImpl.class);
       this.systemLocationFactory = (LocationFactory)container.getComponentInstanceOfType(LocationFactory.class);
@@ -915,14 +916,15 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       {
          if (PROHIBIT_CLOSED_SESSION_USAGE)
          {
-            throw new RepositoryException("This kind of operation is forbidden after a session.logout().", closedByCallStack);
+            throw new RepositoryException("This kind of operation is forbidden after a session.logout().",
+               closedByCallStack);
          }
          // warn in debug mode only
          else if (PropertyManager.isDevelopping())
          {
             log.warn("This kind of operation is forbidden after a session.logout(), "
-                     + "please note that an exception will be raised in the next jcr version.", new Exception(
-                     closedByCallStack));
+               + "please note that an exception will be raised in the next jcr version.", new Exception(
+               closedByCallStack));
          }
       }
    }
@@ -971,7 +973,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.expired = true;
       logout();
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -1012,9 +1014,18 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
             throw new ItemExistsException("A node with this name (" + destAbsPath + ") is already exists. ");
          }
       }
-
+      NodeImpl srcParentNode = null;
+      if (destParentNode.getIdentifier().equals(srcNode.getParentIdentifier()))
+      {
+         // move to same parent
+         srcParentNode = destParentNode;
+      }
+      else
+      {
+         srcParentNode = srcNode.parent();
+      }
       // Check if versionable ancestor is not checked-in
-      if (!srcNode.parent().checkedOut())
+      if (!srcParentNode.checkedOut())
       {
          throw new VersionException("Parent or source Node or its nearest ancestor is checked-in");
       }
@@ -1026,8 +1037,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
-            nodeTypeManager, getTransientNodesManager(), true, triggerEventsForDescendentsOnRename
-               || !srcNodePath.makeParentPath().equals(destNodePath.makeParentPath()));
+            (NodeData)srcParentNode.getData(), nodeTypeManager, getTransientNodesManager(), true,
+            triggerEventsForDescendentsOnRename || srcParentNode != destParentNode);
 
       getTransientNodesManager().rename((NodeData)srcNode.getData(), initializer);
    }
@@ -1154,7 +1165,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    {
       this.timeout = (timeout <= 0 ? 0 : timeout);
    }
-   
+
    /**
     * {@inheritDoc}
     */

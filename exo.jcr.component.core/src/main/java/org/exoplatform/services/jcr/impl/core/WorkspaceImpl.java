@@ -439,9 +439,18 @@ public class WorkspaceImpl implements ExtendedWorkspace
             throw new ItemExistsException(msg);
          }
       }
-
+      NodeImpl srcParentNode = null;
+      if (destParentNode.getIdentifier().equals(srcNode.getParentIdentifier()))
+      {
+         // move to same parent
+         srcParentNode = destParentNode;
+      }
+      else
+      {
+         srcParentNode = srcNode.parent();
+      }
       // Check if versionable ancestor is not checked-in
-      if (!srcNode.checkedOut())
+      if (!srcParentNode.checkedOut())
       {
          throw new VersionException("Source parent node " + srcNode.getPath()
             + " or its nearest ancestor is checked-in");
@@ -454,11 +463,20 @@ public class WorkspaceImpl implements ExtendedWorkspace
 
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
-            nodeTypeManager, session.getTransientNodesManager(), true);
+            (NodeData)srcParentNode.getData(), nodeTypeManager, session.getTransientNodesManager(), true);
       srcNode.getData().accept(initializer);
 
       PlainChangesLog changes = new PlainChangesLogImpl(session.getId());
       changes.addAll(initializer.getAllStates());
+
+      // reload items pool
+      for (ItemState state : initializer.getItemAddStates())
+      {
+         if (state.isUpdated() || state.isRenamed())
+         {
+            (session.getTransientNodesManager()).reloadItem(state.getData());
+         }
+      }
 
       session.getTransientNodesManager().getTransactManager().save(changes);
    }
