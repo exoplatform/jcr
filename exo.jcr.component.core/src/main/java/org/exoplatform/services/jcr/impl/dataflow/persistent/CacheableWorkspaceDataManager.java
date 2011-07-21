@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.MandatoryItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
@@ -36,6 +37,7 @@ import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
@@ -1551,6 +1553,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected ItemData getPersistedItemData(String identifier) throws RepositoryException
    {
       ItemData data = super.getItemData(identifier);
+
+      // set ACL
+
+      if (data != null && data.isNode())
+      {
+         data = initACL(null, (NodeData)data);
+      }
+
       if (cache.isEnabled())
       {
          if (data != null)
@@ -1920,6 +1930,96 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             throw new RuntimeException(cause);
          }
-      }      
+      }
    }
+
+   /**
+    * Init ACL of the node.
+    * 
+    * @param parent
+    *          - a parent, can be null (get item by id)
+    * @param data
+    *          - an item data
+    * @return - an item data with ACL was initialized
+    * @throws RepositoryException
+    */
+   private ItemData initACL(NodeData parent, NodeData node) throws RepositoryException
+   {
+      if (node != null)
+      {
+         AccessControlList acl = node.getACL();
+         if (acl == null)
+         {
+            if (parent != null)
+            {
+               // use parent ACL
+               node =
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                     node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                     node.getParentIdentifier(), parent.getACL());
+            }
+            else
+            {
+               // use nearest ancestor ACL... case of get by id
+               node =
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                     node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                     node.getParentIdentifier(), getNearestACAncestorAcl(node));
+            }
+         }
+         else if (!acl.hasPermissions())
+         {
+            // use nearest ancestor permissions
+            AccessControlList ancestorAcl = getNearestACAncestorAcl(node);
+
+            node =
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                  node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  node.getParentIdentifier(), new AccessControlList(acl.getOwner(), ancestorAcl.getPermissionEntries()));
+         }
+         else if (!acl.hasOwner())
+         {
+            // use nearest ancestor owner
+            AccessControlList ancestorAcl = getNearestACAncestorAcl(node);
+
+            node =
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                  node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  node.getParentIdentifier(), new AccessControlList(ancestorAcl.getOwner(), acl.getPermissionEntries()));
+
+         }
+      }
+
+      return node;
+   }
+
+   /**
+    * Traverse items parents in persistent storage for ACL containing parent. Same work is made in
+    * SessionDataManager.getItemData(NodeData, QPathEntry[]) but for session scooped items.
+    * 
+    * @param node
+    *          - item
+    * @return - parent or null
+    * @throws RepositoryException
+    */
+   private AccessControlList getNearestACAncestorAcl(NodeData node) throws RepositoryException
+   {
+
+      if (node.getParentIdentifier() != null)
+      {
+         NodeData parent = (NodeData)getItemData(node.getParentIdentifier());
+         while (parent != null)
+         {
+            if (parent.getACL() != null)
+            {
+               // has an AC parent
+               return parent.getACL();
+            }
+            // going up to the root
+            parent = (NodeData)getItemData(parent.getParentIdentifier());
+         }
+      }
+      return new AccessControlList();
+   }
+
 }

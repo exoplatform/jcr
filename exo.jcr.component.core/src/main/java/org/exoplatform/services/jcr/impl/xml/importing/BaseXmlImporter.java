@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
-import org.exoplatform.services.jcr.access.AccessControlEntry;
-import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -27,7 +25,6 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
-import org.exoplatform.services.jcr.datamodel.IllegalACLException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -58,7 +55,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.StringTokenizer;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.ItemExistsException;
@@ -452,89 +448,6 @@ public abstract class BaseXmlImporter implements ContentImporter
       currentNodeInfo.setIdentifier(identifier);
    }
 
-   protected AccessControlList initAcl(AccessControlList parentACL, boolean isOwneable, boolean isPrivilegeable,
-      String owner, List<String> exoPermissions)
-   {
-      AccessControlList acl;
-      if (isOwneable)
-      {
-         // has own owner
-         if (isPrivilegeable)
-         {
-            // and permissions
-            acl = new AccessControlList(owner, readACLPermisions(exoPermissions));
-         }
-         else if (parentACL != null)
-         {
-            // use permissions from existed parent
-            acl = new AccessControlList(owner, parentACL.hasPermissions() ? parentACL.getPermissionEntries() : null);
-         }
-         else
-         {
-            // have to search nearest ancestor permissions in ACL manager
-            // acl = new AccessControlList(owner,
-            // traverseACLPermissions(cpid));
-            acl = new AccessControlList(owner, null);
-         }
-      }
-      else if (isPrivilegeable)
-      {
-         // has own permissions
-         if (isOwneable)
-         {
-            // and owner
-            acl = new AccessControlList(owner, readACLPermisions(exoPermissions));
-         }
-         else if (parentACL != null)
-         {
-            // use owner from existed parent
-            acl = new AccessControlList(parentACL.getOwner(), readACLPermisions(exoPermissions));
-         }
-         else
-         {
-            // have to search nearest ancestor owner in ACL manager
-            // acl = new AccessControlList(traverseACLOwner(cpid),
-            // readACLPermisions(cid));
-            acl = new AccessControlList(null, readACLPermisions(exoPermissions));
-         }
-      }
-      else
-      {
-         if (parentACL != null)
-            // construct ACL from existed parent ACL
-            acl =
-               new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
-                  .getPermissionEntries() : null);
-         else
-            // have to search nearest ancestor owner and permissions in ACL manager
-            // acl = traverseACL(cpid);
-            acl = null;
-      }
-      return acl;
-   }
-
-   /**
-    * Return permission values or throw an exception. We assume the node is
-    * mix:privilegeable.
-    * 
-    * @param cid Node id
-    * @return list of ACL entries
-    * @throws IllegalACLException if property exo:permissions is not found for
-    *           node
-    */
-   protected List<AccessControlEntry> readACLPermisions(List<String> exoPermissions)
-   {
-      List<AccessControlEntry> naPermissions = new ArrayList<AccessControlEntry>();
-
-      for (String perm : exoPermissions)
-      {
-
-         StringTokenizer parser = new StringTokenizer(perm, AccessControlEntry.DELIMITER);
-         naPermissions.add(new AccessControlEntry(parser.nextToken(), parser.nextToken()));
-
-      }
-      return naPermissions;
-   }
 
    /**
     * Check if item with uuid=identifier exists. If no item exist return same

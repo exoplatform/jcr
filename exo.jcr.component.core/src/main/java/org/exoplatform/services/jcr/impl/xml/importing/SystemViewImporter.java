@@ -361,8 +361,8 @@ public class SystemViewImporter extends BaseXmlImporter
          createVersionHistory(currentNodeInfo);
       }
 
-      currentNodeInfo.setACL(initAcl(currentNodeInfo.getACL(), currentNodeInfo.isExoOwneable(), currentNodeInfo
-         .isExoPrivilegeable(), currentNodeInfo.getExoOwner(), currentNodeInfo.getExoPrivileges()));
+      currentNodeInfo.setACL(ACLInitializationHelper.initAcl(currentNodeInfo.getACL(), currentNodeInfo.getExoOwner(),
+         currentNodeInfo.getExoPrivileges()));
    }
 
    

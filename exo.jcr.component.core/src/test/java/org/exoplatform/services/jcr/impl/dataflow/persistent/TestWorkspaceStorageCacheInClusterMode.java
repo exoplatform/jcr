@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -797,8 +798,17 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          }
          if (itemType == ItemType.NODE)
          {
-            return new PersistedNodeData("my-node" + parentNode.getIdentifier(), QPath.makeChildPath(parentNode.getQPath(), name), Constants.ROOT_UUID, 1, 1,
-               Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
+            if (name.equals(Constants.ROOT_PATH.getEntries()[0]))
+            {
+               return new PersistedNodeData(Constants.ROOT_UUID, Constants.ROOT_PATH, Constants.ROOT_PARENT_UUID, 1, 1,
+                  Constants.NT_UNSTRUCTURED, new InternalQName[0], new AccessControlList());
+            }
+            else
+            {
+               return new PersistedNodeData("my-node" + parentNode.getIdentifier(), QPath.makeChildPath(
+                  parentNode.getQPath(), name), Constants.ROOT_UUID, 1, 1, Constants.NT_UNSTRUCTURED,
+                  new InternalQName[0], null);
+            }
          }
          try
          {
@@ -827,7 +837,16 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
                Thread.currentThread().interrupt();
             }
          }
-         return parentNode;
+
+         if (identifier.equals(Constants.ROOT_UUID))
+         {
+            return new PersistedNodeData(Constants.ROOT_UUID, Constants.ROOT_PATH, Constants.ROOT_PARENT_UUID, 1, 1,
+               Constants.NT_UNSTRUCTURED, new InternalQName[0], new AccessControlList());
+         }
+         else
+         {
+            return parentNode;
+         }
       }
 
       public List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException,

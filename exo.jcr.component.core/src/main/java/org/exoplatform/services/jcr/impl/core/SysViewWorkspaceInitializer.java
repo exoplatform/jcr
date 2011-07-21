@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core;
 import org.apache.ws.commons.util.Base64;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -47,6 +48,7 @@ import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
+import org.exoplatform.services.jcr.impl.xml.importing.ACLInitializationHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -59,6 +61,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 
 import javax.jcr.NamespaceException;
@@ -326,6 +329,10 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
       int orderNumber = 0;
 
+      private String exoOwner;
+
+      private List<String> exoPrivileges;
+
       HashMap<InternalQName, Integer> childNodesMap = new HashMap<InternalQName, Integer>();
 
       SVNodeData(QPath path, String identifier, String parentIdentifier, int version, int orderNum)
@@ -341,6 +348,31 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       public void setMixinTypeNames(InternalQName[] mixinTypeNames)
       {
          this.mixinTypeNames = mixinTypeNames;
+      }
+
+      public String getExoOwner()
+      {
+         return exoOwner;
+      }
+
+      public List<String> getExoPrivileges()
+      {
+         return exoPrivileges;
+      }
+
+      public void setExoOwner(String exoOwner)
+      {
+         this.exoOwner = exoOwner;
+      }
+
+      public void setExoPrivileges(List<String> exoPrivileges)
+      {
+         this.exoPrivileges = exoPrivileges;
+      }
+
+      public void setACL(AccessControlList acl)
+      {
+         this.acl = acl;
       }
 
       /**
@@ -624,6 +656,11 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
                            SVNodeData currentNode = new SVNodeData(currentPath, exoId, parentId, 0, orderNumber);
 
+                           AccessControlList acl =
+                              ACLInitializationHelper.initAcl(parents.size() == 0 ? null : parents.peek().getACL(),
+                                 null, null);
+                           currentNode.setACL(acl);
+
                            // push current node as parent
                            parents.push(currentNode);
 
@@ -737,6 +774,41 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                                        .parse(new String(currentProperty.getValues().get(i).getAsByteArray()));
                               }
                               parent.setMixinTypeNames(mixins);
+                           }
+                           else if (currentProperty.getQPath().getName().equals(Constants.EXO_OWNER))
+                           {
+                              String exoOwner =
+                                 new String(currentProperty.getValues().get(0).getAsByteArray(),
+                                    Constants.DEFAULT_ENCODING);
+                              parent.setExoOwner(exoOwner);
+
+                              SVNodeData curParent = parents.pop();
+
+                              AccessControlList acl =
+                                 ACLInitializationHelper.initAcl(parents.size() == 0 ? null : parents.peek().getACL(),
+                                    exoOwner, curParent.getExoPrivileges());
+                              curParent.setACL(acl);
+
+                              parents.push(curParent);
+                           }
+                           else if (currentProperty.getQPath().getName().equals(Constants.EXO_PERMISSIONS))
+                           {
+                              List<String> exoPrivileges = new ArrayList<String>();
+                              for (int i = 0; i < currentProperty.getValues().size(); i++)
+                              {
+                                 exoPrivileges.add(new String(currentProperty.getValues().get(i).getAsByteArray(),
+                                    Constants.DEFAULT_ENCODING));
+                              }
+                              parent.setExoPrivileges(exoPrivileges);
+
+                              SVNodeData curParent = parents.pop();
+
+                              AccessControlList acl =
+                                 ACLInitializationHelper.initAcl(parents.size() == 0 ? null : parents.peek().getACL(),
+                                    curParent.getExoOwner(), exoPrivileges);
+                              curParent.setACL(acl);
+
+                              parents.push(curParent);
                            }
 
                            // add property, no event fire, persisted, internally created, root is ancestor to

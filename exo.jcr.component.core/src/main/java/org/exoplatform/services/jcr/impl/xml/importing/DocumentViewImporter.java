@@ -443,8 +443,8 @@ public class DocumentViewImporter extends BaseXmlImporter
 
       }
 
-      nodeData.setACL(initAcl(parentNodeData.getACL(), nodeData.isExoOwneable(), nodeData.isExoPrivilegeable(),
-         nodeData.getExoOwner(), nodeData.getExoPrivileges()));
+      nodeData.setACL(ACLInitializationHelper.initAcl(parentNodeData.getACL(), nodeData.getExoOwner(),
+         nodeData.getExoPrivileges()));
 
       if (nodeData.isMixVersionable())
       {
