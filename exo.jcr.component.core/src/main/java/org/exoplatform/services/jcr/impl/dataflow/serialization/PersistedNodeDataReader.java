@@ -34,9 +34,9 @@ import java.io.IOException;
  * Created by The eXo Platform SAS. <br/>Date:
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
- * @version $Id$
+ * @version $Id: PresistedNodeDataReader.java 1518 2010-01-20 23:33:30Z sergiykarpenko $
  */
-public class PresistedNodeDataReader
+public class PersistedNodeDataReader
 {
 
    /**

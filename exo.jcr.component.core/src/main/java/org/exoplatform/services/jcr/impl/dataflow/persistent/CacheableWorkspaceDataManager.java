@@ -617,7 +617,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             public ItemData run() throws RepositoryException
             {
-               return CacheableWorkspaceDataManager.super.getItemData(parentData, name, itemType);
+               ItemData item = CacheableWorkspaceDataManager.super.getItemData(parentData, name, itemType);
+               return item != null && item.isNode() ? initACL(parentData, (NodeData)item) : item;
             }
          });
       }
@@ -680,7 +681,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             public ItemData run() throws RepositoryException
             {
-               return CacheableWorkspaceDataManager.super.getItemData(identifier);
+               ItemData item = CacheableWorkspaceDataManager.super.getItemData(identifier);
+               return item != null && item.isNode() ? initACL(null, (NodeData)item) : item;
             }
          });
       }
@@ -1008,6 +1010,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                      cache.addChildNodes(parentData, childNodes);
                   }
                }
+               else
+               {
+                  // ini ACL
+                  for (int i = 0; i < childNodes.size(); i++)
+                  {
+                     childNodes.set(i, (NodeData)initACL(nodeData, childNodes.get(i)));
+                  }
+               }
+
                return childNodes;
             }
          });
@@ -1027,7 +1038,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             public List<NodeData> run() throws RepositoryException
             {
-               return CacheableWorkspaceDataManager.super.getChildNodesData(parentData, patternFilters);
+               List<NodeData> childNodes =
+                  CacheableWorkspaceDataManager.super.getChildNodesData(parentData, patternFilters);
+
+               // ini ACL
+               for (int i = 0; i < childNodes.size(); i++)
+               {
+                  childNodes.set(i, (NodeData)initACL(parentData, childNodes.get(i)));
+               }
+
+               return childNodes;
             }
          });
       }

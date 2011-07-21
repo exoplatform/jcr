@@ -110,7 +110,7 @@ public class ItemStateReader
 
          if (isNodeData)
          {
-            PresistedNodeDataReader rdr = new PresistedNodeDataReader();
+            PersistedNodeDataReader rdr = new PersistedNodeDataReader();
             is = new ItemState(rdr.read(in), state, eventFire, null, false, isPersisted, oldPath);
          }
          else
