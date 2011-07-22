@@ -18,6 +18,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -140,6 +141,11 @@ public abstract class QueryResultImpl implements QueryResult
     * The maximum size of this result if limit > 0
     */
    private final long limit;
+   
+   /**
+    * If <code>true</code>, it means we're using a System session.
+    */
+   private final boolean isSystemSession;
 
    /**
     * Creates a new query result. The concrete sub class is responsible for
@@ -182,6 +188,7 @@ public abstract class QueryResultImpl implements QueryResult
       this.docOrder = orderProps.length == 0 && documentOrder;
       this.offset = offset;
       this.limit = limit;
+      this.isSystemSession = SystemIdentity.SYSTEM.equals(session.getUserID());
    }
 
    /**
@@ -415,6 +422,10 @@ public abstract class QueryResultImpl implements QueryResult
     */
    private boolean isAccessGranted(ScoreNode[] nodes) throws RepositoryException
    {
+      if (isSystemSession)
+      {
+         return true;
+      }
       for (int i = 0; i < nodes.length; i++)
       {
          try

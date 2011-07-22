@@ -17,15 +17,20 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.query.lucene.TwoWayRangeIterator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
@@ -44,6 +49,8 @@ public class TestTwoWayRangeIterator extends JcrImplBaseTest
    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestScoreNodeIterator");
 
    private Random random = new Random();
+   
+   private Session userSession;
 
    private final int TEST_NODES_COUNT = 100;
 
@@ -57,6 +64,12 @@ public class TestTwoWayRangeIterator extends JcrImplBaseTest
       {
          Node subnode = testRoot.addNode("TestNode" + String.format("%07d", i));
          subnode.setProperty("val", i);
+         ExtendedNode subnode2 = (ExtendedNode)testRoot.addNode("TestNode2-" + String.format("%07d", i));
+         subnode2.setProperty("val", i);
+         subnode2.addMixin("exo:privilegeable");
+         HashMap<String, String[]> perm = new HashMap<String, String[]>();
+         perm.put("admin", PermissionType.ALL);
+         subnode2.setPermissions(perm);
       }
 
    }
@@ -68,6 +81,14 @@ public class TestTwoWayRangeIterator extends JcrImplBaseTest
       Node testRoot = root.addNode(testRootNodeName);
       prepareRoot(testRoot);
       root.save();
+      userSession = repository.login(new CredentialsImpl("john", "exo".toCharArray()), "ws");
+   }
+   
+   @Override
+   protected void tearDown() throws Exception
+   {
+      userSession.logout();
+      super.tearDown();
    }
 
    // Check random skipping from start of set
@@ -259,7 +280,7 @@ public class TestTwoWayRangeIterator extends JcrImplBaseTest
    protected void checkPosition(ScoreNodeTester testAction, long expectedPosition) throws RepositoryException
    {
 
-      QueryManager qm = workspace.getQueryManager();
+      QueryManager qm = userSession.getWorkspace().getQueryManager();
 
       // Doc order
       String strDocOrder = "select * from nt:unstructured where jcr:path like '/" + testRootNodeName + "/%'";
