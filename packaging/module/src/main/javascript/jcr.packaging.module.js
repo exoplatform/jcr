@@ -34,8 +34,7 @@ function getModule(params) {
   module.frameworks = {}
   module.frameworks.web = 
     new Project("org.exoplatform.jcr", "exo.jcr.framework.web", "jar", module.version).  
-    addDependency(ws.rest).
-    addDependency(new Project("commons-chain", "commons-chain", "jar", "1.2"));
+    addDependency(ws.rest);
 
   module.frameworks.command = new Project("org.exoplatform.jcr", "exo.jcr.framework.command", "jar", module.version).
     addDependency(new Project("commons-fileupload", "commons-fileupload", "jar", "1.2.1")); 
