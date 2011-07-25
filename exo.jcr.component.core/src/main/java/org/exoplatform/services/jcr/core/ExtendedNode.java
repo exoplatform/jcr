@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.jcr.AccessDeniedException;
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.lock.Lock;
@@ -118,4 +119,15 @@ public interface ExtendedNode extends Node
     */
    Lock lock(boolean isDeep, long timeOut) throws UnsupportedRepositoryOperationException, LockException,
       AccessDeniedException, InvalidItemStateException, RepositoryException;
+
+   /**
+    * Returns a <code>NodeIterator</code> over all child <code>Node</code>s of
+    * this <code>Node</code>. Does <i>not</i> include properties of this
+    * <code>Node</code>. If this node has no child nodes, then an empty iterator is returned.
+    * 
+    * @return A <code>NodeIterator</code> over all child <code>Node</code>s of
+    *         this <code>Node</code>.
+    * @throws RepositoryException If an error occurs.
+    */
+   public NodeIterator getNodesLazily() throws RepositoryException;
 }

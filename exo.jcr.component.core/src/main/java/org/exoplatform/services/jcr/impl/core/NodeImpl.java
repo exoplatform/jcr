@@ -1084,6 +1084,14 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    /**
     * {@inheritDoc}
     */
+   public NodeIterator getNodesLazily() throws RepositoryException
+   {
+      return null;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public NodeIterator getNodes(String namePattern) throws RepositoryException
    {
 
