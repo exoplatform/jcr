@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.ExceptionManagementHelper;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -409,18 +410,9 @@ public class DBInitializer
          }
          else
          {
-            SQLException next = e.getNextException();
-            String errorTrace = "";
-            while (next != null)
-            {
-               errorTrace += next.getMessage() + "; ";
-               next = next.getNextException();
-            }
-            Throwable cause = e.getCause();
             String msg =
-               "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
-                  + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "") + ". Last command: "
-                  + sql;
+                     "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
+                              + ExceptionManagementHelper.getFullSQLExceptionMessage(e) + ". Last command: " + sql;
 
             throw new DBInitializerException(msg, e);
          }

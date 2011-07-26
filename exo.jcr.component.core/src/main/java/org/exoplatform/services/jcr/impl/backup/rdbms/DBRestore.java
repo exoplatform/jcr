@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.backup.rdbms;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.services.database.utils.ExceptionManagementHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
@@ -98,7 +99,7 @@ public class DBRestore implements DataRestore
    /**
     * Connection to database.
     */
-   private final Connection jdbcConn;
+   protected final Connection jdbcConn;
 
    /**
     * Directory with tables dump.
@@ -108,12 +109,22 @@ public class DBRestore implements DataRestore
    /**
     * Restore table rules.
     */
-   private final Map<String, RestoreTableRule> tables;
+   protected final Map<String, RestoreTableRule> tables;
 
    /**
     * Database cleaner.
     */
    private final DBClean dbClean;
+
+   /**
+    * Database dialect.
+    */
+   protected final int dialect;
+
+   /**
+    * Contains constraint for JCR_SITEM or JCR_MITEM table.  
+    */
+   private String constraint;
 
    /**
     * Constructor DBRestor.
@@ -135,6 +146,7 @@ public class DBRestore implements DataRestore
       this.storageDir = storageDir;
       this.tables = tables;
       this.dbClean = DBCleanService.getDBCleaner(this.jdbcConn, wsConfig);
+      this.dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
    }
 
    /**
@@ -157,56 +169,18 @@ public class DBRestore implements DataRestore
     */
    public void restore() throws BackupException
    {
-      Statement st = null;
-
       try
       {
-         int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
-
          for (Entry<String, RestoreTableRule> entry : tables.entrySet())
          {
             String tableName = entry.getKey();
             RestoreTableRule restoreRule = entry.getValue();
 
-            String constraint = null;
-            if (tableName.equals("JCR_SITEM") || tableName.equals("JCR_MITEM"))
-            {
-               if (dialect != DBBackup.DB_DIALECT_SYBASE)
-               {
-                  // resolve constraint name depends on database
-                  String constraintName;
-                  if (dialect == DBBackup.DB_DIALECT_DB2 || dialect == DBBackup.DB_DIALECT_DB2V8)
-                  {
-                     constraintName = "JCR_FK_" + (restoreRule.getDstMultiDb() ? "M" : "S") + "ITEM_PAREN";
-                  }
-                  else
-                  {
-                     constraintName = "JCR_FK_" + (restoreRule.getDstMultiDb() ? "M" : "S") + "ITEM_PARENT";
-                  }
-                  constraint =
-                     "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES " + tableName + "(ID)";
-
-                  // drop constraint
-                  st = jdbcConn.createStatement();
-
-                  if (dialect == DBBackup.DB_DIALECT_MYSQL || dialect == DBBackup.DB_DIALECT_MYSQL_UTF8)
-                  {
-                     st.execute("ALTER TABLE " + tableName + " DROP FOREIGN KEY " + constraintName);
-                  }
-                  else
-                  {
-                     st.execute("ALTER TABLE " + tableName + " DROP CONSTRAINT " + constraintName);
-                  }
-               }
-            }
+            preRestoreTable(tableName, restoreRule);
 
             restoreTable(storageDir, jdbcConn, tableName, restoreRule);
 
-            if (constraint != null)
-            {
-               // add constraint
-               st.execute("ALTER TABLE " + tableName + " ADD " + constraint);
-            }
+            postRestoreTable(tableName, restoreRule);
          }
       }
       catch (IOException e)
@@ -215,21 +189,99 @@ public class DBRestore implements DataRestore
       }
       catch (SQLException e)
       {
-         SQLException next = e.getNextException();
-         String errorTrace = "";
-         while (next != null)
+         throw new BackupException("SQL Exception: " + ExceptionManagementHelper.getFullSQLExceptionMessage(e), e);
+      }
+   }
+
+   /**
+    * Prepare of restore table. (Drop constraint, etc...)
+    * 
+    * @param tableName
+    *        name of table 
+    * @param restoreRule
+    *        rule of table 
+    * @throws SQLException
+    *           Will throw SQLException if fail.
+    */
+   public void preRestoreTable(String tableName, RestoreTableRule restoreRule) throws SQLException
+   {
+      Statement st = null;
+
+      try
+      {
+         if (tableName.equals("JCR_SITEM") || tableName.equals("JCR_MITEM"))
          {
-            errorTrace += next.getMessage() + "; ";
-            next = next.getNextException();
+            // resolve constraint name depends on database
+            String constraintName;
+            if (dialect == DBBackup.DB_DIALECT_DB2 || dialect == DBBackup.DB_DIALECT_DB2V8)
+            {
+               constraintName = "JCR_FK_" + (restoreRule.getDstMultiDb() ? "M" : "S") + "ITEM_PAREN";
+            }
+            else
+            {
+               constraintName = "JCR_FK_" + (restoreRule.getDstMultiDb() ? "M" : "S") + "ITEM_PARENT";
+            }
+            constraint = "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES " + tableName + "(ID)";
+
+            // drop constraint
+            st = jdbcConn.createStatement();
+
+            if (dialect == DBBackup.DB_DIALECT_MYSQL || dialect == DBBackup.DB_DIALECT_MYSQL_UTF8)
+            {
+               st.execute("ALTER TABLE " + tableName + " DROP FOREIGN KEY " + constraintName);
+            }
+            else
+            {
+               st.execute("ALTER TABLE " + tableName + " DROP CONSTRAINT " + constraintName);
+            }
          }
-
-         Throwable cause = e.getCause();
-         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
-
-         throw new BackupException(msg, e);
       }
       finally
       {
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.warn("Can't close statemnt", e);
+            }
+         }
+      }
+   }
+
+   /**
+    * After of restore table. (Add constraint, etc...)
+    * 
+    * @param tableName
+    *        name of table 
+    * @param restoreRule
+    *        rule of table 
+    * @throws SQLException
+    *           Will throw SQLException if fail.
+    */
+   public void postRestoreTable(String tableName, RestoreTableRule restoreRule) throws SQLException
+   {
+      Statement st = null;
+
+      try
+      {
+         if (tableName.equals("JCR_SITEM") || tableName.equals("JCR_MITEM"))
+         {
+            if (constraint != null)
+            {
+               // add constraint
+               st = jdbcConn.createStatement();
+               st.execute("ALTER TABLE " + tableName + " ADD " + constraint);
+            }
+         }
+      }
+      finally
+      {
+         constraint = null;
+
          if (st != null)
          {
             try
@@ -311,8 +363,6 @@ public class DBRestore implements DataRestore
 
       PreparedStatement insertNode = null;
       ResultSet tableMetaData = null;
-
-      int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
 
       // switch table name to lower case
       if (dialect == DBBackup.DB_DIALECT_PGSQL)

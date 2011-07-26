@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
+import org.exoplatform.services.jcr.impl.backup.rdbms.SybaseDBRestore;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.core.query.Reindexable;
@@ -1083,7 +1084,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
          if (multiDb)
          {
-            scripts.put("JCR_MITEM", "select * from JCR_MITEM where JCR_MITEM.name <> '" + Constants.ROOT_PARENT_NAME
+            scripts.put("JCR_MITEM", "select * from JCR_MITEM where JCR_MITEM.NAME <> '" + Constants.ROOT_PARENT_NAME
                + "'");
             scripts.put("JCR_MVALUE", "select * from JCR_MVALUE");
             scripts.put("JCR_MREF", "select * from JCR_MREF");
@@ -1272,7 +1273,14 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          tables.put(dstTableName, restoreTableRule);
 
-         restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
+         if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
+         {
+            restorers.add(new SybaseDBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
+         }
+         else
+         {
+            restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
+         }
 
          // prepare value storage restorer
          File backupValueStorageDir = new File(storageDir, "values");
