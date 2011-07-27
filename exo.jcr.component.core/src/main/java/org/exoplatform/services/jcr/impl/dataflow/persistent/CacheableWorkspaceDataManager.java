@@ -513,6 +513,79 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   public boolean getChildNodesDataByPage(final NodeData nodeData, final int fromOrderNum, final int limit,
+      final List<NodeData> childs) throws RepositoryException
+   {
+      List<NodeData> childNodes = null;
+      if (cache.isEnabled())
+      {
+         childNodes = cache.getChildNodes(nodeData);
+         if (childNodes != null)
+         {
+            childs.addAll(childNodes);
+            return false;
+         }
+         else
+         {
+            childNodes = cache.getChildNodesByPage(nodeData, fromOrderNum);
+            if (childNodes != null)
+            {
+               childs.addAll(childNodes);
+               return true;
+            }
+         }
+      }
+      final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_NODES);
+
+      try
+      {
+         request.start();
+         if (cache.isEnabled())
+         {
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            childNodes = cache.getChildNodes(nodeData);
+            if (childNodes != null)
+            {
+               childs.addAll(childNodes);
+               return false;
+            }
+            else
+            {
+               childNodes = cache.getChildNodesByPage(nodeData, fromOrderNum);
+               if (childNodes != null)
+               {
+                  childs.addAll(childNodes);
+                  return true;
+               }
+            }
+         }
+
+         return executeAction(new PrivilegedExceptionAction<Boolean>()
+         {
+            public Boolean run() throws RepositoryException
+            {
+               boolean hasNext =
+                  CacheableWorkspaceDataManager.super.getChildNodesDataByPage(nodeData, fromOrderNum, limit, childs);
+
+               if (cache.isEnabled())
+               {
+                  cache.addChildNodesByPage(nodeData, childs, fromOrderNum);
+               }
+
+               return hasNext;
+            }
+         });
+      }
+      finally
+      {
+         request.done();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    @Override
    public List<NodeData> getChildNodesData(NodeData parentData, List<QPathEntryFilter> patternFilters)
       throws RepositoryException
@@ -1003,20 +1076,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                List<NodeData> childNodes = CacheableWorkspaceDataManager.super.getChildNodesData(nodeData);
                if (cache.isEnabled())
                {
-                  NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
-
-                  if (parentData != null)
-                  {
-                     cache.addChildNodes(parentData, childNodes);
-                  }
-               }
-               else
-               {
-                  // ini ACL
-                  for (int i = 0; i < childNodes.size(); i++)
-                  {
-                     childNodes.set(i, (NodeData)initACL(nodeData, childNodes.get(i)));
-                  }
+                  cache.addChildNodes(nodeData, childNodes);
                }
 
                return childNodes;
@@ -1322,12 +1382,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                // TODO childProperties.size() > 0 for SDB
                if (childProperties.size() > 0 && cache.isEnabled())
                {
-                  NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
-
-                  if (parentData != null)
-                  {
-                     cache.addChildProperties(parentData, childProperties);
-                  }
+                  cache.addChildProperties(nodeData, childProperties);
                }
                return childProperties;
             }
@@ -1644,12 +1699,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                // TODO propertiesList.size() > 0 for SDB
                if (propertiesList.size() > 0 && cache.isEnabled())
                {
-                  NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
-
-                  if (parentData != null)
-                  {
-                     cache.addChildPropertiesList(parentData, propertiesList);
-                  }
+                  cache.addChildPropertiesList(nodeData, propertiesList);
                }
                return propertiesList;
             }

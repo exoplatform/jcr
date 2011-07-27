@@ -418,6 +418,15 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       return findPropertiesByParentId.executeQuery();
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int lastOrderNum, int limit)
+      throws SQLException
+   {
+      throw new UnsupportedOperationException("findChildNodesByParentIdentifier is not supported for old queries");
+   }
+
    // -------- values processing ------------
 
    /**

@@ -422,6 +422,15 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          return null;
       }
 
+      public List<NodeData> getChildNodesByPage(NodeData parent, int fromOrderNum)
+      {
+         return null;
+      }
+
+      public void addChildNodesByPage(NodeData parent, List<NodeData> childs, int fromOrderNum)
+      {
+      }
+
    }
 
    private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection

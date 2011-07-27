@@ -2184,24 +2184,28 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
 
    public void addChildProperties(NodeData parent, QPathEntryFilter pattern, List<PropertyData> childProperties)
    {
-      // TODO Auto-generated method stub
    }
 
    public List<PropertyData> getChildProperties(NodeData parent, QPathEntryFilter pattern)
    {
-      // TODO Auto-generated method stub
       return null;
    }
 
    public void addChildNodes(NodeData parent, QPathEntryFilter pattern, List<NodeData> childNodes)
    {
-      // TODO Auto-generated method stub
-
    }
 
    public List<NodeData> getChildNodes(NodeData parent, QPathEntryFilter pattern)
    {
-      // TODO Auto-generated method stub
       return null;
+   }
+
+   public List<NodeData> getChildNodesByPage(NodeData parent, int fromOrderNum)
+   {
+      return null;
+   }
+
+   public void addChildNodesByPage(NodeData parent, List<NodeData> childs, int fromOrderNum)
+   {
    }
 }

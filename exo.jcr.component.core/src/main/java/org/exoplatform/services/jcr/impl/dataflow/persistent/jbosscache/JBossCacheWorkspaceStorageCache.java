@@ -71,9 +71,11 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -149,6 +151,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
    public static final String CHILD_NODES_BY_PATTERN_LIST = "$CHILD_NODES_BY_PATTERN_LIST".intern();
 
+   public static final String CHILD_NODES_BY_PAGE_LIST = "$CHILD_NODES_BY_PAGE_LIST".intern();
+
    public static final String LOCKS = "$LOCKS".intern();
 
    public static final String REFERENCE = "$REFERENCE".intern();
@@ -174,6 +178,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    protected final Fqn<String> childNodesList;
 
    protected final Fqn<String> childPropsList;
+
+   protected final Fqn<String> childNodesByPageList;
 
    protected final Fqn<String> childPropsByPatternList;
 
@@ -219,7 +225,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                {
                   NodeData node = (NodeData)cache.get(makeItemFqn((String)child), ITEM_DATA);
 
-                  if (node == null || node instanceof NullItemData)
+                  if (node == null)
                   {
                      return null;
                   }
@@ -404,7 +410,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       protected Long execute(Void arg) throws RuntimeException
       {
          // Total number of JBC nodes in the cache - the total amount of resident nodes
-         return numNodes(cache.getNode(rootFqn)) - 9;
+         return numNodes(cache.getNode(rootFqn)) - 10;
       }
    };
       
@@ -612,6 +618,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       this.childProps = Fqn.fromRelativeElements(rootFqn, CHILD_PROPS);
       this.childNodesList = Fqn.fromRelativeElements(rootFqn, CHILD_NODES_LIST);
       this.childPropsList = Fqn.fromRelativeElements(rootFqn, CHILD_PROPS_LIST);
+      this.childNodesByPageList = Fqn.fromRelativeElements(rootFqn, CHILD_NODES_BY_PAGE_LIST);
       this.childPropsByPatternList = Fqn.fromRelativeElements(rootFqn, CHILD_PROPS_BY_PATTERN_LIST);
       this.childNodesByPatternList = Fqn.fromRelativeElements(rootFqn, CHILD_NODES_BY_PATTERN_LIST);
 
@@ -669,6 +676,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       createResidentNode(childNodesList);
       createResidentNode(childProps);
       createResidentNode(childPropsList);
+      createResidentNode(childNodesByPageList);
       createResidentNode(childPropsByPatternList);
       createResidentNode(childNodesByPatternList);
       createResidentNode(itemsRoot);
@@ -899,7 +907,60 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          else
          {
             // cache fact of empty childs list
-            cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, new HashSet<Object>());
+            cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST,
+               new HashSet<Object>());
+         }
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
+      }
+   }
+
+
+   /**
+    * {@inheritDoc}
+    */
+   public void addChildNodesByPage(NodeData parent, List<NodeData> childs, int fromOrderNum)
+   {
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+
+         cache.setLocal(true);
+         
+         Fqn<String> fqn = makeChildListFqn(childNodesByPageList, parent.getIdentifier());
+         Map<Integer, Set<String>> pages = (Map<Integer, Set<String>>)cache.get(fqn, ITEM_LIST);
+         if (pages == null)
+         {
+            pages = new HashMap<Integer, Set<String>>();
+         }
+         
+         if (childs.size() > 0)
+         {
+            Set<String> set = new HashSet<String>();
+            for (NodeData child : childs)
+            {
+               putNode(child, ModifyChildOption.NOT_MODIFY);
+               set.add(child.getIdentifier());
+            }
+
+            pages.put(fromOrderNum, set);
+            cache.put(fqn, ITEM_LIST, pages);
+         }
+         else
+         {
+            // cache fact of empty childs list
+            pages.put(fromOrderNum, new HashSet<String>());
+            cache.put(fqn, ITEM_LIST, pages);
          }
       }
       finally
@@ -920,7 +981,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       boolean inTransaction = cache.isTransactionActive();
       try
       {
-
          if (!inTransaction)
          {
             cache.beginTransaction();
@@ -1077,6 +1137,43 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    /**
     * {@inheritDoc}
     */
+   public List<NodeData> getChildNodesByPage(final NodeData parent, final int fromOrderNum)
+   {
+      final Map<Integer, Set<String>> pages =
+         (Map<Integer, Set<String>>)cache
+            .get(makeChildListFqn(childNodesByPageList, parent.getIdentifier()), ITEM_LIST);
+
+      if (pages == null)
+      {
+         return null;
+      }
+
+      Set<String> set = pages.get(fromOrderNum);
+      if (set == null)
+      {
+         return null;
+      }
+
+      final List<NodeData> childs = new ArrayList<NodeData>();
+      for (Object child : set)
+      {
+         NodeData node = (NodeData)cache.get(makeItemFqn((String)child), ITEM_DATA);
+         if (node == null)
+         {
+            return null;
+         }
+
+         childs.add(node);
+      }
+
+      // order children by orderNumber, as HashSet returns children in other order
+      Collections.sort(childs, new NodesOrderComparator<NodeData>());
+      return childs;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public List<NodeData> getChildNodes(final NodeData parent, final QPathEntryFilter pattern)
    {
       // empty Set<Object> marks that there is no child nodes
@@ -1094,7 +1191,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          {
             NodeData node = (NodeData)cache.get(makeItemFqn((String)child), ITEM_DATA);
 
-            if (node == null || node instanceof NullItemData)
+            if (node == null)
             {
                return null;
             }
@@ -1390,6 +1487,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                ITEM_LIST, node);
             cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
                node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
+
+            cache.removeNode(makeChildListFqn(childNodesByPageList, node.getParentIdentifier()));
          }
       }
 
@@ -1537,23 +1636,35 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             cache.removeFromList(makeChildListFqn(childNodesList, item.getParentIdentifier()), ITEM_LIST, item
                .getIdentifier());
 
-            // remove from CHILD_NODES as parent
-            cache.removeNode(makeChildListFqn(childNodes, item.getIdentifier()));
+            // remove from CHILD_NODES_BY_PATTERN_LIST of parent
+            cache.removeFromPatternList(makeChildListFqn(childNodesByPatternList, item.getParentIdentifier()),
+               PATTERN_OBJ, ITEM_LIST, item);
 
-            // remove from CHILD_NODES_LIST as parent
-            cache.removeNode(makeChildListFqn(childNodesList, item.getIdentifier()));
-
-            // remove from CHILD_PROPS as parent
-            cache.removeNode(makeChildListFqn(childProps, item.getIdentifier()));
-
-            // remove from CHILD_PROPS_LIST as parent
-            cache.removeNode(makeChildListFqn(childPropsList, item.getIdentifier()));
+            // remove from CHILD_NODES_BY_PAGE_LIST of parent
+            cache.removeNode(makeChildListFqn(childNodesByPageList, item.getParentIdentifier()));
          }
 
-         cache.removeFromPatternList(makeChildListFqn(childNodesByPatternList, item.getParentIdentifier()),
-            PATTERN_OBJ, ITEM_LIST, item);
+         // remove from CHILD_NODES as parent
+         cache.removeNode(makeChildListFqn(childNodes, item.getIdentifier()));
+
+         // remove from CHILD_NODES_LIST as parent
+         cache.removeNode(makeChildListFqn(childNodesList, item.getIdentifier()));
+
+         // remove from CHILD_PROPS as parent
+         cache.removeNode(makeChildListFqn(childProps, item.getIdentifier()));
+
+         // remove from CHILD_PROPS_LIST as parent
+         cache.removeNode(makeChildListFqn(childPropsList, item.getIdentifier()));
+
+         // remove from CHILD_NODES_BY_PAGE_LIST as parent
+         cache.removeNode(makeChildListFqn(childNodesByPageList, item.getIdentifier()));
+
+         // remove from CHILD_NODES_BY_PATTERN_LIST as parent
          cache.removeNode(makeChildListFqn(childNodesByPatternList, item.getIdentifier()));
+
+         // remove from CHILD_PROPS_BY_PATTERN_LIST as parent
          cache.removeNode(makeChildListFqn(childPropsByPatternList, item.getIdentifier()));
+
          cache.removeNode(makeRefFqn(item.getIdentifier()));
       }
       else
@@ -1569,6 +1680,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.removeFromPatternList(makeChildListFqn(childPropsByPatternList, item.getParentIdentifier()),
             PATTERN_OBJ, ITEM_LIST, item);
       }
+
       // remove from ITEMS
       cache.removeNode(makeItemFqn(item.getIdentifier()));
    }
@@ -1942,6 +2054,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.removeNode(childProps);
          cache.removeNode(childNodesList);
          cache.removeNode(childPropsList);
+         cache.removeNode(childNodesByPageList);
          cache.removeNode(childNodesByPatternList);
          cache.removeNode(childPropsByPatternList);
 
@@ -1952,6 +2065,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          createResidentNode(childNodesList);
          createResidentNode(childProps);
          createResidentNode(childPropsList);
+         createResidentNode(childNodesByPageList);
          createResidentNode(childNodesByPatternList);
          createResidentNode(childPropsByPatternList);
          createResidentNode(itemsRoot);

@@ -1036,7 +1036,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public NodeIterator getNodes() throws RepositoryException
    {
-
       long start = 0;
       if (LOG.isDebugEnabled())
       {
@@ -1086,7 +1085,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public NodeIterator getNodesLazily() throws RepositoryException
    {
-      return null;
+      return new LazyNodeIteratorByPage(dataManager);
    }
 
    /**
@@ -3336,7 +3335,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       protected boolean canRead(ItemData item)
       {
-         // TODO check if deleted // if (session.getTransientNodesManager().isDeleted(item.getQPath()))
          return (filter != null ? filter.accept(item) : true)
             && session.getAccessManager().hasPermission(
                item.isNode() ? ((NodeData)item).getACL() : nodeData().getACL(), new String[]{PermissionType.READ},
@@ -3388,10 +3386,33 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
        */
       public void skip(long skipNum)
       {
+         trySkip(skipNum, true);
+      }
+
+      /**
+       * Tries to skip some elements.
+       * 
+       * @param throwException
+       *          indicates to throw an NoSuchElementException if can't skip defined count of elements
+       * @return how many elememnts remained to skip
+       */
+      protected long trySkip(long skipNum, boolean throwException)
+      {
          pos += skipNum;
          while (skipNum-- > 1)
          {
-            iter.next();
+            try
+            {
+               iter.next();
+            }
+            catch (NoSuchElementException e)
+            {
+               if (throwException)
+               {
+                  throw e;
+               }
+               return skipNum;
+            }
          }
 
          try
@@ -3403,6 +3424,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             LOG.error(e);
             throw new NoSuchElementException(e.toString());
          }
+
+         return 0;
       }
 
       /**
@@ -3413,7 +3436,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          if (size == -1)
          {
             // calc size
-
             int sz = pos + (next != null ? 1 : 0);
             if (iter.hasNext())
             {
@@ -3451,6 +3473,201 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       public void remove()
       {
          LOG.warn("Remove not supported");
+      }
+   }
+
+   protected class LazyNodeIteratorByPage implements RangeIterator, NodeIterator
+   {
+      private final SessionDataManager dataManager;
+
+      private int limit = session.getLazyNodeIteratorPageSize();
+
+      private int fromOrderNum = 0;
+
+      private boolean hasNext = true;
+      
+      private int pos = 0;
+
+      private LazyNodeIterator lazyNodeItetator = new LazyNodeIterator(new ArrayList<NodeData>());
+
+      LazyNodeIteratorByPage(SessionDataManager dataManager) throws RepositoryException
+      {
+         this.dataManager = dataManager;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public Node nextNode()
+      {
+         return (Node)next();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public boolean hasNext()
+      {
+         boolean hasNext = lazyNodeItetator.hasNext();
+
+         if (!hasNext)
+         {
+            if (this.hasNext)
+            {
+               try
+               {
+                  readNextPage(0);
+                  return hasNext();
+               }
+               catch (NoSuchElementException e)
+               {
+                  return false;
+               }
+            }
+            else
+            {
+               return false;
+            }
+         }
+         else
+         {
+            return true;
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public Object next()
+      {
+         try
+         {
+            return nextItem();
+         }
+         catch (NoSuchElementException e)
+         {
+            if (hasNext)
+            {
+               try
+               {
+                  readNextPage(0);
+                  return next();
+               }
+               catch (NoSuchElementException e1)
+               {
+                  throw e1;
+               }
+            }
+            else
+            {
+               throw e;
+            }
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void remove()
+      {
+         LOG.warn("remove() method is not supported in LazyNodeIteratorByPage");
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void skip(long skipNum)
+      {
+         pos += skipNum;
+
+         long leftToSkip = lazyNodeItetator.trySkip(skipNum, false);
+         if (leftToSkip != 0)
+         {
+            readNextPage(leftToSkip);
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public long getSize()
+      {
+         return -1;
+      }
+
+      public ItemImpl nextItem()
+      {
+         ItemImpl item = lazyNodeItetator.nextItem();
+         pos++;
+
+         return item;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public long getPosition()
+      {
+         return pos;
+      }
+
+      private void readNextPage(long skip) throws NoSuchElementException
+      {
+         List<NodeData> storedNodes = new ArrayList<NodeData>();
+         try
+         {
+            hasNext = dataManager.getChildNodesDataByPage(nodeData(), fromOrderNum, limit, storedNodes);
+         }
+         catch (RepositoryException e)
+         {
+            LOG.error("There are no more elements in iterator", e);
+            throw new NoSuchElementException(e.toString());
+         }
+         
+         Collections.sort(storedNodes, new NodeDataOrderComparator());
+
+         int size = storedNodes.size();
+         if (size != 0)
+         {
+            fromOrderNum = storedNodes.get(size - 1).getOrderNumber() + 1;
+
+            while (skip > 0 && storedNodes.size() > 0)
+            {
+               storedNodes.remove(0);
+               skip--;
+            }
+         }
+
+         if (skip != 0)
+         {
+            if (hasNext)
+            {
+               readNextPage(skip);
+            }
+            else
+            {
+               throw new NoSuchElementException("There are no more elements in iterator");
+            }
+         }
+         else
+         {
+            try
+            {
+               lazyNodeItetator = new LazyNodeIterator(storedNodes);
+            }
+            catch (RepositoryException e)
+            {
+               if (hasNext)
+               {
+                  readNextPage(skip);
+               }
+               else
+               {
+                  LOG.error("There are no more elements in iterator", e);
+                  throw new NoSuchElementException(e.toString());
+               }
+            }
+         }
       }
    }
 

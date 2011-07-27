@@ -194,7 +194,6 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       UPDATE_NODE = "update JCR_SITEM set VERSION=?, I_INDEX=?, N_ORDER_NUM=? where ID=?";
       UPDATE_PROPERTY = "update JCR_SITEM set VERSION=?, P_TYPE=? where ID=?";
-      //UPDATE_VALUE = "update JCR_SVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=?, ORDER_NUM=?";
 
       DELETE_ITEM = "delete from JCR_SITEM where ID=?";
       DELETE_VALUE = "delete from JCR_SVALUE where PROPERTY_ID=?";
@@ -205,12 +204,19 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I"
             + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
-            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID  order by J.ID";
+            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
 
       FIND_PROPERTY_BY_ID =
          "select I.P_TYPE, V.STORAGE_DESC from JCR_SITEM I, JCR_SVALUE V where I.CONTAINER_NAME=? and I.ID = ? and V.PROPERTY_ID = I.ID";
       DELETE_VALUE_BY_ORDER_NUM = "delete from JCR_SVALUE where PROPERTY_ID=? and ORDER_NUM >= ?";
       UPDATE_VALUE = "update JCR_SVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=? and ORDER_NUM=?";
+
+      FIND_NODES_BY_PARENTID_LAZILY_CQ =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
+            + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
+            + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and "
+            + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID LIMIT ?";
    }
 
    /**
@@ -478,6 +484,26 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       updateProperty.setInt(2, type);
       updateProperty.setString(3, cid);
       return updateProperty.executeUpdate();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int limit)
+      throws SQLException
+   {
+      if (findNodesByParentIdLazilyCQ == null)
+         findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ);
+      else
+         findNodesByParentIdLazilyCQ.clearParameters();
+
+      findNodesByParentIdLazilyCQ.setString(1, containerName);
+      findNodesByParentIdLazilyCQ.setString(2, parentCid);
+      findNodesByParentIdLazilyCQ.setInt(3, fromOrderNum);
+      findNodesByParentIdLazilyCQ.setString(4, containerName);
+      findNodesByParentIdLazilyCQ.setInt(5, limit);
+
+      return findNodesByParentIdLazilyCQ.executeQuery();
    }
 
    // -------- values processing ------------

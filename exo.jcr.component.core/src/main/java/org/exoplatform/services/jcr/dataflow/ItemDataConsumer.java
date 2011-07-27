@@ -87,6 +87,22 @@ public interface ItemDataConsumer
    List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException;
 
    /**
+    * Get child Nodes of the parent node.
+    * 
+    * @param parent 
+    *          the parent data
+    * @param fromOrderNum
+    *          the last order number returned in previous request
+    * @param limit   
+    *       the recommended amount of children nodes to return            
+    * @param childs
+    *          will contain the resulted children nodes
+    * @return true if there are data to retrieve for next request and false in other case 
+    */
+   boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+      throws RepositoryException;
+
+   /**
     * Get child Nodes of the parent node.ItemDataFilter used to reduce count of returned items. 
     * But not guarantee that only items matching filter will be returned.
     * 

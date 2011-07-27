@@ -592,6 +592,57 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    /**
     * {@inheritDoc}
     */
+   public void addChildNodesByPage(NodeData parent, List<NodeData> childs, int fromOrderNum)
+   {
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+
+         cache.setLocal(true);
+
+         CacheNodesByPageId cacheId = new CacheNodesByPageId(parent.getIdentifier());
+         Map<Integer, Set<String>> pages = (Map<Integer, Set<String>>)cache.get(cacheId);
+         if (pages == null)
+         {
+            pages = new HashMap<Integer, Set<String>>();
+         }
+
+         if (childs.size() > 0)
+         {
+            Set<String> set = new HashSet<String>();
+            for (NodeData child : childs)
+            {
+               putNode(child, ModifyChildOption.NOT_MODIFY);
+               set.add(child.getIdentifier());
+            }
+
+            pages.put(fromOrderNum, set);
+            cache.put(cacheId, pages);
+         }
+         else
+         {
+            // cache fact of empty childs list
+            pages.put(fromOrderNum, new HashSet<String>());
+            cache.put(cacheId, pages);
+         }
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public void addChildNodes(NodeData parent, List<NodeData> childs)
    {
       boolean inTransaction = cache.isTransactionActive();
@@ -611,12 +662,12 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                putNode(child, ModifyChildOption.NOT_MODIFY);
                set.add(child.getIdentifier());
             }
-            cache.putIfAbsent(new CacheNodesId(parent.getIdentifier()), set);
+            cache.put(new CacheNodesId(parent.getIdentifier()), set);
          }
          else
          {
             // cache fact of empty childs list
-            cache.putIfAbsent(new CacheNodesId(parent.getIdentifier()), new HashSet<Object>());
+            cache.put(new CacheNodesId(parent.getIdentifier()), new HashSet<Object>());
          }
       }
       finally
@@ -791,6 +842,43 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    public List<NodeData> getChildNodes(final NodeData parent)
    {
       return getChildNodes.run(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<NodeData> getChildNodesByPage(final NodeData parent, final int fromOrderNum)
+   {
+      // get list of children uuids
+      final Map<Integer, Set<String>> pages =
+         (Map<Integer, Set<String>>)cache.get(new CacheNodesByPageId(parent.getIdentifier()));
+
+      if (pages == null)
+      {
+         return null;
+      }
+
+      Set<String> set = pages.get(fromOrderNum);
+      if (set == null)
+      {
+         return null;
+      }
+
+      final List<NodeData> childs = new ArrayList<NodeData>();
+      for (String childId : set)
+      {
+         NodeData child = (NodeData)cache.get(new CacheId(childId));
+         if (child == null)
+         {
+            return null;
+         }
+
+         childs.add(child);
+      }
+
+      // order children by orderNumber, as HashSet returns children in other order
+      Collections.sort(childs, new NodesOrderComparator<NodeData>());
+      return childs;
    }
 
    /**
@@ -986,6 +1074,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             cache.addToPatternList(new CachePatternNodesId(node.getParentIdentifier()), node);
             cache.addToList(new CacheNodesId(node.getParentIdentifier()), node.getIdentifier(),
                modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
+
+            cache.remove(new CacheNodesByPageId(node.getParentIdentifier()));
          }
       }
 
@@ -1122,23 +1212,26 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       cache.remove(new CacheId(item.getIdentifier()));
       cache.remove(new CacheQPath(item.getParentIdentifier(), item.getQPath(), ItemType.getItemType(item)));
 
-      if (item.getParentIdentifier() != null)
+      if (item.isNode())
       {
-         if (item.isNode())
+         if (item.getParentIdentifier() != null)
          {
-            cache.remove(new CacheNodesId(item.getIdentifier()));
-            cache.remove(new CachePropsId(item.getIdentifier()));
             cache.removeFromPatternList(new CachePatternNodesId(item.getParentIdentifier()), item);
-            cache.remove(new CachePatternNodesId(item.getIdentifier()));
-            cache.remove(new CachePatternPropsId(item.getIdentifier()));
             cache.removeFromList(new CacheNodesId(item.getParentIdentifier()), item.getIdentifier());
-            cache.remove(new CacheRefsId(item.getIdentifier()));
+            cache.remove(new CacheNodesByPageId(item.getParentIdentifier()));
          }
-         else
-         {
-            cache.removeFromPatternList(new CachePatternPropsId(item.getParentIdentifier()), item);
-            cache.removeFromList(new CachePropsId(item.getParentIdentifier()), item.getIdentifier());
-         }
+
+         cache.remove(new CacheNodesId(item.getIdentifier()));
+         cache.remove(new CachePropsId(item.getIdentifier()));
+         cache.remove(new CacheNodesByPageId(item.getIdentifier()));
+         cache.remove(new CachePatternNodesId(item.getIdentifier()));
+         cache.remove(new CachePatternPropsId(item.getIdentifier()));
+         cache.remove(new CacheRefsId(item.getIdentifier()));
+      }
+      else
+      {
+         cache.removeFromPatternList(new CachePatternPropsId(item.getParentIdentifier()), item);
+         cache.removeFromList(new CachePropsId(item.getParentIdentifier()), item.getIdentifier());
       }
    }
 

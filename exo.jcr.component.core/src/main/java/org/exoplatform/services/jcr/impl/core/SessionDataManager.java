@@ -946,6 +946,79 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * {@inheritDoc}
     */
+   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+      throws RepositoryException
+   {
+      long start = 0;
+      if (log.isDebugEnabled())
+      {
+         start = System.currentTimeMillis();
+         log.debug("getChildNodesData(" + parent.getQPath().getAsString() + " , itemDataFilter) >>>>>");
+      }
+
+      try
+      {
+         boolean hasNext = false;
+         if (!isNew(parent.getIdentifier()))
+         {
+            hasNext = transactionableManager.getChildNodesDataByPage(parent, fromOrderNum, limit, childs);
+         }
+
+         // merge data
+         Collection<ItemState> transientDescendants = changesLog.getLastChildrenStates(parent, true);
+
+         if (!transientDescendants.isEmpty())
+         {
+            // 2 get ALL persisted descendants
+            Map<String, NodeData> descendants = new LinkedHashMap<String, NodeData>();
+            for (int i = 0, length = childs.size(); i < length; i++)
+            {
+               NodeData childNode = childs.get(i);
+               descendants.put(childNode.getIdentifier(), childNode);
+            }
+
+            // merge data
+            for (ItemState state : transientDescendants)
+            {
+               NodeData data = (NodeData)state.getData();
+
+               if (state.isDeleted())
+               {
+                  descendants.remove(data.getIdentifier());
+               }
+               else if (state.isMixinChanged())
+               {
+                  NodeData removedData = descendants.remove(data.getIdentifier());
+                  if (removedData != null)
+                  {
+                     descendants.put(data.getIdentifier(), data);
+                  }
+               }
+               else if (!hasNext && (state.isAdded() || state.isRenamed() || state.isUpdated()))
+               {
+                  descendants.put(data.getIdentifier(), data);
+               }
+            }
+
+            childs.clear();
+            childs.addAll(descendants.values());
+         }
+         
+         return hasNext;
+      }
+      finally
+      {
+         if (log.isDebugEnabled())
+         {
+            log.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") <<<<< "
+               + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException
    {
       long start = 0;

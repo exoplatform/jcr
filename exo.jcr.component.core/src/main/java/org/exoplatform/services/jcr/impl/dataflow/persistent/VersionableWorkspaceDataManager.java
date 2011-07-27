@@ -91,6 +91,20 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
     * {@inheritDoc}
     */
    @Override
+   public boolean getChildNodesDataByPage(NodeData nodeData, int fromOrderNum, int limit, List<NodeData> childs)
+      throws RepositoryException
+   {
+      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      {
+         return versionDataManager.getChildNodesDataByPage(nodeData, fromOrderNum, limit, childs);
+      }
+      return super.getChildNodesDataByPage(nodeData, fromOrderNum, limit, childs);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public List<NodeData> getChildNodesData(final NodeData nodeData, final List<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {

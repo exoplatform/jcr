@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+R * Copyright (C) 2009 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -91,6 +91,18 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    List<NodeData> getChildNodes(NodeData parent);
 
    /**
+    * Get page of child nodes.
+    * 
+    * @param parent
+    *          the parent data
+    * @param fromOrderNum
+    *          the order number related to page of child nodes
+    * @return child nodes for parent if found; empty list if no items found; null if no items
+    *         initialized
+    */
+   List<NodeData> getChildNodesByPage(final NodeData parent, final int fromOrderNum);
+
+   /**
     * Get child nodes by pattern.
     * 
     * @param parent
@@ -164,6 +176,18 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * @param item
     */
    void put(ItemData item);
+
+   /**
+    * Adds page of child nodes.
+    * 
+    * @param parent
+    *          the parent data
+    * @param childs
+    *          the list of child nodes
+    * @param fromOrderNum
+    *          the order number related to page of child nodes 
+    */
+   void addChildNodesByPage(NodeData parent, List<NodeData> childs, int fromOrderNum);
 
    /**
     * Adds (update should not be the case!) list of child nodes. The list can be empty. If list is

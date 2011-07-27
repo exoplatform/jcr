@@ -102,6 +102,45 @@ public class TransactionableDataManager implements DataManager
       return nodes;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+      throws RepositoryException
+   {
+      boolean hasNext = storageDataManager.getChildNodesDataByPage(parent, fromOrderNum, limit, childs);
+
+      if (txStarted())
+      {
+         // merge data
+         List<ItemState> txChanges = transactionLog.getChildrenChanges(parent.getIdentifier(), true);
+         if (txChanges.size() > 0)
+         {
+            for (ItemState state : txChanges)
+            {
+               if (state.isDeleted())
+               {
+                  childs.remove(state.getData());
+               }
+               if (state.isMixinChanged())
+               {
+                  boolean isExists = childs.remove(state.getData());
+                  if (isExists)
+                  {
+                     childs.add((NodeData)state.getData());
+                  }
+               }
+               else if (!hasNext && (state.isAdded() || state.isRenamed() || state.isUpdated()))
+               {
+                  childs.add((NodeData)state.getData());
+               }
+            }
+         }
+      }
+
+      return hasNext;
+   }
+
    public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException
    {
       List<NodeData> nodes = storageDataManager.getChildNodesData(parent, patternFilters);

@@ -45,6 +45,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
@@ -614,7 +615,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public List<NodeData> getChildNodesData(final NodeData nodeData) throws RepositoryException
    {
-
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
       {
@@ -626,6 +626,32 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       }
    }
    
+   /**
+    * {@inheritDoc}
+    */
+   public boolean getChildNodesDataByPage(final NodeData nodeData, int fromOrderNum, int limit, List<NodeData> childs)
+      throws RepositoryException
+   {
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      if (con instanceof JDBCStorageConnection)
+      {
+         try
+         {
+            childs.addAll(((JDBCStorageConnection)con).getChildNodesDataByPage(nodeData, fromOrderNum, limit));
+            return childs.size() == limit;
+         }
+         finally
+         {
+            con.close();
+         }
+      }
+      else
+      {
+         throw new UnsupportedOperationException(
+            "The method getChildNodesDataLazily is supported only for JDBCStorageConnection");
+      }
+   }
+
    /**
     * {@inheritDoc}
     */

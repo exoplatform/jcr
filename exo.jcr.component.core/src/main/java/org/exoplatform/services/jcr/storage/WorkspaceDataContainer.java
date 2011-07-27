@@ -42,6 +42,10 @@ public interface WorkspaceDataContainer extends DataContainer
 
    public static final boolean TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME_DEFAULT = true;
 
+   public static final String LAZY_NODE_ITERATOR_PAGE_SIZE = "lazy-node-iterator-page-size";
+
+   public static final int LAZY_NODE_ITERATOR_PAGE_SIZE_DEFAULT = 100;
+
    public final static String CONTAINER_NAME = "containerName";
 
    public final static String MAXBUFFERSIZE_PROP = "max-buffer-size";

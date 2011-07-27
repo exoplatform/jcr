@@ -432,6 +432,15 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       return updateProperty.executeUpdate();
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int lastOrderNum, int limit)
+      throws SQLException
+   {
+      throw new UnsupportedOperationException("findChildNodesByParentIdentifier is not supported for old queries");
+   }
+
    // -------- values processing ------------
 
    /**

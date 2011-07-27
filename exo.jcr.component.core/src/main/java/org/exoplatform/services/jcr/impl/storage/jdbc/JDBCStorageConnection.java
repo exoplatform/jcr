@@ -1164,6 +1164,54 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    }
 
    /**
+    * 
+    * @param parent
+    * @param lastOrderNum
+    * @param limit
+    * @return
+    * @throws RepositoryException
+    * @throws IllegalStateException
+    */
+   public List<NodeData> getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit) throws RepositoryException,
+      IllegalStateException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet node = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()), fromOrderNum, limit);
+         try
+         {
+            List<NodeData> childrens = new ArrayList<NodeData>();
+            while (node.next())
+            {
+               childrens.add((NodeData)itemData(parent.getQPath(), node, I_CLASS_NODE, parent.getACL()));
+            }
+
+            return childrens;
+         }
+         finally
+         {
+            try
+            {
+               node.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
     * {@inheritDoc}
     */
    public List<PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException
@@ -2133,7 +2181,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected PersistedNodeData loadNodeRecord(QPath parentPath, String cname, String cid, String cpid, int cindex,
       int cversion, int cnordernumb, AccessControlList parentACL) throws RepositoryException, SQLException
    {
-
       try
       {
          InternalQName qname = InternalQName.parse(cname);
@@ -2850,6 +2897,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected abstract ResultSet findChildPropertiesByParentIdentifier(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException;
+
+   protected abstract ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int limit)
+      throws SQLException;
 
    protected abstract int addReference(PropertyData data) throws SQLException, IOException;
 

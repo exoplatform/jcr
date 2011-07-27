@@ -99,12 +99,17 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected String FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ;
 
    /**
-    * FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE;
+    * FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE.
     */
    protected String FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE;
 
    /**
-    * FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE;
+    * FIND_NODES_BY_PARENTID_LAZILY.
+    */
+   protected String FIND_NODES_BY_PARENTID_LAZILY_CQ;
+
+   /**
+    * FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE.
     */
    protected String FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE;
 
@@ -137,6 +142,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected PreparedStatement findItemQPathByIdentifierCQ;
 
    protected PreparedStatement findPropertyById;
+
+   protected PreparedStatement findNodesByParentIdLazilyCQ;
 
    protected PreparedStatement deleteValueDataByOrderNum;
 
@@ -1122,6 +1129,11 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          if (findNodesByParentIdAndComplexPatternCQ != null)
          {
             findNodesByParentIdAndComplexPatternCQ.close();
+         }
+
+         if (findNodesByParentIdLazilyCQ != null)
+         {
+            findNodesByParentIdLazilyCQ.close();
          }
       }
       catch (SQLException e)
