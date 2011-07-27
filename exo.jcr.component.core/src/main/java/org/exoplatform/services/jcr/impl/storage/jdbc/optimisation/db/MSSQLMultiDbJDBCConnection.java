@@ -75,7 +75,7 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
             + " from JCR_SITEM I where I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -95,5 +95,36 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
       findNodesAndProperties.setInt(2, offset);
 
       return findNodesAndProperties.executeQuery();
-   }   
+   }
+
+   /**
+    * Replace underscore in pattern with escaped symbol. Replace jcr-wildcard '*' with sql-wildcard '%'.
+    * <p>
+    * MSSQL have a range pattern '[..]' so we need to escape it too.
+    * 
+    * @param pattern
+    * @return pattern with escaped underscore and fixed wildcard symbols
+    */
+   protected String fixEscapeSymbols(String pattern)
+   {
+      char[] chars = pattern.toCharArray();
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < chars.length; i++)
+      {
+         switch (chars[i])
+         {
+            case '*' :
+               sb.append('%');
+               break;
+            case '_' :
+            case '%' :
+            case '[' :
+            case ']' :
+               sb.append(getWildcardEscapeSymbold());
+            default :
+               sb.append(chars[i]);
+         }
+      }
+      return sb.toString();
+   }
 }
