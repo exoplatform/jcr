@@ -264,6 +264,18 @@
           </row>
         </tbody>
       </tgroup>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>lazy-node-iterator-page-size</entry>
+
+            <entry>the page size for lazy iterator. Indicates how many nodes
+            can be retrieved from storage per request. The default value is
+            100</entry>
+          </row>
+        </tbody>
+      </tgroup>
     </table>
 
     <para><emphasis role="bold">value-storages</emphasis>: The list of value
