@@ -207,11 +207,13 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       UPDATE_VALUE = "update JCR_MVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=? and ORDER_NUM=?";
 
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-            + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
             + " where I.I_CLASS=1 and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and"
-            + " P.I_CLASS=2 and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID LIMIT ?";
+            + " P.I_CLASS=2 and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
    }
 
    /**
@@ -578,7 +580,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 
       findNodesByParentIdLazilyCQ.setString(1, parentCid);
       findNodesByParentIdLazilyCQ.setInt(2, fromOrderNum);
-      findNodesByParentIdLazilyCQ.setInt(3, limit);
+      findNodesByParentIdLazilyCQ.setMaxRows(limit);
 
       return findNodesByParentIdLazilyCQ.executeQuery();
    }
