@@ -116,23 +116,37 @@ public class TransactionableDataManager implements DataManager
          List<ItemState> txChanges = transactionLog.getChildrenChanges(parent.getIdentifier(), true);
          if (txChanges.size() > 0)
          {
+            
+            int minOrderNum = childs.size() != 0 ? childs.get(0).getOrderNumber() :-1;
+            int maxOrderNum = childs.size() != 0 ? childs.get(childs.size() - 1).getOrderNumber() : -1;
+            
             for (ItemState state : txChanges)
             {
-               if (state.isDeleted())
+               NodeData data = (NodeData)state.getData();
+
+               if ((state.isAdded() || state.isRenamed()) && !hasNext)
                {
-                  childs.remove(state.getData());
+                  childs.add(data);
                }
-               if (state.isMixinChanged())
+               else if (state.isDeleted())
+               {
+                  childs.remove(data);
+               }
+               else if (state.isMixinChanged())
                {
                   boolean isExists = childs.remove(state.getData());
                   if (isExists)
                   {
-                     childs.add((NodeData)state.getData());
+                     childs.add(data);
                   }
                }
-               else if (!hasNext && (state.isAdded() || state.isRenamed() || state.isUpdated()))
+               else if (state.isUpdated())
                {
-                  childs.add((NodeData)state.getData());
+                  boolean isExists = childs.remove(state.getData());
+                  if (isExists && minOrderNum <= data.getOrderNumber() && data.getOrderNumber() <= maxOrderNum)
+                  {
+                     childs.add(data);
+                  }
                }
             }
          }

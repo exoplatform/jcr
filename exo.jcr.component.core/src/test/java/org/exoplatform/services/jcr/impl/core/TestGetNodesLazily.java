@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.ExtendedNode;
+import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.transaction.TransactionService;
 
@@ -155,6 +156,28 @@ public class TestGetNodesLazily extends JcrImplBaseTest
 
       session.save();
       assertChildNodes(testRoot, nodesCount);
+   }
+
+   /**
+    * New nodes moved into session log and not save
+    */
+   public void testGetNodesLazilySessionUpdatedNodes() throws Exception
+   {
+      testRoot.orderBefore("child110", "child0");
+      RangeIterator iterator = testRoot.getNodesLazily();
+
+      NodeImpl next = (NodeImpl)iterator.next();
+      assertEquals(next.getName(), "child110");
+      assertEquals(((NodeData)next.getData()).getOrderNumber(), 0);
+
+      next = (NodeImpl)iterator.next();
+      assertEquals(next.getName(), "child0");
+      assertEquals(((NodeData)next.getData()).getOrderNumber(), 1);
+
+      iterator.skip(108);
+      next = (NodeImpl)iterator.next();
+      assertEquals(next.getName(), "child109");
+      assertEquals(((NodeData)next.getData()).getOrderNumber(), 110);
    }
 
    /**

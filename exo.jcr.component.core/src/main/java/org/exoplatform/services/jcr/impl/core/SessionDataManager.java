@@ -976,13 +976,20 @@ public class SessionDataManager implements ItemDataConsumer
                NodeData childNode = childs.get(i);
                descendants.put(childNode.getIdentifier(), childNode);
             }
+            
+            int minOrderNum = childs.size() != 0 ? childs.get(0).getOrderNumber() :-1;
+            int maxOrderNum = childs.size() != 0 ? childs.get(childs.size() - 1).getOrderNumber() : -1;
 
             // merge data
             for (ItemState state : transientDescendants)
             {
                NodeData data = (NodeData)state.getData();
 
-               if (state.isDeleted())
+               if ((state.isAdded() || state.isRenamed()) && !hasNext)
+               {
+                  descendants.put(data.getIdentifier(), data);
+               }
+               else if (state.isDeleted())
                {
                   descendants.remove(data.getIdentifier());
                }
@@ -994,9 +1001,14 @@ public class SessionDataManager implements ItemDataConsumer
                      descendants.put(data.getIdentifier(), data);
                   }
                }
-               else if (!hasNext && (state.isAdded() || state.isRenamed() || state.isUpdated()))
+               else if (state.isUpdated())
                {
-                  descendants.put(data.getIdentifier(), data);
+                  NodeData removedData = descendants.remove(data.getIdentifier());
+                  if (removedData != null && minOrderNum <= data.getOrderNumber()
+                     && data.getOrderNumber() <= maxOrderNum)
+                  {
+                     descendants.put(data.getIdentifier(), data);
+                  }
                }
             }
 
