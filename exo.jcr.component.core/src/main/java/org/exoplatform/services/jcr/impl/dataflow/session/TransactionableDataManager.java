@@ -132,18 +132,10 @@ public class TransactionableDataManager implements DataManager
                {
                   childs.remove(data);
                }
-               else if (state.isMixinChanged())
+               else if (state.isMixinChanged() || state.isUpdated())
                {
-                  boolean isExists = childs.remove(state.getData());
-                  if (isExists)
-                  {
-                     childs.add(data);
-                  }
-               }
-               else if (state.isUpdated())
-               {
-                  boolean isExists = childs.remove(state.getData());
-                  if (isExists && minOrderNum <= data.getOrderNumber() && data.getOrderNumber() <= maxOrderNum)
+                  childs.remove(state.getData());
+                  if (minOrderNum <= data.getOrderNumber() && data.getOrderNumber() <= maxOrderNum)
                   {
                      childs.add(data);
                   }

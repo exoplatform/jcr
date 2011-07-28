@@ -985,27 +985,16 @@ public class SessionDataManager implements ItemDataConsumer
             {
                NodeData data = (NodeData)state.getData();
 
+               // we have only last states, so remove nodes first
+               descendants.remove(data.getIdentifier());
+
                if ((state.isAdded() || state.isRenamed()) && !hasNext)
                {
                   descendants.put(data.getIdentifier(), data);
                }
-               else if (state.isDeleted())
+               else if (state.isMixinChanged() || state.isUpdated())
                {
-                  descendants.remove(data.getIdentifier());
-               }
-               else if (state.isMixinChanged())
-               {
-                  NodeData removedData = descendants.remove(data.getIdentifier());
-                  if (removedData != null)
-                  {
-                     descendants.put(data.getIdentifier(), data);
-                  }
-               }
-               else if (state.isUpdated())
-               {
-                  NodeData removedData = descendants.remove(data.getIdentifier());
-                  if (removedData != null && minOrderNum <= data.getOrderNumber()
-                     && data.getOrderNumber() <= maxOrderNum)
+                  if (minOrderNum <= data.getOrderNumber() && data.getOrderNumber() <= maxOrderNum)
                   {
                      descendants.put(data.getIdentifier(), data);
                   }

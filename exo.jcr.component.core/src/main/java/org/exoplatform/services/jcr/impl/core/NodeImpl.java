@@ -3627,10 +3627,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          Collections.sort(storedNodes, new NodeDataOrderComparator());
 
          int size = storedNodes.size();
+
+         fromOrderNum =
+            size == 0 ? fromOrderNum + limit : Math.max(fromOrderNum + limit, storedNodes.get(size - 1)
+               .getOrderNumber() + 1);
+
+
+         // skip some nodes
          if (size != 0)
          {
-            fromOrderNum = storedNodes.get(size - 1).getOrderNumber() + 1;
-
             while (skip > 0 && storedNodes.size() > 0)
             {
                storedNodes.remove(0);
