@@ -51,6 +51,7 @@ import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.transaction.TransactionService;
 
 import java.io.Serializable;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -981,7 +982,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   // The listeners will need to be executed outside the current tx so we suspend
                   // the current tx we can face enlistment issues on product like ISPN
                   transactionManager.suspend();
-                  notifySaveItems(logWrapper.getChangesLog(), false);
+
+                  SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+                  {
+                     public Void run()
+                     {
+                        notifySaveItems(logWrapper.getChangesLog(), false);
+                        return null;
+                     }
+                  });
                   // Since the resume method could cause issue with some TM at this stage, we don't resume the tx
                }
             }
