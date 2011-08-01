@@ -2692,7 +2692,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       SortedSet<TempPropertyData> ptTempProp = tempNode.properties.get(Constants.JCR_PRIMARYTYPE.getAsString());
       if (ptTempProp != null)
       {
-         ptValue = ((ExtendedTempPropertyData)ptTempProp.first()).vdata;
+         ptValue = ptTempProp.first().getValueData();
          ptName = InternalQName.parse(new String(ptValue.getAsByteArray(), Constants.DEFAULT_ENCODING));
       }
 
@@ -2705,7 +2705,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          for (TempPropertyData mxnb : mixinsTempProps)
          {
-            ValueData vdata = ((ExtendedTempPropertyData)mxnb).vdata;
+            ValueData vdata = mxnb.getValueData();
 
             mixinsData.add(vdata);
             mixins.add(InternalQName.parse(new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING)));
@@ -2714,8 +2714,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
       // build node data. No need to load ACL. The node will be pushed directly for reindexing. 
       NodeData nodeData =
-         new PersistedNodeData(getIdentifier(tempNode.cid), parentPath, getIdentifier(parentCid),
-            tempNode.cversion, tempNode.cnordernumb, ptName, mixins.toArray(new InternalQName[mixins.size()]), null);
+         new PersistedNodeData(getIdentifier(tempNode.cid), parentPath, getIdentifier(parentCid), tempNode.cversion,
+            tempNode.cnordernumb, ptName, mixins.toArray(new InternalQName[mixins.size()]), null);
 
       Map<String, PropertyData> childProps = new HashMap<String, PropertyData>();
       for (String propName : tempNode.properties.keySet())
@@ -2741,7 +2741,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             {
                ExtendedTempPropertyData exTempProp = (ExtendedTempPropertyData)tempProp;
 
-               valueData.add(exTempProp.vdata);
+               valueData.add(exTempProp.getValueData());
             }
          }
 
@@ -2791,14 +2791,19 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     */
    protected class TempPropertyData implements Comparable<TempPropertyData>
    {
-      public int orderNum;
+      protected final int orderNum;
 
-      public byte[] data;
+      protected ValueData data;
 
       public TempPropertyData(ResultSet item) throws SQLException
       {
+         this(item, true);
+      }
+
+      public TempPropertyData(ResultSet item, boolean readValue) throws SQLException
+      {
          orderNum = item.getInt(COLUMN_VORDERNUM);
-         readData(item);
+         data = readValue ? new ByteArrayPersistedValueData(orderNum, item.getBytes(COLUMN_VDATA)) : null;
       }
 
       public int compareTo(TempPropertyData o)
@@ -2806,9 +2811,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          return orderNum - o.orderNum;
       }
 
-      protected void readData(ResultSet item) throws SQLException
+      public ValueData getValueData()
       {
-         data = item.getBytes(COLUMN_VDATA);
+         return data;
       }
    }
 
@@ -2817,52 +2822,31 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     */
    protected class ExtendedTempPropertyData extends TempPropertyData
    {
-      public String id;
+      protected final String id;
 
-      public String name;
+      protected final String name;
 
-      public int version;
+      protected final int version;
 
-      public int type;
+      protected final int type;
 
-      public boolean multi;
+      protected final boolean multi;
 
-      public String storage_desc;
-
-      public ValueData vdata;
+      protected final String storage_desc;
 
       public ExtendedTempPropertyData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
       {
-         super(item);
-
+         super(item, false);
          id = item.getString("P_ID");
          name = item.getString("P_NAME");
          version = item.getInt("P_VERSION");
          type = item.getInt("P_TYPE");
          multi = item.getBoolean("P_MULTIVALUED");
          storage_desc = item.getString(COLUMN_VSTORAGE_DESC);
-
-         readData(item);
-      }
-
-      @Override
-      protected void readData(ResultSet item) throws SQLException
-      {
-         InputStream data = item.getBinaryStream(COLUMN_VDATA);
-         try
-         {
-            vdata =
-               storage_desc == null ? readValueData(id, orderNum, version, data) : readValueData(getIdentifier(id),
-                  orderNum, storage_desc);
-         }
-         catch (ValueStorageNotFoundException e)
-         {
-            throw new SQLException(e);
-         }
-         catch (IOException e)
-         {
-            throw new SQLException(e);
-         }
+         InputStream is = item.getBinaryStream(COLUMN_VDATA);
+         data =
+            storage_desc == null ? readValueData(id, orderNum, version, is) : readValueData(getIdentifier(id),
+               orderNum, storage_desc);
       }
    }
 

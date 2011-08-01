@@ -736,7 +736,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       {
          for (TempPropertyData value : permValues)
          {
-            StringTokenizer parser = new StringTokenizer(new String(value.data), AccessControlEntry.DELIMITER);
+            StringTokenizer parser =
+               new StringTokenizer(new String(value.getValueData().getAsByteArray()), AccessControlEntry.DELIMITER);
             naPermissions.add(new AccessControlEntry(parser.nextToken(), parser.nextToken()));
          }
 
@@ -763,7 +764,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       SortedSet<TempPropertyData> ownerValues = properties.get(Constants.EXO_OWNER.getAsString());
       if (ownerValues != null)
       {
-         return new String(ownerValues.first().data);
+         return new String(ownerValues.first().getValueData().getAsByteArray());
       }
       else
       {
@@ -875,7 +876,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
          }
 
-         byte[] data = primaryType.first().data;
+         byte[] data = primaryType.first().getValueData().getAsByteArray();
          InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
 
          // MIXIN
@@ -888,7 +889,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             List<InternalQName> mNames = new ArrayList<InternalQName>();
             for (TempPropertyData mxnb : mixTypes)
             {
-               InternalQName mxn = InternalQName.parse(new String(mxnb.data));
+               InternalQName mxn = InternalQName.parse(new String(mxnb.getValueData().getAsByteArray()));
                mNames.add(mxn);
 
                if (!privilegeable && Constants.EXO_PRIVILEGEABLE.equals(mxn))
