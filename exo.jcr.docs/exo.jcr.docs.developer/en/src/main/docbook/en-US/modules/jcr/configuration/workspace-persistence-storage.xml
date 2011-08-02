@@ -23,6 +23,7 @@
     &lt;property name="multi-db" value="true"/&gt;
     &lt;property name="max-buffer-size" value="200K"/&gt;
     &lt;property name="swap-directory" value="target/temp/swap/ws"/&gt;
+    &lt;property name="lazy-node-iterator-page-size" value="50"/&gt;
   &lt;/properties&gt;</programlisting>
 
   <para>Properties are Container specific parameters:</para>
@@ -45,6 +46,10 @@
   <para><emphasis role="bold">swap-directory</emphasis>: A location where the
   value will be spooled if no value storage is configured but a
   max-buffer-size is exceeded.</para>
+
+  <para><emphasis role="bold">lazy-node-iterator-page-size</emphasis>: "Lazy"
+  child nodes iterator settings. Defines size of page, the number of nodes
+  that are retrieved from persistent storage at once.</para>
 
   <para>eXo JCR has an RDB (JDBC) based, production ready <emphasis
   role="bold">Workspace Data Container</emphasis>.</para>

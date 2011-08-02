@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.APIExtensions">
+  <?dbhtml filename="ch-api-extensions.html"?>
+
+  <title>JCR API Extensions</title>
+
+  <section>
+    <title>"Lazy" child nodes iteration</title>
+
+    <section>
+      <title>Concept</title>
+
+      <para>eXo JCR implementation offers new extended feature beyond JCR
+      specification. Sometimes it happens that one JCR Node has hundreds or
+      even thousands of child nodes. This situation is highly not recommended
+      for content repository data storage, but some times it occurs. JCR Team
+      is pleased to announce new feature that will help to have a deal with
+      huge child lists. They can be iterated in a "lazy" manner now giving
+      improvement in term of performance and RAM usage.</para>
+    </section>
+
+    <section>
+      <title>API and usage</title>
+
+      <para>Lazy child nodes iteration feature is accessible via extended
+      interface org.exoplatform.services.jcr.core.ExtendedNode, the inheritor
+      of javax.jcr.Node. It provides a new single method shown below:</para>
+
+      <programlisting language="java">   /**
+    * Returns a NodeIterator over all child Nodes of this Node. Does not include properties 
+    * of this Node. If this node has no child nodes, then an empty iterator is returned.
+    * 
+    * @return A NodeIterator over all child Nodes of this &lt;code&gt;Node&lt;/code&gt;.
+    * @throws RepositoryException If an error occurs.
+    */
+   public NodeIterator getNodesLazily() throws RepositoryException;
+</programlisting>
+
+      <para>From the view of end-user or client application, getNodesLazily()
+      works similar to JCR specified getNodes() returning NodeIterator. "Lazy"
+      iterator supports the same set of features as an ordinary NodeIterator,
+      including skip() and excluding remove() features. "Lazy" implementation
+      performs reading from DB by pages. Each time when it has no more
+      elements stored in memory, it reads next set of items from persistent
+      layer. This set is called "page". Must admit that getNodesLazily feature
+      fully supports session and transaction changes log, so it's a
+      functionally-full analogue of specified getNodes() operation. So when
+      having a deal with huge list of child nodes, getNodes() can be simply
+      and safely substituted with getNodesLazily().</para>
+    </section>
+
+    <section>
+      <title>Configuration</title>
+
+      <para>"Lazy" iterator makes ahead reading into memory, though reading
+      the "page". "Page" is a set of nodes read at once. Size of the page by
+      default is 100 nodes and can be configured though workspace container
+      configuration using "lazy-node-iterator-page-size" parameter.
+      I.e.:</para>
+
+      <programlisting language="xml">&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
+   &lt;properties&gt;
+      &lt;property name="source-name" value="jdbcjcr" /&gt;
+      &lt;property name="multi-db" value="true" /&gt;
+      &lt;property name="max-buffer-size" value="200k" /&gt;
+      &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
+      &lt;property name="lazy-node-iterator-page-size" value="50" /&gt;
+      ...
+   &lt;/properties&gt;</programlisting>
+
+      <para>But it's not recommended to set huge page size</para>
+    </section>
+
+    <section>
+      <title>Implementation notices</title>
+
+      <para>Current "lazy" child nodes iterator supports caching, when pages
+      are cached atomically in safe and optimized way. Cache is always kept in
+      consistent state using invalidation if child list changed. Take in
+      account the following difference in getNodes and getNodesLazily.
+      Specification defined getNodes method reads whole list of nodes, so
+      child items added after invocation will never be in results.
+      GetNodesLazily doesn't acquire full list of nodes, so child items added
+      after iterator creation can be found in result. So getNodesLazily can
+      represent some kind of "real-time" results. But it is highly depend on
+      numerous conditions and should not be used as a feature, it more likely
+      implementation specific issue typical for "lazy-pattern".</para>
+    </section>
+  </section>
+</chapter>

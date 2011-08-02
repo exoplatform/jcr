@@ -104,6 +104,11 @@
 
   <xi:include href="jcr/searching/fulltext-search-and-settings.xml"
                   xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <!-- api extensions -->
+  
+  <xi:include href="jcr/api-extensions.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
               
   <!-- protocols -->
   
