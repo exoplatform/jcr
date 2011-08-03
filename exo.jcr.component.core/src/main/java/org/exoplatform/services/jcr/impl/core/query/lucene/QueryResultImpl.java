@@ -141,7 +141,7 @@ public abstract class QueryResultImpl implements QueryResult
     * The maximum size of this result if limit > 0
     */
    private final long limit;
-   
+
    /**
     * If <code>true</code>, it means we're using a System session.
     */
@@ -323,7 +323,7 @@ public abstract class QueryResultImpl implements QueryResult
          result = executeQuery(maxResultSize);
          if (log.isDebugEnabled())
          {
-            log.debug("query executed in {} ms", new Long(System.currentTimeMillis() - time));            
+            log.debug("query executed in {} ms", new Long(System.currentTimeMillis() - time));
          }
          // set selector names
          selectorNames = result.getSelectorNames();
@@ -341,12 +341,12 @@ public abstract class QueryResultImpl implements QueryResult
 
          if (log.isDebugEnabled())
          {
-            time = System.currentTimeMillis();            
+            time = System.currentTimeMillis();
          }
          collectScoreNodes(result, resultNodes, maxResultSize);
          if (log.isDebugEnabled())
          {
-            log.debug("retrieved ScoreNodes in {} ms", new Long(System.currentTimeMillis() - time));            
+            log.debug("retrieved ScoreNodes in {} ms", new Long(System.currentTimeMillis() - time));
          }
 
          // update numResults
@@ -400,7 +400,7 @@ public abstract class QueryResultImpl implements QueryResult
             break;
          }
          // check access
-         if (isAccessGranted(sn))
+         if (!docOrder || isAccessGranted(sn))
          {
             collector.add(sn);
          }
@@ -511,24 +511,15 @@ public abstract class QueryResultImpl implements QueryResult
          else
          {
             // attempt to get enough results
-            try
+            long expectedPosition = position + skipNum;
+            while (position < expectedPosition)
             {
-               getResults(position + invalid + (int)skipNum);
-               if (resultNodes.size() >= position + skipNum)
-               {
-                  // skip within already fetched results
-                  position += skipNum - 1;
-                  fetchNext();
-               }
-               else
+               fetchNext();
+               if (next == null)
                {
                   // not enough results after getResults()
                   throw new NoSuchElementException();
                }
-            }
-            catch (RepositoryException e)
-            {
-               throw new NoSuchElementException(e.getMessage());
             }
          }
       }
@@ -676,6 +667,25 @@ public abstract class QueryResultImpl implements QueryResult
                }
             }
             next = (ScoreNode[])resultNodes.get(nextPos);
+            try
+            {
+               if (!isAccessGranted(next))
+               {
+                  next = null;
+                  invalid++;
+                  resultNodes.remove(nextPos);
+                  if (log.isDebugEnabled())
+                  {
+                     log
+                        .debug("The node is invalid since we don't have sufficient rights to access it, it will be removed from the results set");
+                  }
+               }
+            }
+            catch (RepositoryException e)
+            {
+               log.error("Could not check access permission", e);
+               break;
+            }
          }
          position++;
       }
