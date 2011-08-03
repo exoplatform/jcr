@@ -30,12 +30,12 @@
     <title>Kernel configuration namespace</title>
 
     <para>To be effective, the namespace URI
-    <uri>http://www.exoplaform.org/xml/ns/kernel_1_2.xsd</uri> must be target
+    <uri>http://www.exoplatform.org/xml/ns/kernel_1_2.xsd</uri> must be target
     namespace of the XML configuration file.</para>
 
     <programlisting language="xml">&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-               xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
-               xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"&gt;
+               xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+               xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
 
 
    ...
@@ -48,8 +48,8 @@
 
       <programlisting language="xml">&lt;configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
-   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"&gt;
+   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
 
   &lt;import&gt;${db.configuration.path}/db.xml&lt;/import&gt;
   &lt;import&gt;${java.io.tmpdir}/bindfile.xml&lt;/import&gt;
@@ -1059,8 +1059,8 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
         <para>You can find below an example of how to use the
         variables:</para>
         
-        <programlisting language="xml">&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
-  xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"&gt;
+        <programlisting language="xml">&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_1.xsd http://www.exoplatform.org/xml/ns/kernel_1_1.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_1.xsd"&gt;
   &lt;component&gt;
     &lt;type&gt;org.exoplatform.container.TestPortalContainer$MyComponent&lt;/type&gt;
     &lt;init-params&gt;

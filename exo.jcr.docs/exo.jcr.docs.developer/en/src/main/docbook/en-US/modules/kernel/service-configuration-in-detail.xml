@@ -102,8 +102,8 @@ public interface ArticleStatsService {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF8"?&gt;
 &lt;configuration
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
-    xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"&gt;
+    xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
+    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
   &lt;component&gt;
     &lt;key&gt;com.laverdad.services.ArticleStatsService&lt;/key&gt;
     &lt;type&gt;com.laverdad.services.ArticleStatsServiceImpl&lt;/type&gt;
@@ -112,7 +112,7 @@ public interface ArticleStatsService {
 
       <note>
         <para>You are correctly using the namespace of the configuration
-        schema ( <uri>http://www.exoplaform.org/xml/ns/kernel_1_1.xsd</uri>).
+        schema ( <uri>http://www.exoplatform.org/xml/ns/kernel_1_1.xsd</uri>).
         Most of the configuration schema is explained in this article,
         therefore you do not need to open and understand the schema. For
         backward compatibility it is not necessary to declare the

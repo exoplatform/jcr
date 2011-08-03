@@ -269,8 +269,8 @@
     into the list of parameter values of the init param called
     <emphasis>targetInterfaces</emphasis>.</para>
 
-    <programlisting language="xml">&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
- xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"&gt;
+    <programlisting language="xml">&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
+ xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
 
  &lt;component&gt;
    &lt;type&gt;org.exoplatform.services.jcr.statistics.JCRAPIAspectConfig&lt;/type&gt;

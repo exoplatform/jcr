@@ -19,8 +19,8 @@
   <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
-   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"&gt;
+   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.organization.OrganizationService&lt;/target-component&gt;
 .....
