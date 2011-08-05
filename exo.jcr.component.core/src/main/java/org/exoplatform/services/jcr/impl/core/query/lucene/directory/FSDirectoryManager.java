@@ -81,7 +81,7 @@ public class FSDirectoryManager implements DirectoryManager
          public Directory run() throws Exception
          {
             File dir;
-            if (name.equals("."))
+            if (name.equals("."))   
             {
                dir = baseDir;
             }
@@ -97,7 +97,7 @@ public class FSDirectoryManager implements DirectoryManager
                   throw new IOException("Cannot create directory: " + dir);
                }
             }
-            return FSDirectory.open(dir, new NativeFSLockFactory(dir));
+            return FSDirectory.getDirectory(dir, LOCK_FACTORY_CLASS != null ? null : new NativeFSLockFactory(dir));
          }
       });
    }

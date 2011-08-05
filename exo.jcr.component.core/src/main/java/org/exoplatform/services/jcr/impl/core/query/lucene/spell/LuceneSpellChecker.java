@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.TraversingQueryNodeVisitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -258,7 +259,9 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          {
             public Object run() throws Exception
             {
-               spellIndexDirectory = FSDirectory.getDirectory(path, new NativeFSLockFactory(path));
+               spellIndexDirectory =
+                  FSDirectory.getDirectory(path, DirectoryManager.LOCK_FACTORY_CLASS != null ? null
+                     : new NativeFSLockFactory(path));
                if (IndexReader.indexExists(spellIndexDirectory))
                {
                   lastRefresh = System.currentTimeMillis();

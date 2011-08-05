@@ -335,10 +335,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          merger.indexAdded(index.getName(), index.getNumDocuments());
       }
 
-      offlineIndex =
-         new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-            directoryManager);
-
       // this method is run in privileged mode internally
       IndexingQueueStore store = new IndexingQueueStore(indexDir);
 
@@ -832,7 +828,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       executeAndLog(new Commit(getTransactionId()));
 
       indexNames.write();
-
       offlineIndex.close();
       deleteIndex(offlineIndex);
       offlineIndex = null;
@@ -2498,8 +2493,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a AddNode String.
        */
-      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length()
-         + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH =
+         Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to add.
@@ -2900,8 +2895,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a DeleteNode String.
        */
-      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length()
-         + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH =
+         Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to remove.
