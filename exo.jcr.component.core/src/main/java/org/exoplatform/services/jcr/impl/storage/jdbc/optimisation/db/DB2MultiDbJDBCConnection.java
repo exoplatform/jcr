@@ -71,10 +71,10 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
       super.prepareQueries();
       FIND_NODES_AND_PROPERTIES =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
             + " join (select A.* from"
             + " (select Row_Number() over (order by I.ID) as r__, I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM"
-            + " from JCR_SITEM I where I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?) J on P.PARENT_ID = J.ID"
+            + " from JCR_MITEM I where I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
    }
    
