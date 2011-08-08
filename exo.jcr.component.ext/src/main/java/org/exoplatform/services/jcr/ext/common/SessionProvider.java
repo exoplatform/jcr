@@ -20,12 +20,12 @@ package org.exoplatform.services.jcr.ext.common;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.DynamicIdentity;
+import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
-import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.MembershipEntry;
 
 import java.util.HashMap;
@@ -70,8 +70,6 @@ public class SessionProvider implements SessionLifecycleListener
    private String currentWorkspace;
 
    private boolean closed;
-   
-   private ConversationState conversationState;
 
    /**
     * Creates SessionProvider for certain identity.
@@ -83,18 +81,6 @@ public class SessionProvider implements SessionLifecycleListener
       this(false);
       if (userState.getAttribute(SESSION_PROVIDER) == null)
          userState.setAttribute(SESSION_PROVIDER, this);
-   }
-
-   /**
-    * Creates SessionProvider for a dynamic identity.
-    * 
-    * @param membershipEntries the expected memberships
-    */
-   private SessionProvider(HashSet<MembershipEntry> membershipEntries)
-   {
-      this(false);
-      Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
-      this.conversationState = new ConversationState(id);
    }
 
    /**
@@ -126,7 +112,7 @@ public class SessionProvider implements SessionLifecycleListener
     */
    public static SessionProvider createAnonimProvider()
    {
-      Identity id = new Identity(IdentityConstants.ANONIM, new HashSet<MembershipEntry>());
+      Identity id = new Identity(SystemIdentity.ANONIM, new HashSet<MembershipEntry>());
       return new SessionProvider(new ConversationState(id));
    }
 
@@ -144,7 +130,11 @@ public class SessionProvider implements SessionLifecycleListener
          {
             membershipEntries.add(ace.getMembershipEntry());
          }
-         return new SessionProvider(membershipEntries);
+
+         Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
+         ConversationState conversationState = new ConversationState(id);
+         ConversationState.setCurrent(conversationState);
+         return new SessionProvider(conversationState);
       }
 
    }
@@ -178,7 +168,8 @@ public class SessionProvider implements SessionLifecycleListener
 
       if (session == null)
       {
-         if (conversationState != null)
+         ConversationState conversationState = ConversationState.getCurrent();
+         if (conversationState != null && conversationState.getIdentity().getUserId().equals(DynamicIdentity.DYNAMIC))
          {
             session =
                      (ExtendedSession) repository.getDynamicSession(workspaceName, conversationState.getIdentity()
