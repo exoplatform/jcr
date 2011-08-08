@@ -144,4 +144,70 @@ public class DynamicSessionProviderTest
          //ok
       }
    }
+
+   public void testCreateSystemSessionProviderAfterDynamic() throws Exception
+   {
+      // System only node.
+      NodeImpl systemNode = (NodeImpl) testRoot.addNode("system_dynamic");
+      systemNode.addMixin("exo:privilegeable");
+
+      systemNode.setPermission("*:/platform/users", new String[]
+      {PermissionType.READ});
+      systemNode.removePermission(session.getUserID());
+      testRoot.save();
+
+
+      //Dynamic session successful read
+      List<AccessControlEntry> accessControlEntries = new ArrayList<AccessControlEntry>();
+      accessControlEntries.add(new AccessControlEntry("*:/platform/users", "READ"));
+      SessionProvider dynamicProvider  = SessionProvider.createProvider(accessControlEntries);
+
+      Session dynamicSession = null;
+
+      //check get
+      try
+      {
+         dynamicSession = dynamicProvider.getSession(session.getWorkspace().getName(), repository);
+         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(systemNode.getPath());
+         //ok
+      }
+      catch (AccessDeniedException e)
+      {
+         e.printStackTrace();
+         fail("Dynamic session with membership '*:/platform/users' should read node with membership '*:/platform/users'. Exception message : "
+                  + e.getMessage());
+      }
+
+      //System provider successful read
+      SessionProvider systemProvider = SessionProvider.createSystemProvider();
+      Session systemSession = null;
+      try
+      {
+         systemSession = systemProvider.getSession(session.getWorkspace().getName(), repository);
+         NodeImpl systemNodeOverSystemSession = (NodeImpl) systemSession.getItem(systemNode.getPath());
+         //ok         
+      }
+      catch (AccessDeniedException e)
+      {
+         e.printStackTrace();
+         fail("System session should read node with membership '*:/platform/users'. Exception message : "
+                  + e.getMessage());
+      }
+
+      //check remove
+      try
+      {
+         systemSession = systemProvider.getSession(session.getWorkspace().getName(), repository);
+         NodeImpl systemNodeOverSystemSession = (NodeImpl) systemSession.getItem(systemNode.getPath());
+
+         systemNodeOverSystemSession.remove();
+         systemSession.save();
+         //ok
+      }
+      catch (AccessDeniedException e)
+      {
+         fail("System session should remove node with membership '*:/platform/users'.");
+      }
+
+   }
 }
