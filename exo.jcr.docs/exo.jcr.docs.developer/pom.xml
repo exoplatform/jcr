@@ -22,7 +22,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.docs</artifactId>
-      <version>1.14.0-CR4</version>
+      <version>1.14.0-CR4-CP01</version>
    </parent>
 
    <modelVersion>4.0.0</modelVersion>

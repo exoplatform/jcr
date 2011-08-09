@@ -29,20 +29,20 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.14.0-CR4</version>
+  <version>1.14.0-CR4-CP01</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
 
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/tags/1.14.0-CR4</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.14.0-CR4</developerConnection>
-    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/tags/1.14.0-CR4</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/tags/1.14.0-CR4-CP01</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.14.0-CR4-CP01</developerConnection>
+    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/tags/1.14.0-CR4-CP01</url>
   </scm>
 
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.14</exo.product.specification>
-    <org.exoplatform.kernel.version>2.3.0-CR4</org.exoplatform.kernel.version>
+    <org.exoplatform.kernel.version>2.3.0-CR4-CP01</org.exoplatform.kernel.version>
     <org.exoplatform.core.version>2.4.0-CR4</org.exoplatform.core.version>
     <org.exoplatform.ws.version>2.2.0-CR4</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>1</org.exoplatform.doc-style.version>
