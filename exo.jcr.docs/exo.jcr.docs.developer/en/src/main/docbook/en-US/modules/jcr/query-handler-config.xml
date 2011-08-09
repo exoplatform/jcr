@@ -17,10 +17,10 @@
     usage of cluster advantages. That's why eXo JCR offers three strategies
     that are suitable for it's own usecases. They are standalone, clustered
     with shared index and clustered with local indexes. Each one has it's pros
-    and cons. </para>
+    and cons.</para>
 
     <para>Stanadlone strategy provides a stack of indexes to achieve greater
-    performance within single JVM. </para>
+    performance within single JVM.</para>
 
     <mediaobject>
       <imageobject>
@@ -33,11 +33,11 @@
     file-system flushing. This index is called "Volatile" and it is invoked in
     searches also. Within some conditions volatile index is flushed to the
     persistent storage (file system) as new index directory. This allows to
-    achieve great results for write operations. </para>
+    achieve great results for write operations.</para>
 
     <para>Clustered implementation with local indexes is built upon same
     strategy with volatile in-memory index buffer along with delayed flushing
-    on persistent storage. </para>
+    on persistent storage.</para>
 
     <mediaobject>
       <imageobject>
@@ -57,11 +57,10 @@
     for use. If no initial index found JCR uses automated sceneries. They are
     controlled via configuration (see "index-recovery-mode" parameter)
     offering full re-indexing from database or copying from another cluster
-    node. </para>
+    node.</para>
 
     <para>For some reasons having a multiple index copies on each instance can
-    be costly. So shared index can be used instead (see diagram below).
-    </para>
+    be costly. So shared index can be used instead (see diagram below).</para>
 
     <mediaobject>
       <imageobject>
@@ -93,7 +92,7 @@
       <title>Query-handler configuration overview</title>
 
       <para>Configuration example:</para>
-      
+
       <programlisting language="xml">&lt;workspace name="ws"&gt;
    &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
       &lt;properties&gt;
@@ -112,93 +111,94 @@
    &lt;/query-handler&gt;
 &lt;/workspace&gt;
 </programlisting>
- <table>
-          <title>Config properties description</title>
 
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>Property name</entry>
+      <table>
+        <title>Config properties description</title>
 
-                <entry>Description</entry>
-              </row>
-            </thead>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Property name</entry>
 
-            <tbody>
-              <row>
-                <entry>index-dir</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
 
-                <entry>path to index</entry>
-              </row>
+          <tbody>
+            <row>
+              <entry>index-dir</entry>
 
-              <row>
-                <entry>changesfilter-class</entry>
+              <entry>path to index</entry>
+            </row>
 
-                <entry>template of JBoss-cache configuration for all
-                query-handlers in repository</entry>
-              </row>
+            <row>
+              <entry>changesfilter-class</entry>
 
-              <row>
-                <entry>jbosscache-configuration</entry>
+              <entry>template of JBoss-cache configuration for all
+              query-handlers in repository</entry>
+            </row>
 
-                <entry>template of JBoss-cache configuration for all
-                query-handlers in repository</entry>
-              </row>
+            <row>
+              <entry>jbosscache-configuration</entry>
 
-              <row>
-                <entry>jgroups-configuration</entry>
+              <entry>template of JBoss-cache configuration for all
+              query-handlers in repository</entry>
+            </row>
 
-                <entry>jgroups-configuration is template configuration for all
-                components (search, cache, locks) [Add link to document
-                describing template configurations]</entry>
-              </row>
+            <row>
+              <entry>jgroups-configuration</entry>
 
-              <row>
-                <entry>jgroups-multiplexer-stack</entry>
+              <entry>jgroups-configuration is template configuration for all
+              components (search, cache, locks) [Add link to document
+              describing template configurations]</entry>
+            </row>
 
-                <entry>[TODO about jgroups-multiplexer-stack - add link to
-                JBoss doc]</entry>
-              </row>
+            <row>
+              <entry>jgroups-multiplexer-stack</entry>
 
-              <row>
-                <entry>jbosscache-cluster-name</entry>
+              <entry>[TODO about jgroups-multiplexer-stack - add link to JBoss
+              doc]</entry>
+            </row>
 
-                <entry>cluster name (must be unique)</entry>
-              </row>
+            <row>
+              <entry>jbosscache-cluster-name</entry>
 
-              <row>
-                <entry>max-volatile-time</entry>
+              <entry>cluster name (must be unique)</entry>
+            </row>
 
-                <entry>max time to live for Volatile Index</entry>
-              </row>
+            <row>
+              <entry>max-volatile-time</entry>
 
-              <row>
-                <entry>rdbms-reindexing</entry>
+              <entry>max time to live for Volatile Index</entry>
+            </row>
 
-                <entry>indicate that need to use rdbms reindexing mechanism if
-                possible, the default value is true</entry>
-              </row>
+            <row>
+              <entry>rdbms-reindexing</entry>
 
-              <row>
-                <entry>reindexing-page-size</entry>
+              <entry>indicate that need to use rdbms reindexing mechanism if
+              possible, the default value is true</entry>
+            </row>
 
-                <entry>maximum amount of nodes which can be retrieved from
-                storage for re-indexing purpose, the default value is
-                100</entry>
-              </row>
+            <row>
+              <entry>reindexing-page-size</entry>
 
-              <row>
-                <entry>index-recovery-mode</entry>
+              <entry>maximum amount of nodes which can be retrieved from
+              storage for re-indexing purpose, the default value is
+              100</entry>
+            </row>
 
-                <entry>If the parameter has been set to
-                <command>from-indexing</command>, so a full indexing will be
-                automatically launched (default behavior), if the parameter
-                has been set to <command>from-coordinator</command>, the index
-                will be retrieved from coordinator</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+            <row>
+              <entry>index-recovery-mode</entry>
+
+              <entry>If the parameter has been set to
+              <command>from-indexing</command>, so a full indexing will be
+              automatically launched (default behavior), if the parameter has
+              been set to <command>from-coordinator</command>, the index will
+              be retrieved from coordinator</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
 
     <section>
@@ -208,7 +208,7 @@
       also. Such parameters as "changesfilter-class", "jgroups-configuration"
       and all the "jbosscache-*" must be skipped and not defined. Like the
       configuration below.</para>
-      
+
       <programlisting language="xml">&lt;workspace name="ws"&gt;
    &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
       &lt;properties&gt;
@@ -219,7 +219,7 @@
          &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
       &lt;/properties&gt;
    &lt;/query-handler&gt;
-&lt;/workspace&gt;</programlisting> 
+&lt;/workspace&gt;</programlisting>
     </section>
 
     <section>
@@ -232,7 +232,7 @@
       Setting "changesfilter-class" to
       "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"
       will enable shared index implementation.</para>
-      
+
       <programlisting language="xml">&lt;workspace name="ws"&gt;
    &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
       &lt;properties&gt;
@@ -251,11 +251,10 @@
    &lt;/query-handler&gt;
 &lt;/workspace&gt;</programlisting>
 
-      <para>In order to use cluster-ready strategy
-      based on local indexes, when each node has own copy of index on local
-      file system, the following configuration must be applied. Indexing
-      directory must point to any folder on local file system and
-      "changesfilter-class" must be set to
+      <para>In order to use cluster-ready strategy based on local indexes,
+      when each node has own copy of index on local file system, the following
+      configuration must be applied. Indexing directory must point to any
+      folder on local file system and "changesfilter-class" must be set to
       "org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter".</para>
 
       <programlisting language="xml">&lt;workspace name="ws"&gt;
@@ -285,7 +284,7 @@
       same for both clustered strategies.</para>
 
       <para>jbosscache-indexer.xml</para>
-      
+
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
 
@@ -311,6 +310,33 @@
 
       <para>See more about template configurations <link
       linkend="JCR.JBossCacheConfigurationTemplates">here</link>.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Advanced tuning</title>
+
+    <section>
+      <title>Lucene tuning</title>
+
+      <para>As mentioned above, JCR Indexing is based on Lucene indexing
+      library as underlying search engine. It uses Directories to store index
+      and manages access to index by Lock Factories. By default JCR
+      implementation uses optimal combination of Directory implementation and
+      Lock Factory implementation. When running on OS different from Windows,
+      NIOFSDirectory implementation used. And SimpleFSDirectory for Windows
+      stations. NativeFSLockFactory is an optimal solution for wide variety of
+      cases including clustered environment with NFS shared resources. But
+      those default can be overridden with the help of system properties.
+      There are two properties:
+      "org.exoplatform.jcr.lucene.store.FSDirectoryLockFactoryClass" and
+      "org.exoplatform.jcr.lucene.FSDirectory.class" that are responsible for
+      changing default behavior. First one defines implementation of abstract
+      Lucene LockFactory class and the second one sets implementation class
+      for FSDirectory instances. For more information please refer to Lucene
+      documentation. But be sure You know what You are changing. JCR allows
+      end users to change implementation classes of Lucene internals, but
+      doesn't guarantee it's stability and functionality.</para>
     </section>
   </section>
 </chapter>
