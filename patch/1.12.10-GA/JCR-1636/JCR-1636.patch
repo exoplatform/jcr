@@ -348,7 +348,7 @@ Index: exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/comm
 ===================================================================
 --- exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/common/DynamicSessionProviderTest.java	(revision 0)
 +++ exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/common/DynamicSessionProviderTest.java	(revision 0)
-@@ -0,0 +1,144 @@
+@@ -0,0 +1,210 @@
 +/*
 + * Copyright (C) 2003-2011 eXo Platform SAS.
 + *
@@ -492,21 +492,91 @@ Index: exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/comm
 +         //ok
 +      }
 +   }
++
++   public void testCreateSystemSessionProviderAfterDynamic() throws Exception
++   {
++      // System only node.
++      NodeImpl systemNode = (NodeImpl) testRoot.addNode("system_dynamic");
++      systemNode.addMixin("exo:privilegeable");
++
++      systemNode.setPermission("*:/platform/users", new String[]
++      {PermissionType.READ});
++      systemNode.removePermission(session.getUserID());
++      testRoot.save();
++
++
++      //Dynamic session successful read
++      List<AccessControlEntry> accessControlEntries = new ArrayList<AccessControlEntry>();
++      accessControlEntries.add(new AccessControlEntry("*:/platform/users", "READ"));
++      SessionProvider dynamicProvider  = SessionProvider.createProvider(accessControlEntries);
++
++      Session dynamicSession = null;
++
++      //check get
++      try
++      {
++         dynamicSession = dynamicProvider.getSession(session.getWorkspace().getName(), repository);
++         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(systemNode.getPath());
++         //ok
++      }
++      catch (AccessDeniedException e)
++      {
++         e.printStackTrace();
++         fail("Dynamic session with membership '*:/platform/users' should read node with membership '*:/platform/users'. Exception message : "
++                  + e.getMessage());
++      }
++
++      //System provider successful read
++      SessionProvider systemProvider = SessionProvider.createSystemProvider();
++      Session systemSession = null;
++      try
++      {
++         systemSession = systemProvider.getSession(session.getWorkspace().getName(), repository);
++         NodeImpl systemNodeOverSystemSession = (NodeImpl) systemSession.getItem(systemNode.getPath());
++         //ok         
++      }
++      catch (AccessDeniedException e)
++      {
++         e.printStackTrace();
++         fail("System session should read node with membership '*:/platform/users'. Exception message : "
++                  + e.getMessage());
++      }
++
++      //check remove
++      try
++      {
++         systemSession = systemProvider.getSession(session.getWorkspace().getName(), repository);
++         NodeImpl systemNodeOverSystemSession = (NodeImpl) systemSession.getItem(systemNode.getPath());
++
++         systemNodeOverSystemSession.remove();
++         systemSession.save();
++         //ok
++      }
++      catch (AccessDeniedException e)
++      {
++         fail("System session should remove node with membership '*:/platform/users'.");
++      }
++
++   }
 +}
 Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java
 ===================================================================
 --- exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java	(revision 4449)
 +++ exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java	(working copy)
-@@ -18,6 +18,8 @@
+@@ -18,16 +18,19 @@
   */
  package org.exoplatform.services.jcr.ext.common;
  
+-import org.exoplatform.services.jcr.access.SystemIdentity;
 +import org.exoplatform.services.jcr.access.AccessControlEntry;
 +import org.exoplatform.services.jcr.access.DynamicIdentity;
- import org.exoplatform.services.jcr.access.SystemIdentity;
  import org.exoplatform.services.jcr.core.ExtendedSession;
  import org.exoplatform.services.jcr.core.ManageableRepository;
-@@ -28,6 +30,7 @@
+ import org.exoplatform.services.jcr.core.SessionLifecycleListener;
+ import org.exoplatform.services.security.ConversationState;
+ import org.exoplatform.services.security.Identity;
++import org.exoplatform.services.security.IdentityConstants;
+ import org.exoplatform.services.security.MembershipEntry;
  
  import java.util.HashMap;
  import java.util.HashSet;
@@ -514,7 +584,40 @@ Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/comm
  import java.util.Map;
  
  import javax.jcr.LoginException;
-@@ -113,6 +116,29 @@
+@@ -67,6 +70,8 @@
+    private String currentWorkspace;
+ 
+    private boolean closed;
++   
++   private ConversationState conversationState;
+ 
+    /**
+     * Creates SessionProvider for certain identity.
+@@ -81,6 +86,18 @@
+    }
+ 
+    /**
++    * Creates SessionProvider for a dynamic identity.
++    * 
++    * @param membershipEntries the expected memberships
++    */
++   private SessionProvider(HashSet<MembershipEntry> membershipEntries)
++   {
++      this(false);
++      Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
++      this.conversationState = new ConversationState(id);
++   }
++
++   /**
+     * Internal constructor.
+     * 
+     * @param isSystem
+@@ -109,10 +126,29 @@
+     */
+    public static SessionProvider createAnonimProvider()
+    {
+-      Identity id = new Identity(SystemIdentity.ANONIM, new HashSet<MembershipEntry>());
++      Identity id = new Identity(IdentityConstants.ANONIM, new HashSet<MembershipEntry>());
        return new SessionProvider(new ConversationState(id));
     }
  
@@ -532,11 +635,7 @@ Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/comm
 +         {
 +            membershipEntries.add(ace.getMembershipEntry());
 +         }
-+
-+         Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
-+         ConversationState conversationState = new ConversationState(id);
-+         ConversationState.setCurrent(conversationState);
-+         return new SessionProvider(conversationState);
++         return new SessionProvider(membershipEntries);
 +      }
 +
 +   }
@@ -544,14 +643,13 @@ Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/comm
     /**
      * Gets the session from internal cache or creates and caches new one.
      * 
-@@ -142,11 +168,19 @@
+@@ -142,11 +178,18 @@
  
        if (session == null)
        {
 -
 -         if (!isSystem)
-+         ConversationState conversationState = ConversationState.getCurrent();
-+         if (conversationState != null && conversationState.getIdentity().getUserId().equals(DynamicIdentity.DYNAMIC))
++         if (conversationState != null)
 +         {
 +            session = (ExtendedSession) repository.getDynamicSession(workspaceName, conversationState.getIdentity().getMemberships());
 +         }
