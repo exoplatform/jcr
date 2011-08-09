@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene.directory;
 
 import org.apache.lucene.store.Directory;
-import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 
 import java.io.IOException;
@@ -28,12 +27,6 @@ import java.io.IOException;
  */
 public interface DirectoryManager {
 
-   /**
-    * The full qualified name of the lock factory to use by default, if not
-    * specified org.apache.lucene.store.NativeFSLockFactory will be used
-    */
-   public static final String LOCK_FACTORY_CLASS = PropertyManager
-      .getProperty("org.apache.lucene.store.FSDirectoryLockFactoryClass");
    
     /**
      * Initializes the directory manager with a reference to the search index.

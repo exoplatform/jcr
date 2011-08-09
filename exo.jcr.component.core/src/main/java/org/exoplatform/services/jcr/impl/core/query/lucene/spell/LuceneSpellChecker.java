@@ -250,7 +250,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
        * @param morePopular
        *            return only the suggest words that are as frequent or more frequent than the searched word 
        */
-      InternalSpellChecker(SearchIndex handler, float minDistance, boolean morePopular) throws IOException
+      InternalSpellChecker(final SearchIndex handler, float minDistance, boolean morePopular) throws IOException
       {
          this.handler = handler;
          final String path = handler.getContext().getIndexDirectory() + File.separatorChar + "spellchecker";
@@ -259,9 +259,8 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          {
             public Object run() throws Exception
             {
-               spellIndexDirectory =
-                  FSDirectory.getDirectory(path, DirectoryManager.LOCK_FACTORY_CLASS != null ? null
-                     : new NativeFSLockFactory(path));
+               spellIndexDirectory = handler.getDirectoryManager().getDirectory(path);
+                  
                if (IndexReader.indexExists(spellIndexDirectory))
                {
                   lastRefresh = System.currentTimeMillis();

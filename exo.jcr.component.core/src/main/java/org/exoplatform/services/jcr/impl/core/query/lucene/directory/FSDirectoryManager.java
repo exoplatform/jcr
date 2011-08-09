@@ -19,8 +19,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene.directory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 
 import java.io.File;
@@ -35,6 +35,41 @@ import java.security.PrivilegedExceptionAction;
  */
 public class FSDirectoryManager implements DirectoryManager
 {
+
+   /**
+    * The full qualified name of the lock factory to use by default, if not
+    * specified org.apache.lucene.store.NativeFSLockFactory will be used
+    */
+   public static final String LOCK_FACTORY_CLASS;
+
+   /**
+    * The full qualified name of the lock factory to use by default, if not
+    * specified org.apache.lucene.store.NativeFSLockFactory will be used
+    */
+   public static final String FS_DIRECTORY_CLASS;
+
+   /**
+    * Static block, used to initialize (map) org.exoplatform.jcr.lucene* 
+    * properties to org.apache.lucene.* and make it only once at a system
+    * start 
+    * 
+    * Required to set custom Index Directory and Lock Factory implementations for Lucene 2.x.
+    */
+   static
+   {
+      // get eXo system properties 
+      LOCK_FACTORY_CLASS = PropertyManager.getProperty("org.exoplatform.jcr.lucene.store.FSDirectoryLockFactoryClass");
+      FS_DIRECTORY_CLASS = PropertyManager.getProperty("org.exoplatform.jcr.lucene.FSDirectory.class");
+      // map to Lucene ones. Works only with Lucene 2.x.
+      if (LOCK_FACTORY_CLASS != null)
+      {
+         PropertyManager.setProperty("org.apache.lucene.store.FSDirectoryLockFactoryClass", LOCK_FACTORY_CLASS);
+      }
+      if (FS_DIRECTORY_CLASS != null)
+      {
+         PropertyManager.setProperty("org.apache.lucene.FSDirectory.class", FS_DIRECTORY_CLASS);
+      }
+   }
 
    /**
     * The base directory.
@@ -81,7 +116,7 @@ public class FSDirectoryManager implements DirectoryManager
          public Directory run() throws Exception
          {
             File dir;
-            if (name.equals("."))   
+            if (name.equals("."))
             {
                dir = baseDir;
             }
@@ -97,7 +132,16 @@ public class FSDirectoryManager implements DirectoryManager
                   throw new IOException("Cannot create directory: " + dir);
                }
             }
-            return FSDirectory.getDirectory(dir, LOCK_FACTORY_CLASS != null ? null : new NativeFSLockFactory(dir));
+            // if both not defined, using FSDirectory.open
+            if (FS_DIRECTORY_CLASS == null && LOCK_FACTORY_CLASS == null)
+            {
+               return FSDirectory.open(dir, new NativeFSLockFactory(dir));
+            }
+            // LOCK FACTORY only defined, using deprecated getDirectory method
+            else
+            {
+               return FSDirectory.getDirectory(dir, LOCK_FACTORY_CLASS != null ? null : new NativeFSLockFactory(dir));
+            }
          }
       });
    }
