@@ -254,7 +254,7 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
 +                  // this is a property whose semantics and syntax are not enforced by the server
 +                  // the server only records the value of a dead property;
 +                  // the client is responsible for maintaining the consistency of the syntax and semantics of a dead property. 
-+                  propertyValue = new String();
++                  propertyValue = "";
 +               }
              }
              else
