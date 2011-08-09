@@ -329,7 +329,18 @@ public class FileResource extends GenericResource
             String propertyValue;
             if (property.getDefinition().isMultiple())
             {
-               propertyValue = property.getValues()[0].getString();
+               if (property.getValues().length >= 1)
+               {
+                  propertyValue = property.getValues()[0].getString();
+               }
+               else
+               {
+                  // this means that we return empty value, because according to WebDAV spec:
+                  // this is a property whose semantics and syntax are not enforced by the server
+                  // the server only records the value of a dead property;
+                  // the client is responsible for maintaining the consistency of the syntax and semantics of a dead property. 
+                  propertyValue = "";
+               }
             }
             else
             {
@@ -337,7 +348,6 @@ public class FileResource extends GenericResource
             }
             return new HierarchicalProperty(name, propertyValue);
          }
-
       }
    }
 
