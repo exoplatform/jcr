@@ -1,0 +1,655 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(revision 4692)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(working copy)
+@@ -28,6 +28,7 @@
+ import org.exoplatform.services.jcr.datamodel.ItemData;
+ import org.exoplatform.services.jcr.datamodel.ItemType;
+ import org.exoplatform.services.jcr.datamodel.NodeData;
++import org.exoplatform.services.jcr.datamodel.NullItemData;
+ import org.exoplatform.services.jcr.datamodel.PropertyData;
+ import org.exoplatform.services.jcr.datamodel.QPath;
+ import org.exoplatform.services.jcr.datamodel.QPathEntry;
+@@ -157,14 +158,14 @@
+    {
+       // from cache at first
+       ItemData cdata = persistentManager.getCachedItemData(identifier);
+-      if (cdata != null)
++      if (cdata != null && !(cdata instanceof NullItemData))
+          return super.getItemData(identifier);
+ 
+       if (!this.equals(versionDataManager) && !identifier.equals(Constants.ROOT_UUID))
+       {
+          // search in System cache for /jcr:system nodes only
+          cdata = versionDataManager.persistentManager.getCachedItemData(identifier);
+-         if (cdata != null)
++         if (cdata != null && !(cdata instanceof NullItemData))
+             if (isSystemDescendant(cdata.getQPath()))
+                return versionDataManager.getItemData(identifier);
+             else
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4692)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(working copy)
+@@ -30,6 +30,9 @@
+ import org.exoplatform.services.jcr.datamodel.ItemData;
+ import org.exoplatform.services.jcr.datamodel.ItemType;
+ import org.exoplatform.services.jcr.datamodel.NodeData;
++import org.exoplatform.services.jcr.datamodel.NullItemData;
++import org.exoplatform.services.jcr.datamodel.NullNodeData;
++import org.exoplatform.services.jcr.datamodel.NullPropertyData;
+ import org.exoplatform.services.jcr.datamodel.PropertyData;
+ import org.exoplatform.services.jcr.datamodel.QPath;
+ import org.exoplatform.services.jcr.datamodel.QPathEntry;
+@@ -396,6 +399,13 @@
+     */
+    public void put(ItemData item)
+    {
++      // There is different commit processing for NullNodeData and ordinary ItemData
++      if (item instanceof NullItemData)
++      {
++         putNullItem((NullItemData)item);
++         return;
++      }
++
+       boolean inTransaction = cache.isTransactionActive();
+       try
+       {
+@@ -507,7 +517,7 @@
+          for (String propId : set)
+          {
+             PropertyData prop = (PropertyData)cache.get(makeItemFqn(propId), ITEM_DATA);
+-            if (prop == null)
++            if (prop == null || prop instanceof NullItemData)
+             {
+                return null;
+             }
+@@ -680,23 +690,48 @@
+    public ItemData get(String parentId, QPathEntry name, ItemType itemType)
+    {
+       String itemId = null;
+-      if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
++      if (itemType == ItemType.UNKNOWN)
+       {
+-         // try as node first
++         // Try as node first.
+          itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
++
++         if (itemId == null || itemId.equals(NullItemData.NULL_ID))
++         {
++            // node with such a name is not found or marked as not-exist, so check the properties
++            String propId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
++            if (propId != null)
++            {
++               itemId = propId;
++            }
++         }
+       }
+-
+-      if (itemType == ItemType.PROPERTY || itemType == ItemType.UNKNOWN && itemId == null)
++      else if (itemType == ItemType.NODE)
+       {
+-         // try as property
++         itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
++      }
++      else
++      {
+          itemId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
+       }
+ 
+       if (itemId != null)
+       {
+-         return get(itemId);
++         if (itemId.equals(NullItemData.NULL_ID))
++         {
++            if (itemType == ItemType.UNKNOWN || itemType == ItemType.NODE)
++            {
++               return new NullNodeData();
++            }
++            else
++            {
++               return new NullPropertyData();
++            }
++         }
++         else
++         {
++            return get(itemId);
++         }
+       }
+-
+       return null;
+    }
+ 
+@@ -705,6 +740,7 @@
+     */
+    public ItemData get(String id)
+    {
++      // NullNodeData with id may be stored as ordinary NodeData or PropertyData
+       return (ItemData)cache.get(makeItemFqn(id), ITEM_DATA);
+    }
+ 
+@@ -723,7 +759,7 @@
+          for (Object child : set)
+          {
+             NodeData node = (NodeData)cache.get(makeItemFqn((String)child), ITEM_DATA);
+-            if (node == null)
++            if (node == null || node instanceof NullItemData)
+             {
+                return null;
+             }
+@@ -788,7 +824,7 @@
+          for (Object child : set)
+          {
+             PropertyData prop = (PropertyData)cache.get(makeItemFqn((String)child), ITEM_DATA);
+-            if (prop == null)
++            if (prop == null || prop instanceof NullItemData)
+             {
+                return null;
+             }
+@@ -944,6 +980,54 @@
+          modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+    }
+ 
++   /**
++    * Internal put NullNode.
++    *
++    * @param item, NullItemData, new data to put in the cache
++    */
++   protected void putNullItem(NullItemData item)
++   {
++      boolean inTransaction = cache.isTransactionActive();
++      try
++      {
++         if (!inTransaction)
++         {
++            cache.beginTransaction();
++         }
++         cache.setLocal(true);
++
++         if (!item.getIdentifier().equals(NullItemData.NULL_ID))
++         {
++            //put in $ITEMS
++            cache.putIfAbsent(makeItemFqn(item.getIdentifier()), ITEM_DATA, item);
++         }
++         else if (item.getName() != null && item.getParentIdentifier() != null)
++         {
++            if (item.isNode())
++            {
++               // put in $CHILD_NODES
++               cache.putIfAbsent(makeChildFqn(childNodes, item.getParentIdentifier(), item.getName()), ITEM_ID,
++                  NullItemData.NULL_ID);
++            }
++            else
++            {
++               // put in $CHILD_PROPERTIES
++               cache.putIfAbsent(makeChildFqn(childProps, item.getParentIdentifier(), item.getName()), ITEM_ID,
++                  NullItemData.NULL_ID);
++            }
++         }
++      }
++      finally
++      {
++         cache.setLocal(false);
++         if (!inTransaction)
++         {
++            dedicatedTxCommit();
++         }
++      }
++
++   }
++
+    protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
+    {
+       // if not a root node
+@@ -960,7 +1044,9 @@
+          }
+       }
+       // add in ITEMS
+-      return (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
++      // NullNodeData must never be returned inside internal cache operations. 
++      ItemData returnedData = (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
++      return (returnedData instanceof NullItemData) ? null : returnedData;
+    }
+ 
+    /**
+@@ -1008,8 +1094,11 @@
+       }
+ 
+       // add in ITEMS
+-      return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
+-         modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
++      // NullItemData must never be returned inside internal cache operations. 
++      ItemData returnedData =
++         (ItemData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
++            modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
++      return (returnedData instanceof NullItemData) ? null : (PropertyData)returnedData;
+    }
+ 
+    protected void removeItem(ItemData item)
+@@ -1065,7 +1154,8 @@
+    protected void updateMixin(NodeData node)
+    {
+       NodeData prevData = (NodeData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+-      if (prevData != null)
++      // prevent update NullNodeData
++      if (prevData != null && !(prevData instanceof NullItemData))
+       {
+          // do update ACL if needed
+          if (prevData.getACL() == null || !prevData.getACL().equals(node.getACL()))
+@@ -1119,6 +1209,7 @@
+     */
+    protected void updateInBuffer(final NodeData node, final NodeData prevNode)
+    {
++      // I expect that NullNodeData will never update existing NodeData.
+       // get previously cached NodeData and using its name remove child on the parent
+       Fqn<String> prevFqn =
+          makeChildFqn(childNodes, node.getParentIdentifier(), prevNode.getQPath().getEntries()[prevNode.getQPath()
+@@ -1132,6 +1223,7 @@
+          }
+       }
+ 
++      // node and prevNode are not NullNodeDatas
+       // update childs paths if index changed
+       int nodeIndex = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1].getIndex();
+       int prevNodeIndex = prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1].getIndex();
+@@ -1165,7 +1257,7 @@
+ 
+          // check is this descendant of prevRootPath
+          QPath nodeQPath = data.getQPath();
+-         if (nodeQPath.isDescendantOf(prevRootPath))
++         if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
+          {
+ 
+             //make relative path
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 4692)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
+@@ -23,6 +23,9 @@
+ import org.exoplatform.services.jcr.datamodel.ItemData;
+ import org.exoplatform.services.jcr.datamodel.ItemType;
+ import org.exoplatform.services.jcr.datamodel.NodeData;
++import org.exoplatform.services.jcr.datamodel.NullItemData;
++import org.exoplatform.services.jcr.datamodel.NullNodeData;
++import org.exoplatform.services.jcr.datamodel.NullPropertyData;
+ import org.exoplatform.services.jcr.datamodel.PropertyData;
+ import org.exoplatform.services.jcr.datamodel.QPathEntry;
+ import org.exoplatform.services.jcr.datamodel.ValueData;
+@@ -418,18 +421,20 @@
+             {
+                data = getPersistedItemData(parentData, name, itemType);
+             }
+-            else if (!data.isNode())
+-            {
+-               fixPropertyValues((PropertyData)data);
+-            }
+          }
+          finally
+          {
+             request.done();
+          }
+       }
+-      else if (!data.isNode())
++
++      if (data instanceof NullItemData)
+       {
++         return null;
++      }
++
++      if (data != null && !data.isNode())
++      {
+          fixPropertyValues((PropertyData)data);
+       }
+ 
+@@ -460,18 +465,20 @@
+             {
+                data = getPersistedItemData(identifier);
+             }
+-            else if (!data.isNode())
+-            {
+-               fixPropertyValues((PropertyData)data);
+-            }
+          }
+          finally
+          {
+             request.done();
+          }
+       }
+-      else if (!data.isNode())
++
++      if (data instanceof NullItemData)
+       {
++         return null;
++      }
++
++      if (data != null && !data.isNode())
++      {
+          fixPropertyValues((PropertyData)data);
+       }
+ 
+@@ -749,9 +756,23 @@
+       throws RepositoryException
+    {
+       ItemData data = super.getItemData(parentData, name, itemType);
+-      if (data != null && cache.isEnabled())
++      if (cache.isEnabled())
+       {
+-         cache.put(data);
++         if (data == null)
++         {
++            if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
++            {
++               cache.put(new NullNodeData(parentData, name));
++            }
++            else
++            {
++               cache.put(new NullPropertyData(parentData, name));
++            }
++         }
++         else
++         {
++            cache.put(data);
++         }
+       }
+       return data;
+    }
+@@ -766,9 +787,17 @@
+    protected ItemData getPersistedItemData(String identifier) throws RepositoryException
+    {
+       ItemData data = super.getItemData(identifier);
+-      if (data != null && cache.isEnabled())
++      if (cache.isEnabled())
+       {
+-         cache.put(data);
++         if (data != null)
++         {
++            cache.put(data);
++         }
++         else if (identifier != null)
++         {
++            // no matter does property or node expected - store NullNodeData
++            cache.put(new NullNodeData(identifier));
++         }
+       }
+       return data;
+    }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.java	(revision 0)
+@@ -0,0 +1,79 @@
++/*
++ * Copyright (C) 2003-2010 eXo Platform SAS.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Affero General Public License
++ * as published by the Free Software Foundation; either version 3
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see<http://www.gnu.org/licenses/>.
++ */
++package org.exoplatform.services.jcr.datamodel;
++
++import java.util.List;
++
++/**
++ * Created by The eXo Platform SAS.
++ * 
++ * <br/>Date: 
++ *
++ * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
++ * @version $Id: NullPropertyData.java 111 2011-05-30 11:11:11Z serg $
++ */
++public class NullPropertyData extends NullItemData implements PropertyData
++{
++
++   public NullPropertyData(NodeData parent, QPathEntry name)
++   {
++      super(parent, name);
++   }
++
++   public NullPropertyData(String id)
++   {
++      super(id);
++   }
++
++   public NullPropertyData()
++   {
++      super();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public int getType()
++   {
++      throw new UnsupportedOperationException("Method is not supported");
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public List<ValueData> getValues()
++   {
++      throw new UnsupportedOperationException("Method is not supported");
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public boolean isMultiValued()
++   {
++      throw new UnsupportedOperationException("Method is not supported");
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public boolean isNode()
++   {
++      return false;
++   }
++
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java	(revision 0)
+@@ -0,0 +1,88 @@
++/*
++ * Copyright (C) 2010 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.datamodel;
++
++import org.exoplatform.services.jcr.access.AccessControlList;
++
++/**
++ * This class is used to represent <code>null</code> value, it is designed to be used  
++ * into the cache to represent missing value.
++ * 
++ * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
++ * @version $Id: NullNodeData.java 111 2011-05-30 11:11:11Z tolusha $
++ */
++public class NullNodeData extends NullItemData implements NodeData
++{
++
++   public NullNodeData(NodeData parent, QPathEntry name)
++   {
++      super(parent, name);
++   }
++
++   public NullNodeData(String id)
++   {
++      super(id);
++   }
++
++   public NullNodeData()
++   {
++      super();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public boolean isNode()
++   {
++      return true;
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public AccessControlList getACL()
++   {
++      throw new UnsupportedOperationException("Method is not supported");
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public InternalQName[] getMixinTypeNames()
++   {
++      throw new UnsupportedOperationException("Method is not supported");
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public int getOrderNumber()
++   {
++      throw new UnsupportedOperationException("Method is not supported");
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public InternalQName getPrimaryTypeName()
++   {
++      throw new UnsupportedOperationException("Method is not supported");
++   }
++
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullItemData.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullItemData.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullItemData.java	(revision 0)
+@@ -0,0 +1,98 @@
++/*
++ * Copyright (C) 2003-2010 eXo Platform SAS.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Affero General Public License
++ * as published by the Free Software Foundation; either version 3
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see<http://www.gnu.org/licenses/>.
++ */
++package org.exoplatform.services.jcr.datamodel;
++
++import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
++
++import javax.jcr.RepositoryException;
++
++/**
++ * Created by The eXo Platform SAS.
++ * 
++ * <br/>Date: 
++ *
++ * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
++ * @version $Id: NullItemData.java 111 2011-05-30 11:11:11Z serg $
++ */
++public abstract class NullItemData implements ItemData
++{
++
++   public static final String NULL_ID = "_null_id";
++
++   private final String id;
++
++   private final String parentId;
++
++   private final QPathEntry name;
++
++   private final QPath path;
++
++   public NullItemData(NodeData parent, QPathEntry name)
++   {
++      this.parentId = parent.getIdentifier();
++      this.path = QPath.makeChildPath(parent.getQPath(), name);
++      this.name = name;
++      this.id = NULL_ID;
++   }
++
++   public NullItemData(String id)
++   {
++      this.parentId = null;
++      this.path = null;
++      this.name = null;
++      this.id = id;
++   }
++
++   public NullItemData()
++   {
++      this.parentId = null;
++      this.path = null;
++      this.name = null;
++      this.id = NULL_ID;
++   }
++
++   public void accept(ItemDataVisitor visitor) throws RepositoryException
++   {
++      throw new UnsupportedOperationException("Method is not supported");
++   }
++
++   public String getIdentifier()
++   {
++      return id;
++   }
++
++   public String getParentIdentifier()
++   {
++      return parentId;
++   }
++
++   public int getPersistedVersion()
++   {
++      throw new UnsupportedOperationException("Method is not supported");
++   }
++
++   public QPath getQPath()
++   {
++      return path;
++   }
++
++   public QPathEntry getName()
++   {
++      return name;
++   }
++
++}
