@@ -35,7 +35,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  */
 class CacheQPath extends CacheKey
 {
-   CacheQPath()
+   public CacheQPath()
    {
       super();
    }

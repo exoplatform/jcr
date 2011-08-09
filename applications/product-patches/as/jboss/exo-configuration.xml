@@ -195,7 +195,7 @@
   </component>
   <component profiles="ispn">
      <key>org.infinispan.transaction.lookup.TransactionManagerLookup</key>
-     <type>org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup</type>
+     <type>org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup</type>
   </component>
    
   <component profiles="ispn">

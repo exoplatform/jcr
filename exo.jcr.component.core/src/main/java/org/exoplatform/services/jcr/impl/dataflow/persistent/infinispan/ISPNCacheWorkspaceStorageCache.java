@@ -662,12 +662,12 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                putNode(child, ModifyChildOption.NOT_MODIFY);
                set.add(child.getIdentifier());
             }
-            cache.put(new CacheNodesId(parent.getIdentifier()), set);
+            cache.putIfAbsent(new CacheNodesId(parent.getIdentifier()), set);
          }
          else
          {
             // cache fact of empty childs list
-            cache.put(new CacheNodesId(parent.getIdentifier()), new HashSet<Object>());
+            cache.putIfAbsent(new CacheNodesId(parent.getIdentifier()), new HashSet<Object>());
          }
       }
       finally

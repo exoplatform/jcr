@@ -215,10 +215,10 @@ public class ISPNCacheFactory<K, V>
       GlobalConfiguration gc = manager.getGlobalConfiguration();
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       // Ensure that the cluster name won't be used between 2 ExoContainers
-      gc.setClusterName(gc.getClusterName() + "_" + container.getContext().getName());
-      gc.setCacheManagerName(gc.getCacheManagerName() + "_" + container.getContext().getName());
+      gc.fluent().transport().clusterName(gc.getClusterName() + "_" + container.getContext().getName())
+         .globalJmxStatistics().cacheManagerName(gc.getCacheManagerName() + "_" + container.getContext().getName()).
       // Configure the MBeanServerLookup
-      gc.setMBeanServerLookupInstance(MBEAN_SERVER_LOOKUP);
+      mBeanServerLookup(MBEAN_SERVER_LOOKUP);
       Configuration conf = manager.getDefaultConfiguration();
       if (CACHE_MANAGERS.containsKey(gc))
       {

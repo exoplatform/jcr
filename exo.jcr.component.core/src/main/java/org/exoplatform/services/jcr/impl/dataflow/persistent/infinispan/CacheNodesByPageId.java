@@ -25,7 +25,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 public class CacheNodesByPageId extends CacheKey
 {
 
-   CacheNodesByPageId()
+   public CacheNodesByPageId()
    {
       super();
    }

@@ -29,7 +29,7 @@ import org.infinispan.config.Configuration;
 import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.NotifyingFuture;
 
 import java.security.PrivilegedAction;
@@ -514,7 +514,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    /**
     * {@inheritDoc}
     */
-   public CacheContainer getCacheManager()
+   public EmbeddedCacheManager getCacheManager()
    {
       return parentCache.getCacheManager();
    }
@@ -1004,6 +1004,14 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public void removeListener(Object listener)
    {
       parentCache.removeListener(listener);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public NotifyingFuture<Object> getAsync(CacheKey key)
+   {
+      return parentCache.getAsync(key);
    }
 
    /**

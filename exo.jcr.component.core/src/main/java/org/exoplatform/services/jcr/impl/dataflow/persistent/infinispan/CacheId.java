@@ -27,7 +27,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 public class CacheId extends CacheKey
 {
 
-   CacheId()
+   public CacheId()
    {
       super();
    }

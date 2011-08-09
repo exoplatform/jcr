@@ -463,7 +463,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @param systemDataContainerHolder
     *          System Workspace data container (persistent level)
     */
-   protected CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
+   public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
       SystemDataContainerHolder systemDataContainerHolder)
    {
       this(dataContainer, cache, systemDataContainerHolder, null, (RPCService)null);

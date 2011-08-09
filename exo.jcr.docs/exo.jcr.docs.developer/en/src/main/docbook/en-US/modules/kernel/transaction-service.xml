@@ -190,7 +190,7 @@
       <programlisting>   &lt;!-- Configuration of the TransactionManagerLookup --&gt;
    &lt;component&gt;
       &lt;key&gt;org.infinispan.transaction.lookup.TransactionManagerLookup&lt;/key&gt;
-      &lt;type&gt;org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup&lt;/type&gt;
+      &lt;type&gt;org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup&lt;/type&gt;
    &lt;/component&gt;
    &lt;!-- Configuration of the TransactionService --&gt;
    &lt;component&gt;
