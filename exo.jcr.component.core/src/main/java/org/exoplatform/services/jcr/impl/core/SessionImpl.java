@@ -73,6 +73,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Credentials;
@@ -125,6 +126,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
    }
 
+   private static final AtomicLong SEQUENCE = new AtomicLong();
+   
    public static final int DEFAULT_LAZY_READ_THRESHOLD = 100;
 
    private final RepositoryImpl repository;
@@ -193,7 +196,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.workspaceName = workspaceName;
       this.container = container;
       this.live = true;
-      this.id = IdGenerator.generate();
+      this.id = System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet();
       this.userState = userState;
       this.txResourceManager =
          (TransactionableResourceManager)container.getComponentInstanceOfType(TransactionableResourceManager.class);
