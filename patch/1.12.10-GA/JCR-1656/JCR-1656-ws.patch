@@ -1,0 +1,12 @@
+Index: exo.ws.commons/src/main/java/org/exoplatform/common/http/client/DefaultAuthHandler.java
+===================================================================
+--- exo.ws.commons/src/main/java/org/exoplatform/common/http/client/DefaultAuthHandler.java	(revision 4722)
++++ exo.ws.commons/src/main/java/org/exoplatform/common/http/client/DefaultAuthHandler.java	(working copy)
+@@ -192,7 +192,6 @@
+       // try to get rid of any unencoded passwords in memory
+ 
+       answer = null;
+-      System.gc();
+ 
+       // Done
+ 

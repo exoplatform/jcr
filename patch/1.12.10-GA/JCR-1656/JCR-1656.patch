@@ -1,0 +1,12 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionItemPool.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionItemPool.java	(revision 4711)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionItemPool.java	(working copy)
+@@ -47,7 +47,6 @@
+    void remove(String identifier)
+    {
+       items.remove(identifier);
+-      System.gc();
+    }
+ 
+    void put(ItemImpl item)
