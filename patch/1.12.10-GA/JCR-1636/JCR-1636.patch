@@ -1,6 +1,6 @@
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/access/TestUserAccess.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/access/TestUserAccess.java	(revision 4449)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/access/TestUserAccess.java	(revision 4711)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/access/TestUserAccess.java	(working copy)
 @@ -23,9 +23,13 @@
  import org.exoplatform.services.jcr.access.SystemIdentity;
@@ -128,7 +128,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/ac
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/AccessManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/AccessManager.java	(revision 4449)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/AccessManager.java	(revision 4711)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/AccessManager.java	(working copy)
 @@ -192,7 +192,9 @@
  
@@ -179,7 +179,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/access/
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/jndi/BindableRepositoryImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/jndi/BindableRepositoryImpl.java	(revision 4449)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/jndi/BindableRepositoryImpl.java	(revision 4711)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/jndi/BindableRepositoryImpl.java	(working copy)
 @@ -25,10 +25,12 @@
  import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
@@ -215,7 +215,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/jn
     public String[] getWorkspaceNames()
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 4449)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 4711)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(working copy)
 @@ -19,6 +19,7 @@
  package org.exoplatform.services.jcr.impl.core;
@@ -272,7 +272,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     public String getSystemWorkspaceName()
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 4449)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 4711)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(working copy)
 @@ -23,9 +23,11 @@
  import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -304,7 +304,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/Ma
     String[] getWorkspaceNames();
 Index: exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java
 ===================================================================
---- exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(revision 4449)
+--- exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(revision 4711)
 +++ exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(working copy)
 @@ -53,6 +53,7 @@
  import javax.jcr.NodeIterator;
@@ -561,22 +561,18 @@ Index: exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/comm
 +}
 Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java
 ===================================================================
---- exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java	(revision 4449)
+--- exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java	(revision 4711)
 +++ exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/common/SessionProvider.java	(working copy)
-@@ -18,16 +18,19 @@
+@@ -18,6 +18,8 @@
   */
  package org.exoplatform.services.jcr.ext.common;
  
--import org.exoplatform.services.jcr.access.SystemIdentity;
 +import org.exoplatform.services.jcr.access.AccessControlEntry;
 +import org.exoplatform.services.jcr.access.DynamicIdentity;
+ import org.exoplatform.services.jcr.access.SystemIdentity;
  import org.exoplatform.services.jcr.core.ExtendedSession;
  import org.exoplatform.services.jcr.core.ManageableRepository;
- import org.exoplatform.services.jcr.core.SessionLifecycleListener;
- import org.exoplatform.services.security.ConversationState;
- import org.exoplatform.services.security.Identity;
-+import org.exoplatform.services.security.IdentityConstants;
- import org.exoplatform.services.security.MembershipEntry;
+@@ -28,6 +30,7 @@
  
  import java.util.HashMap;
  import java.util.HashSet;
@@ -612,12 +608,7 @@ Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/comm
      * Internal constructor.
      * 
      * @param isSystem
-@@ -109,10 +126,29 @@
-     */
-    public static SessionProvider createAnonimProvider()
-    {
--      Identity id = new Identity(SystemIdentity.ANONIM, new HashSet<MembershipEntry>());
-+      Identity id = new Identity(IdentityConstants.ANONIM, new HashSet<MembershipEntry>());
+@@ -113,6 +130,25 @@
        return new SessionProvider(new ConversationState(id));
     }
  
