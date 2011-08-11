@@ -24,6 +24,7 @@ import java.util.GregorianCalendar;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.Version;
 
 /**
@@ -109,6 +110,40 @@ public class TestNodeDefinition extends JcrAPIBaseTest
       catch (RepositoryException e)
       {
          fail();
+      }
+   }
+
+   public void testNodeTypeNotDeterminedNtFolder() throws Exception
+   {
+      Node root = session.getRootNode();
+      Node folder = root.addNode("abc", "nt:folder");
+
+      try
+      {
+         folder.addNode("def");
+         fail("Should be throw ConstraintViolationException, because node type for node \"def\" "
+                  + "was not defined and default primary type for child nodes in \"nt:folder\" node type is not define.");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // ok
+      }
+   }
+
+   public void testNodeTypeNotDeterminedNtFile2() throws Exception
+   {
+      Node root = session.getRootNode();
+      Node folder = root.addNode("abc", "nt:file");
+
+      try
+      {
+         folder.addNode("jcr:content");
+         fail("Should be throw ConstraintViolationException, because node type for node \"jcr:content\" "
+                  + "was not defined and default primary type for child nodes in \"nt:file\" node type is not define.");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // ok
       }
    }
 }
