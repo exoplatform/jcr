@@ -94,7 +94,6 @@ import javax.transaction.TransactionManager;
  */
 public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable
 {
-
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ISPNCacheWorkspaceStorageCache");
 
    private final boolean enabled;
@@ -1013,6 +1012,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     * {@inheritDoc}
     */
    public boolean isPatternSupported()
+   {
+      return true;
+   }
+  
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isChildNodesByPageSupported()
    {
       return true;
    }

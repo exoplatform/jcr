@@ -127,7 +127,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    }
 
    private static final AtomicLong SEQUENCE = new AtomicLong();
-   
+
    public static final int DEFAULT_LAZY_READ_THRESHOLD = 100;
 
    private final RepositoryImpl repository;
@@ -249,7 +249,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       sessionRegistry.registerSession(this);
       this.lastAccessTime = System.currentTimeMillis();
-      
+
       this.triggerEventsForDescendentsOnRename =
          wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME,
             WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME_DEFAULT);
@@ -257,6 +257,13 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.lazyNodeIteatorPageSize =
          wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE,
             WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_DEFAULT);
+      if (this.lazyNodeIteatorPageSize < WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN)
+      {
+         this.lazyNodeIteatorPageSize = WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN;
+         log.warn("Value for \"lazy-node-iterator-page-size\" is too small. Allowed minimum page size is "
+            + WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN + ". Using required value: "
+            + WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN + ".");
+      }
    }
 
    /**

@@ -46,6 +46,8 @@ public interface WorkspaceDataContainer extends DataContainer
 
    public static final int LAZY_NODE_ITERATOR_PAGE_SIZE_DEFAULT = 100;
 
+   public static final int LAZY_NODE_ITERATOR_PAGE_SIZE_MIN = 75;
+
    public final static String CONTAINER_NAME = "containerName";
 
    public final static String MAXBUFFERSIZE_PROP = "max-buffer-size";

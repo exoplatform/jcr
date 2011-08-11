@@ -248,7 +248,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * @return enabled status flag, if true then cache is enabled
     */
    @Managed
-   @ManagedDescription("Indicates whether the cache is enabled or not")   
+   @ManagedDescription("Indicates whether the cache is enabled or not")
    boolean isEnabled();
 
    /**
@@ -258,12 +258,18 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    boolean isPatternSupported();
 
    /**
+    * @return isPatternSupported status flag, if true then cache can store child lists grouped 
+    * by pages
+    */
+   boolean isChildNodesByPageSupported();
+
+   /**
     * Cache size.
     * 
     * @return long value
     */
    @Managed
-   @ManagedDescription("Indicates the total amount of items into the cache")   
+   @ManagedDescription("Indicates the total amount of items into the cache")
    long getSize();
 
    /**

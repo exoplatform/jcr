@@ -1361,6 +1361,14 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       return true;
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isChildNodesByPageSupported()
+   {
+      return true;
+   }
 
    // non-public members
 

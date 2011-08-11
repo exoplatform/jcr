@@ -361,6 +361,14 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
          return false;
       }
+      
+      /**
+       * {@inheritDoc}
+       */
+      public boolean isChildNodesByPageSupported()
+      {
+         return false;
+      }
 
       public List<PropertyData> listChildProperties(NodeData parentData)
       {

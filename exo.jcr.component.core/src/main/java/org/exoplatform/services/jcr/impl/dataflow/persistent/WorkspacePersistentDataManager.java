@@ -597,10 +597,14 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             if (skipVersionStorage)
             {
                if (!ref.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+               {
                   refProps.add(ref);
+               }
             }
             else
+            {
                refProps.add(ref);
+            }
          }
          return refProps;
       }
@@ -832,9 +836,13 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    {
 
       if (item.isNode())
+      {
          con.delete((NodeData)item);
+      }
       else
+      {
          con.delete((PropertyData)item);
+      }
    }
 
    /**
@@ -933,22 +941,34 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    public void addItemPersistenceListener(ItemsPersistenceListener listener)
    {
       if (listener instanceof MandatoryItemsPersistenceListener)
+      {
          mandatoryListeners.add((MandatoryItemsPersistenceListener)listener);
+      }
       else
+      {
          listeners.add(listener);
+      }
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Workspace '" + this.dataContainer.getName() + "' listener registered: " + listener);
+      }
    }
 
    public void removeItemPersistenceListener(ItemsPersistenceListener listener)
    {
       if (listener instanceof MandatoryItemsPersistenceListener)
+      {
          mandatoryListeners.remove(listener);
+      }
       else
+      {
          listeners.remove(listener);
+      }
 
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Workspace '" + this.dataContainer.getName() + "' listener unregistered: " + listener);
+      }
    }
 
    /**
@@ -980,7 +1000,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       for (ItemsPersistenceListenerFilter f : liestenerFilters)
       {
          if (!f.accept(listener))
+         {
             return false;
+         }
       }
 
       return true;

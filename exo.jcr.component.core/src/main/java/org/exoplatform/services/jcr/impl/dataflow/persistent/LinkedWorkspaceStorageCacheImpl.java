@@ -1709,6 +1709,14 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    {
       return false;
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isChildNodesByPageSupported()
+   {
+      return false;
+   }
 
    /**
     * Enable cache.

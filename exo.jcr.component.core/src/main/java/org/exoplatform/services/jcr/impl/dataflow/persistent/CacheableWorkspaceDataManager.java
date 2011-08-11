@@ -97,7 +97,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * The resource manager
     */
    private final TransactionableResourceManager txResourceManager;
-   
+
    private TransactionManager transactionManager;
 
    /**
@@ -362,7 +362,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          the service for executing commands on all nodes of cluster
     */
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager, 
+      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager,
       TransactionService transactionService, RPCService rpcService)
    {
       super(dataContainer, systemDataContainerHolder, txResourceManager);
@@ -422,7 +422,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       try
       {
-         transactionManager = (TransactionManager)cache.getClass().getMethod("getTransactionManager", null).invoke(null, null);
+         transactionManager =
+            (TransactionManager)cache.getClass().getMethod("getTransactionManager", null).invoke(null, null);
       }
       catch (Exception e)
       {
@@ -431,7 +432,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
 
       this.rpcService = rpcService;
-      this.txResourceManager = txResourceManager;      
+      this.txResourceManager = txResourceManager;
       doInitRemoteCommands();
    }
 
@@ -517,6 +518,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    public boolean getChildNodesDataByPage(final NodeData nodeData, final int fromOrderNum, final int limit,
       final List<NodeData> childs) throws RepositoryException
    {
+      // if child nodes lazy iteration feature not supported by cache
+      // then call old-style getChildNodes method
+      if (!cache.isChildNodesByPageSupported())
+      {
+         childs.addAll(getChildNodesData(nodeData));
+         return false;
+      }
+      // if child nodes by page iteration supported, then do it
       List<NodeData> childNodes = null;
       if (cache.isEnabled())
       {
@@ -638,7 +647,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
-   public ItemData getItemData(final NodeData parentData, final QPathEntry name, final ItemType itemType) throws RepositoryException
+   public ItemData getItemData(final NodeData parentData, final QPathEntry name, final ItemType itemType)
+      throws RepositoryException
    {
       if (cache.isEnabled())
       {
@@ -825,7 +835,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                doSave(changesLog);
                return null;
             }
-         });      
+         });
       }
       catch (PrivilegedActionException e)
       {
@@ -891,9 +901,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
          // notify listeners after storage commit
          notifySaveItems(logWrapper.getChangesLog(), false);
-      }      
+      }
    }
-   
+
    /**
     * Commits the tx
     * @throws RepositoryException if the tx could not be committed.
@@ -925,7 +935,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          throw new RepositoryException("Could not create a new Tx", e);
       }
    }
-   
+
    /**
     * Performs rollback of the action.
     */
@@ -978,7 +988,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                if (status == Status.STATUS_COMMITTED)
                {
                   // Since the tx is successfully committed we can call components non tx aware
-                  
+
                   // The listeners will need to be executed outside the current tx so we suspend
                   // the current tx we can face enlistment issues on product like ISPN
                   transactionManager.suspend();
@@ -1098,8 +1108,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
-   protected List<NodeData> getChildNodesDataByPattern(final NodeData parentData, final List<QPathEntryFilter> patternFilters)
-      throws RepositoryException
+   protected List<NodeData> getChildNodesDataByPattern(final NodeData parentData,
+      final List<QPathEntryFilter> patternFilters) throws RepositoryException
    {
       if (!cache.isEnabled())
       {
@@ -1975,7 +1985,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             public String getId()
             {
                return "org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager"
-                        + "-requestForResponsibilityForResuming-" + dataContainer.getUniqueName();
+                  + "-requestForResponsibilityForResuming-" + dataContainer.getUniqueName();
             }
 
             public Serializable execute(Serializable[] args) throws Throwable
@@ -1987,7 +1997,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          rpcService.registerTopologyChangeListener(this);
       }
    }
-   
+
    private <T> T executeAction(PrivilegedExceptionAction<T> action) throws RepositoryException
    {
       try
@@ -2033,16 +2043,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                // use parent ACL
                node =
-                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
-                     node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
+                     .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
                      node.getParentIdentifier(), parent.getACL());
             }
             else
             {
                // use nearest ancestor ACL... case of get by id
                node =
-                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
-                     node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
+                     .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
                      node.getParentIdentifier(), getNearestACAncestorAcl(node));
             }
          }
@@ -2052,9 +2062,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             AccessControlList ancestorAcl = getNearestACAncestorAcl(node);
 
             node =
-               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
-                  node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
-                  node.getParentIdentifier(), new AccessControlList(acl.getOwner(), ancestorAcl.getPermissionEntries()));
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
+                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
+                  new AccessControlList(acl.getOwner(), ancestorAcl.getPermissionEntries()));
          }
          else if (!acl.hasOwner())
          {
@@ -2062,9 +2072,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             AccessControlList ancestorAcl = getNearestACAncestorAcl(node);
 
             node =
-               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
-                  node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
-                  node.getParentIdentifier(), new AccessControlList(ancestorAcl.getOwner(), acl.getPermissionEntries()));
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
+                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
+                  new AccessControlList(ancestorAcl.getOwner(), acl.getPermissionEntries()));
 
          }
       }
