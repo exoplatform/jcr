@@ -49,7 +49,6 @@ import org.exoplatform.services.jcr.impl.xml.XmlMapping;
 import org.exoplatform.services.jcr.impl.xml.exporting.BaseXmlExporter;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.jcr.impl.xml.importing.StreamImporter;
-import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.xml.sax.ContentHandler;
@@ -67,6 +66,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Credentials;
@@ -100,6 +100,8 @@ import javax.xml.stream.XMLStreamException;
 public class SessionImpl implements ExtendedSession, NamespaceAccessor
 {
 
+   private static final AtomicLong SEQUENCE = new AtomicLong();
+   
    public static final int DEFAULT_LAZY_READ_THRESHOLD = 100;
 
    private final RepositoryImpl repository;
@@ -150,7 +152,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.workspaceName = workspaceName;
       this.container = container;
       this.live = true;
-      this.id = IdGenerator.generate();
+      this.id = System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet();
       this.userState = userState;
 
       this.repository = (RepositoryImpl)container.getComponentInstanceOfType(RepositoryImpl.class);
