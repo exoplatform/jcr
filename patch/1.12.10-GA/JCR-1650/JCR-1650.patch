@@ -1,8 +1,8 @@
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(revision 4633)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(revision 4734)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(working copy)
-@@ -80,7 +80,7 @@
+@@ -80,12 +80,12 @@
           transactionService == null ? null : transactionService, new ConfigurationManagerImpl());
     }
  
@@ -11,13 +11,19 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/da
     {
        JBossCacheWorkspaceStorageCache cache1 = null, cache2 = null;
        try
+       {
+-         MyWorkspaceStorageConnection con = new MyWorkspaceStorageConnection();
++         MyWorkspaceSC con = new MyWorkspaceSC();
+          WorkspaceDataContainer wdc = new MyWorkspaceDataContainer(con);
+          CacheableWorkspaceDataManager cwdmNode1 =
+             new CacheableWorkspaceDataManager(wdc, cache1 = getCacheImpl(), new SystemDataContainerHolder(wdc));
 @@ -273,6 +273,106 @@
           assertEquals(2, cwdmNode1.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
           assertNotNull(cwdmNode2.getItemData(parentNode, qpe, ItemType.PROPERTY));
           assertEquals(2, cwdmNode2.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
 +
 +         // testConsistency
-+         con = new MyWorkspaceStorageConnection(true);
++         con = new MyWorkspaceSC(true);
 +         wdc = new MyWorkspaceDataContainer(con);
 +         cwdmNode1 = new CacheableWorkspaceDataManager(wdc, cache1, new SystemDataContainerHolder(wdc));
 +         cwdmNode2 = new CacheableWorkspaceDataManager(wdc, cache2, new SystemDataContainerHolder(wdc));
@@ -118,6 +124,15 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/da
        }
        finally
        {
+@@ -308,7 +408,7 @@
+     * @param idNode
+     * @throws InterruptedException
+     */
+-   private void executeConcurrentReadNWrite(final MyWorkspaceStorageConnection con, final Action readAction,
++   private void executeConcurrentReadNWrite(final MyWorkspaceSC con, final Action readAction,
+       final Action writeAction, final Mode mode, final NodeData parentNode) throws InterruptedException
+    {
+       final CountDownLatch goSignal = con.initCountDownLatch();
 @@ -336,6 +436,8 @@
              {
                 if (mode == Mode.WRITE_FIRST) goSignal.countDown();
@@ -154,7 +169,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/da
     }
 -   private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
 +
-+   public static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
++   public static class MyWorkspaceSC implements WorkspaceStorageConnection
     {
        public ThreadLocal<Boolean> wait = new ThreadLocal<Boolean>();
 +
@@ -168,11 +183,11 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/da
 +
 +      private boolean itemDeleted;
 +
-+      public MyWorkspaceStorageConnection()
++      public MyWorkspaceSC()
 +      {
 +      }
 +
-+      public MyWorkspaceStorageConnection(boolean canModify)
++      public MyWorkspaceSC(boolean canModify)
 +      {
 +         this.canModify = canModify;
 +      }
@@ -286,3 +301,42 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/da
           }
           catch (UnsupportedEncodingException e)
           {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(revision 4734)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(working copy)
+@@ -30,6 +30,7 @@
+ import org.jboss.cache.NodeNotExistsException;
+ import org.jboss.cache.Region;
+ import org.jboss.cache.config.Configuration;
++import org.jboss.cache.config.Configuration.CacheMode;
+ import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
+ import org.jboss.cache.interceptors.base.CommandInterceptor;
+ import org.jgroups.Address;
+@@ -993,6 +994,12 @@
+             LOG.error("Unexpected object found by FQN:" + getFqn() + " and key:" + key + ". Expected Set, but found:"
+                + existingObject.getClass().getName());
+          }
++         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL)
++         {
++            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
++            // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
++            cache.put(fqn, key, null);
++         }
+       }
+       
+       @Override
+@@ -1022,6 +1029,13 @@
+       @Override
+       public void apply()
+       {
++         if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL)
++         {
++            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
++            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes to reload them from the db
++            cache.removeNode(fqn);
++            return;
++         }
+          // force writeLock on next read
+          cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
+          // object found by FQN and key;
