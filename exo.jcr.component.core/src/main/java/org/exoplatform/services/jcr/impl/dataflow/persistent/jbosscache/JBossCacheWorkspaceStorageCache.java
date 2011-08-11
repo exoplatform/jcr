@@ -30,6 +30,9 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullItemData;
+import org.exoplatform.services.jcr.datamodel.NullNodeData;
+import org.exoplatform.services.jcr.datamodel.NullPropertyData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -396,6 +399,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public void put(ItemData item)
    {
+      // There is different commit processing for NullNodeData and ordinary ItemData
+      if (item instanceof NullItemData)
+      {
+         putNullItem((NullItemData)item);
+         return;
+      }
+
       boolean inTransaction = cache.isTransactionActive();
       try
       {
@@ -507,7 +517,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          for (String propId : set)
          {
             PropertyData prop = (PropertyData)cache.get(makeItemFqn(propId), ITEM_DATA);
-            if (prop == null)
+            if (prop == null || prop instanceof NullItemData)
             {
                return null;
             }
@@ -680,23 +690,48 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    public ItemData get(String parentId, QPathEntry name, ItemType itemType)
    {
       String itemId = null;
-      if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
+      if (itemType == ItemType.UNKNOWN)
       {
-         // try as node first
+         // Try as node first.
+         itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
+
+         if (itemId == null || itemId.equals(NullItemData.NULL_ID))
+         {
+            // node with such a name is not found or marked as not-exist, so check the properties
+            String propId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
+            if (propId != null)
+            {
+               itemId = propId;
+            }
+         }
+      }
+      else if (itemType == ItemType.NODE)
+      {
          itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
       }
-
-      if (itemType == ItemType.PROPERTY || itemType == ItemType.UNKNOWN && itemId == null)
+      else
       {
-         // try as property
          itemId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
       }
 
       if (itemId != null)
       {
-         return get(itemId);
+         if (itemId.equals(NullItemData.NULL_ID))
+         {
+            if (itemType == ItemType.UNKNOWN || itemType == ItemType.NODE)
+            {
+               return new NullNodeData();
+            }
+            else
+            {
+               return new NullPropertyData();
+            }
+         }
+         else
+         {
+            return get(itemId);
+         }
       }
-
       return null;
    }
 
@@ -705,6 +740,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public ItemData get(String id)
    {
+      // NullNodeData with id may be stored as ordinary NodeData or PropertyData
       return (ItemData)cache.get(makeItemFqn(id), ITEM_DATA);
    }
 
@@ -723,7 +759,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          for (Object child : set)
          {
             NodeData node = (NodeData)cache.get(makeItemFqn((String)child), ITEM_DATA);
-            if (node == null)
+            if (node == null || node instanceof NullItemData)
             {
                return null;
             }
@@ -788,7 +824,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          for (Object child : set)
          {
             PropertyData prop = (PropertyData)cache.get(makeItemFqn((String)child), ITEM_DATA);
-            if (prop == null)
+            if (prop == null || prop instanceof NullItemData)
             {
                return null;
             }
@@ -944,6 +980,54 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
    }
 
+   /**
+    * Internal put NullNode.
+    *
+    * @param item, NullItemData, new data to put in the cache
+    */
+   protected void putNullItem(NullItemData item)
+   {
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+         cache.setLocal(true);
+
+         if (!item.getIdentifier().equals(NullItemData.NULL_ID))
+         {
+            //put in $ITEMS
+            cache.putIfAbsent(makeItemFqn(item.getIdentifier()), ITEM_DATA, item);
+         }
+         else if (item.getName() != null && item.getParentIdentifier() != null)
+         {
+            if (item.isNode())
+            {
+               // put in $CHILD_NODES
+               cache.putIfAbsent(makeChildFqn(childNodes, item.getParentIdentifier(), item.getName()), ITEM_ID,
+                  NullItemData.NULL_ID);
+            }
+            else
+            {
+               // put in $CHILD_PROPERTIES
+               cache.putIfAbsent(makeChildFqn(childProps, item.getParentIdentifier(), item.getName()), ITEM_ID,
+                  NullItemData.NULL_ID);
+            }
+         }
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
+      }
+
+   }
+
    protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
    {
       // if not a root node
@@ -960,7 +1044,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          }
       }
       // add in ITEMS
-      return (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+      // NullNodeData must never be returned inside internal cache operations. 
+      ItemData returnedData = (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+      return (returnedData instanceof NullItemData) ? null : returnedData;
    }
 
    /**
@@ -1008,8 +1094,11 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       }
 
       // add in ITEMS
-      return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
-         modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+      // NullItemData must never be returned inside internal cache operations. 
+      ItemData returnedData =
+         (ItemData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
+            modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+      return (returnedData instanceof NullItemData) ? null : (PropertyData)returnedData;
    }
 
    protected void removeItem(ItemData item)
@@ -1065,7 +1154,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected void updateMixin(NodeData node)
    {
       NodeData prevData = (NodeData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
-      if (prevData != null)
+      // prevent update NullNodeData
+      if (prevData != null && !(prevData instanceof NullItemData))
       {
          // do update ACL if needed
          if (prevData.getACL() == null || !prevData.getACL().equals(node.getACL()))
@@ -1119,6 +1209,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected void updateInBuffer(final NodeData node, final NodeData prevNode)
    {
+      // I expect that NullNodeData will never update existing NodeData.
       // get previously cached NodeData and using its name remove child on the parent
       Fqn<String> prevFqn =
          makeChildFqn(childNodes, node.getParentIdentifier(), prevNode.getQPath().getEntries()[prevNode.getQPath()
@@ -1132,6 +1223,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          }
       }
 
+      // node and prevNode are not NullNodeDatas
       // update childs paths if index changed
       int nodeIndex = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1].getIndex();
       int prevNodeIndex = prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1].getIndex();
@@ -1165,7 +1257,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
          // check is this descendant of prevRootPath
          QPath nodeQPath = data.getQPath();
-         if (nodeQPath.isDescendantOf(prevRootPath))
+         if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
          {
 
             //make relative path
