@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.NullItemData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -158,14 +157,14 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
    {
       // from cache at first
       ItemData cdata = persistentManager.getCachedItemData(identifier);
-      if (cdata != null && !(cdata instanceof NullItemData))
+      if (cdata != null)
          return super.getItemData(identifier);
 
       if (!this.equals(versionDataManager) && !identifier.equals(Constants.ROOT_UUID))
       {
          // search in System cache for /jcr:system nodes only
          cdata = versionDataManager.persistentManager.getCachedItemData(identifier);
-         if (cdata != null && !(cdata instanceof NullItemData))
+         if (cdata != null)
             if (isSystemDescendant(cdata.getQPath()))
                return versionDataManager.getItemData(identifier);
             else

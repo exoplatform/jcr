@@ -23,9 +23,6 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.NullItemData;
-import org.exoplatform.services.jcr.datamodel.NullNodeData;
-import org.exoplatform.services.jcr.datamodel.NullPropertyData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
@@ -421,19 +418,17 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                data = getPersistedItemData(parentData, name, itemType);
             }
+            else if (!data.isNode())
+            {
+               fixPropertyValues((PropertyData)data);
+            }
          }
          finally
          {
             request.done();
          }
       }
-
-      if (data instanceof NullItemData)
-      {
-         return null;
-      }
-
-      if (data != null && !data.isNode())
+      else if (!data.isNode())
       {
          fixPropertyValues((PropertyData)data);
       }
@@ -465,19 +460,17 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                data = getPersistedItemData(identifier);
             }
+            else if (!data.isNode())
+            {
+               fixPropertyValues((PropertyData)data);
+            }
          }
          finally
          {
             request.done();
          }
       }
-
-      if (data instanceof NullItemData)
-      {
-         return null;
-      }
-
-      if (data != null && !data.isNode())
+      else if (!data.isNode())
       {
          fixPropertyValues((PropertyData)data);
       }
@@ -756,23 +749,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       throws RepositoryException
    {
       ItemData data = super.getItemData(parentData, name, itemType);
-      if (cache.isEnabled())
+      if (data != null && cache.isEnabled())
       {
-         if (data == null)
-         {
-            if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
-            {
-               cache.put(new NullNodeData(parentData, name));
-            }
-            else
-            {
-               cache.put(new NullPropertyData(parentData, name));
-            }
-         }
-         else
-         {
-            cache.put(data);
-         }
+         cache.put(data);
       }
       return data;
    }
@@ -787,17 +766,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected ItemData getPersistedItemData(String identifier) throws RepositoryException
    {
       ItemData data = super.getItemData(identifier);
-      if (cache.isEnabled())
+      if (data != null && cache.isEnabled())
       {
-         if (data != null)
-         {
-            cache.put(data);
-         }
-         else if (identifier != null)
-         {
-            // no matter does property or node expected - store NullNodeData
-            cache.put(new NullNodeData(identifier));
-         }
+         cache.put(data);
       }
       return data;
    }
