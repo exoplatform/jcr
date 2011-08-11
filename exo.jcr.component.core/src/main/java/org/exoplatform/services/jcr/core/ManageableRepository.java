@@ -23,9 +23,11 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.security.MembershipEntry;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 
 import javax.jcr.NamespaceRegistry;
 import javax.jcr.NoSuchWorkspaceException;
@@ -115,6 +117,15 @@ public interface ManageableRepository extends Repository
     * @throws RepositoryException
     */
    Session getSystemSession(String workspaceName) throws RepositoryException;
+
+   /**
+    * @param workspaceName - name of workspace
+    * @param membershipEntries - list of memberships
+    * @return the Dynamic session (session with Dynamic identity)
+    * @throws RepositoryException
+    */
+   Session getDynamicSession(String workspaceName, Collection<MembershipEntry> membershipEntries)
+            throws RepositoryException;
 
    /**
     * @return array of workspace names

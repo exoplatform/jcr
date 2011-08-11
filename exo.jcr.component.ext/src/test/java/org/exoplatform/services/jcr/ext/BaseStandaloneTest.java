@@ -53,6 +53,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.ValueFactory;
 import javax.jcr.Workspace;
 
@@ -154,10 +155,10 @@ public abstract class BaseStandaloneTest extends TestCase
       log.info("tearDown() BEGIN " + getClass().getName() + "." + getName());
       if (session != null)
       {
+         Session sysSession = repository.getSystemSession(session.getWorkspace().getName());
          try
          {
-            session.refresh(false);
-            Node rootNode = session.getRootNode();
+            Node rootNode = sysSession.getRootNode();
             if (rootNode.hasNodes())
             {
                // clean test root
@@ -171,7 +172,7 @@ public abstract class BaseStandaloneTest extends TestCase
                      node.remove();
                   }
                }
-               session.save();
+               sysSession.save();
             }
          }
          catch (Exception e)
@@ -181,6 +182,7 @@ public abstract class BaseStandaloneTest extends TestCase
          }
          finally
          {
+            sysSession.logout();
             session.logout();
          }
       }

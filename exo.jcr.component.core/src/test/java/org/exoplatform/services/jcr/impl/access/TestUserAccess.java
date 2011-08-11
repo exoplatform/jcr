@@ -23,9 +23,13 @@ import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.security.MembershipEntry;
 
 import java.security.AccessControlException;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.Session;
 
@@ -72,7 +76,7 @@ public class TestUserAccess extends JcrImplBaseTest
    public void testUser() throws Exception
    {
       // Mary only node, Mary membership is '*:/exo', seems it's user
-      NodeImpl maryNode = (NodeImpl)testRoot.addNode("mary");
+      NodeImpl maryNode = (NodeImpl) testRoot.addNode("mary");
       maryNode.addMixin("exo:privilegeable");
       if (!session.getUserID().equals("mary"))
       {
@@ -173,6 +177,102 @@ public class TestUserAccess extends JcrImplBaseTest
          e.printStackTrace();
          fail(e.getMessage());
       }
+   }
+
+   /**
+    * Check if Dynamic user has rights to a node with user "mary".
+    * 
+    * @throws Exception
+    */
+   public void testDynamicUserRead() throws Exception
+   {
+      // Mary only node, Mary membership is '*:/platform/users', seems it's user
+      NodeImpl maryNode = (NodeImpl) testRoot.addNode("mary_dynamic");
+      maryNode.addMixin("exo:privilegeable");
+      if (!session.getUserID().equals("mary"))
+      {
+         maryNode.setPermission("*:/platform/users", new String[] {PermissionType.READ});
+         maryNode.setPermission("mary", PermissionType.ALL);
+         maryNode.removePermission(session.getUserID());
+      }
+      maryNode.removePermission(SystemIdentity.ANY);
+      testRoot.save();
+
+      Session marySession =
+                  repository.login(new CredentialsImpl("mary", "exo".toCharArray()), session.getWorkspace().getName());
+      NodeImpl myNode = (NodeImpl) marySession.getItem(maryNode.getPath());
+      Node test = myNode.addNode("test");
+      test.setProperty("property", "any data");
+      myNode.save();
+
+      //Dynamic session fail read
+      List<MembershipEntry> dynamicMembershipEntries = new ArrayList<MembershipEntry>();
+      dynamicMembershipEntries.add(new MembershipEntry("/platform/administrators"));
+
+      try
+      {
+         Session dynamicSession =
+                  repository.getDynamicSession(session.getWorkspace().getName(), dynamicMembershipEntries);
+         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
+         fail("Dynamic session with membership '*:/platform/users' should not read node with membership '*:/platform/users'");
+      }
+      catch (AccessDeniedException e)
+      {
+         //ok
+      }
+
+      //Dynamic session successful read
+      dynamicMembershipEntries = new ArrayList<MembershipEntry>();
+      dynamicMembershipEntries.add(new MembershipEntry("/platform/users"));
+
+      //check get
+      try
+      {
+         Session dynamicSession =
+                  repository.getDynamicSession(session.getWorkspace().getName(), dynamicMembershipEntries);
+         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
+         //ok
+      }
+      catch (AccessDeniedException e)
+      {
+
+         e.printStackTrace();
+         fail("Dynamic session with membership '*:/platform/users' should read node with membership '*:/platform/users'. Exception message :"
+                  + e.getMessage());
+      }
+
+      //check add
+      try
+      {
+         Session dynamicSession =
+                  repository.getDynamicSession(session.getWorkspace().getName(), dynamicMembershipEntries);
+         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
+
+         maryNodeDynamic.addNode("test2");
+         maryNodeDynamic.save();
+         fail("Dynamic session with membership '*:/platform/users' should be not add child node with membership '*:/platform/users READ'");
+      }
+      catch (AccessDeniedException e)
+      {
+         //ok
+      }
+
+      //check remove
+      try
+      {
+         Session dynamicSession =
+                  repository.getDynamicSession(session.getWorkspace().getName(), dynamicMembershipEntries);
+         NodeImpl maryNodeDynamic = (NodeImpl) dynamicSession.getItem(maryNode.getPath());
+
+         maryNodeDynamic.getNode("test").remove();
+         maryNodeDynamic.save();
+         fail("Dynamic session with membership '*:/platform/users' should be not remove child node with membership '*:/platform/users READ'");
+      }
+      catch (AccessDeniedException e)
+      {
+         //ok
+      }
+
    }
 
 }
