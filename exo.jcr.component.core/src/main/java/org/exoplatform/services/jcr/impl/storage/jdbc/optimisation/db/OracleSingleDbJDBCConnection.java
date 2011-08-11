@@ -42,6 +42,10 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
       SingleDbJDBCConnection.FIND_PROPERTIES_BY_PARENTID_CQ_QUERY.replaceFirst("select",
          "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/");
 
+   protected static final String FIND_ITEM_QPATH_BY_ID_CQ_QUERY =
+            SingleDbJDBCConnection.FIND_ITEM_QPATH_BY_ID_CQ_QUERY.replaceFirst("SELECT",
+                     "SELECT /*+ INDEX(JCR_SITEM JCR_PK_SITEM) */");
+
    /**
     * Oracle Singledatabase JDBC Connection constructor.
     * 
@@ -81,6 +85,7 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
       super.prepareQueries();
       FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
       FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
+      FIND_ITEM_QPATH_BY_ID_CQ = FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
       FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
          "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/ I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
             + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)";

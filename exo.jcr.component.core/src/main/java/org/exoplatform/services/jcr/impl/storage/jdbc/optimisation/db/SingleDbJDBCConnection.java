@@ -61,6 +61,11 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
          + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
          + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? order by I.NAME";
+   
+   protected static final String FIND_ITEM_QPATH_BY_ID_CQ_QUERY =
+      "select I.ID, I.PARENT_ID, I.NAME, I.I_INDEX"
+         + " from JCR_SITEM I, (SELECT ID, PARENT_ID from JCR_SITEM where ID=?) J"
+         + " where I.ID = J.ID or I.ID = J.PARENT_ID";
 
    protected static final String PATTERN_ESCAPE_STRING = "\\"; //valid for HSQL, Sybase, DB2, MSSQL, ORACLE
 
@@ -158,10 +163,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             + " from JCR_SITEM I, JCR_SVALUE V"
             + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and I.ID=V.PROPERTY_ID";
 
-      FIND_ITEM_QPATH_BY_ID_CQ =
-         "select I.ID, I.PARENT_ID, I.NAME, I.I_INDEX"
-            + " from JCR_SITEM I, (SELECT ID, PARENT_ID from JCR_SITEM where ID=?) J"
-            + " where I.ID = J.ID or I.ID = J.PARENT_ID";
+      FIND_ITEM_QPATH_BY_ID_CQ = FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
 
       FIND_LAST_ORDER_NUMBER_BY_PARENTID =
          "select count(*), max(N_ORDER_NUM) from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";

@@ -41,6 +41,11 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
       MultiDbJDBCConnection.FIND_PROPERTIES_BY_PARENTID_CQ_QUERY.replaceFirst("select",
          "select /*+ INDEX(I JCR_IDX_MITEM_PARENT_ID) INDEX(V JCR_IDX_MVALUE_PROPERTY)*/");
+   
+   protected static final String FIND_ITEM_QPATH_BY_ID_CQ_QUERY =
+      MultiDbJDBCConnection.FIND_ITEM_QPATH_BY_ID_CQ_QUERY.replaceFirst("SELECT",
+         "SELECT /*+ INDEX(JCR_MITEM JCR_PK_MITEM) */");
+
 
    /**
     * Oracle Multidatabase JDBC Connection constructor.
@@ -80,6 +85,7 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
       super.prepareQueries();
       FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
       FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
+      FIND_ITEM_QPATH_BY_ID_CQ = FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
       FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
          "select /*+ INDEX(I JCR_IDX_MITEM_PARENT_ID) INDEX(V JCR_IDX_MVALUE_PROPERTY)*/ I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED,"
             + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from JCR_MITEM I LEFT OUTER JOIN JCR_MVALUE V ON (V.PROPERTY_ID=I.ID)";

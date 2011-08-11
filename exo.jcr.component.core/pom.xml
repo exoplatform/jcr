@@ -30,7 +30,7 @@
    <name>eXo JCR :: Component :: Core Service</name>
    <description>eXo JCR Service core component</description>
    <properties>
-      <jcr.test.configuration.file>/conf/standalone/test-configuration-jbc.xml</jcr.test.configuration.file>
+      <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc-jbc.xml</jcr.test.configuration.file>
       <jbosscache.shareable>true</jbosscache.shareable>
       <jbc.specific.1>**/jbc/**</jbc.specific.1>
       <jbc.specific.2>**/jbosscache/**</jbc.specific.2>
@@ -261,7 +261,7 @@
          <scope>test</scope>
       </dependency>
       <!-- For Oracle 10g support (local-jcr repository) -->
-      <!-- dependency>
+      <dependency>
          <groupId>ojdbc</groupId>
          <artifactId>ojdbc</artifactId>
          <version>14</version>
@@ -272,7 +272,7 @@
          <artifactId>orai18n</artifactId>
          <version>14</version>
          <scope>test</scope>
-      </dependency -->
+      </dependency>
       <!-- For IBM DB2 support (local-jcr repository) -->
       <!-- dependency>
          <groupId>com.ibm.db2</groupId>
