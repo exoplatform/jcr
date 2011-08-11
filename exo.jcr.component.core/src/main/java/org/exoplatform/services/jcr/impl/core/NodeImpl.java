@@ -297,15 +297,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       if (nodeDef.getName().equals(name) || primaryTypeName.equals(Constants.JCR_ANY_NAME))
       {
-         if (nodeDef.getDefaultPrimaryType() == null)
+         primaryTypeName = nodeDef.getDefaultPrimaryType();
+
+         if (primaryTypeName == null)
          {
             throw new ConstraintViolationException("Can not define node type for " + name.getAsString()
                      + ". No default primary type defined for child nodes in \""
                      + nodeData().getPrimaryTypeName().getAsString()
                      + "\" node type and no explicit primary type given to create a child node.");
          }
-         
-         primaryTypeName = nodeDef.getDefaultPrimaryType();
       }
       // try to make new node
       return doAddNode(parent, name, primaryTypeName, nodeDef);
