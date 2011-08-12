@@ -127,7 +127,7 @@ public class AddMetadataAction implements Action
          }
          catch (DocumentReadException e)
          {
-            log.warn(e.getMessage(), e);
+            log.warn(e.getMessage());
          }
 
          Iterator entries = props.entrySet().iterator();
