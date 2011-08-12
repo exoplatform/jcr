@@ -260,9 +260,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       if (this.lazyNodeIteatorPageSize < WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN)
       {
          this.lazyNodeIteatorPageSize = WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN;
-         log.warn("Value for \"lazy-node-iterator-page-size\" is too small. Allowed minimum page size is "
-            + WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN + ". Using required value: "
-            + WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN + ".");
       }
    }
 

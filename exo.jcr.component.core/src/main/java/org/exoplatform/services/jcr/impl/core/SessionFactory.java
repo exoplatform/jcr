@@ -24,6 +24,7 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
@@ -93,6 +94,13 @@ public class SessionFactory
             LOG.error(e.getLocalizedMessage(), e);
          }
       }
+
+      if (config.getContainer().getParameterInteger(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE,
+         WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_DEFAULT) < WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN)
+      {
+         LOG.warn("Value for \"lazy-node-iterator-page-size\" is too small. Using allowed minimum page size : "
+            + WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN + ".");
+      }
    }
 
    /**
@@ -111,7 +119,7 @@ public class SessionFactory
          if (security != null)
          {
             security.checkPermission(JCRRuntimePermissions.CREATE_SYSTEM_SESSION_PERMISSION);
-         }         
+         }
       }
       else if (DynamicIdentity.DYNAMIC.equals(user.getIdentity().getUserId()))
       {
