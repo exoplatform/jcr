@@ -1,7 +1,7 @@
-Index: src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java
 ===================================================================
---- src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(revision 4711)
-+++ src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(working copy)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(revision 4747)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(working copy)
 @@ -28,6 +28,7 @@
  import org.exoplatform.services.jcr.datamodel.ItemData;
  import org.exoplatform.services.jcr.datamodel.ItemType;
@@ -27,10 +27,10 @@ Index: src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/Versi
              if (isSystemDescendant(cdata.getQPath()))
                 return versionDataManager.getItemData(identifier);
              else
-Index: src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/LinkedWorkspaceStorageCacheImpl.java
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/LinkedWorkspaceStorageCacheImpl.java
 ===================================================================
---- src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/LinkedWorkspaceStorageCacheImpl.java	(revision 4711)
-+++ src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/LinkedWorkspaceStorageCacheImpl.java	(working copy)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/LinkedWorkspaceStorageCacheImpl.java	(revision 4747)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/LinkedWorkspaceStorageCacheImpl.java	(working copy)
 @@ -27,6 +27,7 @@
  import org.exoplatform.services.jcr.datamodel.ItemData;
  import org.exoplatform.services.jcr.datamodel.ItemType;
@@ -52,10 +52,10 @@ Index: src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/Linke
  
           writeLock.lock();
           try
-Index: src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java
 ===================================================================
---- src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4711)
-+++ src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(working copy)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(revision 4747)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/JBossCacheWorkspaceStorageCache.java	(working copy)
 @@ -30,6 +30,9 @@
  import org.exoplatform.services.jcr.datamodel.ItemData;
  import org.exoplatform.services.jcr.datamodel.ItemType;
@@ -286,10 +286,10 @@ Index: src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jboss
           {
  
              //make relative path
-Index: src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
 ===================================================================
---- src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 4711)
-+++ src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 4747)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
 @@ -23,6 +23,9 @@
  import org.exoplatform.services.jcr.datamodel.ItemData;
  import org.exoplatform.services.jcr.datamodel.ItemType;
@@ -398,10 +398,10 @@ Index: src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/Cache
        }
        return data;
     }
-Index: src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.java
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.java
 ===================================================================
---- src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.java	(revision 0)
-+++ src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.java	(revision 0)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.java	(revision 0)
 @@ -0,0 +1,79 @@
 +/*
 + * Copyright (C) 2003-2010 eXo Platform SAS.
@@ -482,10 +482,10 @@ Index: src/main/java/org/exoplatform/services/jcr/datamodel/NullPropertyData.jav
 +   }
 +
 +}
-Index: src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java
 ===================================================================
---- src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java	(revision 0)
-+++ src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java	(revision 0)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java	(revision 0)
 @@ -0,0 +1,88 @@
 +/*
 + * Copyright (C) 2010 eXo Platform SAS.
@@ -575,10 +575,10 @@ Index: src/main/java/org/exoplatform/services/jcr/datamodel/NullNodeData.java
 +   }
 +
 +}
-Index: src/main/java/org/exoplatform/services/jcr/datamodel/NullItemData.java
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullItemData.java
 ===================================================================
---- src/main/java/org/exoplatform/services/jcr/datamodel/NullItemData.java	(revision 0)
-+++ src/main/java/org/exoplatform/services/jcr/datamodel/NullItemData.java	(revision 0)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullItemData.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/datamodel/NullItemData.java	(revision 0)
 @@ -0,0 +1,98 @@
 +/*
 + * Copyright (C) 2003-2010 eXo Platform SAS.

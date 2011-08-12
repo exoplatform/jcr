@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullItemData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -916,6 +917,12 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    {
       if (enabled && item != null)
       {
+         
+         if (item instanceof NullItemData)
+         {
+            // skip null values
+            return;
+         }
 
          writeLock.lock();
          try
