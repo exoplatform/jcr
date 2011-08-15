@@ -53,10 +53,12 @@ public class TestGetNodesLazily extends JcrImplBaseTest
       testRoot = (NodeImpl)session.getRootNode().addNode("TestGetNodesLazily");
 
       // add first 150 child nodes
-      nodesCount = 150;
+      nodesCount = 350;
       for (int i = 0; i < nodesCount; i++)
       {
-         testRoot.addNode("child" + i).setProperty(INDEX_PROPERTY, i);
+         Node newNode = testRoot.addNode("child" + i);
+         newNode.setProperty(INDEX_PROPERTY, i);
+         newNode.addMixin("exo:owneable");
       }
       session.save();
       txService = (TransactionService)container.getComponentInstanceOfType(TransactionService.class);

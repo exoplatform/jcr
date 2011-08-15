@@ -73,6 +73,7 @@ import java.util.TreeSet;
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -859,9 +860,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
          // update type
          if (updatePropertyByIdentifier(data.getPersistedVersion(), data.getType(), cid) <= 0)
+         {
             throw new JCRInvalidItemStateException("(update) Property not found " + data.getQPath().getAsString() + " "
                + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
                ItemState.UPDATED);
+         }
 
          // update reference
          try
@@ -893,13 +896,17 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       catch (IOException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property update. IO error: " + e, e);
+         }
          throw new RepositoryException("Error of Property Value update " + e, e);
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property update. Database error: " + e, e);
+         }
          exceptionHandler.handleUpdateException(e, data);
       }
    }
@@ -1045,7 +1052,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             List<PropertyData> children = new ArrayList<PropertyData>();
             while (prop.next())
+            {
                children.add((PropertyData)itemData(parent.getQPath(), prop, I_CLASS_PROPERTY, null));
+            }
 
             return children;
          }
@@ -1092,8 +1101,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws RepositoryException
     * @throws IllegalStateException
     */
-   public List<NodeDataIndexing> getNodesAndProperties(String lastNodeId, int offset, int limit) throws RepositoryException,
-      IllegalStateException
+   public List<NodeDataIndexing> getNodesAndProperties(String lastNodeId, int offset, int limit)
+      throws RepositoryException, IllegalStateException
    {
       List<NodeDataIndexing> result = new ArrayList<NodeDataIndexing>();
 
@@ -1172,43 +1181,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws RepositoryException
     * @throws IllegalStateException
     */
-   public List<NodeData> getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit) throws RepositoryException,
-      IllegalStateException
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childNodes)
+      throws RepositoryException, IllegalStateException
    {
-      checkIfOpened();
-      try
-      {
-         ResultSet node = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()), fromOrderNum, limit);
-         try
-         {
-            List<NodeData> childrens = new ArrayList<NodeData>();
-            while (node.next())
-            {
-               childrens.add((NodeData)itemData(parent.getQPath(), node, I_CLASS_NODE, parent.getACL()));
-            }
-
-            return childrens;
-         }
-         finally
-         {
-            try
-            {
-               node.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error("Can't close the ResultSet: " + e);
-            }
-         }
-      }
-      catch (SQLException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e);
-      }
+      // not supported by non-CQ deprecated JDBC container
+      throw new UnsupportedRepositoryOperationException();
    }
 
    /**
@@ -1224,7 +1201,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             List<PropertyData> children = new ArrayList<PropertyData>();
             while (prop.next())
+            {
                children.add(propertyData(parent.getQPath(), prop));
+            }
 
             return children;
          }
@@ -1342,8 +1321,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             if (valueRecord.next())
             {
                String storageId = valueRecord.getString(COLUMN_VSTORAGE_DESC);
-               return valueRecord.wasNull() ? readValueData(cid, orderNumb, persistedVersion,
-                  valueRecord.getBinaryStream(COLUMN_VDATA)) : readValueData(propertyId, orderNumb, storageId);
+               return valueRecord.wasNull() ? readValueData(cid, orderNumb, persistedVersion, valueRecord
+                  .getBinaryStream(COLUMN_VDATA)) : readValueData(propertyId, orderNumb, storageId);
             }
 
             return null;
@@ -1516,7 +1495,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          try
          {
             if (!parent.next())
+            {
                throw new InvalidItemStateException("Parent not found, uuid: " + getIdentifier(caid));
+            }
 
             QPathEntry qpe =
                new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX));
@@ -1608,12 +1589,18 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          MixinInfo naMixins = readMixins(caid);
          if (naMixins.hasPrivilegeable())
+         {
             return readACLPermisions(caid);
+         }
 
          if (naMixins.parentId == null)
+         {
             caid = findParentId(caid);
+         }
          else
+         {
             caid = naMixins.parentId;
+         }
       }
 
       throw new IllegalACLException("Can not find permissions for a node with id " + getIdentifier(cpid));
@@ -1625,9 +1612,13 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       try
       {
          if (pidrs.next())
+         {
             return pidrs.getString(COLUMN_PARENTID);
+         }
          else
+         {
             throw new RepositoryException("Item not found id: " + getIdentifier(cid));
+         }
       }
       finally
       {
@@ -1666,12 +1657,18 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          MixinInfo naMixins = readMixins(caid);
          if (naMixins.hasOwneable())
+         {
             return readACLOwner(caid);
+         }
 
          if (naMixins.parentId == null)
+         {
             caid = findParentId(caid);
+         }
          else
+         {
             caid = naMixins.parentId;
+         }
       }
 
       throw new IllegalACLException("Can not find owner for a node with id " + getIdentifier(cpid));
@@ -1707,19 +1704,27 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             naOwner = readACLOwner(caid);
             if (naPermissions != null)
+            {
                break;
+            }
          }
          if (naPermissions == null && naMixins.hasPrivilegeable())
          {
             naPermissions = readACLPermisions(caid);
             if (naOwner != null)
+            {
                break;
+            }
          }
 
          if (naMixins.parentId == null)
+         {
             caid = findParentId(caid);
+         }
          else
+         {
             caid = naMixins.parentId;
+         }
       }
 
       if (naOwner != null && naPermissions != null)
@@ -1733,8 +1738,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          return new AccessControlList();
       }
       else
+      {
          throw new IllegalACLException("ACL is not found for node with id " + getIdentifier(cpid)
             + " or for its ancestors. But repository is ACL enabled.");
+      }
    }
 
    /**
@@ -1787,7 +1794,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
             // parent = findItemByIdentifier(caid);
             if (qrpath.size() <= 0)
+            {
                throw new InvalidItemStateException("Parent not found, uuid: " + getIdentifier(cpid));
+            }
 
          }
          finally
@@ -1805,7 +1814,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
 
             if (cstmt != null)
+            {
                cstmt.close();
+            }
          }
 
          QPathEntry[] qentries = new QPathEntry[qrpath.size()];
@@ -1989,7 +2000,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             return mns;
          }
          else
+         {
             return new InternalQName[0];
+         }
       }
 
       /**
@@ -2050,9 +2063,13 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                   mts.add(mxn);
 
                   if (!privilegeable && Constants.EXO_PRIVILEGEABLE.equals(mxn))
+                  {
                      privilegeable = true;
+                  }
                   else if (!owneable && Constants.EXO_OWNEABLE.equals(mxn))
+                  {
                      owneable = true;
+                  }
                } // else, if SQL NULL - skip it
             }
             while (mtrs.next());
@@ -2103,8 +2120,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             return naPermissions;
          }
          else
+         {
             throw new IllegalACLException("Property exo:permissions is not found for node with id: "
                + getIdentifier(cid));
+         }
       }
       finally
       {
@@ -2136,9 +2155,13 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       try
       {
          if (exoOwner.next())
+         {
             return new String(exoOwner.getBytes(COLUMN_VDATA));
+         }
          else
+         {
             throw new IllegalACLException("Property exo:owner is not found for node with id: " + getIdentifier(cid));
+         }
       }
       finally
       {
@@ -2215,8 +2238,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
 
             if (!ptProp.next())
+            {
                throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
                   + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
+            }
 
             byte[] data = ptProp.getBytes(COLUMN_VDATA);
             InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
@@ -2239,8 +2264,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   // use permissions from existed parent
                   acl =
-                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions()
-                        ? parentACL.getPermissionEntries() : null);
+                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions() ? parentACL
+                        .getPermissionEntries() : null);
                }
                else
                {
@@ -2272,14 +2297,18 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             else
             {
                if (parentACL != null)
+               {
                   // construct ACL from existed parent ACL
                   acl =
-                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions()
-                        ? parentACL.getPermissionEntries() : null);
+                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
+                        .getPermissionEntries() : null);
+               }
                else
+               {
                   // have to search nearest ancestor owner and permissions in ACL manager
                   // acl = traverseACL(cpid);
                   acl = null;
+               }
             }
 
             return new PersistedNodeData(getIdentifier(cid), qpath, getIdentifier(parentCid), cversion, cnordernumb,
@@ -2449,8 +2478,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             final int orderNum = valueRecords.getInt(COLUMN_VORDERNUM);
             final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
             ValueData vdata =
-               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion,
-                  valueRecords.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion, valueRecords
+                  .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
             data.add(vdata);
          }
       }
@@ -2531,6 +2560,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          // stream from database
          if (content != null)
+         {
             while ((read = content.read(spoolBuffer)) >= 0)
             {
                if (out != null)
@@ -2566,6 +2596,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                   len += read;
                }
             }
+         }
       }
       finally
       {
@@ -2747,8 +2778,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
          // build property data
          PropertyData pdata =
-            new PersistedPropertyData(identifier, qpath, tempNode.cid, prop.version, prop.type, prop.multi,
-               valueData);
+            new PersistedPropertyData(identifier, qpath, tempNode.cid, prop.version, prop.type, prop.multi, valueData);
 
          childProps.put(propName, pdata);
       }

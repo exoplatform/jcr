@@ -257,10 +257,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.lazyNodeIteatorPageSize =
          wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE,
             WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_DEFAULT);
-      if (this.lazyNodeIteatorPageSize < WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN)
-      {
-         this.lazyNodeIteatorPageSize = WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN;
-      }
    }
 
    /**

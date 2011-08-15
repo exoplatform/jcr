@@ -302,9 +302,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          if (primaryTypeName == null)
          {
             throw new ConstraintViolationException("Can not define node type for " + name.getAsString()
-                     + ". No default primary type defined for child nodes in \""
-                     + nodeData().getPrimaryTypeName().getAsString()
-                     + "\" node type and no explicit primary type given to create a child node.");
+               + ". No default primary type defined for child nodes in \""
+               + nodeData().getPrimaryTypeName().getAsString()
+               + "\" node type and no explicit primary type given to create a child node.");
          }
       }
       // try to make new node
@@ -460,7 +460,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    {
 
       checkValid();
-      
+
       if (!session.getAccessManager().hasPermission(getACL(),
          new String[]{PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
       {
@@ -544,7 +544,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          throw new LockException("Node " + getPath() + " is locked ");
       }
-      
+
       if (checkedOut())
       {
          return;
@@ -911,8 +911,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             NodeData parent = (NodeData)dataManager.getItemData(getParentIdentifier());
 
             this.definition =
-               nodeTypesHolder.getChildNodeDefinition(getInternalName(), nodeData().getPrimaryTypeName(),
-                  parent.getPrimaryTypeName(), parent.getMixinTypeNames());
+               nodeTypesHolder.getChildNodeDefinition(getInternalName(), nodeData().getPrimaryTypeName(), parent
+                  .getPrimaryTypeName(), parent.getMixinTypeNames());
 
             if (definition == null)
             {
@@ -1295,8 +1295,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             else
             {
                childs =
-                  new ArrayList<PropertyData>(dataManager.getChildPropertiesData(nodeData(),
-                     filter.getQPathEntryFilters()));
+                  new ArrayList<PropertyData>(dataManager.getChildPropertiesData(nodeData(), filter
+                     .getQPathEntryFilters()));
                Collections.sort(childs, new PropertiesDataOrderComparator<PropertyData>());
             }
 
@@ -1631,18 +1631,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
                new InternalQName[]{Constants.NT_BASE}, null, false);
          return;
       }
-      
+
       if (parent == null)
       {
          parent = (NodeData)dataManager.getItemData(getParentIdentifier());
       }
 
       this.definition =
-         session
-            .getWorkspace()
-            .getNodeTypesHolder()
-            .getChildNodeDefinition(getInternalName(), nodeData().getPrimaryTypeName(), parent.getPrimaryTypeName(),
-               parent.getMixinTypeNames());
+         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(getInternalName(),
+            nodeData().getPrimaryTypeName(), parent.getPrimaryTypeName(), parent.getMixinTypeNames());
 
       if (definition == null)
       {
@@ -2563,11 +2560,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
       // Check if node is not protected
       NodeDefinitionData childNodeDefinition =
-         session
-            .getWorkspace()
-            .getNodeTypesHolder()
-            .getChildNodeDefinition(name, primaryTypeName, nodeData().getPrimaryTypeName(),
-               nodeData().getMixinTypeNames());
+         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(name, primaryTypeName,
+            nodeData().getPrimaryTypeName(), nodeData().getMixinTypeNames());
       if (childNodeDefinition == null)
       {
          throw new ConstraintViolationException("Can't find child node definition for "
@@ -3045,11 +3039,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       if (def == null)
       {
          def =
-            session
-               .getWorkspace()
-               .getNodeTypesHolder()
-               .getChildNodeDefinition(nameToAdd, primaryTypeName, parentNode.getPrimaryTypeName(),
-                  parentNode.getMixinTypeNames());
+            session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(nameToAdd, primaryTypeName,
+               parentNode.getPrimaryTypeName(), parentNode.getMixinTypeNames());
       }
 
       boolean allowSns = def.isAllowsSameNameSiblings();
@@ -3493,7 +3484,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       private int fromOrderNum = 0;
 
       private boolean hasNext = true;
-      
+
       private int pos = 0;
 
       private LazyNodeIterator lazyNodeItetator = new LazyNodeIterator(new ArrayList<NodeData>());
@@ -3631,15 +3622,12 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             LOG.error("There are no more elements in iterator", e);
             throw new NoSuchElementException(e.toString());
          }
-         
+
          Collections.sort(storedNodes, new NodeDataOrderComparator());
 
          int size = storedNodes.size();
 
-         fromOrderNum =
-            size == 0 ? fromOrderNum + limit : Math.max(fromOrderNum + limit, storedNodes.get(size - 1)
-               .getOrderNumber() + 1);
-
+         fromOrderNum = size == 0 ? fromOrderNum + limit : storedNodes.get(size - 1).getOrderNumber() + 1;
 
          // skip some nodes
          if (size != 0)

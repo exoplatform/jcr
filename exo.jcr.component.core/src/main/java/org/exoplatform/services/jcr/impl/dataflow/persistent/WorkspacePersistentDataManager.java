@@ -109,7 +109,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * Read-only status.
     */
    protected boolean readOnly = false;
-   
+
    /**
     * The resource manager
     */
@@ -136,7 +136,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       {
          this.log = log;
       }
-      
+
       protected ItemStateChangesLog getChangesLog()
       {
          return log;
@@ -180,7 +180,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    {
       this(dataContainer, systemDataContainerHolder, null);
    }
-   
+
    /**
     * WorkspacePersistentDataManager constructor.
     * 
@@ -290,7 +290,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       {
          // The rollback is done normally
          persister.rollback();
-      }      
+      }
    }
 
    /**
@@ -310,29 +310,28 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          // fail later in the tx
          txResourceManager.addListener(new TransactionableResourceManagerListener()
          {
-            
+
             public void onCommit(boolean onePhase) throws Exception
             {
                persister.commit();
             }
-            
+
             public void onAfterCompletion(int status) throws Exception
             {
             }
-            
+
             public void onAbort() throws Exception
             {
                persister.rollback();
             }
          });
-      }      
+      }
    }
 
-   private enum ConnectionMode
-   {
+   private enum ConnectionMode {
       NORMAL, PARTIALLY_MANAGED
    }
-   
+
    class ChangesLogPersister
    {
 
@@ -629,11 +628,11 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          con.close();
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(final NodeData nodeData, int fromOrderNum, int limit, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(final NodeData nodeData, int fromOrderNum, int limit, List<NodeData> childNodes)
       throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
@@ -641,8 +640,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       {
          try
          {
-            childs.addAll(((JDBCStorageConnection)con).getChildNodesDataByPage(nodeData, fromOrderNum, limit));
-            return childs.size() == limit;
+            return ((JDBCStorageConnection)con).getChildNodesDataByPage(nodeData, fromOrderNum, limit, childNodes);
          }
          finally
          {
@@ -689,7 +687,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          con.close();
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -725,8 +723,8 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public List<PropertyData> getChildPropertiesData(final NodeData nodeData, final List<QPathEntryFilter> itemDataFilters)
-      throws RepositoryException
+   public List<PropertyData> getChildPropertiesData(final NodeData nodeData,
+      final List<QPathEntryFilter> itemDataFilters) throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
@@ -1050,8 +1048,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public ItemData getItemData(final NodeData parentData, final QPathEntry name)
-      throws RepositoryException
+   public ItemData getItemData(final NodeData parentData, final QPathEntry name) throws RepositoryException
    {
       return getItemData(parentData, name, ItemType.UNKNOWN);
    }

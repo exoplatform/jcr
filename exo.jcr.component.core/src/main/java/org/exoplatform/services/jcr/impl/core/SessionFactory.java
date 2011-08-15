@@ -98,6 +98,9 @@ public class SessionFactory
       if (config.getContainer().getParameterInteger(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE,
          WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_DEFAULT) < WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN)
       {
+         // set proper value
+         config.getContainer().putParameterValue(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE,
+            Integer.toString(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN));
          LOG.warn("Value for \"lazy-node-iterator-page-size\" is too small. Using allowed minimum page size : "
             + WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_MIN + ".");
       }

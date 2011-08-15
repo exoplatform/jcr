@@ -322,6 +322,85 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childNodes)
+      throws RepositoryException, IllegalStateException
+   {
+      checkIfOpened();
+      ResultSet resultSet = null;
+      try
+      {
+         // query will return nodes and properties in same result set
+         // last node can be incomplete, so reading one more ahead, to be sure returning 
+         // at least "limit" nodes.
+         int rowsLimit = (limit + 1) * 4;
+         resultSet = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()), fromOrderNum, rowsLimit);
+         TempNodeData data = null;
+         int resultSetSize = 0;
+         while (resultSet.next())
+         {
+            resultSetSize++;
+            if (data == null)
+            {
+               data = new TempNodeData(resultSet);
+            }
+            else if (!resultSet.getString(COLUMN_ID).equals(data.cid))
+            {
+               NodeData nodeData = loadNodeFromTemporaryNodeData(data, parent.getQPath(), parent.getACL());
+               childNodes.add(nodeData);
+               data = new TempNodeData(resultSet);
+            }
+            Map<String, SortedSet<TempPropertyData>> properties = data.properties;
+            String key = resultSet.getString("PROP_NAME");
+            SortedSet<TempPropertyData> values = properties.get(key);
+            if (values == null)
+            {
+               values = new TreeSet<TempPropertyData>();
+               properties.put(key, values);
+            }
+            values.add(new TempPropertyData(resultSet));
+         }
+         // last node can be incomplete, so removed
+         boolean hasNext = resultSetSize == rowsLimit;
+         if (!hasNext)
+         {
+            // the last one node
+            if (data != null)
+            {
+               NodeData nodeData = loadNodeFromTemporaryNodeData(data, parent.getQPath(), parent.getACL());
+               childNodes.add(nodeData);
+            }
+         }
+
+         return hasNext;
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+      finally
+      {
+         if (resultSet != null)
+         {
+            try
+            {
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
@@ -357,7 +436,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
                ItemState.UPDATED);
          }
-         
+
          // update reference
          try
          {
@@ -652,8 +731,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                try
                {
                   qpath =
-                     QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath,
-                        InternalQName.parse(cname));
+                     QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName
+                        .parse(cname));
                }
                catch (IllegalNameException e)
                {
@@ -670,8 +749,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   {
                      final String storageId = resultSet.getString(COLUMN_VSTORAGE_DESC);
                      ValueData vdata =
-                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion,
-                           resultSet.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion, resultSet
+                           .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
                      data.add(vdata);
                   }
 
