@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 
@@ -67,7 +68,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    private final ThreadLocal<String> currentRepositoryName = new ThreadLocal<String>();
 
-   private final HashMap<String, RepositoryContainer> repositoryContainers = new HashMap<String, RepositoryContainer>();
+   private final ConcurrentHashMap<String, RepositoryContainer> repositoryContainers =
+      new ConcurrentHashMap<String, RepositoryContainer>();
 
    private final List<ComponentPlugin> addNodeTypePlugins;
 
@@ -124,7 +126,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
     * Add namespaces and nodetypes from service plugins.
     * 
     */
-   public synchronized void createRepository(RepositoryEntry rEntry) throws RepositoryConfigurationException,
+   public void createRepository(RepositoryEntry rEntry) throws RepositoryConfigurationException,
       RepositoryException
    {
       // Need privileges to manage repository.
@@ -145,16 +147,22 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       // key=repository_name
       try
       {
-         repositoryContainers.put(rEntry.getName(), repositoryContainer);
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         if (repositoryContainers.putIfAbsent(rEntry.getName(), repositoryContainer) == null)
          {
-            public Void run()
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
             {
-               managerStartChanges.registerListeners(repositoryContainer);
-               repositoryContainer.start();
-               return null;
-            }
-         });
+               public Void run()
+               {
+                  managerStartChanges.registerListeners(repositoryContainer);
+                  repositoryContainer.start();
+                  return null;
+               }
+            });
+         }
+         else
+         {
+            throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
+         }
       }
       catch (Throwable t)
       {

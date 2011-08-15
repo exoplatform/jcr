@@ -18,12 +18,20 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
+import org.jibx.runtime.BindingDirectory;
+import org.jibx.runtime.IBindingFactory;
+import org.jibx.runtime.IUnmarshallingContext;
+
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -49,7 +57,6 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       super();
       this.helper = TesterConfigurationHelper.getInstance();
    }
-
 
    public void testAddNewRepository() throws Exception
    {
@@ -126,6 +133,90 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       catch (Exception e)
       {
 
+      }
+   }
+
+   public void testAddNewRepositorMultiThreading() throws Exception
+   {
+      int theadsCount = 10;
+
+      RepositoryCreationThread[] threads = new RepositoryCreationThread[theadsCount];
+      CountDownLatch latcher = new CountDownLatch(1);
+
+      for (int i = 0; i < theadsCount; i++)
+      {
+         threads[i] = new RepositoryCreationThread(latcher);
+         threads[i].start();
+      }
+
+      latcher.countDown();
+
+      for (int i = 0; i < theadsCount; i++)
+      {
+         threads[i].join();
+      }
+
+      PropertiesParam props = new PropertiesParam();
+      props.setProperty("dialect", "auto");
+      props.setProperty("source-name", "jdbcjcr");
+
+      JDBCConfigurationPersister persiter = new JDBCConfigurationPersister();
+      persiter.init(props);
+
+      IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+      IUnmarshallingContext uctx = factory.createUnmarshallingContext();
+      RepositoryServiceConfiguration storedConf =
+         (RepositoryServiceConfiguration)uctx.unmarshalDocument(persiter.read(), null);
+
+      for (int i = 0; i < theadsCount; i++)
+      {
+         // test if respository has been created
+         ManageableRepository repository = threads[i].getRepository();
+         assertNotNull(repository);
+
+         // check configuration in persiter
+         storedConf.getRepositoryConfiguration(repository.getConfiguration().getName());
+         
+         // check configuration in RepositoryServic
+         assertNotNull(repositoryService.getConfig().getRepositoryConfiguration(repository.getConfiguration().getName()));
+         
+         // login into newly created repository
+         ManageableRepository newRepository = repositoryService.getRepository(repository.getConfiguration().getName());
+         assertNotNull(repository.login(credentials, newRepository.getConfiguration().getSystemWorkspaceName())
+            .getRootNode());
+      }
+   }
+
+   private class RepositoryCreationThread extends Thread
+   {
+      private CountDownLatch latcher;
+
+      private ManageableRepository repository;
+
+      RepositoryCreationThread(CountDownLatch latcher)
+      {
+         this.latcher = latcher;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void run()
+      {
+         try
+         {
+            latcher.await();
+            repository = helper.createRepository(container, false, null);
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
+
+      public ManageableRepository getRepository()
+      {
+         return repository;
       }
    }
 }

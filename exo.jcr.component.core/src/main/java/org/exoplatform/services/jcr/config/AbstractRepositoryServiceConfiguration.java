@@ -18,8 +18,8 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by The eXo Platform SAS .
@@ -31,7 +31,7 @@ import java.util.List;
 public abstract class AbstractRepositoryServiceConfiguration
 {
 
-   protected List<RepositoryEntry> repositoryConfigurations = new ArrayList<RepositoryEntry>();
+   protected List<RepositoryEntry> repositoryConfigurations = new CopyOnWriteArrayList<RepositoryEntry>();
 
    protected String defaultRepositoryName;
 

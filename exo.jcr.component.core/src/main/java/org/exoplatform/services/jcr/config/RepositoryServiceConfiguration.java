@@ -33,6 +33,7 @@ import java.util.Map;
 
 import javax.jcr.RepositoryException;
 
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -52,14 +53,16 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
       this.defaultRepositoryName = defaultRepositoryName;
       this.repositoryConfigurations = repositoryEntries;
    }
-   
+
    public final RepositoryEntry getRepositoryConfiguration(String name) throws RepositoryConfigurationException
    {
       for (int i = 0; i < getRepositoryConfigurations().size(); i++)
       {
          RepositoryEntry conf = getRepositoryConfigurations().get(i);
          if (conf.getName().equals(name))
+         {
             return conf;
+         }
       }
       throw new RepositoryConfigurationException("Repository not configured " + name);
    }
@@ -74,11 +77,6 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
 
          this.defaultRepositoryName = conf.getDefaultRepositoryName();
          this.repositoryConfigurations = conf.getRepositoryConfigurations();
-
-         //      setDefaultRepositoryName(conf.getDefaultRepositoryName());
-         //      getRepositoryConfigurations().clear();
-         //      getRepositoryConfigurations().addAll(conf.getRepositoryConfigurations());
-
       }
       catch (JiBXException e)
       {

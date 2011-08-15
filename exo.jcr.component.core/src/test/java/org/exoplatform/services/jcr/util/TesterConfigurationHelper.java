@@ -105,6 +105,7 @@ public class TesterConfigurationHelper
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, dsName);
       service.createRepository(repoEntry);
+      service.getConfig().retain();
 
       return service.getRepository(repoEntry.getName());
    }
