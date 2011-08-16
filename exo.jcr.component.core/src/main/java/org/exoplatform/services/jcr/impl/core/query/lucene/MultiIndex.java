@@ -3370,18 +3370,26 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          if (isOnline)
          {
             log.info("Setting index back online");
-            offlineIndex.commit(true);
-            online = true;
-            // cleaning stale indexes
-            for (PersistentIndex staleIndex : staleIndexes)
+            if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
             {
-               deleteIndex(staleIndex);
+               offlineIndex.commit(true);
+               online = true;
+               // cleaning stale indexes
+               for (PersistentIndex staleIndex : staleIndexes)
+               {
+                  deleteIndex(staleIndex);
+               }
+               //invoking offline index
+               invokeOfflineIndex();
+               staleIndexes.clear();
+               doInitIndexMerger();
+               merger.start();
             }
-            //invoking offline index
-            invokeOfflineIndex();
-            staleIndexes.clear();
-            doInitIndexMerger();
-            merger.start();
+            else
+            {
+               online = true;
+               staleIndexes.clear();
+            }
          }
          // switching to OFFLINE
          else
