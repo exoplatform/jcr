@@ -57,7 +57,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
     * Logger instance for this class.
     */
    private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.LuceneSpellChecker");
-
+   
    public static final class FiveSecondsRefreshInterval extends LuceneSpellChecker
    {
       public FiveSecondsRefreshInterval()
@@ -253,13 +253,12 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       InternalSpellChecker(final SearchIndex handler, float minDistance, boolean morePopular) throws IOException
       {
          this.handler = handler;
-         final String path = handler.getContext().getIndexDirectory() + File.separatorChar + "spellchecker";
          spellIndexDirectory = null;
          SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {
-               spellIndexDirectory = handler.getDirectoryManager().getDirectory(path);
+               spellIndexDirectory = handler.getDirectoryManager().getDirectory("spellchecker");
                   
                if (IndexReader.indexExists(spellIndexDirectory))
                {
