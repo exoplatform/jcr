@@ -49,6 +49,15 @@
       functionally-full analogue of specified getNodes() operation. So when
       having a deal with huge list of child nodes, getNodes() can be simply
       and safely substituted with getNodesLazily().</para>
+
+      <para>JCR gives an experimental opportunity to replace all getNodes()
+      invocations with getNodesLazily() calls. It handles a boolean system
+      property named "org.exoplatform.jcr.forceUserGetNodesLazily" that
+      internally replaces one call with another, without any code changes. But
+      be sure using it only for development purposes. This feature can be used
+      with top level products using eXo JCR to perform a quick compatibility
+      and performance tests without changing any code. This is not recommended
+      to be used as a production solution.</para>
     </section>
 
     <section>
