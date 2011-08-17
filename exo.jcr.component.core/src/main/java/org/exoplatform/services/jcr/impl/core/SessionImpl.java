@@ -53,7 +53,6 @@ import org.exoplatform.services.jcr.impl.xml.exporting.BaseXmlExporter;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.jcr.impl.xml.importing.StreamImporter;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
@@ -118,11 +117,20 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    private static final boolean PROHIBIT_CLOSED_SESSION_USAGE =
       Boolean.valueOf(PropertyManager.getProperty("exo.jcr.prohibit.closed.session.usage"));
+
+   protected static boolean FORCE_USE_GET_NODES_LAZILY =
+      Boolean.valueOf(PropertyManager.getProperty("org.exoplatform.jcr.forceUserGetNodesLazily"));
+
    static
    {
       if (PROHIBIT_CLOSED_SESSION_USAGE)
       {
          log.info("The JCR will throw an exception anytime we will try to use a dead session.");
+      }
+      if (FORCE_USE_GET_NODES_LAZILY)
+      {
+         log.warn("EXPERIMENTAL! The JCR will use ExtendedNode.getNodesLazily() for each Node.getNodes() "
+            + "invocation. This is an experimental feauture and should be used with care.");
       }
    }
 

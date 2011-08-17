@@ -1044,6 +1044,19 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public NodeIterator getNodes() throws RepositoryException
    {
+
+      if (SessionImpl.FORCE_USE_GET_NODES_LAZILY)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG
+               .debug("EXPERIMENTAL! Be aware that \"getNodesLazily()\" feature is used instead of JCR API getNodes()"
+                  + " invocation.To disable this simply cleanup system property \"org.exoplatform.jcr.forceUserGetNodesLazily\""
+                  + " and restart JCR.");
+         }
+         return getNodesLazily();
+      }
+
       long start = 0;
       if (LOG.isDebugEnabled())
       {
@@ -1093,6 +1106,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public NodeIterator getNodesLazily() throws RepositoryException
    {
+      checkValid();
       return new LazyNodeIteratorByPage(dataManager);
    }
 
@@ -3487,6 +3501,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       private int pos = 0;
 
+      private int size = -1;
+
       private LazyNodeIterator lazyNodeItetator = new LazyNodeIterator(new ArrayList<NodeData>());
 
       LazyNodeIteratorByPage(SessionDataManager dataManager) throws RepositoryException
@@ -3578,11 +3594,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       public void skip(long skipNum)
       {
          pos += skipNum;
-
          long leftToSkip = lazyNodeItetator.trySkip(skipNum, false);
          if (leftToSkip != 0)
          {
-            readNextPage(leftToSkip);
+            readNextPage(leftToSkip + 1);
          }
       }
 
@@ -3591,7 +3606,18 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
        */
       public long getSize()
       {
-         return -1;
+         if (size < 0)
+         {
+            try
+            {
+               size = dataManager.getChildNodesCount(nodeData());
+            }
+            catch (RepositoryException e)
+            {
+               LOG.error("Can't determmine number of child nodes.", e);
+            }
+         }
+         return size;
       }
 
       public ItemImpl nextItem()
