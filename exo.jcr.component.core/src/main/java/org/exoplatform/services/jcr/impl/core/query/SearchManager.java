@@ -18,9 +18,10 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -134,10 +135,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected LuceneVirtualTableResolver virtualTableResolver;
 
    protected IndexerChangesFilter changesFilter;
+   
+   private final ExoContainerContext ctx;
 
    /**
     * Creates a new <code>SearchManager</code>.
     * 
+    * @param ctx
+    *            The eXo Container context in which the SearchManager is registered
     * @param config
     *            the search configuration.
     * @param nsReg
@@ -159,12 +164,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * @throws RepositoryConfigurationException
     */
 
-   public SearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   public SearchManager(ExoContainerContext ctx, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
       throws RepositoryException, RepositoryConfigurationException
    {
-
+      this.ctx = ctx;
       this.extractor = extractor;
       indexSearcherHolder.addIndexSearcher(this);
       this.config = config;
@@ -622,6 +627,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected IndexingTree getIndexingTree()
    {
       return indexingTree;
+   }
+
+   /**
+    * @return the ctx
+    */
+   public ExoContainerContext getExoContainerContext()
+   {
+      return ctx;
    }
 
    /**

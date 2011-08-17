@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -63,6 +64,7 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
+import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.jboss.cache.loader.CacheLoader;
 import org.jboss.cache.loader.CacheLoaderManager;
 import org.jboss.cache.lock.TimeoutException;
@@ -168,9 +170,12 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    private Map<String, CacheableSessionLockManager> sessionLockManagers;
 
+   private final JmxRegistrationManager jmxManager;
+   
    /**
     * Constructor.
     * 
+    * @param ctx The container context
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
@@ -178,32 +183,33 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     *          the transaction service
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
       LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
+      this(ctx, dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
    }
 
    /**
     * Constructor.
     * 
+    * @param ctx The container context
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
       throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
-
+      this(ctx, dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
    }
 
    /**
     * Constructor.
     * 
+    * @param ctx The container context
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
@@ -211,7 +217,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     *          the transaction manager
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
       LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
@@ -260,6 +266,11 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          // Add the cache loader needed to prevent TimeoutException
          addCacheLoader();
          cache.start();
+         this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(ctx, cache, "LOCK_CACHE");
+         if (jmxManager != null)
+         {
+            jmxManager.registerAllMBeans();
+         }
 
          createStructuredNode(lockRoot);
 
@@ -786,6 +797,10 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
       sessionLockManagers.clear();
       cache.stop();
+      if (jmxManager != null)
+      {
+         jmxManager.unregisterAllMBeans();
+      }
    }
 
    /**

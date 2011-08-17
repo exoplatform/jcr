@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.jbosscache;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -27,11 +28,13 @@ import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheFactory;
 import org.jboss.cache.DefaultCacheFactory;
+import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.jgroups.JChannelFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 
 /**
@@ -180,5 +183,30 @@ public class ExoJBossCacheFactory<K, V>
          }
       }
       return cache;
+   }
+
+   /**
+    * Gives the {@link JmxRegistrationManager} instance corresponding to the given context
+    */
+   public static JmxRegistrationManager getJmxRegistrationManager(ExoContainerContext ctx, Cache<?, ?> parentCache,
+      String cacheType)
+   {
+      try
+      {
+         ObjectName containerObjectName = ctx.getContainer().getScopingObjectName();
+         final String objectNameBase = containerObjectName.toString() + ",cache-type=" + cacheType;
+         return new JmxRegistrationManager(ctx.getContainer().getMBeanServer(), parentCache, objectNameBase)
+         {
+            public String getObjectName(String resourceName)
+            {
+               return objectNameBase + JMX_RESOURCE_KEY + resourceName;
+            }
+         };
+      }
+      catch (Exception e)
+      {
+         log.error("Could not create the JMX Manager", e);
+      }
+      return null;
    }
 }

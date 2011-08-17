@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -56,11 +57,11 @@ public class SystemSearchManager extends SearchManager
 
    public static final String INDEX_DIR_SUFFIX = "system";
 
-   public SystemSearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   public SystemSearchManager(ExoContainerContext ctx, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
       RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException, RepositoryConfigurationException
    {
-      super(config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
+      super(ctx, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
    }
 
    @Override

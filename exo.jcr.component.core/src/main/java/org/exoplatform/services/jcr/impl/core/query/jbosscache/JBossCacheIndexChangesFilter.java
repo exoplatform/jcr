@@ -38,6 +38,7 @@ import org.jboss.cache.CacheSPI;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig.SingletonStoreConfig;
+import org.jboss.cache.jmx.JmxRegistrationManager;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -59,6 +60,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheIndexChangesFilter");
 
    private final Cache<Serializable, Object> cache;
+
+   private final JmxRegistrationManager jmxManager;
 
    public static final String LISTWRAPPER = "$lists".intern();
 
@@ -117,6 +120,11 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       this.cache.getConfiguration().setCacheLoaderConfig(cacheLoaderConfig);
       this.cache.create();
       this.cache.start();
+      this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(searchManager.getExoContainerContext(), cache, "INDEX_CACHE");
+      if (jmxManager != null)
+      {
+         jmxManager.registerAllMBeans();
+      }
       // start will invoke cache listener which will notify handler that mode is changed
       IndexerIoMode ioMode =
          ((CacheSPI)cache).getRPCManager().isCoordinator() ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY;
@@ -178,4 +186,23 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
          log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
       }
    }
+
+   /**
+    * @see java.lang.Object#finalize()
+    */
+   @Override
+   protected void finalize() throws Throwable
+   {
+      try
+      {
+         if (jmxManager != null)
+         {
+            jmxManager.unregisterAllMBeans();
+         }
+      }
+      finally
+      {
+         super.finalize();         
+      }
+   } 
 }

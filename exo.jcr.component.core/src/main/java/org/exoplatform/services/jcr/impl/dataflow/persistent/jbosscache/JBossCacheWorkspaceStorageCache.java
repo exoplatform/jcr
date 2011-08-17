@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -49,6 +50,8 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
+import org.jboss.cache.jmx.JmxRegistrationManager;
+import org.picocontainer.Startable;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -98,7 +101,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
  * @version $Id: JBossCacheWorkspaceStorageCache.java 13869 2008-05-05 08:40:10Z pnedonosko $
  */
-public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
+public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, Startable
 {
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheWorkspaceStorageCache");
@@ -142,6 +145,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected final Fqn<String> childNodesList;
 
    protected final Fqn<String> childPropsList;
+
+   private JmxRegistrationManager jmxManager;
 
    /**
     * Node order comparator for getChildNodes().
@@ -266,12 +271,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    /**
     * Cache constructor with eXo TransactionService support.
     * 
+    * @param ctx The container context
     * @param wsConfig WorkspaceEntry workspace config
     * @param transactionService TransactionService external transaction service
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService,
+   public JBossCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, TransactionService transactionService,
       ConfigurationManager cfm) throws RepositoryException, RepositoryConfigurationException
    {
       if (wsConfig.getCache() == null)
@@ -317,9 +323,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          LOG.info("Using BufferedJBossCache compatible with Expiration algorithm.");
       }
 
+      if (ctx != null)
+      {
+         this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(ctx, parentCache, "JCR_CACHE");
+         if (jmxManager != null)
+         {
+            jmxManager.registerAllMBeans();
+         }        
+      }
       // if expiration is used, set appropriate factory with with timeout set via configuration (or default one 15minutes)
       this.cache =
-         new BufferedJBossCache(factory.createCache(wsConfig.getCache()), useExpiration, wsConfig.getCache()
+         new BufferedJBossCache(parentCache, useExpiration, wsConfig.getCache()
             .getParameterTime(JBOSSCACHE_EXPIRATION, JBOSSCACHE_EXPIRATION_DEFAULT));
 
       this.itemsRoot = Fqn.fromElements(ITEMS);
@@ -341,18 +355,51 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    }
 
    /**
+    * Cache constructor with eXo TransactionService support.
+    * 
+    * @param wsConfig WorkspaceEntry workspace config
+    * @param transactionService TransactionService external transaction service
+    * @throws RepositoryException if error of initialization
+    * @throws RepositoryConfigurationException if error of configuration
+    */
+   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService,
+      ConfigurationManager cfm) throws RepositoryException, RepositoryConfigurationException
+   {
+      this(null, wsConfig, transactionService, cfm);
+   }
+
+   /**
     * Cache constructor with JBossCache JTA transaction support.
     * 
+    * @param ctx The container context
     * @param wsConfig WorkspaceEntry workspace config
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, ConfigurationManager cfm)
+   public JBossCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, ConfigurationManager cfm)
       throws RepositoryException, RepositoryConfigurationException
    {
-      this(wsConfig, null, cfm);
+      this(ctx, wsConfig, null, cfm);
    }
 
+   /**
+    * {@inheritDoc} 
+    */
+   public void start()
+   {
+   }
+
+   /**
+    * {@inheritDoc} 
+    */
+   public void stop()
+   {
+      if (jmxManager != null)
+      {
+         jmxManager.unregisterAllMBeans();
+      }      
+   }
+   
    /**
     * Checks if node with give FQN not exists and creates resident node.
     * @param fqn
