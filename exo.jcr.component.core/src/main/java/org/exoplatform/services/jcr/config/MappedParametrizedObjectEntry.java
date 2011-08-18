@@ -227,6 +227,55 @@ public abstract class MappedParametrizedObjectEntry
    }
 
    /**
+    * Parse named parameter as Double.
+    * 
+    * @param name
+    *          parameter name
+    * @param defaultValue
+    *          default Double value
+    * @return Double value
+    */
+   public Double getParameterDouble(String name, Double defaultValue)
+   {
+      for (int i = 0; i < parameters.size(); i++)
+      {
+         SimpleParameterEntry p = parameters.get(i);
+         if (p.getName().equals(name))
+         {
+            try
+            {
+               return StringNumberParser.parseDouble(p.getValue());
+            }
+            catch (NumberFormatException e)
+            {
+               //LOG.warn(name + ": unparseable Long. " + e);
+            }
+         }
+      }
+      return defaultValue;
+   }
+
+   /**
+    * Parse named parameter as Double.
+    * 
+    * @param name
+    *          parameter name
+    * @return Double value
+    * @throws RepositoryConfigurationException
+    */
+   public Double getParameterDouble(String name) throws RepositoryConfigurationException
+   {
+      try
+      {
+         return StringNumberParser.parseDouble(getParameterValue(name));
+      }
+      catch (NumberFormatException e)
+      {
+         throw new RepositoryConfigurationException(name + ": unparseable Long. " + e, e);
+      }
+   }
+
+   /**
     * Parse named parameter using {@link StringNumberParser.parseTime} and return time in
     * milliseconds (Long value).
     * 

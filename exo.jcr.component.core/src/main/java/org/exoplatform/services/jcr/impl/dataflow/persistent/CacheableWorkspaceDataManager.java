@@ -23,6 +23,7 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.MandatoryItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
@@ -90,6 +91,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    TopologyChangeListener, Startable, WorkspaceStorageCacheListener
 {
 
+   private final static double ACL_BF_FALSE_PROPBABILITY_DEFAULT = 0.1d;
+
+   private final static int ACL_BF_ELEMENTS_NUMBER_DEFAULT = 1000000;
+
    /**
     * Items cache.
     */
@@ -106,6 +111,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    private final TransactionableResourceManager txResourceManager;
 
    private final AtomicBoolean filtersEnabled = new AtomicBoolean();
+
+   /**
+    * Bloom filter parameters.
+    */
+   private final double bfProbability;
+
+   private final int bfElementNumber;
 
    private volatile BloomFilter<String> filterPermissions;
 
@@ -361,6 +373,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * CacheableWorkspaceDataManager constructor.
     * 
+    * @param wsConfig 
+    *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
     * @param cache
@@ -374,11 +388,30 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @param rpcService
     *          the service for executing commands on all nodes of cluster
     */
-   public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager,
-      TransactionService transactionService, RPCService rpcService)
+   public CacheableWorkspaceDataManager(WorkspaceEntry wsConfig, WorkspaceDataContainer dataContainer,
+      WorkspaceStorageCache cache, SystemDataContainerHolder systemDataContainerHolder,
+      TransactionableResourceManager txResourceManager, TransactionService transactionService, RPCService rpcService)
    {
       super(dataContainer, systemDataContainerHolder, txResourceManager);
+
+      bfProbability =
+         wsConfig.getContainer().getParameterDouble(WorkspaceDataContainer.ACL_BF_FALSE_PROPBABILITY,
+            ACL_BF_FALSE_PROPBABILITY_DEFAULT);
+      if (bfProbability < 0 || bfProbability > 1)
+      {
+         throw new IllegalArgumentException("Parameter " + WorkspaceDataContainer.ACL_BF_FALSE_PROPBABILITY
+            + " is invalid, must be between 0 and 1.");
+      }
+
+      bfElementNumber =
+         wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.ACL_BF_ELEMENTS_NUMBER,
+            ACL_BF_ELEMENTS_NUMBER_DEFAULT);
+      if (bfElementNumber <= 0)
+      {
+         throw new IllegalArgumentException("Parameter " + WorkspaceDataContainer.ACL_BF_ELEMENTS_NUMBER
+            + " is invalid, can not be less then 1.");
+      }
+
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
@@ -394,6 +427,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * CacheableWorkspaceDataManager constructor.
     * 
+    * @param wsConfig 
+    *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
     * @param cache
@@ -404,16 +439,18 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          the resource manager used to manage the whole tx
     * @param transactionService TransactionService         
     */
-   public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager,
-      TransactionService transactionService)
+   public CacheableWorkspaceDataManager(WorkspaceEntry wsConfig, WorkspaceDataContainer dataContainer,
+      WorkspaceStorageCache cache, SystemDataContainerHolder systemDataContainerHolder,
+      TransactionableResourceManager txResourceManager, TransactionService transactionService)
    {
-      this(dataContainer, cache, systemDataContainerHolder, txResourceManager, transactionService, null);
+      this(wsConfig, dataContainer, cache, systemDataContainerHolder, txResourceManager, transactionService, null);
    }
 
    /**
     * CacheableWorkspaceDataManager constructor.
     * 
+    * @param wsConfig 
+    *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
     * @param cache
@@ -423,11 +460,30 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @param txResourceManager
     *          the resource manager used to manage the whole tx
     */
-   public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager,
-      RPCService rpcService)
+   public CacheableWorkspaceDataManager(WorkspaceEntry wsConfig, WorkspaceDataContainer dataContainer,
+      WorkspaceStorageCache cache, SystemDataContainerHolder systemDataContainerHolder,
+      TransactionableResourceManager txResourceManager, RPCService rpcService)
    {
       super(dataContainer, systemDataContainerHolder, txResourceManager);
+
+      bfProbability =
+         wsConfig.getContainer().getParameterDouble(WorkspaceDataContainer.ACL_BF_FALSE_PROPBABILITY,
+            ACL_BF_FALSE_PROPBABILITY_DEFAULT);
+      if (bfProbability < 0 || bfProbability > 1)
+      {
+         throw new IllegalArgumentException("Parameter " + WorkspaceDataContainer.ACL_BF_FALSE_PROPBABILITY
+            + " is invalid, must be between 0 and 1.");
+      }
+
+      bfElementNumber =
+         wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.ACL_BF_ELEMENTS_NUMBER,
+            ACL_BF_ELEMENTS_NUMBER_DEFAULT);
+      if (bfElementNumber <= 0)
+      {
+         throw new IllegalArgumentException("Parameter " + WorkspaceDataContainer.ACL_BF_ELEMENTS_NUMBER
+            + " is invalid, can not be less then 1.");
+      }
+
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
@@ -452,6 +508,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * CacheableWorkspaceDataManager constructor.
     * 
+    * @param wsConfig 
+    *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
     * @param cache
@@ -461,15 +519,18 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @param txResourceManager
     *          the resource manager used to manage the whole tx
     */
-   public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager)
+   public CacheableWorkspaceDataManager(WorkspaceEntry wsConfig, WorkspaceDataContainer dataContainer,
+      WorkspaceStorageCache cache, SystemDataContainerHolder systemDataContainerHolder,
+      TransactionableResourceManager txResourceManager)
    {
-      this(dataContainer, cache, systemDataContainerHolder, txResourceManager, (RPCService)null);
+      this(wsConfig, dataContainer, cache, systemDataContainerHolder, txResourceManager, (RPCService)null);
    }
 
    /**
     * CacheableWorkspaceDataManager constructor.
     * 
+    * @param wsConfig 
+    *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
     * @param cache
@@ -477,10 +538,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @param systemDataContainerHolder
     *          System Workspace data container (persistent level)
     */
-   public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-      SystemDataContainerHolder systemDataContainerHolder)
+   public CacheableWorkspaceDataManager(WorkspaceEntry wsConfig, WorkspaceDataContainer dataContainer,
+      WorkspaceStorageCache cache, SystemDataContainerHolder systemDataContainerHolder)
    {
-      this(dataContainer, cache, systemDataContainerHolder, null, (RPCService)null);
+      this(wsConfig, dataContainer, cache, systemDataContainerHolder, null, (RPCService)null);
    }
 
    /**
@@ -725,7 +786,21 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
-   public ItemData getItemData(final String identifier) throws RepositoryException
+   public ItemData getItemData(String identifier) throws RepositoryException
+   {
+      return getItemData(identifier, true);
+   }
+
+   /**
+    * Do the same thing as getItemData(identifier), but ACL initialization can be specified.
+    * If doInitACL is true (default value for getItemData(identifier)) ACL will be initialized.
+    * 
+    * @param identifier
+    * @param doInitACL
+    * @return
+    * @throws RepositoryException
+    */
+   private ItemData getItemData(final String identifier, final boolean doInitACL) throws RepositoryException
    {
       if (cache.isEnabled())
       {
@@ -779,7 +854,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             public ItemData run() throws RepositoryException
             {
                ItemData item = CacheableWorkspaceDataManager.super.getItemData(identifier);
-               return item != null && item.isNode() ? initACL(null, (NodeData)item) : item;
+               if (item != null && item.isNode() && doInitACL)
+               {
+                  return initACL(null, (NodeData)item);
+               }
+               else
+               {
+                  return item;
+               }
             }
          });
       }
@@ -2070,8 +2152,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                // use parent ACL
                node =
-                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                     .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                     node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
                      node.getParentIdentifier(), parent.getACL());
             }
             else
@@ -2082,8 +2164,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                }
                // use nearest ancestor ACL... case of get by id
                node =
-                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                     .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                     node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
                      node.getParentIdentifier(), getNearestACAncestorAcl(node, search));
             }
          }
@@ -2207,7 +2289,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    private NodeData getACL(String identifier, ACLSearch search) throws RepositoryException
    {
-      final ItemData item = getItemData(identifier);
+      final ItemData item = getItemData(identifier, false);
       return item != null && item.isNode() ? initACL(null, (NodeData)item, search) : null;
    }
 
@@ -2277,9 +2359,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected boolean loadFilters(boolean cleanOnFail)
    {
       filtersEnabled.set(false);
-      // TODO: Make it configurable
-      this.filterPermissions = new BloomFilter<String>(0.1d, 1000000);
-      this.filterOwner = new BloomFilter<String>(0.1d, 1000000);
+      this.filterPermissions = new BloomFilter<String>(bfProbability, bfElementNumber);
+      this.filterOwner = new BloomFilter<String>(bfProbability, bfElementNumber);
       boolean fails = true;
       List<ACLHolder> holders = null;
       try

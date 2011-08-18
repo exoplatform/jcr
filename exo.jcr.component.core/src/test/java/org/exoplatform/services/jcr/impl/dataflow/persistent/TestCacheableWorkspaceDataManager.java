@@ -16,8 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import junit.framework.TestCase;
-
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
@@ -53,7 +54,7 @@ import javax.jcr.RepositoryException;
  *          nicolas.filotto@exoplatform.com
  * 29 mars 2010  
  */
-public class TestCacheableWorkspaceDataManager extends TestCase
+public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
 {
 
    private static final int READER = 100;
@@ -67,13 +68,16 @@ public class TestCacheableWorkspaceDataManager extends TestCase
    private MyWorkspaceStorageConnection con;
 
    @Override
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
       super.setUp();
       this.con = new MyWorkspaceStorageConnection();
       this.wdc = new MyWorkspaceDataContainer(con);
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
       this.cwdm =
-         new CacheableWorkspaceDataManager(wdc, new MyWorkspaceStorageCache(), new SystemDataContainerHolder(wdc));
+         new CacheableWorkspaceDataManager(wconf, wdc, new MyWorkspaceStorageCache(),
+            new SystemDataContainerHolder(wdc));
    }
 
    @Override

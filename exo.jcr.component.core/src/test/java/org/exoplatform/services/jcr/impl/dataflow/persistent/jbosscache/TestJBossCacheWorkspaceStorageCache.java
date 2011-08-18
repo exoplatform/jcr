@@ -22,6 +22,7 @@ import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -37,7 +38,6 @@ import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspaceStorageCacheBaseCase;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
@@ -84,8 +84,10 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
    {
       MyWorkspaceStorageConnection con = new MyWorkspaceStorageConnection();
       WorkspaceDataContainer wdc = new MyWorkspaceDataContainer(con);
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
       final CacheableWorkspaceDataManager cwdm =
-         new CacheableWorkspaceDataManager(wdc, getCacheImpl(), new SystemDataContainerHolder(wdc));
+         new CacheableWorkspaceDataManager(wconf, wdc, getCacheImpl(), new SystemDataContainerHolder(wdc));
       String idNode = "foo1";
       executeConcurrentReadNWrite(con, cwdm, Mode.READ_FIRST, idNode);
       assertNotNull(cwdm.getItemData(idNode));
