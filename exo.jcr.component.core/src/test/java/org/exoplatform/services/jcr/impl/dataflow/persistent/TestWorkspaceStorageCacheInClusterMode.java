@@ -949,8 +949,15 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          
          return children;
       }
-      
-      
+
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getACLHolders()
+       */
+      public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+         UnsupportedOperationException
+      {
+         return null;
+      }
    };
    
    private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase

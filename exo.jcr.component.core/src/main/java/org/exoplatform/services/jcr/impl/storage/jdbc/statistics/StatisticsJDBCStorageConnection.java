@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.statistics.JCRStatisticsManager;
 import org.exoplatform.services.jcr.statistics.Statistics;
@@ -128,6 +129,12 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     * <code>getLastOrderNumber(NodeData parent)</code>
     */
    private static final String GET_LAST_ORDER_NUMBER_DESCR = "getLastOrderNumber";
+   
+   /**
+    * The description of the statistics corresponding to the method 
+    * <code>getACLHolders()</code>
+    */
+   private static final String GET_ACL_HOLDERS = "getACLHolders";
 
    /**
     * The description of the statistics corresponding to the method 
@@ -192,6 +199,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       ALL_STATISTICS.put(LIST_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
          LIST_CHILD_PROPERTIES_DATA_DESCR));
       ALL_STATISTICS.put(GET_REFERENCES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_REFERENCES_DATA_DESCR));
+      ALL_STATISTICS.put(GET_ACL_HOLDERS, new Statistics(GLOBAL_STATISTICS, GET_ACL_HOLDERS));
       // Write Methods
       // Commit
       ALL_STATISTICS.put(COMMIT_DESCR, new Statistics(GLOBAL_STATISTICS, COMMIT_DESCR));
@@ -611,6 +619,25 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       {
          s.begin();
          wcs.update(data);
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+   
+   
+   /**
+    * {@inheritDoc}
+    */
+   public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+      UnsupportedOperationException
+   {
+      Statistics s = ALL_STATISTICS.get(GET_ACL_HOLDERS);
+      try
+      {
+         s.begin();
+         return wcs.getACLHolders();
       }
       finally
       {

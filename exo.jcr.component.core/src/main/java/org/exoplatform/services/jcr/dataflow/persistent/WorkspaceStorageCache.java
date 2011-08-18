@@ -275,16 +275,31 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    /**
     * Start buffering process.
     */
-   public void beginTransaction();
+   void beginTransaction();
 
    /**
     * Sort changes and commit data to the cache.
     */
-   public void commitTransaction();
+   void commitTransaction();
 
    /**
     * Forget about changes
     */
-   public void rollbackTransaction();
+   void rollbackTransaction();
 
+   /**
+    * Adds a new listener
+    * @param listener the listener to register
+    * @throws UnsupportedOperationException in case the listeners are not supported by the
+    * implementation
+    */
+   void addListener(WorkspaceStorageCacheListener listener) throws UnsupportedOperationException;
+
+   /**
+    * Removes a listener
+    * @param listener the listener to remove
+    * @throws UnsupportedOperationException in case the listeners are not supported by the
+    * implementation
+    */
+   void removeListener(WorkspaceStorageCacheListener listener) throws UnsupportedOperationException;
 }

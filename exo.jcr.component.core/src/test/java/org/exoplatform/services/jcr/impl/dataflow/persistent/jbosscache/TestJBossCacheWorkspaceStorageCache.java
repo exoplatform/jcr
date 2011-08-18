@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspaceStorageCacheBaseCase;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
@@ -313,6 +314,17 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          IllegalStateException
       {
          return getChildNodesData(parent);
+      }
+
+
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getACLHolders()
+       */
+      @Override
+      public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+         UnsupportedOperationException
+      {
+         return null;
       }
 
    };

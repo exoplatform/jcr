@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
@@ -33,6 +34,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
@@ -133,6 +135,13 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     */
    protected String UPDATE_VALUE;
 
+   /**
+    * FIND_ACL_HOLDERS.
+    */
+   protected String FIND_ACL_HOLDERS;
+
+   protected PreparedStatement findACLHolders;
+
    protected PreparedStatement findNodesByParentIdCQ;
 
    protected PreparedStatement findPropertiesByParentIdCQ;
@@ -177,6 +186,63 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    {
       super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+      UnsupportedOperationException
+   {
+      checkIfOpened();
+      ResultSet resultSet = null;
+      try
+      {
+         // query will return all the ACL holder
+         resultSet = findACLHolders();
+         Map<String, ACLHolder> mHolders = new HashMap<String, ACLHolder>();
+         
+         while (resultSet.next())
+         {
+            String cpid = resultSet.getString(COLUMN_PARENTID);
+            ACLHolder holder = mHolders.get(cpid);
+            if (holder == null)
+            {
+               holder = new ACLHolder(cpid);
+               mHolders.put(cpid, holder);
+            }
+            int cptype = resultSet.getInt(COLUMN_PTYPE);
+
+            if (cptype == ExtendedPropertyType.PERMISSION)
+            {
+               holder.setPermissions(true);
+            }
+            else
+            {
+               holder.setOwner(true);
+            }
+         }
+         return new ArrayList<ACLHolder>(mHolders.values());
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+      finally
+      {
+         if (resultSet != null)
+         {
+            try
+            {
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+   }   
 
    /**
     * {@inheritDoc}
@@ -928,7 +994,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          if (parentPath != null)
          {
             // get by parent and name
-            qpath = QPath.makeChildPath(parentPath, qname, cindex);
+            qpath = QPath.makeChildPath(parentPath, qname, cindex, cid);
             parentCid = cpid;
          }
          else
@@ -942,7 +1008,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             else
             {
-               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex);
+               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex, cid);
                parentCid = cpid;
             }
          }
@@ -1094,13 +1160,13 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
 
             QPathEntry qpe1 =
-               new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX));
+               new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX), result.getString(COLUMN_ID));
             boolean isChild = caid.equals(result.getString(COLUMN_ID));
             caid = result.getString(COLUMN_PARENTID);
             if (result.next())
             {
                QPathEntry qpe2 =
-                  new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX));
+                  new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX), result.getString(COLUMN_ID));
                if (isChild)
                {
                   // The child is the first result then we have the parent
@@ -1166,6 +1232,11 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
 
       try
       {
+         if (findACLHolders != null)
+         {
+            findACLHolders.close();
+         }
+
          if (findNodesByParentIdCQ != null)
          {
             findNodesByParentIdCQ.close();
@@ -1221,6 +1292,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          LOG.error("Can't close the Statement: " + e);
       }
    }
+
+   protected abstract ResultSet findACLHolders() throws SQLException;
 
    protected abstract ResultSet findItemQPathByIdentifierCQ(String identifier) throws SQLException;
 

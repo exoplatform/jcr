@@ -37,6 +37,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
@@ -1228,6 +1229,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          throw new RepositoryException(e);
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+      UnsupportedOperationException
+   {
+      throw new UnsupportedOperationException("This method is not supported by the old JDBCWorkspaceDataContainer, use CQJDBCWorkspaceDataContainer instead.");
+   }   
 
    /**
     * {@inheritDoc}
@@ -1500,7 +1510,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
 
             QPathEntry qpe =
-               new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX));
+               new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX), caid);
             qrpath.add(qpe);
             caid = parent.getString(COLUMN_PARENTID);
          }
@@ -2213,7 +2223,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (parentPath != null)
          {
             // get by parent and name
-            qpath = QPath.makeChildPath(parentPath, qname, cindex);
+            qpath = QPath.makeChildPath(parentPath, qname, cindex, cid);
             parentCid = cpid;
          }
          else
@@ -2227,7 +2237,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             else
             {
-               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex);
+               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex, cid);
                parentCid = cpid;
             }
          }

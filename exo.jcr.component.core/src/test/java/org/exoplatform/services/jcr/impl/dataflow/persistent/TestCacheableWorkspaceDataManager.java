@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
+import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -439,6 +440,20 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
       }
 
+      /**
+       * @see org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache#addListener(org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener)
+       */
+      public void addListener(WorkspaceStorageCacheListener listener) throws UnsupportedOperationException
+      {
+      }
+
+      /**
+       * @see org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache#removeListener(org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener)
+       */
+      public void removeListener(WorkspaceStorageCacheListener listener) throws UnsupportedOperationException
+      {
+      }
+
    }
 
    private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
@@ -595,6 +610,15 @@ public class TestCacheableWorkspaceDataManager extends TestCase
 
       public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
          IllegalStateException
+      {
+         return null;
+      }
+
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getACLHolders()
+       */
+      public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+         UnsupportedOperationException
       {
          return null;
       }
