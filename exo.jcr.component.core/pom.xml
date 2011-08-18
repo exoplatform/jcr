@@ -608,20 +608,11 @@
                         </property>                  
                          <property>
                            <name>known.issues</name>
-                           <value>org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
-                              org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
-                              org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
-                              org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder
+                           <value>org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
                               org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder2
                               org.apache.jackrabbit.test.api.nodetype.PropertyDefTest#testIsRequiredType
-                              org.apache.jackrabbit.test.api.SetPropertyConstraintViolationExceptionTest#testBooleanProperty
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testShareable
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testSimpleVersionable
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testActivity
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testConfiguration
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersionable
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
-                              org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace</value>
+                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion</value>
                         </property>
                      <!-- Uncomment the line below if you want to enable the statistics -->
                      <!--property>
