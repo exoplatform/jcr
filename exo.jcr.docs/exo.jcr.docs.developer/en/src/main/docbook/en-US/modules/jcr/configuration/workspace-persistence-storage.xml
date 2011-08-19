@@ -24,6 +24,8 @@
     &lt;property name="max-buffer-size" value="200K"/&gt;
     &lt;property name="swap-directory" value="target/temp/swap/ws"/&gt;
     &lt;property name="lazy-node-iterator-page-size" value="50"/&gt;
+    &lt;property name="acl-bloomfilter-false-positive-probability" value="0.1d"/&gt;
+    &lt;property name="acl-bloomfilter-elements-number" value="1000000"/&gt;
   &lt;/properties&gt;</programlisting>
 
   <para>Properties are Container specific parameters:</para>
@@ -50,6 +52,26 @@
   <para><emphasis role="bold">lazy-node-iterator-page-size</emphasis>: "Lazy"
   child nodes iterator settings. Defines size of page, the number of nodes
   that are retrieved from persistent storage at once.</para>
+
+  <para><emphasis
+  role="bold">acl-bloomfilter-false-positive-probability</emphasis>: ACL
+  Bloom-filter settings. ACL Bloom-filter desired false positive probability.
+  Range [0..1]. Default value 0.1d.</para>
+
+  <para><emphasis role="bold">acl-bloomfilter-elements-number</emphasis>: ACL
+  Bloom-filter settings. Expected number of ACL-elements in the Bloom-filter.
+  Default value 1000000.</para>
+
+  <note>
+    <para>Bloom-filter used to avoid read nodes that definitely do not have
+    ACL. <emphasis
+    role="bold">acl-bloomfilter-false-positive-probability</emphasis> and
+    <emphasis role="bold">acl-bloomfilter-elements-number</emphasis> used to
+    configure such filters.</para>
+
+    <para>More about Bloom filters you can read here <ulink
+    url="http://en.wikipedia.org/wiki/Bloom_filter">http://en.wikipedia.org/wiki/Bloom_filter</ulink>.</para>
+  </note>
 
   <para>eXo JCR has an RDB (JDBC) based, production ready <emphasis
   role="bold">Workspace Data Container</emphasis>.</para>
