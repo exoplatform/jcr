@@ -61,7 +61,7 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true"
+               <cache enabled="${cache-enabled}"
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
@@ -112,7 +112,7 @@
                      </value-storage>
                   </value-storages>
                </container>
-               <cache enabled="true"
+               <cache enabled="${cache-enabled}"
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
@@ -171,7 +171,7 @@
                      </value-storage>
                   </value-storages>
                </container>
-               <cache enabled="true"
+               <cache enabled="${cache-enabled}"
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
@@ -253,7 +253,7 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true"
+               <cache enabled="${cache-enabled}"
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
@@ -329,7 +329,7 @@
                         value="*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
-               <cache enabled="true"
+               <cache enabled="${cache-enabled}"
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
@@ -386,7 +386,7 @@
                      <property name="root-permissions" value="any read;any add_node;any set_property;any remove" />
                   </properties>
                </initializer>
-               <cache enabled="true"
+               <cache enabled="${cache-enabled}"
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
@@ -454,7 +454,7 @@
                         value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
-               <cache enabled="true"
+               <cache enabled="${cache-enabled}"
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
@@ -521,7 +521,7 @@
                         value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
-               <cache enabled="true"
+               <cache enabled="${cache-enabled}"
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
@@ -587,7 +587,7 @@
                         value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
-               <cache enabled="true"
+               <cache enabled="${cache-enabled}"
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />

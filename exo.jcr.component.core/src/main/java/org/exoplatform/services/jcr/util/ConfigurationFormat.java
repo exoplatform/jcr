@@ -37,6 +37,20 @@ public class ConfigurationFormat
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ConfigurationFormat");
 
+   public static boolean parseBoolean(String text)
+   {
+      try
+      {
+         text = Deserializer.resolveNClean(text);
+         return Boolean.valueOf(text).booleanValue();
+      }
+      catch (Throwable e)
+      {
+         LOG.warn("Unparseable boolean '" + text + "'.", e);
+         return false;
+      }
+   }
+
    public static int parseInt(String text)
    {
       try
