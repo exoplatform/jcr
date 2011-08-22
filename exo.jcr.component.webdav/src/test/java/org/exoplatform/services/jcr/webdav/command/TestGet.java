@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -191,6 +192,64 @@ public class TestGet extends BaseStandaloneTest
 
       assertTrue(byteOut.toString().contains(strToTest));
 
+   }
+
+   /**
+    * We test for parent href to be contained in response.
+    * We GET a collection and receive an html. Html should contain
+    * a href to parent collection of requested collection. 
+    * @throws Exception
+    */
+   public void testParentHrefForGetColRequest() throws Exception
+   {
+      String folderOne = TestUtils.getFolderName();
+      String folderTwo = folderOne + TestUtils.getFolderName();
+
+      // add collections
+      TestUtils.addFolder(session, folderOne, defaultFolderNodeType, "");
+      TestUtils.addFolder(session, folderTwo, defaultFolderNodeType, "");
+
+      // get a sub-collection
+      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + folderTwo, "", null, null);
+      assertEquals(HTTPStatus.OK, response.getStatus());
+
+      // serialize response entity to string
+      XSLTStreamingOutput XSLTout = (XSLTStreamingOutput)response.getEntity();
+      ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+      XSLTout.write(byteOut);
+
+      assertTrue("Response should contain parent collection href", byteOut.toString().contains(folderOne));
+   }
+
+   /**
+    * We test for parent href to be contained in response. We GET a collection,
+    * which has non latin letters in its name, and receive an html like response. 
+    * Response should contain href to parent collection of requested collection.
+    * Details can be found here: https://issues.jboss.org/browse/EXOJCR-1379
+    * @throws Exception
+    */
+   public void testParentHrefForGetColWithNonLatinNameRequest() throws Exception
+   {
+      // "%40" corresponds to '@' symbol
+      String folderOne = TestUtils.getFolderName() + "%40";
+      String folderTwo = folderOne + TestUtils.getFolderName() + "%40";
+
+      ContainerResponse response;
+
+      //add collections
+      TestUtils.addFolder(session, URLDecoder.decode(folderOne, "UTF-8"), defaultFolderNodeType, "");
+      TestUtils.addFolder(session, URLDecoder.decode(folderTwo, "UTF-8"), defaultFolderNodeType, "");
+
+      //get a sub-collection
+      response = service(WebDAVMethods.GET, getPathWS() + folderTwo, "", null, null);
+      assertEquals(HTTPStatus.OK, response.getStatus());
+
+      // serialize response entity to string
+      XSLTStreamingOutput XSLTout = (XSLTStreamingOutput)response.getEntity();
+      ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+      XSLTout.write(byteOut);
+
+      assertTrue("Response should contain parent collection href", byteOut.toString().contains(folderOne));
    }
 
    @Override
