@@ -33,6 +33,7 @@
       <jcr.test.configuration.file>/conf/standalone/test-configuration-jbc.xml</jcr.test.configuration.file>
       <jbosscache.shareable>true</jbosscache.shareable>
       <cache.enabled>true</cache.enabled>
+      <value.storage.enabled>true</value.storage.enabled>
       <jbc.specific.1>**/jbc/**</jbc.specific.1>
       <jbc.specific.2>**/jbosscache/**</jbc.specific.2>
       <ispn.specific.1>**/ispn/**</ispn.specific.1>
@@ -390,6 +391,10 @@
                      <name>cache-enabled</name>
                      <value>${cache.enabled}</value>
                   </property>                  
+                  <property>
+                     <name>value-storage-enabled</name>
+                     <value>${value.storage.enabled}</value>
+                  </property>                  
                   <!-- Uncomment the line below if you want to enable the statistics -->
                   <!--property>
                       <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
@@ -615,6 +620,10 @@
                            <name>cache-enabled</name>
                            <value>${cache.enabled}</value>
                         </property>                  
+                        <property>
+                           <name>value-storage-enabled</name>
+                           <value>${value.storage.enabled}</value>
+                        </property>                  
                          <property>
                            <name>known.issues</name>
                            <value>org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
@@ -701,6 +710,10 @@
                         <property>
                             <name>cache-enabled</name>
                             <value>${cache.enabled}</value>
+                        </property>                  
+                        <property>
+                            <name>value-storage-enabled</name>
+                            <value>${value.storage.enabled}</value>
                         </property>                  
                         <property>
                            <name>known.issues</name>
@@ -791,11 +804,10 @@
                            <name>cache-enabled</name>
                            <value>${cache.enabled}</value>
                         </property>                  
-                        <!-- Uncomment the line below if you want to enable the statistics -->
-                        <!--property>
-                        <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                        <value>true</value>
-                        </property-->
+                        <property>
+                           <name>value-storage-enabled</name>
+                           <value>${value.storage.enabled}</value>
+                        </property>                  
                         <!-- We add this system property due to some incompatibility between IPv6 and 
 						some JVM of Linux distributions such as Ubuntu and Fedora-->
                         <property>
@@ -862,6 +874,12 @@
          <id>cache-disabled</id>
          <properties>
             <cache.enabled>false</cache.enabled>
+         </properties>
+      </profile>
+      <profile>
+         <id>value-storage-disabled</id>
+         <properties>
+            <value.storage.enabled>false</value.storage.enabled>
          </properties>
       </profile>
       <profile>

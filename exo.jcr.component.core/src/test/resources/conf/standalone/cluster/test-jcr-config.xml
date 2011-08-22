@@ -39,6 +39,7 @@
                               value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
                            <property name="jdbc-source-name" value="jdbcjcr" />
                            <property name="jdbc-dialect" value="auto" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -102,6 +103,7 @@
                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
                            <property name="path" value="target/temp/values/ws1" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -168,6 +170,7 @@
                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
                            <property name="path" value="target/temp/values/ws2" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -239,6 +242,7 @@
                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
                            <property name="path" value="target/temp/values/ws3_big" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" min-value-size="1024K" />
@@ -252,6 +256,7 @@
                            <property name="vcas-type"
                               value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
                            <property name="jdbc-source-name" value="jdbcjcr" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -333,6 +338,7 @@
                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
                            <property name="path" value="target/temp/values/wsdb2" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" min-value-size="100K" />
@@ -398,6 +404,7 @@
                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
                            <property name="path" value="target/temp/values/ws1db2" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" min-value-size="100K" />
@@ -472,6 +479,7 @@
                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
                            <property name="path" value="target/temp/values/wstck" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" min-value-size="100K" />
@@ -546,6 +554,7 @@
                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
                            <property name="path" value="target/temp/values/ws1tck" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" min-value-size="100K" />
@@ -619,6 +628,7 @@
                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
                            <property name="path" value="target/temp/values/ws2tck" />
+                           <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" min-value-size="100K" />
