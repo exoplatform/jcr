@@ -25,22 +25,14 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.ItemType;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.ItemImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
-import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -51,12 +43,10 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import javax.jcr.InvalidItemStateException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
@@ -519,239 +509,4 @@ public abstract class BaseStandaloneTest extends TestCase
          assertTrue(finded);
       }
    }
-
-   /**
-    * Test WorkspaceDataContainer.
-    * Does nothing, must be extended in tests.
-    * 
-    * @author <a href="mailto:skarpenko@exoplatform.com">Sergiy Karpenko</a>
-    * @version $Id: exo-jboss-codetemplates.xml 34360 18.08.2011 skarpenko $
-    */
-   public class TestWorkspaceDataContainer implements WorkspaceDataContainer
-   {
-      @Override
-      public String getInfo()
-      {
-         return null;
-      }
-
-      @Override
-      public String getName()
-      {
-         return null;
-      }
-
-      @Override
-      public String getUniqueName()
-      {
-         return null;
-      }
-
-      @Override
-      public String getStorageVersion()
-      {
-         return null;
-      }
-
-      @Override
-      public Calendar getCurrentTime()
-      {
-         return null;
-      }
-
-      @Override
-      public boolean isSame(WorkspaceDataContainer another)
-      {
-         return false;
-      }
-
-      @Override
-      public WorkspaceStorageConnection openConnection() throws RepositoryException
-      {
-         return null;
-      }
-
-      @Override
-      public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
-      {
-         return null;
-      }
-
-      @Override
-      public WorkspaceStorageConnection reuseConnection(WorkspaceStorageConnection original) throws RepositoryException
-      {
-         return null;
-      }
-
-      @Override
-      public boolean isCheckSNSNewConnection()
-      {
-         return false;
-      }
-   }
-
-   /**
-    * Test WorkspaceStorageConnection.
-    * Does nothing, must be extended in tests.
-    * 
-    * @author <a href="mailto:skarpenko@exoplatform.com">Sergiy Karpenko</a>
-    * @version $Id: exo-jboss-codetemplates.xml 34360 18.08.2011 skarpenko $
-    */
-   public class TestWorkspaceStorageConnection implements WorkspaceStorageConnection
-   {
-
-      @Override
-      public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,
-         IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
-         IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern)
-         throws RepositoryException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public int getChildNodesCount(NodeData parent) throws RepositoryException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public int getLastOrderNumber(NodeData parent) throws RepositoryException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException,
-         IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
-         throws RepositoryException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public List<PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException,
-         IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException,
-         IllegalStateException, UnsupportedOperationException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void add(NodeData data) throws RepositoryException, UnsupportedOperationException,
-         InvalidItemStateException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-         InvalidItemStateException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
-         InvalidItemStateException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-         InvalidItemStateException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void rename(NodeData data) throws RepositoryException, UnsupportedOperationException,
-         InvalidItemStateException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
-         InvalidItemStateException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-         InvalidItemStateException, IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void commit() throws IllegalStateException, RepositoryException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void rollback() throws IllegalStateException, RepositoryException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public void close() throws IllegalStateException, RepositoryException
-      {
-      }
-
-      @Override
-      public boolean isOpened()
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
-      public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
-         UnsupportedOperationException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-   }
-
 }

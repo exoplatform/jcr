@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 
 import java.util.List;
 
@@ -388,17 +387,4 @@ public interface WorkspaceStorageConnection
     * @return boolean, true if connection is open and ready, false - otherwise
     */
    boolean isOpened();
-
-   /**
-    * Returns all the nodes that hold some ACL info like owner or permissions
-    * 
-    * @return a list of all the ACL holders for this workspace
-    * @throws RepositoryException
-    *           if some exception occured
-    * @throws IllegalStateException
-    *           if connection is closed
-    * @throws UnsupportedOperationException
-    *           if operation is not supported
-    */
-   List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException, UnsupportedOperationException;
 }

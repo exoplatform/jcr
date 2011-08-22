@@ -21,8 +21,6 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.access.AccessControlList;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -74,12 +72,10 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
       {
          MyWorkspaceStorageConnection con = new MyWorkspaceStorageConnection();
          WorkspaceDataContainer wdc = new MyWorkspaceDataContainer(con);
-         WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
-         WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
          CacheableWorkspaceDataManager cwdmNode1 =
-            new CacheableWorkspaceDataManager(wconf, wdc, cache1 = getCacheImpl(), new SystemDataContainerHolder(wdc));
+            new CacheableWorkspaceDataManager(wdc, cache1 = getCacheImpl(), new SystemDataContainerHolder(wdc));
          CacheableWorkspaceDataManager cwdmNode2 =
-            new CacheableWorkspaceDataManager(wconf, wdc, cache2 = getCacheImpl(), new SystemDataContainerHolder(wdc));
+            new CacheableWorkspaceDataManager(wdc, cache2 = getCacheImpl(), new SystemDataContainerHolder(wdc));
          NodeData parentNode = new PersistedNodeData("parent-id", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent-node")), Constants.ROOT_UUID, 1, 0,
             Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
          // Test getChildNodesData
@@ -333,12 +329,10 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          // testConsistency
          con = new MyWorkspaceStorageConnection(true);
          wdc = new MyWorkspaceDataContainer(con);
-         wsc = repository.getWorkspaceContainer("ws");
-         wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
          cwdmNode1 =
-            new CacheableWorkspaceDataManager(wconf, wdc, cache1, new SystemDataContainerHolder(wdc));
+            new CacheableWorkspaceDataManager(wdc, cache1, new SystemDataContainerHolder(wdc));
          cwdmNode2 =
-            new CacheableWorkspaceDataManager(wconf, wdc, cache2, new SystemDataContainerHolder(wdc));
+            new CacheableWorkspaceDataManager(wdc, cache2, new SystemDataContainerHolder(wdc));
          parentNode = new PersistedNodeData("parent2-id", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node")), Constants.ROOT_UUID, 1, 0,
             Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
          // Test getChildNodesData
@@ -955,15 +949,8 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          
          return children;
       }
-
-      /**
-       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getACLHolders()
-       */
-      public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
-         UnsupportedOperationException
-      {
-         return null;
-      }
+      
+      
    };
    
    private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase

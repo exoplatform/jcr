@@ -36,8 +36,6 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
 
    private String cachedToStringShowIndex;
 
-   private String id;
-   
    /**
     * QPathEntry constructor.
     * 
@@ -48,27 +46,10 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
     */
    public QPathEntry(InternalQName qName, int index)
    {
-      this(qName, index, null);
-   }
-
-   
-   /**
-    * QPathEntry constructor.
-    * 
-    * @param qName
-    *          - InternalQName (full qualified name)
-    * @param index
-    *          - Item index
-    * @param id
-    *          - Item id
-    */
-   public QPathEntry(InternalQName qName, int index, String id)
-   {
       super(qName.getNamespace(), qName.getName());
       this.index = index > 0 ? index : 1;
-      this.id = id;
    }
-   
+
    /**
     * QPathEntry constructor.
     * 
@@ -81,26 +62,8 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
     */
    public QPathEntry(String namespace, String name, int index)
    {
-      this(namespace, name, index, null);
-   }
-   
-   /**
-    * QPathEntry constructor.
-    * 
-    * @param namespace
-    *          - namespace URI
-    * @param name
-    *          - Item name
-    * @param index
-    *          - Item index
-    * @param id
-    *          - Item id
-    */
-   public QPathEntry(String namespace, String name, int index, String id)
-   {
       super(namespace, name);
       this.index = index > 0 ? index : 1;
-      this.id = id;
    }
 
    /**
@@ -126,16 +89,6 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
 
       InternalQName qname = InternalQName.parse(qnameString);
       return new QPathEntry(qname, Integer.valueOf(indexString));
-   }   
-   
-   /**
-    * Return Item id, can be null since it could not be set
-    * 
-    * @return the id of the item
-    */
-   public String getId()
-   {
-      return id;
    }
 
    /**

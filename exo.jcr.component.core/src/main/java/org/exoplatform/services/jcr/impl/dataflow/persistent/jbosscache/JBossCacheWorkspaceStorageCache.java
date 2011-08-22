@@ -29,7 +29,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
-import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -63,10 +62,6 @@ import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.jmx.JmxRegistrationManager;
-import org.jboss.cache.notifications.annotation.NodeModified;
-import org.jboss.cache.notifications.annotation.NodeRemoved;
-import org.jboss.cache.notifications.event.NodeModifiedEvent;
-import org.jboss.cache.notifications.event.NodeRemovedEvent;
 import org.picocontainer.Startable;
 
 import java.io.File;
@@ -83,7 +78,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -192,12 +186,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    protected final Fqn<String> childNodesByPatternList;
 
    protected final Fqn<String> rootFqn;
-   
-   /**
-    * The list of all the listeners
-    */
-   private final List<WorkspaceStorageCacheListener> listeners = new CopyOnWriteArrayList<WorkspaceStorageCacheListener>();
-   
+
    private final CacheActionNonTxAware<Void, Void> commitTransaction = new CacheActionNonTxAware<Void, Void>()
    {
       @Override
@@ -691,8 +680,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       createResidentNode(childPropsByPatternList);
       createResidentNode(childNodesByPatternList);
       createResidentNode(itemsRoot);
-      this.cache.addCacheListener(new CacheEventListener());
-      
+
       if (jmxManager != null)
       {
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
@@ -2091,67 +2079,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          createResidentNode(itemsRoot);
       }
    }
-   /**
-    * {@inheritDoc}
-    */
-   public void addListener(WorkspaceStorageCacheListener listener)
-   {
-      listeners.add(listener);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void removeListener(WorkspaceStorageCacheListener listener)
-   {
-      listeners.remove(listener);
-   }
-   
-   /**
-    * Called when a cache entry corresponding to the given node has item updated
-    * @param data the item corresponding to the updated cache entry
-    */
-   private void onCacheEntryUpdated(ItemData data)
-   {
-      if (data == null || data instanceof NullItemData)
-      {
-         return;
-      }
-      for (WorkspaceStorageCacheListener listener : listeners)
-      {
-         try
-         {
-            listener.onCacheEntryUpdated(data);
-         }
-         catch (Exception e)
-         {
-            LOG.warn("The method onCacheEntryUpdated fails for the listener " + listener.getClass(), e);
-         }
-      }      
-   }
-   
-   /**
-    * Called when a cache entry corresponding to the given item has been removed
-    * @param data the item corresponding to the removed cache entry
-    */
-   private void onCacheEntryRemoved(ItemData data)
-   {
-      if (data == null || data instanceof NullItemData)
-      {
-         return;
-      }
-      for (WorkspaceStorageCacheListener listener : listeners)
-      {
-         try
-         {
-            listener.onCacheEntryRemoved(data);
-         }
-         catch (Exception e)
-         {
-            LOG.warn("The method onCacheEntryRemoved fails for the listener " + listener.getClass(), e);
-         }
-      }      
-   }
    
    /**
     * Actions that are not supposed to be called within a transaction
@@ -2169,32 +2096,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       protected TransactionManager getTransactionManager()
       {
          return JBossCacheWorkspaceStorageCache.this.getTransactionManager();
-      }
-   }
-   
-   @org.jboss.cache.notifications.annotation.CacheListener
-   @SuppressWarnings("unchecked")
-   public class CacheEventListener
-   {
-
-      @NodeRemoved
-      public void nodeRemoved(NodeRemovedEvent ne)
-      {
-         if (ne.isPre() && ne.getFqn().isChildOf(itemsRoot))
-         {
-            final Map<Serializable, Object> data = ne.getData();
-            onCacheEntryRemoved((ItemData)(data == null ? null : data.get(ITEM_DATA)));
-         }
-      }
-
-      @NodeModified
-      public void nodeModified(NodeModifiedEvent ne)
-      {
-         if (!ne.isPre() && ne.getFqn().isChildOf(itemsRoot))
-         {
-            final Map<Serializable, Object> data = ne.getData();
-            onCacheEntryUpdated((ItemData)(data == null ? null : data.get(ITEM_DATA)));
-         }
       }
    }
 }

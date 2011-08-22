@@ -53,12 +53,12 @@ import javax.jcr.RepositoryException;
  * @version $Id$ 
  */
 
-public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspaceDataManager
+public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWorkspaceDataManager
 {
 
    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.VersionableWorkspaceDataManager");
 
-   private ShareableSupportedWorkspaceDataManager versionDataManager;
+   private ACLInheritanceSupportedWorkspaceDataManager versionDataManager;
 
    public VersionableWorkspaceDataManager(CacheableWorkspaceDataManager persistentManager)
    {
@@ -71,7 +71,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    public void setSystemDataManager(DataManager systemDataManager)
    {
 
-      this.versionDataManager = (ShareableSupportedWorkspaceDataManager)systemDataManager;
+      this.versionDataManager = (ACLInheritanceSupportedWorkspaceDataManager)systemDataManager;
    }
 
    /**

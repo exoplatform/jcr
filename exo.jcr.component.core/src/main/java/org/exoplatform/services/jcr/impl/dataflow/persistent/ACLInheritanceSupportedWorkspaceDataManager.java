@@ -41,14 +41,14 @@ import javax.jcr.RepositoryException;
  * @author Gennady Azarenkov
  * @version $Id: ACLInheritanceSupportedWorkspaceDataManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ShareableSupportedWorkspaceDataManager implements SharedDataManager
+public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataManager
 {
 
    private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ACLInheritanceSupportedWorkspaceDataManager");
 
    protected final CacheableWorkspaceDataManager persistentManager;
 
-   public ShareableSupportedWorkspaceDataManager(CacheableWorkspaceDataManager persistentManager)
+   public ACLInheritanceSupportedWorkspaceDataManager(CacheableWorkspaceDataManager persistentManager)
    {
       this.persistentManager = persistentManager;
    }

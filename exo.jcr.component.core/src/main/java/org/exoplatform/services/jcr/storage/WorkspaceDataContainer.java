@@ -60,10 +60,6 @@ public interface WorkspaceDataContainer extends DataContainer
 
    public final static String CHECK_SNS_NEW_CONNECTION = "check-sns-new-connection";
 
-   public final static String ACL_BF_FALSE_PROPBABILITY = "acl-bloomfilter-false-positive-probability";
-
-   public final static String ACL_BF_ELEMENTS_NUMBER = "acl-bloomfilter-elements-number";
-
    /**
     * [G.A] do we need it here or in WorkspaceDataManager better??
     * 

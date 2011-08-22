@@ -262,27 +262,17 @@
             operation but in same time Observation'll not notified, has
             default value true</entry>
           </row>
+        </tbody>
+      </tgroup>
 
+      <tgroup cols="2">
+        <tbody>
           <row>
             <entry>lazy-node-iterator-page-size</entry>
 
             <entry>the page size for lazy iterator. Indicates how many nodes
             can be retrieved from storage per request. The default value is
             100</entry>
-          </row>
-
-          <row>
-            <entry>acl-bloomfilter-false-positive-probability</entry>
-
-            <entry>ACL Bloom-filter desired false positive probability. Range
-            [0..1]. Default value 0.1d.</entry>
-          </row>
-
-          <row>
-            <entry>acl-bloomfilter-elements-number</entry>
-
-            <entry>Expected number of ACL-elements in the Bloom-filter.
-            Default value 1000000.</entry>
           </row>
         </tbody>
       </tgroup>

@@ -26,7 +26,6 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -289,15 +288,6 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
    {
       throw new UnsupportedOperationException();
 
-   }
-   
-   /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getACLHolders()
-    */
-   public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
-      UnsupportedOperationException
-   {
-      throw new UnsupportedOperationException();
    }
 
    class MapKey

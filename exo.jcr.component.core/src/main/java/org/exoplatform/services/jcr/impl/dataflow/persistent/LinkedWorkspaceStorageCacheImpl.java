@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
-import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -2217,20 +2216,4 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    public void addChildNodesByPage(NodeData parent, List<NodeData> childs, int fromOrderNum)
    {
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void addListener(WorkspaceStorageCacheListener listener) throws UnsupportedOperationException
-   {
-      throw new UnsupportedOperationException("The cache listeners are not supported by the LinkedWorkspaceStorageCacheImpl");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void removeListener(WorkspaceStorageCacheListener listener) throws UnsupportedOperationException
-   {
-      throw new UnsupportedOperationException("The cache listeners are not supported by the LinkedWorkspaceStorageCacheImpl");
-   }   
 }
