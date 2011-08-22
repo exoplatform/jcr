@@ -216,4 +216,15 @@
         container;</member>
       </simplelist></para>
   </section>
+
+  <section>
+    <title>Disabling value storage</title>
+
+    <para>JCR allows to disable value storage by adding property into
+    configuration. For interal usage and testing purpose only.</para>
+
+    <programlisting language="xml">&lt;property name="enabled" value="false" /&gt;</programlisting>
+
+    <para>Be careful, all stored values will be unaccessible.</para>
+  </section>
 </chapter>
