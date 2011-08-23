@@ -22,7 +22,6 @@ function getModule(params) {
     addDependency(new Project("jcr", "jcr", "jar", "1.0")).
     addDependency(new Project("concurrent", "concurrent", "jar", "1.3.4")).
     addDependency(new Project("org.jgroups", "jgroups", "jar", "2.6.20.Final")).
-    addDependency(new Project("commons-io", "commons-io", "jar", "1.3.2")).
     addDependency(new Project("org.jboss.cache","jbosscache-core","jar","3.2.7.GA")).
     addDependency(new Project("jboss.jbossts","jbossjts","jar","4.6.1.GA")).
     addDependency(new Project("jboss.jbossts","jbossts-common","jar","4.6.1.GA")).
