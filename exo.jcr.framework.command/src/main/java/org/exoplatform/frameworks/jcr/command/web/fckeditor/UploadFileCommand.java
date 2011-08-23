@@ -25,12 +25,10 @@ import org.apache.commons.fileupload.FileItem;
 import org.exoplatform.frameworks.jcr.command.JCRCommandHelper;
 import org.exoplatform.frameworks.jcr.command.web.GenericWebAppContext;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.jcr.Node;
@@ -60,7 +58,9 @@ public class UploadFileCommand extends AbstractFCKConnector implements Command
 
       String type = (String)context.get("Type");
       if (type == null)
+      {
          type = "";
+      }
 
       // // To limit browsing set Servlet init param "digitalAssetsPath"
       // // with desired JCR path
@@ -88,7 +88,9 @@ public class UploadFileCommand extends AbstractFCKConnector implements Command
 
       String workspace = (String)webCtx.get(AppConstants.DIGITAL_ASSETS_PROP);
       if (workspace == null)
+      {
          workspace = AppConstants.DEFAULT_DIGITAL_ASSETS_WS;
+      }
 
       String currentFolderStr = getCurrentFolderPath(webCtx);
 
@@ -106,14 +108,25 @@ public class UploadFileCommand extends AbstractFCKConnector implements Command
       {
          FileItem item = (FileItem)iter.next();
          if (item.isFormField())
+         {
             fields.put(item.getFieldName(), item.getString());
+         }
          else
+         {
             fields.put(item.getFieldName(), item);
+         }
       }
       FileItem uplFile = (FileItem)fields.get("NewFile");
 
       // On IE, the file name is specified as an absolute path.
-      String fileName = org.apache.commons.io.FilenameUtils.getName(uplFile.getName());
+      String fileName = uplFile.getName();
+      if (fileName != null)
+      {
+         int lastUnixPos = fileName.lastIndexOf("/");
+         int lastWindowsPos = fileName.lastIndexOf("\\");
+         int index = Math.max(lastUnixPos, lastWindowsPos);
+         fileName = fileName.substring(index + 1);
+      }
 
       Node file =
          JCRCommandHelper

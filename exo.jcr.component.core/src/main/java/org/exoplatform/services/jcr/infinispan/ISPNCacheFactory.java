@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.infinispan;
 
-import org.apache.commons.io.IOUtils;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -37,6 +36,8 @@ import org.infinispan.manager.EmbeddedCacheManager;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
@@ -62,6 +63,7 @@ public class ISPNCacheFactory<K, V>
    public static final String INFINISPAN_CONFIG = "infinispan-configuration";
 
    private final ConfigurationManager configurationManager;
+
    private final TemplateConfigurationHelper configurationHelper;
 
    private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.InfinispanCacheFactory");
@@ -78,9 +80,9 @@ public class ISPNCacheFactory<K, V>
       public MBeanServer getMBeanServer(Properties properties)
       {
          return ExoContainerContext.getTopContainer().getMBeanServer();
-      }      
+      }
    };
-   
+
    /**
     * Creates InfinispanCacheFactory with provided configuration transaction managers.
     * Transaction manager will later be injected to cache instance. 
@@ -189,7 +191,19 @@ public class ISPNCacheFactory<K, V>
             try
             {
                log.info("Custom JGroups configuration set: " + jgroupsConfigURL);
-               p.setProperty("configurationXml", IOUtils.toString(jgroupsConfigInputStream));
+
+               // Read stream content into StringWriter
+               StringWriter sw = new StringWriter();
+               InputStreamReader in = new InputStreamReader(jgroupsConfigInputStream);
+
+               char[] buffer = new char[1024];
+               int n = 0;
+               while (-1 != (n = in.read(buffer)))
+               {
+                  sw.write(buffer, 0, n);
+               }
+
+               p.setProperty("configurationXml", sw.toString());
                p.remove("configurationFile");
             }
             finally
@@ -217,8 +231,8 @@ public class ISPNCacheFactory<K, V>
       // Ensure that the cluster name won't be used between 2 ExoContainers
       gc.fluent().transport().clusterName(gc.getClusterName() + "_" + container.getContext().getName())
          .globalJmxStatistics().cacheManagerName(gc.getCacheManagerName() + "_" + container.getContext().getName()).
-      // Configure the MBeanServerLookup
-      mBeanServerLookup(MBEAN_SERVER_LOOKUP);
+         // Configure the MBeanServerLookup
+         mBeanServerLookup(MBEAN_SERVER_LOOKUP);
       Configuration conf = manager.getDefaultConfiguration();
       if (CACHE_MANAGERS.containsKey(gc))
       {
