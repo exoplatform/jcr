@@ -835,12 +835,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             new SharedConnectionFactory(((JDBCStorageConnection)original).getJdbcConnection(), containerName, multiDb,
                valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
 
-         return STATISTICS_ENABLED ? new StatisticsJDBCStorageConnection(cFactory.openConnection()) : cFactory
-            .openConnection();
+         return STATISTICS_ENABLED ? new StatisticsJDBCStorageConnection(cFactory.openConnection(false)) : cFactory
+            .openConnection(false);
       }
       else
       {
-         return openConnection();
+         return openConnection(false);
       }
    }
 

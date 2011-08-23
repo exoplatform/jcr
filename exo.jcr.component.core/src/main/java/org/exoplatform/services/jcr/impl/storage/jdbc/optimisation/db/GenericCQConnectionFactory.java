@@ -158,7 +158,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    @Override
    public WorkspaceStorageConnection openConnection() throws RepositoryException
    {
-      return openConnection(false);
+      return openConnection(true);
    }
 
    /**
@@ -196,12 +196,6 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
       {
          Connection conn = dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager
             .getConnection(dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
-
-         if (readOnly)
-         {
-            // set this feature only if it asked
-            conn.setReadOnly(readOnly);
-         }
 
          return conn;
       }

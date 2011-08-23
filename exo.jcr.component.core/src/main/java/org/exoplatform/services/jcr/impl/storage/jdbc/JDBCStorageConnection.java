@@ -242,7 +242,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       // if conn.setAutoCommit(false) called twise or more times with value
       // 'false'.
       // TODO remove workaround for Sybase, jconn 6.05 Build 26564
-      if (dbConnection.getAutoCommit())
+      if (!readOnly && dbConnection.getAutoCommit())
       {
          dbConnection.setAutoCommit(false);
       }
@@ -347,7 +347,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          closeStatements();
 
-         if (!this.readOnly)
+         if (!readOnly)
          {
             dbConnection.rollback();
          }
@@ -384,13 +384,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          closeStatements();
 
-         // If READ-ONLY status back it to READ-WRITE (we assume it was original state) 
-         if (readOnly)
-         {
-            dbConnection.setReadOnly(true);
-         }
-
-         if (dbConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
+         if (!readOnly && dbConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
          {
             dbConnection.rollback();
          }

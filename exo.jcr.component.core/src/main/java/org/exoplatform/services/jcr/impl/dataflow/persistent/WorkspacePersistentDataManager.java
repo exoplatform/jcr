@@ -382,11 +382,11 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                   // reuse this connection as system
                   ? systemDataContainer.reuseConnection(thisConnection)
                   // or open one new system
-                  : systemDataContainer.openConnection()
+                  : systemDataContainer.openConnection(false)
                // else if it's same container instances (system and this)
                : thisConnection == null
                // and non-system connection doens't exist - open it
-                  ? thisConnection = dataContainer.openConnection()
+                  ? thisConnection = dataContainer.openConnection(false)
                   // if already open - use it
                   : thisConnection)
             // system connection opened - use it
@@ -404,11 +404,11 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                   // reuse system connection as this
                   ? dataContainer.reuseConnection(systemConnection)
                   // or open one new
-                  : dataContainer.openConnection()
+                  : dataContainer.openConnection(false)
                // else if it's same container instances (system and this)
                : systemConnection == null
                // and system connection doens't exist - open it
-                  ? systemConnection = dataContainer.openConnection()
+                  ? systemConnection = dataContainer.openConnection(false)
                   // if already open - use it
                   : systemConnection)
             // this connection opened - use it
