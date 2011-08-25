@@ -34,6 +34,7 @@ import java.util.WeakHashMap;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: SessionItemPool.java 11907 2008-03-13 15:36:21Z ksm $
  */
+@Deprecated
 final class SessionItemPool
 {
 
@@ -47,7 +48,6 @@ final class SessionItemPool
    void remove(String identifier)
    {
       items.remove(identifier);
-      System.gc();
    }
 
    void put(ItemImpl item)
