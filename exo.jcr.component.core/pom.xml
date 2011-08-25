@@ -272,7 +272,7 @@
          <scope>test</scope>
       </dependency>
       <!-- For IBM DB2 support (local-jcr repository) -->
-      <!-- dependency>
+      <dependency>
          <groupId>com.ibm.db2</groupId>
          <artifactId>db2jcc</artifactId>
          <version>9.7</version>
@@ -283,7 +283,7 @@
          <artifactId>db2jcc_license_cu</artifactId>
          <version>9.7</version>
          <scope>test</scope>
-      </dependency -->
+      </dependency>
       <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
       <!-- dependency>
          <groupId>net.sourceforge.jtds</groupId>
@@ -852,6 +852,18 @@
          <id>mysql-sjdbc</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration-mysql-sjdbc-jbc.xml</jcr.test.configuration.file>
+         </properties>
+      </profile>
+      <profile>
+         <id>db2</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-db2-jbc.xml</jcr.test.configuration.file>
+         </properties>
+      </profile>
+      <profile>
+         <id>db2-sjdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-db2-sjdbc-jbc.xml</jcr.test.configuration.file>
          </properties>
       </profile>
       <profile>
