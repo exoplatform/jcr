@@ -275,13 +275,13 @@
       <dependency>
          <groupId>com.ibm.db2</groupId>
          <artifactId>db2jcc</artifactId>
-         <version>9.7</version>
+         <version>9.1</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>com.ibm.db2</groupId>
          <artifactId>db2jcc_license_cu</artifactId>
-         <version>9.7</version>
+         <version>9.1</version>
          <scope>test</scope>
       </dependency>
       <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
