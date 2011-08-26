@@ -130,5 +130,14 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
    public boolean isIDNeededForPaging()
    {
       return false;
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isReindexingSupport()
+   {
+      return false;
    }   
 }
