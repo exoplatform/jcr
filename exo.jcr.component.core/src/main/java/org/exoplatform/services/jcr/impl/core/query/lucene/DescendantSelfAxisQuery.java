@@ -454,6 +454,10 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       {
          contextScorer = contextQuery.weight(searcher).scorer(reader, scoreDocsInOrder, topScorer);
          subScorer = subQuery.weight(searcher).scorer(reader, scoreDocsInOrder, topScorer);
+         if (subScorer == null)
+         {
+            return null;
+         }
          HierarchyResolver resolver = (HierarchyResolver)reader;
          return new DescendantSelfAxisScorer(searcher.getSimilarity(), reader, resolver);
       }
