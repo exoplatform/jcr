@@ -667,6 +667,16 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    protected int addValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc)
       throws SQLException
    {
+      throw new UnsupportedOperationException("This method is not supported, use the mehod of the same name with lastValue");
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected int addValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc, boolean lastValue)
+      throws SQLException
+   {
 
       if (insertValue == null)
       {
@@ -691,9 +701,18 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 
       insertValue.setInt(2, orderNumber);
       insertValue.setString(3, cid);
+      if (allowBatching)
+      {
+         insertValue.addBatch();
+         if (lastValue)
+         {
+            insertValue.executeBatch();
+         }
+         return 1;         
+      }
       return insertValue.executeUpdate();
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -886,7 +905,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       return findPropertyById.executeQuery();
    }
 
-   protected int updateValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc)
+   protected int updateValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc, boolean lastValue)
       throws SQLException
    {
 
@@ -913,6 +932,15 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 
       updateValue.setString(3, cid);
       updateValue.setInt(4, orderNumber);
+      if (allowBatching)
+      {
+         updateValue.addBatch();
+         if (lastValue)
+         {
+            updateValue.executeBatch();
+         }
+         return 1;
+      }
       return updateValue.executeUpdate();
    }
 

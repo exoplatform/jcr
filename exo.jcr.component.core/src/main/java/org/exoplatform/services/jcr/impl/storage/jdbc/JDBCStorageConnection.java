@@ -166,8 +166,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected PreparedStatement findPropertiesByParentId;
 
-   protected PreparedStatement insertItem;
-
    protected PreparedStatement insertNode;
 
    protected PreparedStatement insertProperty;
@@ -176,20 +174,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected PreparedStatement insertValue;
 
-   protected PreparedStatement updateItem;
-
-   protected PreparedStatement updateItemPath;
-
    protected PreparedStatement updateNode;
 
    protected PreparedStatement updateProperty;
 
    protected PreparedStatement deleteItem;
-
-   protected PreparedStatement deleteNode;
-
-   protected PreparedStatement deleteProperty;
-
    protected PreparedStatement deleteReference;
 
    protected PreparedStatement deleteValue;
@@ -486,11 +475,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             findPropertiesByParentId.close();
          }
 
-         if (insertItem != null)
-         {
-            insertItem.close();
-         }
-
          if (insertNode != null)
          {
             insertNode.close();
@@ -511,16 +495,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             insertValue.close();
          }
 
-         if (updateItem != null)
-         {
-            updateItem.close();
-         }
-
-         if (updateItemPath != null)
-         {
-            updateItemPath.close();
-         }
-
          if (updateNode != null)
          {
             updateNode.close();
@@ -534,16 +508,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (deleteItem != null)
          {
             deleteItem.close();
-         }
-
-         if (deleteNode != null)
-         {
-            deleteNode.close();
-         }
-
-         if (deleteProperty != null)
-         {
-            deleteProperty.close();
          }
 
          if (deleteReference != null)

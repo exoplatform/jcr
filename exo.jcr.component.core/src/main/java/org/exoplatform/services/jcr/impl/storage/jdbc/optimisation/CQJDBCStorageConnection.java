@@ -153,6 +153,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
 
    protected Statement findNodesByParentIdAndComplexPatternCQ;
 
+   protected final boolean allowBatching;
+   
    /**
      * JDBCStorageConnection constructor.
      * 
@@ -176,6 +178,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       throws SQLException
    {
       super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      this.allowBatching = dbConnection.getMetaData().supportsBatchUpdates();
    }
 
    /**
@@ -505,7 +508,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    {
       List<ValueData> vdata = data.getValues();
 
-      for (int i = 0; i < vdata.size(); i++)
+      for (int i = 0, length = vdata.size(); i < length; i++)
       {
          ValueData vd = vdata.get(i);
          ValueIOChannel channel = valueStorageProvider.getApplicableChannel(data, i);
@@ -561,11 +564,11 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          }
          if (i < totalOldValues)
          {
-            updateValueData(cid, i, stream, streamLength, storageId);
+            updateValueData(cid, i, stream, streamLength, storageId, i == length - 1 || i == totalOldValues - 1);
          }
          else
          {
-            addValueData(cid, i, stream, streamLength, storageId);
+            addValueData(cid, i, stream, streamLength, storageId, i == length - 1);
          }
       }
    }
@@ -1240,6 +1243,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
 
    protected abstract int deleteValueDataByOrderNum(String id, int orderNum) throws SQLException;
 
-   protected abstract int updateValueData(String cid, int i, InputStream stream, int streamLength, String storageId)
+   protected abstract int updateValueData(String cid, int i, InputStream stream, int streamLength, String storageId, boolean lastValue)
       throws SQLException;
+   
+   protected abstract int addValueData(String cid, int orderNumber, InputStream stream, int streamLength,
+      String storageId, boolean lastValue) throws SQLException;
 }
