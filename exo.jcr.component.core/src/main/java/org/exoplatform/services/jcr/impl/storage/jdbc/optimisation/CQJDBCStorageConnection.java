@@ -1243,8 +1243,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
 
    protected abstract int deleteValueDataByOrderNum(String id, int orderNum) throws SQLException;
 
-   protected abstract int updateValueData(String cid, int i, InputStream stream, int streamLength, String storageId, boolean lastValue)
-      throws SQLException;
+   protected abstract int updateValueData(String cid, int i, InputStream stream, int streamLength, String storageId,
+      boolean lastValue) throws SQLException;
    
    protected abstract int addValueData(String cid, int orderNumber, InputStream stream, int streamLength,
       String storageId, boolean lastValue) throws SQLException;

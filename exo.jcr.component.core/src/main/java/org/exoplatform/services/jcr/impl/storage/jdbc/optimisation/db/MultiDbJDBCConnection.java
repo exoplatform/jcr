@@ -674,8 +674,8 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   protected int addValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc, boolean lastValue)
-      throws SQLException
+   protected int addValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc,
+      boolean lastValue) throws SQLException
    {
 
       if (insertValue == null)
@@ -905,8 +905,8 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       return findPropertyById.executeQuery();
    }
 
-   protected int updateValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc, boolean lastValue)
-      throws SQLException
+   protected int updateValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc,
+      boolean lastValue) throws SQLException
    {
 
       if (updateValue == null)
