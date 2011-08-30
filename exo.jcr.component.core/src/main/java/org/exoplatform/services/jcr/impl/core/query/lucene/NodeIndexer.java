@@ -217,12 +217,6 @@ public class NodeIndexer
          // unknown uri<->prefix mappings
       }
 
-      if (indexFormatVersion.getVersion() >= IndexFormatVersion.V4.getVersion())
-      {
-         doc.add(new Field(FieldNames.INDEX, Integer.toString(node.getQPath().getIndex()), Field.Store.YES,
-            Field.Index.NOT_ANALYZED_NO_NORMS));
-      }
-
       Collection<PropertyData> props = node.getChildPropertiesData();
       if (props == null)
       {
@@ -340,7 +334,7 @@ public class NodeIndexer
                   if (encProp == null)
                   {
                      encProp =
-                        (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0),
+                     (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0),
                            ItemType.PROPERTY);
                   }
 

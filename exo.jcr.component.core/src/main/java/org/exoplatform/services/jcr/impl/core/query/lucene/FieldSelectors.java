@@ -63,25 +63,4 @@ public class FieldSelectors {
             }
         }
     };
-
-    public static final FieldSelector UUID_AND_PARENT_AND_INDEX = new FieldSelector() {
-        /**
-         * Accepts {@link FieldNames#UUID}, {@link FieldNames#PARENT} 
-         * and {@link FieldNames#INDEX}.
-         *
-         * @param fieldName the field name to check.
-         * @return result.
-         */
-        public FieldSelectorResult accept(String fieldName) {
-            if (FieldNames.UUID == fieldName) {
-                return FieldSelectorResult.LOAD;
-            } else if (FieldNames.PARENT == fieldName) {
-                return FieldSelectorResult.LOAD;
-            } else if (FieldNames.INDEX == fieldName) {
-               return FieldSelectorResult.LOAD;
-            } else {
-                return FieldSelectorResult.NO_LOAD;
-            }
-        }
-    };
 }

@@ -538,14 +538,15 @@ class ChildAxisQuery extends Query implements JcrQuery
       {
          if (position != LocationStepQueryNode.NONE)
          {
-            Document node = reader.document(i, FieldSelectors.UUID_AND_PARENT_AND_INDEX);
+            Document node = reader.document(i, FieldSelectors.UUID_AND_PARENT);
             String parentId = node.get(FieldNames.PARENT);
             String id = node.get(FieldNames.UUID);
             try
             {
+               //NodeState state = (NodeState) itemMgr.getItemState(parentId);
+               NodeData state = (NodeData)itemMgr.getItemData(parentId);
                if (nameTest == null)
                {
-                  NodeData state = (NodeData)itemMgr.getItemData(parentId);
                   // only select this node if it is the child at
                   // specified position
                   if (position == LocationStepQueryNode.LAST)
@@ -573,7 +574,6 @@ class ChildAxisQuery extends Query implements JcrQuery
                   // specified position
                   if (position == LocationStepQueryNode.LAST)
                   {
-                     NodeData state = (NodeData)itemMgr.getItemData(parentId);
                      // only select last
 
                      if (state == null)
@@ -590,11 +590,6 @@ class ChildAxisQuery extends Query implements JcrQuery
                            return false;
                         }
                      }
-                  }
-                  else if (version.getVersion() >= IndexFormatVersion.V4.getVersion())
-                  {
-                     if (Integer.valueOf(node.get(FieldNames.INDEX)) != position)
-                        return false;
                   }
                   else
                   {
