@@ -16,9 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.util.Collection;
-
 import org.apache.lucene.index.IndexReader;
+
+import java.util.Collection;
 
 /**
  * This class indicates the lucene index format that is used.
@@ -52,9 +52,14 @@ public class IndexFormatVersion {
     public static final IndexFormatVersion V2 = new IndexFormatVersion(2);
 
     /**
-     * V3 is the index format for Jackrabbit releases >= 1.5
+     * V3 is the index format for Jackrabbit releases 1.5.x
      */
     public static final IndexFormatVersion V3 = new IndexFormatVersion(3);
+
+    /**
+     * V4 is the index format for Jackrabbit releases >= 1.6
+     */
+    public static final IndexFormatVersion V4 = new IndexFormatVersion(4);
 
     /**
      * The used version of the index format
@@ -104,7 +109,9 @@ public class IndexFormatVersion {
     public static IndexFormatVersion getVersion(IndexReader indexReader) {
         Collection fields = indexReader.getFieldNames(
                 IndexReader.FieldOption.ALL);
-        if (fields.contains(FieldNames.LOCAL_NAME) || indexReader.numDocs() == 0) {
+        if (fields.contains(FieldNames.INDEX) || indexReader.numDocs() == 0) {
+           return IndexFormatVersion.V4;
+        } else if (fields.contains(FieldNames.LOCAL_NAME)) {
             return IndexFormatVersion.V3;
         } else if (fields.contains(FieldNames.PROPERTIES_SET)) {
             return IndexFormatVersion.V2;
