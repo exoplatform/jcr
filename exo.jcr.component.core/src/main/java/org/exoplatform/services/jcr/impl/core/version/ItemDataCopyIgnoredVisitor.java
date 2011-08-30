@@ -53,7 +53,7 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
    public ItemDataCopyIgnoredVisitor(NodeData context, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
       SessionDataManager dataManager, SessionChangesLog changes)
    {
-      super(context, destNodeName, nodeTypeManager, dataManager, true);
+      super(context, destNodeName, nodeTypeManager, dataManager, dataManager, true);
       this.restoredChanges = changes;
    }
 

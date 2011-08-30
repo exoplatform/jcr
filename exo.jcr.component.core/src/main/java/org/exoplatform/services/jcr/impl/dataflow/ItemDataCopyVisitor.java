@@ -44,9 +44,9 @@ public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
    private Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemDataCopyVisitor");
 
    public ItemDataCopyVisitor(NodeData parent, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
-      SessionDataManager dataManager, boolean keepIdentifiers)
+      SessionDataManager srcDataManager, SessionDataManager dstDataManager, boolean keepIdentifiers)
    {
-      super(parent, destNodeName, nodeTypeManager, dataManager, keepIdentifiers);
+      super(parent, destNodeName, nodeTypeManager, srcDataManager, dstDataManager, keepIdentifiers);
    }
 
    @Override

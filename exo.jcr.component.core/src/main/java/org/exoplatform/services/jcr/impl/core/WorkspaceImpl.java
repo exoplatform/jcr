@@ -34,8 +34,8 @@ import org.exoplatform.services.jcr.impl.core.query.QueryManagerFactory;
 import org.exoplatform.services.jcr.impl.core.query.QueryManagerImpl;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataCloneVisitor;
+import org.exoplatform.services.jcr.impl.dataflow.ItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataMoveVisitor;
-import org.exoplatform.services.jcr.impl.dataflow.WorkspaceItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
@@ -208,8 +208,8 @@ public class WorkspaceImpl implements ExtendedWorkspace
          }
       }
 
-      WorkspaceItemDataCopyVisitor initializer =
-         new WorkspaceItemDataCopyVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
+      ItemDataCopyVisitor initializer =
+         new ItemDataCopyVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
             nodeTypeManager, srcSession.getTransientNodesManager(), session.getTransientNodesManager(), false);
 
       srcNode.getData().accept(initializer);

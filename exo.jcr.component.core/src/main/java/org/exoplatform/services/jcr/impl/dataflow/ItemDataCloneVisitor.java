@@ -54,8 +54,6 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
     */
    protected List<ItemState> itemDeletedExistingStates = new ArrayList<ItemState>();
 
-   protected final SessionDataManager dstDataManager;
-
    private boolean removeExisting;
 
    private boolean deletedExistingPropery = false;
@@ -87,9 +85,8 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
       SessionDataManager srcDataManager, SessionDataManager dstDataManager, boolean removeExisting,
       SessionChangesLog changes)
    {
-      super(parent, dstNodeName, nodeTypeManager, srcDataManager, false);
+      super(parent, dstNodeName, nodeTypeManager, srcDataManager, dstDataManager, false);
 
-      this.dstDataManager = dstDataManager;
       this.removeExisting = removeExisting;
       this.changes = changes;
    }

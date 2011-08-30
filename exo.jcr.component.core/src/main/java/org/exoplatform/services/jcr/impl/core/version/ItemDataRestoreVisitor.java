@@ -815,9 +815,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             if (existed != null)
             {
                // copy existed - i.e. left unchanged
-               ItemDataCopyVisitor copyVisitor = new ItemDataCopyVisitor(currentNode(), frozen.getQPath().getName(),
-               // node,
-                  nodeTypeDataManager, userSession.getTransientNodesManager(), true);
+               ItemDataCopyVisitor copyVisitor =
+                  new ItemDataCopyVisitor(currentNode(), frozen.getQPath().getName(), nodeTypeDataManager,
+                     userSession.getTransientNodesManager(), userSession.getTransientNodesManager(), true);
                existed.accept(copyVisitor);
                changes.addAll(copyVisitor.getItemAddStates());
             } // else - nothing to do, i.e. left unchanged

@@ -50,6 +50,11 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
 {
 
    /**
+    * Destination data manager.
+    */
+   protected SessionDataManager dstDataManager;
+
+   /**
     * Destination node name
     */
    protected InternalQName destNodeName;
@@ -86,17 +91,18 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
     *          - Destination node name
     * @param nodeTypeManager
     *          - The NodeTypeManager
-    * @param dataManager
+    * @param srcDataManager
     *          - Source data manager
     * @param keepIdentifiers
     *          - Is it necessity to keep <code>Identifier</code>
     */
 
    public DefaultItemDataCopyVisitor(NodeData parent, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
-      SessionDataManager dataManager, boolean keepIdentifiers)
+      SessionDataManager srcDataManager, SessionDataManager dstDataManager, boolean keepIdentifiers)
    {
-      super(dataManager);
+      super(srcDataManager);
 
+      this.dstDataManager = dstDataManager;
       this.keepIdentifiers = keepIdentifiers;
       this.ntManager = nodeTypeManager;
       this.destNodeName = destNodeName;
@@ -264,7 +270,7 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
 
    protected int calculateNewNodeOrderNumber() throws RepositoryException
    {
-      return dataManager.getLastOrderNumber(curParent()) + 1;
+      return dstDataManager.getLastOrderNumber(curParent()) + 1;
    }
 
    protected QPath calculateNewNodePath(NodeData node, int level) throws RepositoryException
@@ -273,7 +279,7 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
 
       InternalQName qname = null;
 
-      List<NodeData> existedChilds = dataManager.getChildNodesData(parent);
+      List<NodeData> existedChilds = dstDataManager.getChildNodesData(parent);
       int newIndex = 1;
       if (level == 0)
       {

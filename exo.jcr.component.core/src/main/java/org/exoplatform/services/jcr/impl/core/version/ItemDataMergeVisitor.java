@@ -267,7 +267,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
 
                ItemDataCopyVisitor copier =
                   new ItemDataCopyVisitor(context.getParent(), corrNode.getQPath().getName(), mergeSession
-                     .getWorkspace().getNodeTypesHolder(), mergeDataManager, true);
+                     .getWorkspace().getNodeTypesHolder(), mergeDataManager, mergeDataManager, true);
                corrNode.accept(copier);
 
                changes.addAll(copier.getItemAddStates());
