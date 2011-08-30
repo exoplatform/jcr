@@ -18,6 +18,7 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -29,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -97,22 +99,28 @@ public class ErrorLog
     */
    private void openFile(final File log) throws IOException
    {
-      // set file size;
-      if (!PrivilegedFileHelper.exists(log))
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
       {
-         PrivilegedFileHelper.mkdirs(log.getParentFile());
-         PrivilegedFileHelper.createNewFile(log);
-
-         out = PrivilegedFileHelper.fileOutputStream(log).getChannel();
-         out.position(1024 * fileSize - 1);
-         out.write(ByteBuffer.wrap(new byte[]{0}));
-         out.position(0);
-         out.force(false);
-      }
-      else
-      {
-         out = PrivilegedFileHelper.fileOutputStream(log, true).getChannel();
-      }
+         public Void run() throws Exception
+         {
+            // set file size;
+            if (!log.exists())
+            {
+               log.getParentFile().mkdirs();
+               log.createNewFile();
+               out = new FileOutputStream(log).getChannel();
+               out.position(1024 * fileSize - 1);
+               out.write(ByteBuffer.wrap(new byte[]{0}));
+               out.position(0);
+               out.force(false);
+            }
+            else
+            {
+               out = new FileOutputStream(log, true).getChannel();
+            }
+            return null;
+         }
+      });
    }
 
    /**

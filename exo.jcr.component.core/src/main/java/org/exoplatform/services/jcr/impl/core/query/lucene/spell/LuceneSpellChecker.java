@@ -507,16 +507,9 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                                  try
                                  {
                                     long time = System.currentTimeMillis();
-                                    final Dictionary dict = new LuceneDictionary(reader, FieldNames.FULLTEXT);
+                                    Dictionary dict = new LuceneDictionary(reader, FieldNames.FULLTEXT);
                                     log.debug("Starting spell checker index refresh");
-                                    SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
-                                    {
-                                       public Void run() throws IOException
-                                       {
-                                          spellChecker.indexDictionary(dict);
-                                          return null;
-                                       }
-                                    });
+                                    spellChecker.indexDictionary(dict);
                                     time = System.currentTimeMillis() - time;
                                     time = time / 1000;
                                     log.info("Spell checker index refreshed in: " + new Long(time) + " s.");
