@@ -160,7 +160,8 @@ public class RepositoryBackupChainLog
          writer.flush();
       }
 
-      public synchronized void write(RepositoryBackupConfig config, String fullBackupType, String incrementalBackupType)
+      public synchronized void write(RepositoryBackupConfig config, String fullBackupType,
+               String incrementalBackupType, File serviceBackupDir)
                throws XMLStreamException, IOException
       {
          writer.writeStartElement("repository-backup-config");
@@ -179,8 +180,21 @@ public class RepositoryBackupChainLog
 
          if (config.getBackupDir() != null)
          {
+            String backupDir = PrivilegedFileHelper.getCanonicalPath(config.getBackupDir());
+            String serviceBackupDirPath = PrivilegedFileHelper.getCanonicalPath(serviceBackupDir);
+            if (backupDir.startsWith(serviceBackupDirPath))
+            {
+
+               backupDir = "." + backupDir.replace(serviceBackupDirPath, "");
+
+               if (File.separator.equals("\\"))
+               {
+                  backupDir = backupDir.replaceAll("\\\\", "/");
+               }
+            }
+            
             writer.writeStartElement("backup-dir");
-            writer.writeCharacters(PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()));
+            writer.writeCharacters(backupDir);
             writer.writeEndElement();
          }
 
@@ -502,6 +516,19 @@ public class RepositoryBackupChainLog
 
                            conf.setBackupDir(new File(path));
                         }
+                        else if (dir.startsWith("./"))
+                        {
+                           String path = PrivilegedFileHelper.getCanonicalPath(logFile.getParentFile());
+
+                           dir = dir.replace("./", "/");
+                           
+                           if (File.separator.equals("\\"))
+                           {
+                              dir = dir.replaceAll("/", "\\\\");
+                           }
+
+                           conf.setBackupDir(new File(path + dir));
+                        }
                         else
                         {
                            conf.setBackupDir(new File(Deserializer.resolveVariables(dir)));
@@ -636,7 +663,7 @@ public class RepositoryBackupChainLog
          this.originalRepositoryEntry = rEntry;
 
          logWriter = new LogWriter(log);
-         logWriter.write(config, fullBackupType, incrementalBackupType);
+         logWriter.write(config, fullBackupType, incrementalBackupType, logDirectory);
          logWriter.writeSystemWorkspaceName(systemWorkspace);
          logWriter.writeBackupsPath(wsLogFilePathList, config);
          logWriter.writeRepositoryEntry(rEntry, repositoryServiceConfiguration);
