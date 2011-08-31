@@ -118,7 +118,7 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
       SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE =
                "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM into "
                         + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME
-                        + " from JCR_MITEM I where I.I_CLASS=1 AND I.ID > ? order by I.ID ASC";
+                        + " from JCR_MITEM I (index index JCR_PK_MITEM) where I.I_CLASS=1 AND I.ID > ? order by I.ID ASC";
 
       COUNT_NODES_IN_TEMPORARY_TABLE = "select count(*) from " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
@@ -133,8 +133,7 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
                         + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P, "
                         + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " where P.PARENT_ID = "
                         + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
-                        + ".ID and P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by "
-                        + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".ID";
+                        + ".ID and P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by ID";
 
       DELETE_TEMPORARY_TABLE_A = "drop table " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
