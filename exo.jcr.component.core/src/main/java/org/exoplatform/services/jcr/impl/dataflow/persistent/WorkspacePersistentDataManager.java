@@ -45,7 +45,6 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
@@ -636,21 +635,13 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
-      if (con instanceof JDBCStorageConnection)
+      try
       {
-         try
-         {
-            return ((JDBCStorageConnection)con).getChildNodesDataByPage(nodeData, fromOrderNum, limit, childNodes);
-         }
-         finally
-         {
-            con.close();
-         }
+         return con.getChildNodesDataByPage(nodeData, fromOrderNum, limit, childNodes);
       }
-      else
+      finally
       {
-         throw new UnsupportedOperationException(
-            "The method getChildNodesDataLazily is supported only for JDBCStorageConnection");
+         con.close();
       }
    }
 

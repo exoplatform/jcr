@@ -340,4 +340,22 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
       }
    }
 
+   /**
+    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getValue(java.lang.String, int, int)
+    */
+   public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws IllegalStateException,
+      RepositoryException
+   {
+      return null;
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildNodesDataByPage(org.exoplatform.services.jcr.datamodel.NodeData, int, int, java.util.List)
+    */
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+      throws RepositoryException
+   {
+      throw new UnsupportedOperationException(
+         "The method getChildNodesDataLazily is supported only for JDBCStorageConnection");
+   }
 }

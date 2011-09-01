@@ -949,7 +949,18 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          
          return children;
       }
-      
+
+      public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws IllegalStateException,
+         RepositoryException
+      {
+         return null;
+      }
+
+      public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+         throws RepositoryException
+      {
+         return false;
+      }
       
    };
    

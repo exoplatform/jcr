@@ -43,7 +43,6 @@ public class TestMultipleListenersNotifying extends TestCase
          super(null, new SystemDataContainerHolder(null));
       }
 
-      @Override
       public void save(ItemStateChangesLog changes) throws InvalidItemStateException, UnsupportedOperationException,
          RepositoryException
       {

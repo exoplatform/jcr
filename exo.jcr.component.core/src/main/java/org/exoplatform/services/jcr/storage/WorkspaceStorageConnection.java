@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 
 import java.util.List;
@@ -39,7 +40,7 @@ import javax.jcr.RepositoryException;
  * should have "opened" state. The connection becomes "closed" (invalid for using) after calling
  * commit() or rollback() methods. In this case methods calling will cause an IllegalStateException
  * 
- * Connection object intendend to be as "light" as possible i.e. connection creation SHOULD NOT be
+ * Connection object intended to be as "light" as possible i.e. connection creation SHOULD NOT be
  * expensive operation, so better NOT to open/close potentially EXPENSIVE resources using by
  * Connection (WorkspaceDataContainer should be responsible for that). The Connection IS NOT a
  * thread-safe object and normally SHOULD NOT be pooled/cached.
@@ -58,10 +59,10 @@ public interface WorkspaceStorageConnection
     *          - the item's parent NodeData
     * @param name
     *          - item's path entry (QName + index)
-    * @return - stored ItemData wich has exact the same path Entry (name+index) inside the parent; or
+    * @return - stored ItemData which has exact the same path Entry (name+index) inside the parent; or
     *         null if not such an item data found
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -78,10 +79,10 @@ public interface WorkspaceStorageConnection
     *          - item's path entry (QName + index)
     * @param itemType
     *             item type         
-    * @return - stored ItemData wich has exact the same path Entry (name+index) inside the parent; or
+    * @return - stored ItemData which has exact the same path Entry (name+index) inside the parent; or
     *         null if not such an item data found
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -93,12 +94,12 @@ public interface WorkspaceStorageConnection
     * 
     * @param identifier
     *          - Item identifier
-    * @return stored ItemData or null if no item foudn with given id. Basically used for
+    * @return stored ItemData or null if no item found with given id. Basically used for
     *         Session.getNodeByUUID but not necessarily refers to jcr:uuid property (In fact, this
     *         identifier should not necessary be equal of referenceable node's UUID if any) thereby
     *         can return NodeData for not referenceable node data or PropertyData.
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -111,7 +112,7 @@ public interface WorkspaceStorageConnection
     *          NodeData
     * @return child nodes data or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -125,7 +126,7 @@ public interface WorkspaceStorageConnection
     * @param pattern  - list of QPathEntryFilters
     * @return child nodes data or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -158,7 +159,7 @@ public interface WorkspaceStorageConnection
     *          NodeData
     * @return child properties data or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -171,10 +172,10 @@ public interface WorkspaceStorageConnection
     * @param parent
     *          NodeData
     * @param pattern
-    *          String[] list of wildcard names 
+    *          String[] list of wild card names 
     * @return child properties data or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -186,13 +187,13 @@ public interface WorkspaceStorageConnection
     * storage using item's parent location.
     * 
     * <br/>
-    * This methiod specially dedicated for non-content modification operations (e.g. Items delete).
+    * This method specially dedicated for non-content modification operations (e.g. Items delete).
     * 
     * @param parent
     *          NodeData
     * @return child properties data (with empty data) or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -211,7 +212,7 @@ public interface WorkspaceStorageConnection
     *          of referenceable Node
     * @return list of referenced property data or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     * @throws UnsupportedOperationException
@@ -220,6 +221,39 @@ public interface WorkspaceStorageConnection
    List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException, IllegalStateException,
       UnsupportedOperationException;
 
+   /**
+    * Gets the value content of the property defined by the given parameters.
+    * 
+    * @param propertyId 
+    *           the id of the property
+    * @param orderNumb 
+    *           the order number or the property
+    * @param persistedVersion 
+    *           the persisted version of the property
+    * @return the value content wrapped into a ValueData object
+    * @throws IllegalStateException 
+    *           if connection is already closed
+    * @throws RepositoryException 
+    *           if some exception occurred
+    */
+   ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws IllegalStateException, RepositoryException;
+
+   /**
+    * Get child Nodes of the parent node.
+    * 
+    * @param parent 
+    *          the parent data
+    * @param fromOrderNum
+    *          the last order number returned in previous request
+    * @param limit   
+    *       the recommended amount of children nodes to return            
+    * @param childs
+    *          will contain the resulted children nodes
+    * @return true if there are data to retrieve for next request and false in other case 
+    */
+   boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+      throws RepositoryException;
+   
    /**
     * Adds single <code>NodeData</code>.
     * 
@@ -230,7 +264,7 @@ public interface WorkspaceStorageConnection
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -247,7 +281,7 @@ public interface WorkspaceStorageConnection
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -262,12 +296,12 @@ public interface WorkspaceStorageConnection
     * @throws InvalidItemStateException
     *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
     *           of new data's persisted version value (2) if the persisted data is not NodeData (i.e.
-    *           it is PropertyData). It means that some other proccess deleted original data and
+    *           it is PropertyData). It means that some other process deleted original data and
     *           replace it with other type of data.
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -282,12 +316,12 @@ public interface WorkspaceStorageConnection
     * @throws InvalidItemStateException
     *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
     *           of new data's persisted version value (2) if the persisted data is not PropertyData
-    *           (i.e. it is NodeData). It means that some other proccess deleted original data and
+    *           (i.e. it is NodeData). It means that some other process deleted original data and
     *           replace it with other type of data.
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -302,12 +336,12 @@ public interface WorkspaceStorageConnection
     * @throws InvalidItemStateException
     *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
     *           of new data's persisted version value (2) if the persisted data is not PropertyData
-    *           (i.e. it is NodeData). It means that some other proccess deleted original data and
+    *           (i.e. it is NodeData). It means that some other process deleted original data and
     *           replace it with other type of data.
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -325,7 +359,7 @@ public interface WorkspaceStorageConnection
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -343,7 +377,7 @@ public interface WorkspaceStorageConnection
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -356,7 +390,7 @@ public interface WorkspaceStorageConnection
     * @throws IllegalStateException
     *           if connection is already closed
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     */
    void commit() throws IllegalStateException, RepositoryException;
 
@@ -367,7 +401,7 @@ public interface WorkspaceStorageConnection
     * @throws IllegalStateException
     *           if connection is already closed
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     */
    void rollback() throws IllegalStateException, RepositoryException;
 
@@ -377,7 +411,7 @@ public interface WorkspaceStorageConnection
     * @throws IllegalStateException
     *           if connection is already closed
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     */
    void close() throws IllegalStateException, RepositoryException;
 

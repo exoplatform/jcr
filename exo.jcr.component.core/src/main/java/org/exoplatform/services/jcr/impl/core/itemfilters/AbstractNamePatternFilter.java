@@ -131,7 +131,6 @@ public abstract class AbstractNamePatternFilter implements ItemDataFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public boolean accept(ItemData item)
    {
       if (getAllItems)
@@ -181,7 +180,6 @@ public abstract class AbstractNamePatternFilter implements ItemDataFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public List<? extends ItemData> accept(List<? extends ItemData> itemData)
    {
       if (getAllItems)

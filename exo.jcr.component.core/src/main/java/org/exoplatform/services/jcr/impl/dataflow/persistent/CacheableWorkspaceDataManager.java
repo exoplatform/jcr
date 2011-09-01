@@ -41,8 +41,8 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
@@ -1772,25 +1772,25 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    }
 
    /**
-    * Fill Property Value from persistent storage.
-    * 
-    * @param prop PropertyData, original Property data
-    * @return PropertyData
-    * @throws IllegalStateException
-    * @throws RepositoryException 
+    * Gets the value content of the property defined by the given parameters
+    * @param propertyId the id of the property
+    * @param orderNumb the order number or the property
+    * @param persistedVersion the persisted version of the property
+    * @return the value content wrapped into a ValueData object
+    * @throws IllegalStateException if connection is already closed
+    * @throws RepositoryException  if some exception occurred
     */
    protected ValueData getPropertyValue(String propertyId, int orderNumb, int persistedVersion)
       throws IllegalStateException, RepositoryException
    {
-      // TODO use interface not JDBC
-      JDBCStorageConnection conn = (JDBCStorageConnection)dataContainer.openConnection();
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
       {
-         return conn.getValue(propertyId, orderNumb, persistedVersion);
+         return con.getValue(propertyId, orderNumb, persistedVersion);
       }
       finally
       {
-         conn.close();
+         con.close();
       }
    }
 

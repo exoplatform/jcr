@@ -56,7 +56,6 @@ public class ExactQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public QPathEntry getQPathEntry()
    {
       return entry;
@@ -65,7 +64,6 @@ public class ExactQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public boolean accept(ItemData item)
    {
       QPathEntry itemEntry = item.getQPath().getEntries()[item.getQPath().getDepth()];
@@ -75,7 +73,6 @@ public class ExactQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public List<? extends ItemData> accept(List<? extends ItemData> itemData)
    {
       List<ItemData> result = new ArrayList<ItemData>();
@@ -120,7 +117,6 @@ public class ExactQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public void writeExternal(ObjectOutput out) throws IOException
    {
       byte[] buf = entry.getNamespace().getBytes(Constants.DEFAULT_ENCODING);
@@ -137,7 +133,6 @@ public class ExactQPathEntryFilter implements QPathEntryFilter
    /**
     * {@inheritDoc}
     */
-   @Override
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       byte[] buf = new byte[in.readInt()];
