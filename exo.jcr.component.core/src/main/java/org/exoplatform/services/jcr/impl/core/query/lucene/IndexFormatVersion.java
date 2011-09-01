@@ -109,7 +109,7 @@ public class IndexFormatVersion {
     public static IndexFormatVersion getVersion(IndexReader indexReader) {
         Collection fields = indexReader.getFieldNames(
                 IndexReader.FieldOption.ALL);
-        if (fields.contains(FieldNames.INDEX) || indexReader.numDocs() == 0) {
+        if ((fields.contains(FieldNames.INDEX) && fields.contains(FieldNames.PATH))|| indexReader.numDocs() == 0) {
            return IndexFormatVersion.V4;
         } else if (fields.contains(FieldNames.LOCAL_NAME)) {
             return IndexFormatVersion.V3;

@@ -84,4 +84,20 @@ public class FieldSelectors {
             }
         }
     };
+
+    public static final FieldSelector PATH = new FieldSelector() {
+       /**
+        * Accepts {@link FieldNames#PATH}.
+        *
+        * @param fieldName the field name to check.
+        * @return result.
+        */
+       public FieldSelectorResult accept(String fieldName) {
+          if (FieldNames.PATH == fieldName) {
+             return FieldSelectorResult.LOAD;
+          } else {
+             return FieldSelectorResult.NO_LOAD;
+          }
+       }
+    };    
 }

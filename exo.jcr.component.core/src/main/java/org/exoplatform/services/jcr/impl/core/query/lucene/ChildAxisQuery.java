@@ -721,58 +721,68 @@ class ChildAxisQuery extends Query implements JcrQuery
             //NodeId id = new NodeId(UUID.fromString(uuid));
             try
             {
-               long time = 0;
-               if (log.isDebugEnabled())
+               if (nameTest != null && version.getVersion() >= IndexFormatVersion.V4.getVersion())
                {
-                  time = System.currentTimeMillis();
-               }
-               NodeData state = (NodeData)itemMgr.getItemData(uuid);
-               if (log.isDebugEnabled())
-               {
-                  time = System.currentTimeMillis() - time;
-                  log.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));                  
-               }
-               Iterator<NodeData> entries;
-               if (nameTest != null)
-               {
-                  //NodeData childNodeData = (NodeData)itemMgr.getItemData(state, new QPathEntry(nameTest, 1));
-                  // //state.getChildNodeEntries(nameTest).iterator();
-                  List<NodeData> childs = itemMgr.getChildNodesData(state);
-
-                  List<NodeData> datas = new ArrayList<NodeData>();
-                  if (childs != null)
-                  {
-                     for (NodeData nodeData : childs)
-                     {
-                        if (nameTest.equals(nodeData.getQPath().getName()))
-                        {
-                           datas.add(nodeData);
-                        }
-                     }
-
-                  }
-                  entries = datas.iterator();//itemMgr.getChildNodesData(childNodeData).iterator();
-               }
-               else
-               {
-                  // get all children
-                  entries = itemMgr.getChildNodesData(state).iterator();
-               }
-               while (entries.hasNext())
-               {
-                  String childId = entries.next().getIdentifier();
-                  Term uuidTerm = new Term(FieldNames.UUID, childId);
-                  TermDocs docs = reader.termDocs(uuidTerm);
+                  StringBuilder path = new StringBuilder(256);
+                  path.append(uuid == null ? "" : uuid).append('/').append(nameTest.getAsString());
+                  TermDocs docs = reader.termDocs(new Term(FieldNames.PATH, path.toString()));
                   try
                   {
-                     if (docs.next())
+                     while (docs.next())
                      {
                         childrenHits.set(docs.doc());
                      }
+
                   }
                   finally
                   {
                      docs.close();
+                  }
+               }
+               else
+               {
+                  long time = System.currentTimeMillis();
+                  NodeData state = (NodeData)itemMgr.getItemData(uuid);
+                  time = System.currentTimeMillis() - time;
+                  log.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));
+                  Iterator<NodeData> entries;
+                  if (nameTest != null)
+                  {
+                     //NodeData childNodeData = (NodeData)itemMgr.getItemData(state, new QPathEntry(nameTest, 1));//state.getChildNodeEntries(nameTest).iterator();
+                     List<NodeData> childs = itemMgr.getChildNodesData(state);
+
+                     List<NodeData> datas = new ArrayList<NodeData>();
+                     if (childs != null)
+                     {
+                        for (NodeData nodeData : childs)
+                        {
+                           if (nameTest.equals(nodeData.getQPath().getName()))
+                              datas.add(nodeData);
+                        }
+                     }
+                     entries = datas.iterator();//itemMgr.getChildNodesData(childNodeData).iterator();
+                  }
+                  else
+                  {
+                     // get all children
+                     entries = itemMgr.getChildNodesData(state).iterator();
+                  }
+                  while (entries.hasNext())
+                  {
+                     String childId = entries.next().getIdentifier();
+                     Term uuidTerm = new Term(FieldNames.UUID, childId);
+                     TermDocs docs = reader.termDocs(uuidTerm);
+                     try
+                     {
+                        if (docs.next())
+                        {
+                           childrenHits.set(docs.doc());
+                        }
+                     }
+                     finally
+                     {
+                        docs.close();
+                     }
                   }
                }
             }
