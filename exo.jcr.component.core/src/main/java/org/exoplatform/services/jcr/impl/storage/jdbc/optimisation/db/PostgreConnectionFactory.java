@@ -129,6 +129,6 @@ public class PostgreConnectionFactory extends GenericCQConnectionFactory
    @Override
    public boolean isReindexingSupport()
    {
-      return false;
+      return true;
    }
 }

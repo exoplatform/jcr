@@ -271,19 +271,6 @@
          <version>14</version>
          <scope>test</scope>
       </dependency>
-      <!-- For IBM DB2 support (local-jcr repository) -->
-      <dependency>
-         <groupId>com.ibm.db2</groupId>
-         <artifactId>db2jcc</artifactId>
-         <version>9.7</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>com.ibm.db2</groupId>
-         <artifactId>db2jcc_license_cu</artifactId>
-         <version>9.7</version>
-         <scope>test</scope>
-      </dependency>
       <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
       <!-- dependency>
          <groupId>net.sourceforge.jtds</groupId>
@@ -292,12 +279,12 @@
          <scope>test</scope>
       </dependency -->
       <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
-      <dependency>
+      <!--dependency>
          <groupId>com.microsoft</groupId>
          <artifactId>sqljdbc</artifactId>
          <version>3.0.1301.101</version>
          <scope>test</scope>
-      </dependency>
+      </dependency-->
       <!-- For Apache Derby support (aka JavaDB) -->
       <!-- dependency>
          <groupId>org.apache.derby</groupId>
@@ -853,6 +840,20 @@
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration-db2-jbc.xml</jcr.test.configuration.file>
          </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.ibm.db2</groupId>
+               <artifactId>db2jcc</artifactId>
+               <version>9.7</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>com.ibm.db2</groupId>
+               <artifactId>db2jcc_license_cu</artifactId>
+               <version>9.7</version>
+               <scope>test</scope>
+            </dependency>            
+         </dependencies>
       </profile>
       <profile>
          <id>db2-sjdbc</id>
