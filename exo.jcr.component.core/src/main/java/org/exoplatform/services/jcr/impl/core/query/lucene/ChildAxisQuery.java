@@ -718,7 +718,6 @@ class ChildAxisQuery extends Query implements JcrQuery
          for (Iterator it = uuids.values().iterator(); it.hasNext();)
          {
             String uuid = (String)it.next();
-            //NodeId id = new NodeId(UUID.fromString(uuid));
             try
             {
                if (nameTest != null && version.getVersion() >= IndexFormatVersion.V4.getVersion())
@@ -748,7 +747,6 @@ class ChildAxisQuery extends Query implements JcrQuery
                   Iterator<NodeData> entries;
                   if (nameTest != null)
                   {
-                     //NodeData childNodeData = (NodeData)itemMgr.getItemData(state, new QPathEntry(nameTest, 1));//state.getChildNodeEntries(nameTest).iterator();
                      List<NodeData> childs = itemMgr.getChildNodesData(state);
 
                      List<NodeData> datas = new ArrayList<NodeData>();
@@ -760,7 +758,7 @@ class ChildAxisQuery extends Query implements JcrQuery
                               datas.add(nodeData);
                         }
                      }
-                     entries = datas.iterator();//itemMgr.getChildNodesData(childNodeData).iterator();
+                     entries = datas.iterator();
                   }
                   else
                   {
@@ -788,7 +786,6 @@ class ChildAxisQuery extends Query implements JcrQuery
             }
             catch (RepositoryException e)
             {
-               //e.printStackTrace();
                // does not exist anymore -> ignore
             }
          }
@@ -868,7 +865,7 @@ class ChildAxisQuery extends Query implements JcrQuery
          if (log.isDebugEnabled())
          {
             time = System.currentTimeMillis() - time;
-            log.debug("Filtered hits in {} ms.", new Long(time));            
+            log.debug("Filtered hits in {} ms.", new Long(time));
          }
          return childrenHits;
       }
