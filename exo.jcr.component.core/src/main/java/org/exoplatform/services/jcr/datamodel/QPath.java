@@ -469,6 +469,34 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
+    * Make child path using QName and Item index. <br/>
+    * 
+    * @param parent
+    *          - parent QPath
+    * @param name
+    *          - Item QName
+    * @param itemIndex
+    *          - Item index
+    * @param id
+    *          - Item id
+    * @return new QPath
+    */
+   public static QPath makeChildPath(final QPath parent, final QName name, final int itemIndex, String id)
+   {
+
+      QPathEntry[] parentEntries = parent.getEntries();
+      QPathEntry[] names = new QPathEntry[parentEntries.length + 1];
+      int index = 0;
+      for (QPathEntry pname : parentEntries)
+      {
+         names[index++] = pname;
+      }
+      names[index] = new QPathEntry(name.getNamespace(), name.getName(), itemIndex, id);
+
+      QPath path = new QPath(names);
+      return path;
+   }
+   /**
     * Make child path using array of QPath entries (relative path). <br/>
     * 
     * @param parent

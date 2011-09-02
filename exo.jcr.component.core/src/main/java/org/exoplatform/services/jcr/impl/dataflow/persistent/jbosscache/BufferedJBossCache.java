@@ -546,9 +546,28 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
       changesContainer.add(new PutKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-         local.get(), useExpiration, expirationTimeOut));
+         local.get(), useExpiration, expirationTimeOut, false));
 
       return parentCache.get(fqn, key);
+   }
+   
+   protected Object putWithNotification(Fqn fqn, Serializable key, Object value)
+   {
+      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new PutKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
+         local.get(), useExpiration, expirationTimeOut, true));
+
+      return parentCache.get(fqn, key);
+   }
+
+   protected Object putWithNotification(Fqn fqn, Serializable key, Object value, boolean putIfAbsent)
+   {
+      if (putIfAbsent)
+      {
+         putIfAbsent(fqn, key, value, true);
+         return null;
+      }
+      return putWithNotification(fqn, key, value);
    }
 
    /**
@@ -571,13 +590,18 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     */
    protected Object putIfAbsent(Fqn fqn, Serializable key, Object value)
    {
+      return putIfAbsent(fqn, key, value, false);
+   }
+   
+   protected Object putIfAbsent(Fqn fqn, Serializable key, Object value, boolean eventNotification)
+   {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
       changesContainer.add(new PutIfAbsentKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-         local.get(), useExpiration, expirationTimeOut));
+         local.get(), useExpiration, expirationTimeOut, eventNotification));
       return null;
    }
    
-   public Object putInBuffer(Fqn fqn, Serializable key, Object value)
+   public Object putInBuffer(Fqn fqn, Serializable key, Object value, boolean eventNotification)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
 
@@ -585,7 +609,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       Object prevObject = getObjectFromChangesContainer(changesContainer, fqn, key);
 
       changesContainer.add(new PutKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-         local.get(), useExpiration, expirationTimeOut));
+         local.get(), useExpiration, expirationTimeOut, eventNotification));
 
       if (prevObject != null)
       {
@@ -691,7 +715,15 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
       changesContainer.add(new RemoveNodeContainer(fqn, parentCache, changesContainer.getHistoryIndex(), local.get(),
-         useExpiration, expirationTimeOut));
+         useExpiration, expirationTimeOut, false));
+      return true;
+   }
+   
+   protected boolean removeNode(Fqn fqn, boolean eventNotification)
+   {
+      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new RemoveNodeContainer(fqn, parentCache, changesContainer.getHistoryIndex(), local.get(),
+         useExpiration, expirationTimeOut, eventNotification));
       return true;
    }
 
@@ -829,9 +861,11 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       protected final boolean useExpiration;
 
       protected final long timeOut;
+      
+      protected final boolean eventNotification;
 
       public ChangesContainer(Fqn fqn, ChangesType changesType, Cache<Serializable, Object> cache, int historicalIndex,
-         boolean localMode, boolean useExpiration, long timeOut)
+         boolean localMode, boolean useExpiration, long timeOut, boolean eventNotification)
       {
          super();
          this.fqn = fqn;
@@ -841,6 +875,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          this.localMode = localMode;
          this.useExpiration = useExpiration;
          this.timeOut = timeOut;
+         this.eventNotification = eventNotification;
       }
 
       /**
@@ -882,14 +917,16 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          return result == 0 ? historicalIndex - o.getHistoricalIndex() : result;
       }
 
-      protected void setCacheLocalMode()
+      protected void setOptionOverrides()
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(localMode);
+         cache.getInvocationContext().getOptionOverrides().setSuppressEventNotification(!eventNotification);
       }
 
       public final void putExpiration(Fqn efqn)
       {
-         setCacheLocalMode();
+         cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(localMode);
+         cache.getInvocationContext().getOptionOverrides().setSuppressEventNotification(true);
          cache.put(efqn, ExpirationAlgorithmConfig.EXPIRATION_KEY, new Long(System.currentTimeMillis() + timeOut));
       }
 
@@ -911,7 +948,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       public PutObjectContainer(Fqn fqn, Map<? extends Serializable, ? extends Object> data,
          Cache<Serializable, Object> cache, int historicalIndex, boolean local, boolean useExpiration, long timeOut)
       {
-         super(fqn, ChangesType.PUT, cache, historicalIndex, local, useExpiration, timeOut);
+         super(fqn, ChangesType.PUT, cache, historicalIndex, local, useExpiration, timeOut, false);
 
          this.data = data;
       }
@@ -919,13 +956,13 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public void apply()
       {
-         setCacheLocalMode();
-         cache.put(fqn, data);
-
          if (useExpiration)
          {
             putExpiration(fqn);
          }
+         
+         setOptionOverrides();
+         cache.put(fqn, data);
       }
    }
 
@@ -939,9 +976,9 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       private final Object value;
 
       public PutIfAbsentKeyValueContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
-         int historicalIndex, boolean local, boolean useExpiration, long timeOut)
+         int historicalIndex, boolean local, boolean useExpiration, long timeOut, boolean eventNotification)
       {
-         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut, eventNotification);
          this.key = key;
          this.value = value;
       }
@@ -960,7 +997,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             putExpiration(fqn);
          }
 
-         setCacheLocalMode();
+         setOptionOverrides();
          cache.put(fqn, key, value);
       }
            
@@ -981,9 +1018,9 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       private final Object value;
 
       public PutKeyValueContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
-         int historicalIndex, boolean local, boolean useExpiration, long timeOut)
+         int historicalIndex, boolean local, boolean useExpiration, long timeOut, boolean eventNotification)
       {
-         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut, eventNotification);
          this.key = key;
          this.value = value;
       }
@@ -996,7 +1033,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             putExpiration(fqn);
          }
 
-         setCacheLocalMode();
+         setOptionOverrides();
          cache.put(fqn, key, value);
       }
    }
@@ -1016,7 +1053,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       public AddToListContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
          boolean forceModify, int historicalIndex, boolean local, boolean useExpiration, long timeOut)
       {
-         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut, false);
          this.key = key;
          this.value = value;
          this.forceModify = forceModify;
@@ -1045,7 +1082,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                putExpiration(fqn);
             }
 
-            setCacheLocalMode();
+            setOptionOverrides();
             cache.put(fqn, key, newSet);
          }
          else if (existingObject != null)
@@ -1057,6 +1094,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
+            setOptionOverrides();
             cache.put(fqn, key, null);
          }
       }
@@ -1082,7 +1120,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       public AddToPatternListContainer(Fqn fqn, Serializable patternKey, Serializable listKey, ItemData value,
          Cache<Serializable, Object> cache, int historicalIndex, boolean local, boolean useExpiration, long timeOut)
       {
-         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut, false);
          this.patternKey = patternKey;
          this.listKey = listKey;
          this.value = value;
@@ -1095,12 +1133,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes to reload them from the db
+            setOptionOverrides();
             cache.removeNode(fqn);
             return;
          }
          // force writeLock on next read
          cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
-
          Iterator<Object> patternNames = cache.getChildrenNames(fqn).iterator();
          while (patternNames.hasNext())
          {
@@ -1126,7 +1164,14 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                   continue;
                }
                Set<String> newSet = new HashSet<String>((Set<String>)setObject);
-               newSet.add(value.getIdentifier());
+               newSet.add(value.getIdentifier());               
+
+               if (useExpiration)
+               {
+                  putExpiration(fqn);
+               }
+
+               setOptionOverrides();
                cache.put(patternFqn, listKey, newSet);
             }
          }
@@ -1151,7 +1196,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       public RemoveFromListContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
          int historicalIndex, boolean local, boolean useExpiration, long timeOut)
       {
-         super(fqn, ChangesType.REMOVE_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         super(fqn, ChangesType.REMOVE_KEY, cache, historicalIndex, local, useExpiration, timeOut, false);
          this.key = key;
          this.value = value;
       }
@@ -1161,8 +1206,6 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       {
          // force writeLock on next read
          cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
-         // object found by FQN and key;
-         setCacheLocalMode();
          Object existingObject = cache.get(getFqn(), key);
          // if found value is really set! add to it.
          if (existingObject instanceof Set)
@@ -1175,7 +1218,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                putExpiration(fqn);
             }
 
-            setCacheLocalMode();
+            setOptionOverrides();
             cache.put(fqn, key, newSet);
          }
       }
@@ -1201,7 +1244,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       public RemoveFromPatternListContainer(Fqn fqn, Serializable patternKey, Serializable listKey, ItemData value,
          Cache<Serializable, Object> cache, int historicalIndex, boolean local, boolean useExpiration, long timeOut)
       {
-         super(fqn, ChangesType.REMOVE_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         super(fqn, ChangesType.REMOVE_KEY, cache, historicalIndex, local, useExpiration, timeOut, false);
          this.patternKey = patternKey;
          this.listKey = listKey;
          this.value = value;
@@ -1212,9 +1255,6 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       {
          // force writeLock on next read
          cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
-         // object found by FQN and key;
-         setCacheLocalMode();
-
          Iterator<Object> patternNames = cache.getChildrenNames(fqn).iterator();
          while (patternNames.hasNext())
          {
@@ -1240,6 +1280,13 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                }
                Set<String> newSet = new HashSet<String>((Set<String>)setObject);
                newSet.remove(value.getIdentifier());
+
+               if (useExpiration)
+               {
+                  putExpiration(fqn);
+               }
+
+               setOptionOverrides();
                cache.put(patternFqn, listKey, newSet);
             }
          }
@@ -1262,14 +1309,14 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       public RemoveKeyContainer(Fqn fqn, Serializable key, Cache<Serializable, Object> cache, int historicalIndex,
          boolean local, boolean useExpiration, long timeOut)
       {
-         super(fqn, ChangesType.REMOVE_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         super(fqn, ChangesType.REMOVE_KEY, cache, historicalIndex, local, useExpiration, timeOut, false);
          this.key = key;
       }
 
       @Override
       public void apply()
       {
-         setCacheLocalMode();
+         setOptionOverrides();
          cache.remove(fqn, key);
       }
 
@@ -1284,13 +1331,19 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       public RemoveNodeContainer(Fqn fqn, Cache<Serializable, Object> cache, int historicalIndex, boolean local,
          boolean useExpiration, long timeOut)
       {
-         super(fqn, ChangesType.REMOVE, cache, historicalIndex, local, useExpiration, timeOut);
+         this(fqn, cache, historicalIndex, local, useExpiration, timeOut, false);
+      }
+
+      public RemoveNodeContainer(Fqn fqn, Cache<Serializable, Object> cache, int historicalIndex, boolean local,
+         boolean useExpiration, long timeOut, boolean eventNotification)
+      {
+         super(fqn, ChangesType.REMOVE, cache, historicalIndex, local, useExpiration, timeOut, eventNotification);
       }
 
       @Override
       public void apply()
       {
-         setCacheLocalMode();
+         setOptionOverrides();
          cache.removeNode(fqn);
       }
    }

@@ -217,6 +217,10 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
             + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      
+      FIND_ACL_HOLDERS = "select I.PARENT_ID, I.P_TYPE" +
+      		" from JCR_MITEM I" +
+      		" where I.I_CLASS=2 and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')";
    }
 
    /**
@@ -1008,5 +1012,19 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    protected String getLikeExpressionEscape()
    {
       return PATTERN_ESCAPE_STRING;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findACLHolders() throws SQLException
+   {
+      if (findACLHolders == null)
+      {
+         findACLHolders = dbConnection.prepareStatement(FIND_ACL_HOLDERS);
+      }
+
+      return findACLHolders.executeQuery();
    }
 }

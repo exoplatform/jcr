@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
+import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -62,6 +63,8 @@ import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.jmx.JmxRegistrationManager;
+import org.jboss.cache.notifications.annotation.NodeModified;
+import org.jboss.cache.notifications.event.NodeModifiedEvent;
 import org.picocontainer.Startable;
 
 import java.io.File;
@@ -78,6 +81,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -186,7 +190,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    protected final Fqn<String> childNodesByPatternList;
 
    protected final Fqn<String> rootFqn;
-
+   
+   /**
+    * The list of all the listeners
+    */
+   private final List<WorkspaceStorageCacheListener> listeners = new CopyOnWriteArrayList<WorkspaceStorageCacheListener>();
+   
    private final CacheActionNonTxAware<Void, Void> commitTransaction = new CacheActionNonTxAware<Void, Void>()
    {
       @Override
@@ -680,7 +689,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       createResidentNode(childPropsByPatternList);
       createResidentNode(childNodesByPatternList);
       createResidentNode(itemsRoot);
-
+      this.cache.addCacheListener(new CacheEventListener());
+      
       if (jmxManager != null)
       {
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
@@ -733,6 +743,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       if (!cacheRoot.hasChild(fqn))
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
+         cache.getInvocationContext().getOptionOverrides().setSuppressEventNotification(true);
          cacheRoot.addChild(fqn).setResident(true);
       }
       else
@@ -1501,8 +1512,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       }
 
       // add in ITEMS
-      return (ItemData) cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node,
-               modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+      return (ItemData)cache.putWithNotification(makeItemFqn(node.getIdentifier()), ITEM_DATA, node,
+         modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
    }
 
    /**
@@ -1570,7 +1581,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       }
       // add in ITEMS
       // NullNodeData must never be returned inside internal cache operations. 
-      ItemData returnedData = (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+      ItemData returnedData =
+         (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node, modifyListsOfChild != ModifyChildOption.NOT_MODIFY);
       return (returnedData instanceof NullItemData) ? null : returnedData;
    }
 
@@ -1623,8 +1635,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       // add in ITEMS
       // NullItemData must never be returned inside internal cache operations. 
       ItemData returnedData =
-               (ItemData) cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
-                        modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+         (ItemData)cache.putWithNotification(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
+            modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
       return (returnedData instanceof NullItemData) ? null : (PropertyData) returnedData;
    }
 
@@ -1690,7 +1702,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       }
 
       // remove from ITEMS
-      cache.removeNode(makeItemFqn(item.getIdentifier()));
+      cache.removeNode(makeItemFqn(item.getIdentifier()), true);
    }
 
    /**
@@ -1700,7 +1712,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    protected void updateMixin(NodeData node)
    {
-      NodeData prevData = (NodeData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+      NodeData prevData = (NodeData)cache.putWithNotification(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
       // prevent update NullNodeData
       if (prevData != null && !(prevData instanceof NullItemData))
       {
@@ -1832,7 +1844,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                      .getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
                      .getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
                // update this node
-               cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
+               cache.putWithNotification(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
             }
             else
             {
@@ -1850,7 +1862,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                TransientPropertyData newProp =
                   new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(), prevProp
                      .getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
-               cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
+               cache.putWithNotification(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
             }
          }
       }
@@ -1885,7 +1897,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          TransientPropertyData newProp =
             new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(), prevProp
                .getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
-         cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
+         cache.putWithNotification(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
       }
 
       // update child nodes
@@ -1901,7 +1913,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                .getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
                .getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
          // update this node
-         cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
+         cache.putWithNotification(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
          // update childs recursive
          updateTreePath(newNode.getIdentifier(), newNode.getQPath(), inheritACL ? acl : null);
       }
@@ -1932,7 +1944,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
                   .getParentIdentifier(), acl);
          // update this node
-         cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
+         cache.putWithNotification(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
          // update childs recursive
          updateChildsACL(newNode.getIdentifier(), acl);
       }
@@ -2079,6 +2091,44 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          createResidentNode(itemsRoot);
       }
    }
+   /**
+    * {@inheritDoc}
+    */
+   public void addListener(WorkspaceStorageCacheListener listener)
+   {
+      listeners.add(listener);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void removeListener(WorkspaceStorageCacheListener listener)
+   {
+      listeners.remove(listener);
+   }
+   
+   /**
+    * Called when a cache entry corresponding to the given node has item updated
+    * @param data the item corresponding to the updated cache entry
+    */
+   private void onCacheEntryUpdated(ItemData data)
+   {
+      if (data == null || data instanceof NullItemData)
+      {
+         return;
+      }
+      for (WorkspaceStorageCacheListener listener : listeners)
+      {
+         try
+         {
+            listener.onCacheEntryUpdated(data);
+         }
+         catch (Exception e)
+         {
+            LOG.warn("The method onCacheEntryUpdated fails for the listener " + listener.getClass(), e);
+         }
+      }      
+   }
    
    /**
     * Actions that are not supposed to be called within a transaction
@@ -2096,6 +2146,22 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       protected TransactionManager getTransactionManager()
       {
          return JBossCacheWorkspaceStorageCache.this.getTransactionManager();
+      }
+   }
+   
+   @org.jboss.cache.notifications.annotation.CacheListener
+   @SuppressWarnings("unchecked")
+   public class CacheEventListener
+   {
+
+      @NodeModified
+      public void nodeModified(NodeModifiedEvent ne)
+      {
+         if (!ne.isPre() && ne.getFqn().isChildOf(itemsRoot))
+         {
+            final Map<Serializable, Object> data = ne.getData();
+            onCacheEntryUpdated((ItemData)(data == null ? null : data.get(ITEM_DATA)));
+         }
       }
    }
 }

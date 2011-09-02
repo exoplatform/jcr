@@ -404,8 +404,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       {
          // force writeLock on next read
          cache.withFlags(Flag.FORCE_WRITE_LOCK);
-
-         setCacheLocalMode();
          Object existingObject = cache.get(key);
 
          // if found value is really set! add to it.
