@@ -208,6 +208,14 @@ public class SQLExceptionHandler
                throw new JCRInvalidItemStateException(message, item.getIdentifier(), ItemState.ADDED, e);
             }
 
+            // DB2 violation
+            if (e.getClass().getName().indexOf("SqlIntegrityConstraintViolationException") >= 0
+               && errMessage.indexOf("SQLCODE=-803") >= 0)
+            {
+               message += "Item already exists." + itemInfo;
+               throw new JCRInvalidItemStateException(message, item.getIdentifier(), ItemState.ADDED, e);
+            }
+
             message += "Error of item add. " + itemInfo;
             ownException = new RepositoryException(message, e);
             throw ownException;
