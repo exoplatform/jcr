@@ -169,7 +169,14 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
          // type of the parent node of the new location, then the
          // newly moved node is appended to the end of the child
          // node list.
-         destOrderNum = destChilds.size() > 0 ? destChilds.get(destChilds.size() - 1).getOrderNumber() + 1 : 0;
+         destOrderNum = 0;
+         for (NodeData child : destChilds)
+         {
+            if (child.getOrderNumber() + 1 > destOrderNum)
+            {
+               destOrderNum = child.getOrderNumber() + 1;
+            }
+         }
 
          if (destParent == srcParent)// (destParent.getIdentifier().equals(node.getParentIdentifier()))
          {

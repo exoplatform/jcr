@@ -76,7 +76,7 @@ public class TestGetNodesLazily extends JcrImplBaseTest
    /**
     * All child they reordered one by one and though must be returned in same order 
     */
-   public void _testGetNodesLazilyReordered() throws Exception
+   public void testGetNodesLazilyReordered() throws Exception
    {
       // 150 nodes added in setup
       for (int i = 0; i < nodesCount; i++)
@@ -91,7 +91,7 @@ public class TestGetNodesLazily extends JcrImplBaseTest
    /**
     * All child they reordered one by one and though must be returned in same order 
     */
-   public void _testGetNodesLazilyReorderedBackwards() throws Exception
+   public void testGetNodesLazilyReorderedBackwards() throws Exception
    {
       // 150 nodes added in setup
       // TODO : testcase fails
@@ -241,7 +241,7 @@ public class TestGetNodesLazily extends JcrImplBaseTest
     * All child nodes are in session changes log and both in persisted layer. All they reordered one by one and though must 
     * be returned in same order
     */
-   public void _testGetNodesLazilySessionReordered() throws Exception
+   public void testGetNodesLazilySessionReordered() throws Exception
    {
       // 150 nodes added in setup
       // TODO : testcase fails
