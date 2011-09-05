@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Core.SecurityService">
+  <?dbhtml filename="ch-security-service.html"?>
+
+  <title>Security Service</title>
+
+  <section>
+    <title>1 Overview</title>
+
+    <para>The purpose is to make a simple, unified way for the authentication
+    and the storing/propagation of user sessions through all the eXo
+    components and J2EE containers. JAAS is supposed to be the primary login
+    mechanism but the Security Service framework should not prevent other
+    (custom or standard) mechanisms from being used. You can learn more about
+    JAAS in the <ulink
+    url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jaas/tutorials/GeneralAcnAndAzn.html">Java
+    Tutorial</ulink></para>
+  </section>
+
+  <section>
+    <title>1 Framework</title>
+
+    <para>The central point of this framework is the <emphasis
+    role="bold">ConversationState</emphasis> object which stores all
+    information about the state of the current user (very similar to the
+    Session concept). The same ConversationState also stores acquired
+    attributes of an <emphasis role="bold">Identity</emphasis> which is a set
+    of principals to identify a user.</para>
+
+    <para>The ConversationState has definite lifetime. This object should be
+    created when the user's identity becomes known by eXo (login procedure)
+    and destroyed when the user leaves an eXo based application (logout
+    procedure). Using JAAS it should happen in LoginModule's login() and
+    logout() methods respectively.</para>
+
+    <section>
+      <title>1.1 ConversationState and ConversationRegistry</title>
+
+      <para>The ConversationState can be stored</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>In a static <emphasis role="bold">local thread
+          variable</emphasis>, or</para>
+        </listitem>
+
+        <listitem>
+          <para>As a <emphasis role="bold">key-value pair</emphasis> in the
+          <emphasis role="bold">ConversationRegistry</emphasis>
+          component.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>One or the other, or both methods can be used to set/retrieve the
+      state at runtime. The most important thing is that they should be
+      complementary, i.e. make sure that the conversation state is set before
+      you try to use it.</para>
+
+      <para><emphasis role="bold">Local Thread Variable:</emphasis> Storing
+      the ConversationState in a static local thread variable makes it
+      possible to represent it as a <emphasis role="bold">context</emphasis>
+      (current user's state).</para>
+
+      <programlisting language="java">ConversationState.setCurrent(conversationState);
+....
+ConversationState.getCurrent();</programlisting>
+
+      <para><emphasis role="bold">Key-Value way</emphasis></para>
+
+      <para>If you store the ConversationState inside the <emphasis
+      role="bold">ConversationRegistry</emphasis> component as a set of
+      key-value pairs, the session key is an arbitrary String (user name,
+      ticket id, httpSessionId etc).</para>
+
+      <programlisting language="java">conversationRegistry.register("key", conversationState); 
+...
+conversationRegistry.getState("key");</programlisting>
+
+      <para><emphasis role="bold">ConversationRegistry</emphasis> The
+      ConversationRegistry is a mandatory component deployed into eXo
+      Container as following:</para>
+
+      <programlisting language="xml">&lt;component&gt;
+    &lt;type&gt;org.exoplatform.services.security.ConversationRegistry&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>1.1 Authenticator</title>
+
+      <para>An Authenticator is responsible for Identity creating, it contains
+      two methods:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>validateUser() accepts an array of credentials and returns the
+          userId (which can be something different from the username).</para>
+        </listitem>
+
+        <listitem>
+          <para>createIdentity() accepts the userId and returns a newly
+          created Identity object.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">public interface Authenticator {
+  /**
+   * Authenticate user and return userId which can be different to username. 
+   * @param credentials - list of users credentials (such as name/password, X509 certificate etc)
+   * @return userId
+   * @throws LoginException
+   * @throws Exception
+   */
+  String validateUser(Credential[] credentials) throws LoginException, Exception;
+
+  /**
+   * @param credentials - userId.
+   * @return Identity
+   * @throws Exception
+   */
+  Identity createIdentity(String userId) throws Exception;  
+}</programlisting>
+
+      <para>It is up to the application developer (and deployer) whether to
+      use the Authenticator component(s) and how many implementations of this
+      components should be deployed in eXo container. The developer is free to
+      create an Identity object using a different way, but the Authenticator
+      component is the highly recommended way from architectural
+      considerations.</para>
+
+      <para>Typical functionality of the validateUser(Credential\[]
+      credentials) method is the comparison of incoming credentials
+      (username/password, digest etc) with those credentials that are stored
+      in an implementation specific database. Then, validateUser(Credential\[]
+      credentials) returns back the userId or throws a LoginException in a
+      case of wrong credentials.</para>
+
+      <para>Default Authenticator implementation is
+      org.exoplatform.services.organization.auth.OrganizationAuthenticatorImpl
+      which compares incoming username/password credentials with the ones
+      stored in OrganizationService. Configuration example:</para>
+
+      <programlisting language="xml">&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.security.Authenticator&lt;/key&gt; 
+  &lt;type&gt;org.exoplatform.services.organization.auth.OrganizationAuthenticatorImpl&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+    </section>
+  </section>
+
+  <section>
+    <title>Usage</title>
+
+    <section>
+      <title>JAAS login module</title>
+
+      <para>The framework described is not coupled with any authentication
+      mechanism but the most logical and implemented by default is the JAAS
+      Login module. The typical sequence looks as follows (see
+      org.exoplatform.services.security.jaas.DefaultLoginModule):</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>LoginModule.login() creates a list of credentials using
+          standard JAAS Callbacks features, obtains an Authenticator instance,
+          and creates an Identity object calling
+          Authenticator.authenticate(..) method</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">Authenticator authenticator = (Authenticator) container()
+          .getComponentInstanceOfType(Authenticator.class); 
+// RolesExtractor can be null     
+RolesExtractor rolesExtractor = (RolesExtractor) container().
+getComponentInstanceOfType(RolesExtractor.class);
+
+
+Credential[] credentials = new Credential[] {new UsernameCredential(username), new PasswordCredential(password) };
+String userId = authenticator.validateUser(credentials);
+identity = authenticator.createIdentity(userId);</programlisting>
+
+      <itemizedlist>
+        <listitem>
+          <para>LoginModule.commit() obtains the IdentityRegistry object, and
+          register the identity using userId as a key.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>When initializing the login module, you can set the option
+      parameter "singleLogin". With this option you can disallow the same
+      Identity to login for a second time.</para>
+
+      <para>By default singleLogin is disabled, so the same identity can be
+      registered more than one time. Parameter can be passed in this form
+      singleLogin=yes or singleLogin=true.</para>
+
+      <programlisting language="java">IdentityRegistry identityRegistry = (IdentityRegistry) getContainer().getComponentInstanceOfType(IdentityRegistry.class);
+      
+if (singleLogin &amp;&amp; identityRegistry.getIdentity(identity.getUserId()) != null) 
+  throw new LoginException("User " + identity.getUserId() + " already logined.");
+
+identity.setSubject(subject);
+identityRegistry.register(identity);</programlisting>
+
+      <para>In the case of using several LoginModules, JAAS allows to place
+      the login() and commit() methods in different REQUIRED modules.</para>
+
+      <para>After that, the web application must use SetCurrentIdentityFilter.
+      This filter obtains the ConversationRegistry object and tries to get the
+      ConversationState by sessionId (HttpSession). If there is no
+      ConversationState, then SetCurrentIdentityFilter will create a new one,
+      register it and set it as current one using
+      ConversationState.setCurrent(state).</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>LoginModule.logout() can be called by
+          JAASConversationStateListener, it extends
+          ConversationStateListener.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>This listener must be configured in web.xml. The method
+      sessionDestroyed(HttpSessionEvent) is called by the ServletContainer.
+      This method removes the ConversationState from the ConversationRegistry
+      ConversationRegistry.unregister(sesionId) and calls the method
+      LoginModule.logout().</para>
+
+      <programlisting language="java">ConversationRegistry conversationRegistry = (ConversationRegistry) getContainer().getComponentInstanceOfType(ConversationRegistry.class);
+
+ConversationState conversationState = conversationRegistry.unregister(sesionId);
+
+if (conversationState != null) {
+  log.info("Remove conversation state " + sesionId);
+  if (conversationState.getAttribute(ConversationState.SUBJECT) != null) {
+    Subject subject = (Subject) conversationState.getAttribute(ConversationState.SUBJECT); 
+    LoginContext ctx = new LoginContext("exo-domain",  subject);
+    ctx.logout();
+} else {
+  log.warn("Subject was not found in ConversationState attributes.");
+}</programlisting>
+
+      <para></para>
+    </section>
+
+    <section>
+      <title>1.1 Predefinded JAAS login modules</title>
+
+      <para>There are several JAAS Login modules included in eXo Platform
+      sources:</para>
+
+      <para><emphasis
+      role="bold">org.exoplatform.services.security.jaas.DefaultLoginModule</emphasis>
+      which provides both authentication (using eXo Authenticator based
+      mechanism) and authorization, filling Conversation Registry as it
+      described in previous section. There are also several per-Application
+      Server extensions of this login module which can be found in
+      org.exoplatform.services.security.jaas package, which can be used in
+      appropriate AS. In particular, we have dedicated Login modules for
+      Tomcat, JBoss, Jonas and WebSphere.</para>
+
+      <para>Besides that, for the case when third party authentication
+      mechanism required, we have <emphasis
+      role="bold">org.exoplatform.services.security.jaas.IdentitySetLoginModule</emphasis>,
+      which catches a login identity from third party "authenticating" login
+      module and preforms eXo specific authorization job. In this case third
+      party login module has to put login (user) name to the shared state map
+      under <emphasis role="bold">"javax.security.auth.login.name"</emphasis>
+      key and third party LM has to be configured before
+      IdentitySetLoginModule like:</para>
+
+      <programlisting>exo {
+   com.third.party.LoginModuleImpl required;
+   org.exoplatform.services.security.jaas.IdentitySetLoginModule required;
+};</programlisting>
+    </section>
+
+    <section>
+      <title>1.1 J2EE container authentication</title>
+
+      <para>As you know, when a user in JAAS is authenticated, a Subject is
+      created as a result. This Subject represents the authenticated user. It
+      is important to know and follow the rules regarding Subject filling
+      which are specific for each J2EE server, where eXo Platform is
+      deployed.</para>
+
+      <para>To make it workable for the particular J2EE server, it is
+      necessary to add specific Principals/Credentials to the Subject to be
+      propagated into the specific J2EE container implementation. We extended
+      the DefaultLoginModule by overloading its commit() method with a
+      dedicated logic, presently available for Tomcat, JBOSS and JONAS
+      application servers.</para>
+
+      <para>Furthermore, you can use the optional RolesExtractor which is
+      responsible for mapping primary Subject's principals (userId and a set
+      of groups) to J2EE Roles:</para>
+
+      <programlisting language="java">public interface RolesExtractor {
+  Set &lt;String&gt; extractRoles(String userId, Set&lt;MembershipEntry&gt; memberships);
+}</programlisting>
+
+      <para>This component may be used by Authenticator to create the Identity
+      with a particular set of <emphasis role="bold">Roles</emphasis>.</para>
+    </section>
+  </section>
+</chapter>

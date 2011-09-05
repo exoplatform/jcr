@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id = "JCR.TransactionManagerLookup">
+  <?dbhtml filename="ch-transaction-manager-lookup.html"?>
+
+  <title>TransactionManagerLookup</title>
+
+  <section>
+    <title>Configuration</title>
+
+    <para>It's JBossCache class registered as eXo container component in
+    configuration.xml file. </para>
+
+    <programlisting language="xml">  &lt;component&gt;
+     &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
+     &lt;type&gt;org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup&lt;/type&gt;
+  &lt;/component&gt;</programlisting>
+
+    <para>JBossStandaloneJTAManagerLookup used in standalone environment. Bur
+    for Application Server environment use GenericTransactionManagerLookup.
+    </para>
+  </section>
+</chapter>

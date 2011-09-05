@@ -1,0 +1,1159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+<TITLE>JDK 5 Documentation</TITLE>
+
+<STYLE>
+<!--
+h1, b   { font-family: Arial, Helvetica, sans-serif }
+-->
+</STYLE>
+</HEAD>
+
+<BODY>
+
+
+<TABLE summary="layout" BORDER="0" WIDTH="100%">
+<TR>
+<TD WIDTH=100>
+<IMG SRC="images/javalogo52x88.gif" ALT="Java" BORDER=0 WIDTH=52 HEIGHT=88>
+</TD>
+
+
+<TD ALIGN=CENTER>
+<h1>JDK<sup><font size="-2">TM</font></sup> 5.0 Documentation</h1>
+</TD>
+
+
+<TD ALIGN=RIGHT WIDTH=100>
+
+  <TABLE summary="layout">
+    <TR>
+      <TD>
+<a href="http://java.sun.com/j2se/1.5.0/download.jsp#docs"><img src="images/download.arrow.gif" border="0" width="45" height="42" alt="Download J2SE 5.0 Documentation"></a>
+      </TD>
+      <TD ALIGN="LEFT">
+         <font style="font-family: Arial, Helvetica, sans-serif" size="-1"><a href="http://java.sun.com/j2se/1.5.0/download.jsp#docs">Download this<br> Documentation</a></font>
+      </TD>
+    </TR>
+  </TABLE>
+
+</TD>
+</TR>
+
+</TABLE>
+<p>
+
+<!-- ============================================================= -->
+
+<table border=1 cellpadding=2 cellspacing=0 width="100%"><tr><td bgcolor="#EEEEFF" align="center">
+<font style="font-family: Arial, Helvetica, sans-serif" size="-1">
+        <a href="#search">Search</a>
+ &nbsp; <a href="#notes">General Info</a>
+ &nbsp; <a href="#api">API & Language</a>
+ &nbsp; <a href="#guide">Guide to Features</a>
+ &nbsp; <a href="tooldocs/index.html">Tool Docs</a>
+ &nbsp; <a href="#demos">Demos/Tutorials</a>
+</font>
+</td></tr></table>
+
+
+<blockquote>
+<!-- ============================================================= -->
+
+<a name="map">
+<font size="+1"><b>J2SE<sup><font size="-2">TM</font></sup> Platform at a Glance</b></font><br>
+<p>
+This document covers the Java<sup><font size="-2">TM</font></sup> 2
+Platform Standard Edition 5.0 Development Kit (JDK 5.0).  Its product version number is
+5.0 and developer version number is 1.5.0, as described in
+<a href="relnotes/version-5.0.html">Version 5.0 or 1.5.0?</a>
+For information on a feature of the JDK, click on its
+component in the diagram below.</p>
+<p>
+<!--img src="images/j2se9.2_arch3.gif" border="0" usemap="#j2semap"-->
+<img src="images/j2se5.gif" border="0" usemap="#j2semap">
+<p>
+
+<!-- ============================================================= -->
+
+<A NAME="search"></a>
+<table border=0 width="82%" cellspacing=0 cellpadding=0>
+<tr><td>
+
+<font size="+1"><b>Search the Documentation</b></font><br>
+
+</td>
+
+<td width="5%">
+<font size="-1">
+<a href="#location">Location</a>&nbsp;&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+</tr>
+</table>
+
+<p>
+
+<blockquote>
+
+<table border=0 width="85%" cellspacing=0 cellpadding=0>
+<tr>
+  <td>
+   <A HREF="http://java.sun.com/j2se/1.5.0/search.html">Search the
+   online documentation</A>
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+</tr>
+</table>
+
+</blockquote>
+
+<!-- ============================================================= -->
+
+<font size="+1"><b>New to the Java Platform?</b></font><br>
+<blockquote>
+<table border=0 width="85%" cellspacing=0 cellpadding=0>
+
+<tr>
+  <td colspan=2>
+    See the <a href="http://developer.java.sun.com/developer/onlineTraining/new2java/index.html">New-to-Java<sup><font size="-2">TM</font></sup> Programming Center</a>.
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></td>
+</tr>
+</table>
+</blockquote>
+
+<!-- ============================================================= -->
+
+<A NAME="notes"></a>
+
+<font size="+1"><b>General Information</b></font><br>
+
+<blockquote>
+<A NAME="java"></a>
+<table border=0 width="85%" cellspacing=0 cellpadding=0>
+
+<tr>
+  <td colspan=2>
+    <b>Readme, Overview, Changes</b><br>
+  </td>
+</tr>
+
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/j2se/1.5.0/README.html">README</A>
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></td>
+</tr>
+
+<tr>
+  <td>
+    <A HREF="relnotes/features.html">New Features and Enhancements</A>
+  </td>
+            <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+</tr>
+
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/j2se/1.5.0/relnotes.html">Release Notes</A>
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></td>
+</tr>
+
+<tr>
+  <td>
+    <A HREF="relnotes/version-5.0.html">Version 5.0 or 1.5.0?</A>
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+</tr>
+
+<!--
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/j2se/1.5.0/docchanges.html">Documentation Changes</A>
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></td>
+</tr>
+-->
+
+<tr>
+  <td colspan=2>
+    &nbsp; <!-- Blank link -->
+  </td>
+</tr>
+
+<!-- ============ Install ========== -->
+
+<tr>
+<td colspan=2>
+<b>Installation Instructions</b>
+</td>
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/j2se/1.5.0/install.html">Installation
+Notes</a><br>
+    <A HREF="http://java.sun.com/j2se/1.5.0/system-configurations.html">System Configurations</a>
+
+  </TD>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><I><font size="-1">website</font></I></TD>
+</tr>
+
+
+<tr>
+  <td colspan=2>
+    &nbsp; <!-- Blank link -->
+  </td>
+</tr>
+
+<!-- =========== Compatibility ============== -->
+<tr>
+  <td colspan=2>
+      <b>Compatibility</b>
+  </td>
+<tr>
+
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/j2se/1.5.0/compatibility.html">Version
+    Compatibility with Previous Releases</a>
+  </TD>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><I><font size="-1">website</font></I></TD>
+</tr>
+
+<tr>
+  <td colspan=2>
+    &nbsp; <!-- Blank link -->
+  </td>
+</tr>
+
+<!-- ============ Bugs ============= -->
+<tr>
+  <td colspan=2>
+      <b>Bugs</b>
+  </td>
+<tr>
+
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/j2se/1.5.0/fixedbugs/index.html">
+    Fixed and Known Bugs</a>
+  </TD>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><I><font size="-1">website</font></I></TD>
+</tr>
+
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/webapps/bugreport">Submitting a Bug Report</a>
+  </TD>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><I><font size="-1">website</font></I></TD>
+</tr>
+
+<tr>
+  <td colspan=2>
+    &nbsp; <!-- Blank link -->
+  </td>
+</tr>
+
+
+
+<!-- ============ Contacts =========== -->
+<tr>
+  <td colspan=2>
+      <b>Contacts</b>
+  </td>
+<tr>
+
+<tr>
+  <td>
+    <A HREF="relnotes/contacts.html">Contacting Java Software</A>
+  </TD>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><I><font size="-1">docs</font></I></TD>
+</tr>
+
+<tr>
+  <td colspan=2>
+    &nbsp; <!-- Blank link -->
+  </td>
+</tr>
+
+<!-- ====== Releases and Download ====== -->
+<tr>
+  <td colspan=2>
+      <b>Releases and Downloads</b>
+  </td>
+<tr>
+
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/j2se/1.5.0/download.jsp">
+    JDK Download Page</a>
+  </TD>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><I><font size="-1">website</font></I></TD>
+</tr>
+
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/">Java Software Home Page</a>
+  </TD>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><I><font size="-1">website</font></I></TD>
+</tr>
+
+<tr>
+  <td colspan=2>
+    &nbsp; <!-- Blank link -->
+  </td>
+</tr>
+
+<!-- ========= Legal Notices ======== -->
+<tr>
+  <td colspan=2>
+      <b>Legal Notices</b>
+  </td>
+<tr>
+
+<tr>
+  <td>
+    <A HREF="http://java.sun.com/docs/redist.html">
+    Documentation Redistribution Policy</A>
+  </TD>
+       <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><I><font size="-1">website</font></I></TD>
+</tr>
+
+<tr>
+  <td>
+    <A HREF="relnotes/SMICopyright.html">
+    Copyright and License Terms for Documentation</A>
+  </TD>
+    <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><I><font size="-1">docs</font></I></TD>
+</tr>
+</table>
+<p>
+</blockquote>
+
+<p>
+
+<!-- ============================================================= -->
+<A NAME="api"></a>
+
+<font size="+1"><b>API & Language Documentation </b></font> <BR>
+<font size="-1">
+</font>
+
+<blockquote>
+
+<p>
+
+<table border=0 width=85% cellspacing=0 cellpadding=0>
+<tr>
+  <td>
+    <A HREF="api/index.html">Java 2 Platform API Specification</A> &nbsp;
+    <a href="api/overview-summary.html"><font size="-2">(NO FRAMES)</font></a><BR>
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+</tr>
+
+<tr>
+  <td>
+     &nbsp; <!-- Blank line -->
+  </td>
+</tr>
+
+
+
+<tr>
+  <td><a href="http://java.sun.com/products/jdk/faq/faq-sun-packages.html">Note About sun.* Packages</a>
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+</tr>
+
+<tr>
+  <td>
+     &nbsp; <!-- Blank line -->
+  </td>
+</tr>
+
+<tr>
+<td>
+<a href="http://java.sun.com/docs/books/jls/third_edition/html/j3TOC.html">
+The Java Language Specification</A> &nbsp;
+<a href="http://java.sun.com/docs/books/jls/index.html"><font size="-2">(DOWNLOAD)</font></a><BR>
+</td>
+<TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+</tr>
+
+<tr>
+  <td>
+     &nbsp; <!-- Blank line -->
+  </td>
+</tr>
+
+<tr>
+<td>
+<a href="http://java.sun.com/docs/books/vmspec/2nd-edition/jvms-java5.html">
+The Java Virtual Machine Specification</A> &nbsp;
+</td>
+<TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+</tr>
+
+
+</table>
+</blockquote>
+
+<p>
+<br>
+
+<!-- ============================================================= -->
+
+<A NAME="guide"></a>
+
+<font size="+1"><b>Guide to Features - Java Platform </b></font><br>
+<font size="-1">
+Design specs, functional specs, user guides, tutorials and demos. <br>
+You can <a href="http://java.sun.com/j2se/1.5.0/download-pdf.html">
+Download PDF</a> versions of some docs.
+</font>
+<p>
+
+<blockquote>
+
+<table border=0 width=85% cellspacing=0 cellpadding=0>
+<tr>
+  <td colspan=2>
+    <A HREF="guide/index.html"><b>J2SE Overview</b></A><br>
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+</tr>
+<tr>
+  <td colspan=2>
+    <A HREF="relnotes/features.html"><b>New Features and Enhancements</b></A><br>
+  </td>
+                 <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+</tr>
+</table>
+<p>
+
+
+    <table border=0 width=85% cellspacing=0 cellpadding=0>
+
+      <!-- =========== JAVA LANGUAGE ============== -->
+
+      <tr>
+        <td colspan=2> <b>Java Language</b> </td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/language/index.html">Java Programming Language
+          </a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+
+      <!-- =========== VIRTUAL MACHINE ============== -->
+
+      <tr>
+        <td colspan=2> <b>Virtual Machine</b> </td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/vm/index.html">Virtual
+          Machine</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <!-- =========== BASE LIBRARIES =============== -->
+
+      <tr>
+        <td colspan=2> <b>Base Libraries</b> </td>
+      </tr>
+
+      <!-- =========== java.* LIBRARIES ============= -->
+
+      <!-- =========== java.lang and java.util LIBRARIES ========== -->
+
+      <tr>
+        <td colspan=2> <b style="font-size: 80%; margin-left: 1.4em;">java.lang, java.util Packages</b> </td>
+      </tr>
+
+      <!-- =========== java.lang LIBRARIES ========== -->
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/lang/index.html">Language
+          and Utility Packages</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/management/index.html">Monitoring and Management</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/versioning/index.html">Package
+          Version Identification</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/refobs/index.html">Reference
+          Objects</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/reflection/index.html">Reflection</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+
+      <!-- =========== java.util LIBRARIES ========== -->
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/collections/index.html">Collections
+          Framework</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/concurrency/index.html">Concurrency
+          Utilities</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/jar/index.html">Java
+          Archive (JAR) Files</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="api/java/util/zip/package-summary.html">Zip Files</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/logging/index.html">Logging</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="api/java/util/regex/package-summary.html">Regular Expressions</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/preferences/index.html">Preferences</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <!-- =========== Other Packages ========== -->
+
+      <tr>
+        <td colspan=2> <b style="font-size: 80%; margin-left: 1.4em;">Other packages</b> </td>
+      </tr>
+
+      <!-- =========== java.math LIBRARIES ========== -->
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/math/index.html">Math</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <!-- =========== java.io LIBRARIES ========== -->
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/nio/index.html">New
+          I/O</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/io/index.html">I/O</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/serialization/index.html">Object
+          Serialization</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <!-- =========== java.net LIBRARIES ========== -->
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/net/index.html">Networking</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <!-- =========== Remaining java.* LIBRARIES ========== -->
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/security/index.html">Security</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/intl/index.html">Internationalization</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/beans/index.html">
+          JavaBeans<sup><font size="-2">TM</font></sup> Component API</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/jmx/index.html">Java
+          Management Extensions (JMX)</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/xml/index.html">XML
+          (JAXP)</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/jni/index.html">Java
+          Native Interface (JNI)</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/extensions/index.html">Extension
+          Mechanism</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/standards/index.html">Endorsed
+          Standards Override Mechanism</a><br> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <!-- =========== INTEGRATION LIBRARIES =============== -->
+
+      <tr>
+        <td colspan=2> <b>Integration Libraries</b> </td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/jdbc/index.html">Java Database Connectivity
+           (JDBC<sup><font size="-2">TM</font></sup>)</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/idl/index.html">Java
+          IDL</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/jndi/index.html">Java
+          Naming and Directory Interface<sup><font size="-2">TM</font></sup> (JNDI)</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/rmi/index.html">Remote
+          Method Invocation (RMI)</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/rmi-iiop/index.html">RMI-IIOP</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <!-- =========== USER INTERFACE LIBRARIES =============== -->
+
+      <tr>
+        <td colspan=2> <b>User Interface Libraries</b> </td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/2d/index.html">2D
+          Graphics and Imaging</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/access/index.html">Accessibility</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/awt/index.html">Abstract
+          Window Toolkit</a> (AWT) </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/dragndrop/index.html">Drag-and-Drop
+          Data Transfer</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/imageio/index.html">Image
+          I/O</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/imf/index.html">Input
+          Method Framework</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/jps/index.html">Print
+          Service</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/sound/index.html">Sound</a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/swing/index.html">Project
+          Swing Components</a> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <!-- =========== DEPLOYMENT =============== -->
+
+      <tr>
+        <td colspan=2> <b>Deployment</b> </td>
+      </tr>
+
+      <tr>
+        <td><img src="images/bullet-round-indented.gif"> <a href="guide/deployment/index.html">General
+          Deployment</a></td>
+        <TD ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/plugin/index.html">Java
+          Plug-in</a> </td>
+        <p>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/javaws/index.html">Java
+          Web Start</a> </td>
+        <p>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <!-- =========== TOOL SPECIFICATIONS =============== -->
+
+      <tr>
+        <td colspan=2> <b>Tool Specifications</b> </td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/apt/index.html">Annotation Processing Tool</a></td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/javadoc/index.html">Javadoc Tool</a></td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td> <img src="images/bullet-round-indented.gif"> <a href="guide/jpda/index.html">Java
+          Platform Debugger Architecture (JPDA)</a> </td>
+        <p>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td><span style="margin-left: 1.2em;"><img src="images/bullet-round-indented.gif"> <a href="guide/jpda/jdi/index.html">Java
+          Debug Interface (JDI)</a> </span></td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td><span style="margin-left: 1.2em;"><img src="images/bullet-round-indented.gif"> <a href="guide/jpda/jdwp-spec.html">Java
+          Debug Wire Protocol (JDWP)</a> </span></td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+      <tr>
+        <td><span style="margin-left: 1.2em;"><img src="images/bullet-round-indented.gif"> <a href="guide/jvmti/index.html">JVM<sup><font size="-2">TM</font></sup>
+          Tool Interface (JVM<font size="-2"> </font>TI)</a> (replaces <a href="guide/jvmpi/index.html">JVMPI</a> and <a href="guide/jpda/jvmdi-spec.html">JVMDI</a>)</span></td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i></td>
+      </tr>
+
+    </table>
+
+</blockquote>
+<p>
+<br>
+
+<!-- ============================================================= -->
+
+<A NAME="tools"></a>
+
+<font size="+1"><b>JDK Tools and Utilities</b></font><br>
+<font size="-1">
+Reference documentation for the JDK tools and utilities.
+</font>
+<p>
+
+<blockquote>
+
+<table border=0 width=85% cellspacing=0 cellpadding=0>
+<tr>
+  <td>
+   <A HREF="tooldocs/index.html">JDK Tool and Utility Documentation</A>
+<BR> &nbsp; &nbsp; &nbsp; &nbsp;<font size="-1">Including Troubleshooting and Diagnostic Information</a>
+  </td>
+<TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">docs</font></i>
+</td>
+<tr>
+<td>
+<a href="http://java.sun.com/j2se/1.5/pdf/jdk50_ts_guide.pdf">
+J2SE 5.0 Trouble-Shooting and Diagnostic Guide
+</a>
+<BR> &nbsp; &nbsp; &nbsp; &nbsp;<font size="-1">
+Tools, options, and other items for use in analyzing problems</a>
+</td>
+<TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">web</font></i>
+</tr>
+</table>
+
+</blockquote>
+
+<p>
+<br>
+<!-- ============================================================= -->
+<A NAME="demos"></a> <font size="+1"><b>Demos, Samples, Tutorials, Training,
+and Reference</b></font><br>
+<font size="-1">
+Sample code for applets and applications, training, courses, and
+tutorials for the JDK.
+</font>
+<p>
+<blockquote>
+
+<table border=0 width=85% cellspacing=0 cellpadding=0>
+<tr>
+<td>
+<A HREF="relnotes/demos.html">Demonstration Applets and Applications</A>
+<BR> &nbsp; &nbsp; &nbsp; &nbsp;<font size="-1"> Included in JDK and on java.sun.com</a>
+</td>
+<TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP>
+<I><font size="-1">docs</font></I></TD>
+</tr>
+<tr>
+<td colspan=2>
+&nbsp; <!-- Blank link -->
+</td>
+</tr>
+
+<tr>
+<td><a href="relnotes/samples.html">Java Web Start Samples</a>
+           <BR> &nbsp; &nbsp; &nbsp; &nbsp;<font size="-1"> Included in JDK</a> </td>
+        <TD ALIGN=RIGHT VALIGN=TOP><em><font size="-1">docs</font></em></TD>
+      </tr>
+      <tr>
+        <td colspan="2"> &nbsp;
+          <!-- Blank link -->
+        </td>
+      </tr>
+      <tr>
+        <td> <A HREF="http://javaalmanac.com">Java Examples</a>
+           <BR> &nbsp; &nbsp; &nbsp; &nbsp;<font size="-1"> Java Developers Almanac </a>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP> <I><font size="-1">website</font></I></TD>
+      </tr>
+      <tr>
+        <td colspan=2> &nbsp;
+          <!-- Blank link -->
+        </td>
+      </tr>
+      <tr>
+        <td> <A HREF="http://java.sun.com/docs/books/tutorial/index.html"> The
+          Java Tutorial</a> <BR> &nbsp; &nbsp; &nbsp; &nbsp;<font size="-1"> An
+          example-filled guide to the Java programming language and core APIs.
+          </font> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+      </tr>
+      <tr>
+        <td colspan=2> &nbsp;
+          <!-- Blank link -->
+        </td>
+      </tr>
+      <tr>
+        <td> <A HREF="http://java.sun.com/docs/books/effective/index.html"> Effective
+          Java</a> <BR> &nbsp; &nbsp; &nbsp; &nbsp;<font size="-1"> Best selling
+          guide about best programming practices. </font> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+      </tr>
+      <tr>
+        <td colspan=2> &nbsp;
+          <!-- Blank link -->
+        </td>
+      </tr>
+      <tr>
+        <td> <a href="http://java.sun.com/learning/index.html"> Training for the
+          Java programming language</a> <BR> &nbsp; &nbsp; &nbsp; &nbsp; <font size="-1">
+          Directory of various training resources. </font> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+      </tr>
+      <tr>
+        <td colspan=2> &nbsp;
+          <!-- Blank link -->
+        </td>
+      </tr>
+      <tr>
+        <td> <a href="http://developer.java.sun.com/developer/onlineTraining">
+          On-Line Courses for the Java Programming Language</a> <BR> &nbsp; &nbsp;
+          &nbsp; &nbsp; <font size="-1"> Courses from the Java Developer Connection<font size="-2"><sup>SM</sup></font>.
+          </font> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+      </tr>
+      <tr>
+        <td colspan=2> &nbsp;
+          <!-- Blank link -->
+        </td>
+      </tr>
+      <tr>
+        <td> <a href="http://java.sun.com/docs/books/chanlee"> The Java Class
+          Libraries</a> <BR> &nbsp; &nbsp; &nbsp; &nbsp; <font size="-1"> Code
+          examples for the Java 2 Platform API:<br>
+          <img src="images/bullet-round-indented.gif"> <a href="http://java.sun.com/docs/books/chanlee/supplement/examples.html">
+          1.2 Supplement</a><br>
+          <img src="images/bullet-round-indented.gif"> <a href="http://java.sun.com/docs/books/chanlee/second_edition/vol1/examples.html">
+          1.1 Packages: java.lang, java.net, java.text, java.util, java.math</a>
+          <br>
+          <img src="images/bullet-round-indented.gif"> <a href="http://java.sun.com/docs/books/chanlee/second_edition/examples.html">
+          1.1 Packages: java.applet, java.awt, java.beans</a> </font> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+      </tr>
+      <tr>
+        <td colspan=2> &nbsp;
+          <!-- Blank link -->
+        </td>
+      </tr>
+      <tr>
+        <td> <A HREF="http://java.sun.com/products/jdk/faq.html"> The Java FAQ</A>
+          <BR> &nbsp; &nbsp; &nbsp; &nbsp; <font size="-1"> Frequently asked questions
+          about Java and the JDK. </font> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+      </tr>
+      <tr>
+        <td colspan=2> &nbsp;
+          <!-- Blank link -->
+        </td>
+      </tr>
+      <tr>
+        <td> <a href="http://java.sun.com/docs/codeconv/index.html">Code Conventions
+          for the Java Programming Language</a><BR> &nbsp; &nbsp; &nbsp; &nbsp;
+          <font size="-1"> Standards and styles for coding Java programs. </font>
+        </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+      </tr>
+      <tr>
+        <td colspan=2> &nbsp;
+          <!-- Blank link -->
+        </td>
+      </tr>
+      <tr>
+        <td> <a href="http://java.sun.com/docs/windows_format.html">Java Documentation
+          in HTMLHelp and WinHelp Formats</a> <BR> &nbsp; &nbsp; &nbsp; &nbsp;
+          <font size="-1"> For Windows users. </font> </td>
+        <TD WIDTH="1%" ALIGN=RIGHT VALIGN=TOP><i><font size="-1">website</font></i></TD>
+      </tr>
+    </TABLE>
+
+</blockquote>
+
+<p>
+
+<br>
+
+
+</blockquote>
+
+<!-- Image Map for J2SE  Block Diagram -->
+
+<map name="j2semap">
+<area href="guide/index.html#jre-jdk" shape="rect" coords="0,232,38,262" alt="JDK and JRE: Two Sun products that implement the J2SE platform" title="J2SE Development Kit and J2SE Runtime Environment">
+<area href="api/index.html"                 shape="rect" coords="610,215,646,260" alt="J2SE API Specification">
+<area href="guide/language/index.html"      shape="rect" coords="32,56,585,76"    alt="Java Language">
+
+<area href="guide/index.html#toolspecs"     shape="rect" coords="32,86,97,106" alt="Development Tools and APIs">
+<area href="guide/index.html#deployment"    shape="rect" coords="32,139,97,163" alt="Deployment Technologies">
+<area href="guide/index.html#userinterface" shape="rect" coords="32,167,97,193" alt="User Interface Toolkits">
+<area href="guide/index.html#integration"   shape="rect" coords="38,220,97,241" alt="Integration APIs">
+<area href="guide/index.html#otherbase"     shape="rect" coords="40,245,97,265" alt="Other Base Libraries">
+<area href="guide/index.html#langutil"      shape="rect" coords="32,292,97,312" alt="Lang and Util Base Libraries">
+<area href="guide/index.html#javavm"        shape="rect" coords="38,339,97,361" alt="Java virtual machine">
+<area href="guide/index.html#platforms"     shape="rect" coords="46,371,585,391" alt="Operating System platforms">
+
+<area href="tooldocs/windows/java.html"     shape="rect" coords=" 98,85,156,106" alt="java - runs java applications" title="Java runtime environment">
+<area href="tooldocs/windows/javac.html"    shape="rect" coords="159,85,216,106" alt="javac - compiles source code into bytecode" title="Java compiler">
+<area href="guide/javadoc/index.html"  shape="rect" coords="219,85,281,106" alt="javadoc -  documentation generator" title="Java documentation generator">
+<area href="tooldocs/share/apt.html"        shape="rect" coords="284,85,339,106" alt="apt - Annotation Processing Tool" title="Annotation Processing Tool">
+<area href="tooldocs/windows/jar.html"      shape="rect" coords="342,85,400,106" alt="jar - Java archive tool" title="Java archive tool">
+<area href="tooldocs/windows/javap.html"    shape="rect" coords="403,85,461,106" alt="javap - Class file disassembler" title="Class file diassembler">
+<area href="guide/jpda/index.html"          shape="rect" coords="464,85,522,106" alt="JPDA - Java Platform Debugger Architecture" title="Interfaces for use by debuggers in IDEs">
+<area href="tooldocs/index.html"            shape="rect" coords="525,85,585,106" alt="Other JDK tools and utilities" title="Other JDK tools">
+
+<area href="tooldocs/index.html#security"   shape="rect" coords=" 98,109,156,130" alt="Security tools">
+<area href="tooldocs/index.html#intl"       shape="rect" coords="159,109,216,130" alt="Internationalization tools">
+<area href="tooldocs/index.html#rmi"        shape="rect" coords="219,109,281,130" alt="RMI tools">
+<area href="tooldocs/index.html#idl"        shape="rect" coords="284,109,339,130" alt="IDL tools">
+<area href="tooldocs/index.html#deployment" shape="rect" coords="342,109,400,130" alt="Deployment tools">
+<area href="tooldocs/index.html#manage"     shape="rect" coords="403,109,461,130" alt="Monitoring and mangement tools">
+<area href="tooldocs/index.html#debug"      shape="rect" coords="464,109,522,130" alt="Troubleshooting debugging tools">
+<area href="guide/jvmti/index.html"         shape="rect" coords="525,109,585,130" alt="JVM Tool Interface">
+
+<area href="guide/deployment/index.html" shape="rect" coords=" 98,139,258,163" alt="Deployment - Application deployment technology">
+<area href="guide/javaws/index.html"     shape="rect" coords="262,139,421,163" alt="Java Web Start - Application deployment technology">
+<area href="guide/plugin/index.html"     shape="rect" coords="425,139,585,163" alt="Java Plug-in - Enables applets to be run in web browsers">
+
+<area href="guide/awt/index.html"       shape="rect" coords=" 98,163,258,193" alt="GUI components" title="Abstract Windowing Toolkit">
+<area href="guide/swing/index.html"     shape="rect" coords="262,163,421,193" alt="GUI components with pluggable look and feel">
+<area href="guide/2d/index.html"        shape="rect" coords="425,163,585,193" alt="For advanced graphics and imaging">
+
+<area href="guide/access/index.html"    shape="rect" coords=" 98,197,177,216" alt="APIs for making applications accessible to disabled persons">
+<area href="guide/dragndrop/index.html" shape="rect" coords="180,197,258,216" alt="Drag and drop data transfer">
+<area href="guide/imf/index.html"       shape="rect" coords="261,197,341,216" alt="Input Methods - Enables text entry by other than keyboard, for Chinese, Japanese, etc">
+<area href="guide/imageio/index.html"   shape="rect" coords="344,197,421,216" alt="Image I/O Methods - Enables text entry by other than keyboard, for Chinese, Japanese, etc">
+<area href="guide/jps/index.html"       shape="rect" coords="424,197,504,216" alt="Print Service - Enables printing">
+<area href="guide/sound/index.html"     shape="rect" coords="508,197,585,216" alt="Captures, processes, and plays back audio and MIDI data">
+
+<area href="guide/idl/index.html"      shape="rect" coords=" 98,220,192,241" alt="IDL - Provides and Object Request Broker (ORB) and CORBA/IIOP support">
+<area href="guide/jdbc/index.html"     shape="rect" coords="195,220,288,241" alt="JDBC - Provides universal database access">
+<area href="guide/jndi/index.html"     shape="rect" coords="291,220,385,241" alt="JNDI - Provides naming and directory functionality">
+<area href="guide/rmi/index.html"      shape="rect" coords="388,220,486,241" alt="RMI - Enables communication between remote objects for distributed applications">
+<area href="guide/rmi-iiop/index.html" shape="rect" coords="489,220,585,241" alt="RMI over IIOP - Enables programming of CORBA servers via RMI">
+
+<area href="guide/beans/index.html"    shape="rect" coords=" 98,245,177,265" alt="Beans - Enables creation of reusable, platform-independent components">
+<area href="guide/intl/index.html"     shape="rect" coords="180,245,258,265" alt="Internationalization - Enables internationalization of applications">
+<area href="guide/io/index.html"       shape="rect" coords="261,245,289,265" alt="I/O">
+<area href="guide/nio/index.html"      shape="rect" coords="292,245,341,265" alt="New I/O - Support for I/O, buffer management and more">
+<area href="guide/jmx/index.html"      shape="rect" coords="344,245,421,265" alt="Java Management Extensions">
+<area href="guide/jni/index.html"      shape="rect" coords="424,245,504,265" alt="JNI - Java Native Interface">
+<area href="guide/math/index.html"     shape="rect" coords="508,245,585,265" alt="Math">
+
+<area href="guide/net/index.html"           shape="rect" coords=" 98,269,177,288" alt="Networking - Support for sockets, URLs, authentication and more">
+<area href="guide/standards/index.html"     shape="rect" coords="180,269,258,288" alt="Standards override mechanism">
+<area href="guide/security/index.html"      shape="rect" coords="261,269,341,288" alt="Security - Signing, cryptography, etc.">
+<area href="guide/serialization/index.html" shape="rect" coords="344,269,421,288" alt="Object serialization">
+<area href="guide/extensions/index.html"    shape="rect" coords="424,269,504,288" alt="Extension mechanism for optional packages">
+<area href="guide/xml/jaxp/index.html"      shape="rect" coords="508,269,585,288" alt="XML JAXP - Supports XML-formatted data">
+
+<area href="guide/lang/index.html"        shape="rect" coords=" 95,292,177,312" alt="Lang and util packages">
+<area href="guide/collections/index.html" shape="rect" coords="178,292,258,312" alt="Collections for manipulating groups of objects">
+<area href="guide/concurrency/index.html" shape="rect" coords="262,292,341,312" alt="Concurrency">
+<area href="guide/jar/index.html"         shape="rect" coords="345,292,421,312" alt="JAR - Java archive technology">
+<area href="guide/logging/index.html"     shape="rect" coords="425,292,504,312" alt="Logging">
+<area href="guide/management/index.html"  shape="rect" coords="508,292,585,312" alt="Monitoring and management">
+
+<area href="guide/preferences/index.html"             shape="rect" coords=" 98,316,177,335" alt="Preferences - enables storage and retrieval of preference data">
+<area href="guide/refobs/index.html"                  shape="rect" coords="180,316,258,335" alt="Reference objects">
+<area href="guide/reflection/index.html"              shape="rect" coords="261,316,341,335" alt="Reflection">
+<area href="api/java/util/regex/package-summary.html" shape="rect" coords="344,316,421,335" alt="Regular expressions">
+<area href="guide/versioning/index.html"              shape="rect" coords="424,316,504,335" alt="Package versioning">
+<area href="api/java/util/zip/package-summary.html"   shape="rect" coords="508,316,585,335" alt="Zip archive">
+
+<area href="guide/vm/index.html" shape="rect" coords="98,339,585,361" alt="Java HotSpot client and server technology">
+
+<!-- "Platforms" row is handled by one full-wide area above -->
+
+</map>
+
+<!-- Body text ends here -->
+
+<!-- ============================================================== -->
+
+<HR SIZE=3 NOSHADE>
+
+<TABLE summary="layout" BORDER="0" WIDTH="100%">
+<TR VALIGN=TOP>
+
+<TD>
+   <FONT SIZE="-2">
+
+   <A HREF="relnotes/SMICopyright.html">Copyright &#169;</A> 2004
+   <A HREF="http://www.sun.com/">Sun Microsystems, Inc.</A>
+   All Rights Reserved.
+
+   </FONT>
+   <P>
+
+   <FONT SIZE="-1">
+
+   Your feedback is important to us. <br>
+   Please send us comments and suggestions at
+   <a href="relnotes/contacts.html">Contact Java Software</a><br>
+
+   <a href="http://java.sun.com/j2se/1.5.0/download.jsp#docs">
+   Download this JDK documentation</a><br>
+
+   </FONT>
+<p>
+<a name="location"></a>
+<font size="-1">
+<b>Location:</b><br>
+<i>docs</i> = In documentation download bundle and on website<br>
+<i>website</i> = Only on Java Software website
+</font>
+</TD>
+
+<TD ALIGN=RIGHT>
+   <IMG SRC="images/sunlogo64x30.gif" ALT="Sun" BORDER=0 WIDTH=64 HEIGHT=30>
+   <BR><BR>
+   <FONT SIZE="+1">
+   <i>Java Software</i>
+   </FONT>
+</TD>
+
+</TR>
+</TABLE>
+
+
+<PRE>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+
+</BODY>
+</HTML>

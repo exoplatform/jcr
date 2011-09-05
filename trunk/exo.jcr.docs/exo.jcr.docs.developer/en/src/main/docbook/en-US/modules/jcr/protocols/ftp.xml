@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.FTP">
+  <?dbhtml filename="ch-ftp.html"?>
+
+  <title>FTP</title>
+
+  <section>
+    <title>Introdution</title>
+
+    <para>The JCR-FTP Server represents the standard eXo service, operates as
+    an FTP server with an access to a content stored in JCR repositories in
+    the form of <emphasis role="bold">nt:file/nt:folder</emphasis> nodes or
+    their successors. The client of an executed Server can be any FTP client.
+    The FTP server is supported by a standard configuration which can be
+    changed as required.</para>
+  </section>
+
+  <section>
+    <title>Configuration Parameters</title>
+
+    <section>
+      <title>command-port:</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;command-port&lt;/name&gt;
+   &lt;value&gt;21&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>The value of the command channel port. The value '21' is
+      default.</para>
+
+      <para>When you have already some FTP server installed in your system ,
+      this parameter needs to be changed (2121 for example) to avoid conflicts
+      or if the port is protected.</para>
+    </section>
+
+    <section>
+      <title>data-min-port &amp; data-max-port</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;data-min-port&lt;/name&gt;
+   &lt;value&gt;52000&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;data-max-port&lt;/name&gt;
+   &lt;value&gt;53000&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>These two parameters indicate the minimal and maximal values of
+      the range of ports, used by the server. The usage of the additional data
+      channel is required by the FTP - protocol, which is used to transfer the
+      contents of files and the listing of catalogues. This range of ports
+      should be free from listening by other server-programs.</para>
+    </section>
+
+    <section>
+      <title>system</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;system&lt;/name&gt;
+
+   &lt;value&gt;Windows_NT&lt;/value&gt;
+     or
+   &lt;value&gt;UNIX Type: L8&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>Types of formats of listing of catalogues which are
+      supported.</para>
+    </section>
+
+    <section>
+      <title>client-side-encoding</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;client-side-encoding&lt;/name&gt;
+      
+   &lt;value&gt;windows-1251&lt;/value&gt;
+     or
+   &lt;value&gt;KOI8-R&lt;/value&gt;
+     
+&lt;/value-param&gt;</programlisting>
+
+      <para>This parameter specifies the coding which is used for dialogue
+      with the client.</para>
+    </section>
+
+    <section>
+      <title>def-folder-node-type</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;def-folder-node-type&lt;/name&gt;
+   &lt;value&gt;nt:folder&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>This parameter specifies the type of a node, when an FTP-folder is
+      created.</para>
+    </section>
+
+    <section>
+      <title>def-file-node-type</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;def-file-node-type&lt;/name&gt;
+   &lt;value&gt;nt:file&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>This parameter specifies the type of a node, when an FTP - file is
+      created.</para>
+    </section>
+
+    <section>
+      <title>def-file-mime-type</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;def-file-mime-type&lt;/name&gt;                 
+   &lt;value&gt;application/zip&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>The mime type of a created file is chosen by using its file
+      extention. In case, a server cannot find the corresponding mime type,
+      this value is used.</para>
+    </section>
+
+    <section>
+      <title>cache-folder-name</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;cache-folder-name&lt;/name&gt;
+   &lt;value&gt;../temp/ftp_cache&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>The Path of the cache folder.</para>
+    </section>
+
+    <section>
+      <title>upload-speed-limit</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;upload-speed-limit&lt;/name&gt;           
+   &lt;value&gt;20480&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>Restriction of the upload speed. It is measured in bytes.</para>
+    </section>
+
+    <section>
+      <title>download-speed-limit</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;download-speed-limit&lt;/name&gt;
+   &lt;value&gt;20480&lt;/value&gt;          
+&lt;/value-param&gt;</programlisting>
+
+      <para>Restriction of the download speed. It is measured in bytes.</para>
+    </section>
+
+    <section>
+      <title>timeout</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;timeout&lt;/name&gt;
+   &lt;value&gt;60&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>Defines the value of a timeout.</para>
+    </section>
+  </section>
+</chapter>

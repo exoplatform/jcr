@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd">
+
+   <component>
+      <type>org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService</type>
+   </component>
+
+   <component>
+      <type>org.exoplatform.services.jcr.ext.resource.NodeRepresentationService</type>
+   </component>
+
+   <component>
+      <type>org.exoplatform.services.jcr.ext.resource.representation.NtFileNodeRepresentationFactory</type>
+   </component>
+
+   <component>
+      <type>org.exoplatform.services.jcr.ext.resource.representation.NtResourceNodeRepresentationFactory</type>
+   </component>
+
+   <!-- component>
+      <type>org.exoplatform.services.jcr.ext.registry.RegistryService</type>
+      <init-params>
+         <properties-param>
+            <name>locations</name>
+         </properties-param>
+      </init-params>
+   </component -->
+
+   <!-- component>
+      <type>org.exoplatform.services.jcr.ext.registry.RESTRegistryService</type>
+   </component -->
+
+   <!-- component>
+      <key>org.exoplatform.services.jcr.ext.hierarchy.NodeHierarchyCreator</key>
+      <type>org.exoplatform.services.jcr.ext.hierarchy.impl.NodeHierarchyCreatorImpl</type>
+   </component -->
+
+   <!-- config replication for IPv4 -->
+   <!-- for persistent mode -->
+   <!-- component>
+      <type>org.exoplatform.services.jcr.ext.replication.ReplicationService</type>
+      <init-params>
+         <values-param>
+            <name>repositories</name>
+            <value>repository</value>
+         </values-param>
+         <properties-param>
+            <name>replication-properties</name>
+            <property name="enabled" value="true" />
+            <property name="mode" value="persistent" />
+            <property name="bind-ip-address" value="192.168.0.15" />
+            <property name="channel-config"
+               value="TCP(oob_thread_pool.queue_max_size=100;thread_naming_pattern=cl;use_concurrent_stack=true;oob_thread_pool.rejection_policy=Run;discard_incompatible_packets=true;thread_pool.max_threads=40;oob_thread_pool.enabled=true;oob_thread_pool.max_threads=20;loopback=false;oob_thread_pool.keep_alive_time=5000;thread_pool.queue_enabled=false;oob_thread_pool.queue_enabled=false;max_bundle_size=64000;thread_pool.queue_max_size=100;thread_pool.enabled=true;enable_diagnostics=true;max_bundle_timeout=30;oob_thread_pool.min_threads=8;use_incoming_packet_handler=true;thread_pool.rejection_policy=Run;bind_addr=$bind-ip-address;thread_pool.min_threads=8;thread_pool.keep_alive_time=5000;enable_bundling=true):MPING(timeout=2000;num_initial_members=8;mcast_port=34526;mcast_addr=224.0.0.1):FD_SOCK:VERIFY_SUSPECT(timeout=1500):pbcast.NAKACK(max_xmit_size=60000;print_stability_history_on_failed_xmit=true;use_mcast_xmit=false;gc_lag=0;discard_delivered_msgs=true;retransmit_timeout=300,600,1200,2400,4800):pbcast.STABLE(stability_delay=1000;desired_avg_gossip=50000;max_bytes=8000000):pbcast.GMS(print_local_addr=true;join_timeout=3000;view_bundling=true;join_retry_timeout=2000;shun=false):FC(max_credits=4000000;min_threshold=0.2;max_block_time=10000)" />
+            <property name="recovery-dir" value="target/replication/recovery" />
+            <property name="node-name" value="cluster_node1" />
+            <property name="other-participants" value="cluster_node2" />
+            <property name="wait-confirmation" value="10" />
+         </properties-param>
+         <properties-param>
+            <name>replication-snapshot-properties</name>
+            <property name="snapshot-enabled" value="false" />
+            <property name="snapshot-dir" value="target/replication/backup" />
+            <property name="delay-time" value="70000" />
+         </properties-param>
+      </init-params>
+   </component -->
+
+   <!-- for proxy mode -->
+   <!-- component>
+      <type>org.exoplatform.services.jcr.ext.replication.ReplicationService</type>
+      <init-params>
+         <values-param>
+            <name>repositories</name>
+            <value>repository</value>
+         </values-param>
+         <properties-param>
+            <name>replication-properties</name>
+            <property name="enabled" value="true" />
+            <property name="mode" value="proxy" />
+            <property name="bind-ip-address" value="192.168.0.15" />
+            <property name="channel-config"
+               value="TCP(oob_thread_pool.queue_max_size=100;thread_naming_pattern=cl;use_concurrent_stack=true;oob_thread_pool.rejection_policy=Run;discard_incompatible_packets=true;thread_pool.max_threads=40;oob_thread_pool.enabled=true;oob_thread_pool.max_threads=20;loopback=false;oob_thread_pool.keep_alive_time=5000;thread_pool.queue_enabled=false;oob_thread_pool.queue_enabled=false;max_bundle_size=64000;thread_pool.queue_max_size=100;thread_pool.enabled=true;enable_diagnostics=true;max_bundle_timeout=30;oob_thread_pool.min_threads=8;use_incoming_packet_handler=true;thread_pool.rejection_policy=Run;bind_addr=$bind-ip-address;thread_pool.min_threads=8;thread_pool.keep_alive_time=5000;enable_bundling=true):MPING(timeout=2000;num_initial_members=8;mcast_port=34526;mcast_addr=224.0.0.1):FD_SOCK:VERIFY_SUSPECT(timeout=1500):pbcast.NAKACK(max_xmit_size=60000;print_stability_history_on_failed_xmit=true;use_mcast_xmit=false;gc_lag=0;discard_delivered_msgs=true;retransmit_timeout=300,600,1200,2400,4800):pbcast.STABLE(stability_delay=1000;desired_avg_gossip=50000;max_bytes=8000000):pbcast.GMS(print_local_addr=true;join_timeout=3000;view_bundling=true;join_retry_timeout=2000;shun=false):FC(max_credits=4000000;min_threshold=0.2;max_block_time=10000)" />
+            <property name="recovery-dir" value="target/replication/recovery" />
+            <property name="node-name" value="cluster_node1" />
+            <property name="other-participants" value="cluster_node2" />
+            <property name="wait-confirmation" value="10" />
+         </properties-param>
+         <properties-param>
+            <name>replication-snapshot-properties</name>
+            <property name="snapshot-enabled" value="false" />
+            <property name="snapshot-dir" value="target/replication/backup" />
+            <property name="delay-time" value="70000" />
+         </properties-param>
+      </init-params>
+   </component -->
+
+   <!-- config replication for IPv6 -->
+   <!-- component>
+      <type>org.exoplatform.services.jcr.ext.replication.ReplicationService</type>
+      <init-params>
+         <values-param>
+            <name>repositories</name>
+            <value>repository</value>
+         </values-param>
+         <properties-param>
+            <name>replication-properties</name>
+            <property name="enabled" value="true" />
+            <property name="mode" value="persistent" />
+            <property name="bind-ip-address" value="fe80::215:f2ff:febe:3343%4" />
+            <property name="channel-config"
+               value="TCP(oob_thread_pool.queue_max_size=100;thread_naming_pattern=cl;use_concurrent_stack=true;oob_thread_pool.rejection_policy=Run;discard_incompatible_packets=true;thread_pool.max_threads=40;oob_thread_pool.enabled=true;oob_thread_pool.max_threads=20;loopback=false;oob_thread_pool.keep_alive_time=5000;thread_pool.queue_enabled=false;oob_thread_pool.queue_enabled=false;max_bundle_size=64000;thread_pool.queue_max_size=100;thread_pool.enabled=true;enable_diagnostics=true;max_bundle_timeout=30;oob_thread_pool.min_threads=8;use_incoming_packet_handler=true;thread_pool.rejection_policy=Run;bind_addr=$bind-ip-address;thread_pool.min_threads=8;thread_pool.keep_alive_time=5000;enable_bundling=true):MPING(timeout=2000;num_initial_members=8;mcast_port=34526;mcast_addr=ff18:eb72:479f::2:3):FD_SOCK:VERIFY_SUSPECT(timeout=1500):pbcast.NAKACK(max_xmit_size=60000;print_stability_history_on_failed_xmit=true;use_mcast_xmit=false;gc_lag=0;discard_delivered_msgs=true;retransmit_timeout=300,600,1200,2400,4800):pbcast.STABLE(stability_delay=1000;desired_avg_gossip=50000;max_bytes=8000000):pbcast.GMS(print_local_addr=true;join_timeout=3000;view_bundling=true;join_retry_timeout=2000;shun=false):FC(max_credits=4000000;min_threshold=0.2;max_block_time=10000)" />
+            <property name="recovery-dir" value="target/replication/recovery" />
+            <property name="node-name" value="cluster_node1" />
+            <property name="other-participants" value="cluster_node2" />
+            <property name="wait-confirmation" value="10" />
+         </properties-param>
+         <properties-param>
+            <name>replication-snapshot-properties</name>
+            <property name="snapshot-enabled" value="false" />
+            <property name="snapshot-dir" value="target/replication/backup" />
+            <property name="delay-time" value="70000" />
+         </properties-param>
+      </init-params>
+   </component -->
+
+   <!-- component>
+      <type>org.exoplatform.services.jcr.ext.replication.async.AsyncReplication</type>
+      <init-params>
+         <values-param>
+            <name>repositories</name>
+            <value>repository</value>
+         </values-param>
+         <properties-param>
+            <name>replication-properties</name>
+            <property name="priority" value="80" />
+            <property name="bind-ip-address" value="192.168.0.66" />
+            <property name="channel-config"
+               value="TCP(oob_thread_pool.queue_max_size=100;thread_naming_pattern=cl;use_concurrent_stack=true;oob_thread_pool.rejection_policy=Run;discard_incompatible_packets=true;thread_pool.max_threads=40;oob_thread_pool.enabled=true;oob_thread_pool.max_threads=20;loopback=false;oob_thread_pool.keep_alive_time=5000;thread_pool.queue_enabled=false;oob_thread_pool.queue_enabled=false;max_bundle_size=64000;thread_pool.queue_max_size=100;thread_pool.enabled=true;enable_diagnostics=true;max_bundle_timeout=30;oob_thread_pool.min_threads=8;use_incoming_packet_handler=true;thread_pool.rejection_policy=Run;bind_addr=$bind-ip-address;thread_pool.min_threads=8;thread_pool.keep_alive_time=5000;enable_bundling=true):MPING(timeout=2000;num_initial_members=8;mcast_port=34526;mcast_addr=224.0.0.1):FD_SOCK:VERIFY_SUSPECT(timeout=1500):pbcast.NAKACK(max_xmit_size=60000;print_stability_history_on_failed_xmit=true;use_mcast_xmit=false;gc_lag=0;discard_delivered_msgs=true;retransmit_timeout=300,600,1200,2400,4800):pbcast.STABLE(stability_delay=1000;desired_avg_gossip=50000;max_bytes=8000000):pbcast.GMS(print_local_addr=true;join_timeout=3000;view_bundling=true;join_retry_timeout=2000;shun=false):FC(max_credits=4000000;min_threshold=0.2;max_block_time=10000)" />
+            <property name="channel-name" value="AsyncRepCh" />
+            <property name="incom-storage-dir" value="target/asyncreplication/incom" />
+            <property name="local-storage-dir" value="target/asyncreplication/local" />
+            <property name="wait-all-members" value="10" />
+         </properties-param>
+      </init-params>
+   </component -->
+
+   <!-- component>
+      <type>org.exoplatform.services.jcr.ext.resource.jcr.Handler</type>
+   </component -->
+
+   <!--  <component>-->
+   <!--    <type>org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader</type>-->
+   <!--    <init-params>-->
+   <!--      <object-param>-->
+   <!--        <name>observation.config</name>-->
+   <!--        <object type="org.exoplatform.services.jcr.ext.script.groovy.ObservationListenerConfiguration">-->
+   <!--          <field name="repository">-->
+   <!--            <string>repository</string>-->
+   <!--          </field>-->
+   <!--          <field name="workspaces">-->
+   <!--            <collection type="java.util.ArrayList">-->
+   <!--              <value>-->
+   <!--                <string>collaboration</string>-->
+   <!--                <string>production</string>-->
+   <!--              </value>-->
+   <!--            </collection>-->
+   <!--          </field>-->
+   <!--        </object>-->
+   <!--      </object-param>-->
+   <!--    </init-params>-->
+   <!--  </component>-->
+
+   <!-- component>
+      <type>org.exoplatform.services.jcr.ext.artifact.ArtifactManagingServiceImpl</type>
+      <init-params>
+         <properties-param>
+            <name>artifact.workspace</name>
+            <property name="workspace" value="production" />
+            <property name="rootNode" value="/test/" />
+         </properties-param>
+      </init-params>
+   </component -->
+   
+   <!-- component>
+      <type>org.exoplatform.services.jcr.ext.artifact.rest.RESTArtifactLoaderService</type>
+      <init-params>
+         <properties-param>
+            <name>artifact.workspace</name>
+            <property name="workspace" value="production" />
+            <property name="repository" value="repository" />
+            <property name="mavenRoot" value="/test/" />
+         </properties-param>
+      </init-params>
+   </component -->
+
+   <!-- external-component-plugins>
+      <target-component>org.exoplatform.services.jcr.RepositoryService</target-component>
+      <component-plugin>
+         <name>add.namespaces</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.services.jcr.impl.AddNamespacesPlugin</type>
+         <init-params>
+            <properties-param>
+               <name>namespaces</name>
+               <property name="dc" value="http://purl.org/dc/elements/1.1/" />
+            </properties-param>
+         </init-params>
+      </component-plugin>
+      <component-plugin>
+         <name>add.nodeType</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.services.jcr.impl.AddNodeTypePlugin</type>
+         <init-params>
+            <values-param>
+               <name>autoCreatedInNewRepository</name>
+               <description>Node types configuration file</description>
+               <value>jar:/conf/ext-nodetypes-config.xml</value>
+            </values-param>
+         </init-params>
+      </component-plugin>
+   </external-component-plugins -->
+
+   <!-- external-component-plugins>
+      <target-component>org.exoplatform.services.jcr.ext.registry.RegistryService</target-component>
+      <component-plugin>
+         <name>appConfig</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.services.jcr.ext.registry.RegistryInitializationEntryPlugin</type>
+         <init-params>
+            <value-param>
+               <name>GroovyEditor</name>
+               <value>
+      <![CDATA[<GroovyEditor><context>portal/rest</context><repository>repository</repository><workspace>collaboration</workspace></GroovyEditor>]]>
+               </value>
+            </value-param>
+         </init-params>
+      </component-plugin>
+   </external-component-plugins -->
+
+</configuration>

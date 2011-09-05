@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Core.DBCreatorService">
+  <?dbhtml filename="ch-db-creator-service.html"?>
+
+  <title>Database Creator</title>
+
+  <section>
+    <title>About</title>
+
+    <para>Database creator<envar> DBCreator</envar> is responsible for
+    execution DDL script in runtime. A DDL script may contain templates for
+    database name, user name and password which will be replaced by real
+    values at execution time.</para>
+
+    <para>Three templates supported:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><envar>${database}</envar> for database name;</para>
+      </listitem>
+
+      <listitem>
+        <para><envar>${username}</envar> for user name;</para>
+      </listitem>
+
+      <listitem>
+        <para><envar>${password}</envar> for user's password;</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>API</title>
+
+    <para>Service provide method for execute script for new database creation.
+    Database name which are passed as parameter will be substituted in DDL
+    script instead of <envar>${database}</envar> template. Returns
+    <envar>DBConnectionInfo</envar> object (with all neccesary information of
+    new database's connection) or throws <envar>DBCreatorException</envar>
+    exception if any errors occurs in other case.</para>
+
+    <programlisting language="java">public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;
+</programlisting>
+
+    <para>For MSSQL and Sybase servers, use autocommit mode to set true for
+    connection. It's due to after execution "create database" command newly
+    created database not available for "use" command and therefore you can't
+    create new user inside database per one script.</para>
+
+    <programlisting language="java">public DBConnectionInfo getDBConnectionInfo(String dbName) throws DBCreatorException;
+</programlisting>
+
+    <para>Return database connection information without database
+    creation.</para>
+  </section>
+
+  <section>
+    <title>A configuration examples</title>
+
+    <para>Service's configuration.</para>
+
+    <programlisting language="xml">   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.database.creator.DBCreator&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.database.creator.DBCreator&lt;/type&gt;
+      &lt;init-params&gt;
+      &lt;properties-param&gt;
+            &lt;name&gt;db-connection&lt;/name&gt;
+            &lt;description&gt;database connection properties&lt;/description&gt;
+            &lt;property name="driverClassName" value="com.mysql.jdbc.Driver" /&gt;
+            &lt;property name="url" value="jdbc:mysql://localhost/" /&gt;
+            &lt;property name="username" value="root" /&gt;
+            &lt;property name="password" value="admin" /&gt;
+            &lt;property name="additional_property" value="value"&gt;
+            ...
+            &lt;property name="additional_property_n" value="value"&gt;
+         &lt;/properties-param&gt;
+         &lt;properties-param&gt;
+            &lt;name&gt;db-creation&lt;/name&gt;.
+            &lt;description&gt;database creation properties&lt;/description&gt;.
+            &lt;property name="scriptPath" value="script.sql" /&gt;
+            &lt;property name="username" value="testuser" /&gt;
+            &lt;property name="password" value="testpwd" /&gt;
+         &lt;/properties-param&gt;
+      &lt;/init-params&gt;
+   &lt;/component&gt;</programlisting>
+
+    <para><envar>db-connection</envar> properties section contains parameters
+    needed for connection to database server</para>
+
+    <para>There is four reserved and mandatory properties
+    <emphasis>driverClassName</emphasis>, <emphasis>url</emphasis>,
+    <emphasis>username</emphasis> and <emphasis>password</emphasis>. But
+    db-connection may contain additonal properties.</para>
+
+    <para>For example, next additional proprites allows reconnect to MySQL
+    database when connection was refused:</para>
+    
+    <programlisting language="xml">         &lt;properties-param&gt;
+            &lt;name&gt;db-connection&lt;/name&gt;
+            ...
+            &lt;property name="validationQuery" value="select 1"/&gt;
+            &lt;property name="testOnReturn" value="true"/&gt;
+            ...
+         &lt;/properties-param&gt;</programlisting>
+
+    <para><envar>db-creation</envar> properties section contains paramaters
+    for database creation using DDL script:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><envar>scriptPath</envar>: absolute path to DDL script
+        file;</para>
+      </listitem>
+
+      <listitem>
+        <para><envar>username:</envar> user name for substitution
+        <envar>${username}</envar> template in DDL script;</para>
+      </listitem>
+
+      <listitem>
+        <para><envar>password</envar>: user's password for substitution
+        <envar>${password}</envar> template in DDL script;</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Specific <envar>db-connection</envar> properties section for
+    different databases.</para>
+
+    <para>MySQL:</para>
+
+    <programlisting language="xml">&lt;property name="driverClassName" value="com.mysql.jdbc.Driver" /&gt;
+&lt;property name="url" value="jdbc:mysql://localhost/" /&gt;
+&lt;property name="username" value="root" /&gt;
+&lt;property name="password" value="admin" /&gt;</programlisting>
+
+    <para>PostgreSQL:</para>
+
+    <programlisting language="xml">&lt;property name="driverClassName" value="org.postgresql.Driver" /&gt;
+&lt;property name="url" value="jdbc:postgresql://localhost/" /&gt;
+&lt;property name="username" value="root" /&gt;
+&lt;property name="password" value="admin" /&gt;</programlisting>
+
+    <para>MSSQL:</para>
+
+    <programlisting language="xml">&lt;property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/&gt;
+&lt;property name="url" value="jdbc:sqlserver://localhost:1433;"/&gt;
+&lt;property name="username" value="root"/&gt;
+&lt;property name="password" value="admin"/&gt;</programlisting>
+
+    <para>Sybase:</para>
+
+    <programlisting language="xml">&lt;property name="driverClassName" value="com.sybase.jdbc3.jdbc.SybDriver" /&gt;
+&lt;property name="url" value="jdbc:sybase:Tds:localhost:5000/"/&gt;
+&lt;property name="username" value="root"/&gt;
+&lt;property name="password" value="admin"/&gt;</programlisting>
+
+    <para>Oracle:</para>
+
+    <programlisting language="xml">&lt;property name="driverClassName" value="oracle.jdbc.OracleDriver" /&gt;
+&lt;property name="url" value="jdbc:oracle:thin:@db2.exoua-int:1521:orclvm" /&gt;
+&lt;property name="username" value="root" /&gt;
+&lt;property name="password" value="admin" /&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>An examples of a DDL script</title>
+
+    <para>MySQL:</para>
+
+    <programlisting>CREATE DATABASE ${database};
+USE ${database};
+CREATE USER '${username}' IDENTIFIED BY '${password}';
+GRANT SELECT,INSERT,UPDATE,DELETE ON ${database}.* TO '${username}';</programlisting>
+
+    <para>PostgreSQL:</para>
+
+    <programlisting>CREATE USER ${username} WITH PASSWORD '${password}';
+CREATE DATABASE ${database} WITH OWNER ${username};</programlisting>
+
+    <para>MSSQL:</para>
+
+    <programlisting>USE MASTER;
+CREATE DATABASE ${database};
+USE ${database};
+CREATE LOGIN ${username} WITH PASSWORD = '${password}';
+CREATE USER ${username} FOR LOGIN ${username};</programlisting>
+
+    <para>Sybase:</para>
+
+    <programlisting>sp_addlogin ${username}, ${password};
+CREATE DATABASE ${database};
+USE ${database};
+sp_adduser ${username};</programlisting>
+
+    <para>Oracle:</para>
+
+    <programlisting>CREATE TABLESPACE "${database}" DATAFILE '/var/oracle_db/orclvm/${database}' SIZE 10M AUTOEXTEND ON NEXT 6M MAXSIZE UNLIMITED LOGGING EXTENT MANAGEMENT LOCAL SEGMENT SPACE MANAGEMENT AUTO;
+CREATE TEMPORARY TABLESPACE "${database}.TEMP" TEMPFILE '/var/oracle_db/orclvm/${database}.temp' SIZE 5M AUTOEXTEND ON NEXT 5M MAXSIZE UNLIMITED EXTENT MANAGEMENT LOCAL UNIFORM SIZE 1M;
+CREATE USER "${username}" PROFILE "DEFAULT" IDENTIFIED BY "${password}" DEFAULT TABLESPACE "${database}" TEMPORARY TABLESPACE "${database}.TEMP" ACCOUNT UNLOCK;
+GRANT CREATE SEQUENCE TO "${username}";
+GRANT CREATE TABLE TO "${username}";
+GRANT CREATE TRIGGER TO "${username}";
+GRANT UNLIMITED TABLESPACE TO "${username}";
+GRANT "CONNECT" TO "${username}";
+GRANT "RESOURCE" TO "${username}";</programlisting>
+  </section>
+</chapter>

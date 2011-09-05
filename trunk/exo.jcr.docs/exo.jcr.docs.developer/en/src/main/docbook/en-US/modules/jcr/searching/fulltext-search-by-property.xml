@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.FulltextSearchByProperty">
+  <title>Fulltext Search by Property</title>
+
+  <para>Find all nodes containing a mixin type 'mix:title' and whose
+  'jcr:description' contains "forest" string.</para>
+
+  <section>
+    <title>Repository Structure</title>
+
+    <para>The repository is filled with nodes of the mixin type 'mix:title'
+    and different values of the 'jcr:description' property.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>document1 (mix:title) jcr:description = "The quick brown fox
+            jumps over the lazy dog."</para>
+          </listitem>
+
+          <listitem>
+            <para>document2 (mix:title) jcr:description = "The brown fox lives
+            in a <emphasis role="underscore">forest</emphasis>." // This is
+            the node we want to find</para>
+          </listitem>
+
+          <listitem>
+            <para>document3 (mix:title) jcr:description = "The fox is a nice
+            animal."</para>
+          </listitem>
+
+          <listitem>
+            <para>document4 (nt:unstructured) jcr:description = "There is the
+            word forest, too."</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query Execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting language="java">// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// we want find document which contains "forest" word
+String sqlStatement = "SELECT \* FROM mix:title WHERE CONTAINS(jcr:description, 'forest')";
+// create query
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting language="java">// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// we want find document which contains "forest" word
+String xpathStatement = "//element(*,mix:title)[jcr:contains(@jcr:description, 'forest')]";
+// create query
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching the Result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting language="java">NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return "document2".</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting language="java">String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>Table content is:</para>
+
+    <table>
+      <title>Table content</title>
+
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>jcr:description</entry>
+
+            <entry>...</entry>
+
+            <entry>jcr:path</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>The brown fox lives in forest.</entry>
+
+            <entry>...</entry>
+
+            <entry>/document2</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</section>

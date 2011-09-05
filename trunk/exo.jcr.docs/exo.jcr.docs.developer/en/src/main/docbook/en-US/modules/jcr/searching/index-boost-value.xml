@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.IndexBoostRule">
+  <title>Changing Priority of Node</title>
+
+  <para>In this example, we will set different boost values for predefined
+  nodes, and will check effect by selecting those nodes and order them by
+  jcr:score.</para>
+
+  <para>The default boost value is 1.0. Higher boost values (a reasonable
+  range is 1.0 - 5.0) will yield a higher score value and appear as more
+  relevant.</para>
+
+  <note>
+    <para>See 4.2.2 Index Boost Value <link
+    linkend="JCR.SearchConfiguration">Search Configuration</link></para>
+  </note>
+
+  <section>
+    <title>Indexing configuration</title>
+
+    <para>In next configuration, we will set boost values for nt:ustructured
+    nodes 'text' property.</para>
+
+    <para>indexing-config.xml:</para>
+
+    <programlisting language="xml">&lt;!-- 
+This rule actualy do nothing. 'text' property has default boost value.
+--&gt;
+&lt;index-rule nodeType="nt:unstructured" condition="@rule='boost1'"&gt;
+   &lt;!-- default boost: 1.0 --&gt;
+   &lt;property&gt;text&lt;/property&gt;
+&lt;/index-rule&gt;
+
+&lt;!-- 
+Set boost value as 2.0 for 'text' property in nt:unstructured nodes where property 'rule' equal to 'boost2'
+--&gt;
+&lt;index-rule nodeType="nt:unstructured" condition="@rule='boost2'"&gt;
+   &lt;!-- boost: 2.0 --&gt;
+   &lt;property boost="2.0"&gt;text&lt;/property&gt;
+&lt;/index-rule&gt;
+
+&lt;!-- 
+Set boost value as 3.0 for 'text' property in nt:unstructured nodes where property 'rule' equal to 'boost3'
+--&gt;
+&lt;index-rule nodeType="nt:unstructured" condition="@rule='boost3'"&gt;
+   &lt;!-- boost: 3.0 --&gt;
+   &lt;property boost="3.0"&gt;text&lt;/property&gt;
+&lt;/index-rule&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>Repository contains many nodes with primary type nt:unstructured.
+    Each node contains 'text' property and 'rule' property with different
+    values.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>node1(nt:unstructured) rule='boost1' text='The quick brown
+            fox jump...'</para>
+          </listitem>
+
+          <listitem>
+            <para>node2(nt:unstructured) rule='boost2' text='The quick brown
+            fox jump...'</para>
+          </listitem>
+
+          <listitem>
+            <para>node3(nt:unstructured) rule='boost3' text='The quick brown
+            fox jump...'</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting language="java">// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM nt:unstructured WHERE CONTAINS(text, 'quick') ORDER BY jcr:score() DESC";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting language="java">// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,nt:unstructured)[jcr:contains(@text, 'quick')] order by @jcr:score descending";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting language="java">NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return nodes in next order "node3", "node2",
+    "node1".</para>
+  </section>
+</section>

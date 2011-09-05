@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Core.TikaDocumentReaderService">
+  <?dbhtml filename="ch-core-document-reader-service.html"?>
+
+  <title>Tika Document Reader Service</title>
+
+  <section>
+    <title>Intro</title>
+
+    <para>DocumentReaderService provides API to retrieve DocumentReader by
+    mimetype.</para>
+
+    <para>DocumentReader lets the user fetch content of document as String or,
+    in case of TikaDocumentReader, as Reader.</para>
+  </section>
+
+  <section>
+    <title>Architecture</title>
+
+    <para>Basicaly, DocumentReaderService is a container for all registered
+    DocumentReaders. So, you can register DocumentReader (method
+    addDocumentReader(ComponentPlugin reader)) and fetch DocumentReader by
+    mimeType (method getDocumentReader(String mimeType)).</para>
+
+    <para>TikaDocumentReaderServiceImpl extends DocumentReaderService with
+    simple goal - read Tika configuration and lazy register each Tika Parser
+    as TikaDocumentReader.</para>
+
+    <para><note>
+        <para>By default, all Tikas Parsers are not registered in readers
+        &lt;mimetype, DocumentReader&gt; map. When user tries to fetch a
+        DocumentReader by unknown mimetype. Than TikaDocumentReaderService
+        checks tika configuration, and register a new mimetype-DocumentReader
+        pair.</para>
+      </note></para>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+
+    <para>How TikaDocumentReaderService Impl configuration looks
+    like:</para>
+    <programlisting language="xml">&lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.document.DocumentReaderService&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.document.impl.tika.TikaDocumentReaderServiceImpl&lt;/type&gt;
+
+      &lt;!-- Old-style document readers --&gt;
+      &lt;component-plugins&gt;
+         &lt;component-plugin&gt;
+            &lt;name&gt;pdf.document.reader&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.PDFDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the pdf inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;document.readerMSWord&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.MSWordDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the ms word inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;document.readerMSXWord&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.MSXWordDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the ms word inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;document.readerMSExcel&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.MSExcelDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the ms excel inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;document.readerMSXExcel&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.MSXExcelDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the ms excel inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;document.readerMSOutlook&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.MSOutlookDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the ms outlook inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;PPTdocument.reader&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.PPTDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the ms ppt inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;MSXPPTdocument.reader&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.MSXPPTDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the ms pptx inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;document.readerHTML&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.HTMLDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the html inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;document.readerXML&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.XMLDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the xml inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;TPdocument.reader&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.TextPlainDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the plain text inputstream&lt;/description&gt;
+            &lt;init-params&gt;
+               &lt;!--
+                  values-param&gt; &lt;name&gt;defaultEncoding&lt;/name&gt; &lt;description&gt;description&lt;/description&gt; &lt;value&gt;UTF-8&lt;/value&gt;
+                  &lt;/values-param
+               --&gt;
+            &lt;/init-params&gt;
+         &lt;/component-plugin&gt;
+
+         &lt;component-plugin&gt;
+            &lt;name&gt;document.readerOO&lt;/name&gt;
+            &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.document.impl.OpenOfficeDocumentReader&lt;/type&gt;
+            &lt;description&gt;to read the OO inputstream&lt;/description&gt;
+         &lt;/component-plugin&gt;
+
+      &lt;/component-plugins&gt;
+      
+      &lt;init-params&gt;
+        &lt;value-param&gt;
+          &lt;name&gt;tika-configuration&lt;/name&gt;
+          &lt;value&gt;jar:/conf/portal/tika-config.xml&lt;/value&gt;
+        &lt;/value-param&gt;
+      &lt;/init-params&gt;
+
+   &lt;/component&gt;
+&lt;/configuration&gt;</programlisting>
+
+    <para>tika-config.xml example:</para>
+    <programlisting language="xml">&lt;properties&gt;
+
+  &lt;mimeTypeRepository magic="false"/&gt;
+  &lt;parsers&gt;
+
+    &lt;parser name="parse-dcxml" class="org.apache.tika.parser.xml.DcXMLParser"&gt;
+      &lt;mime&gt;application/xml&lt;/mime&gt;
+      &lt;mime&gt;image/svg+xml&lt;/mime&gt;
+      &lt;mime&gt;text/xml&lt;/mime&gt;
+      &lt;mime&gt;application/x-google-gadget&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-office" class="org.apache.tika.parser.microsoft.OfficeParser"&gt;
+      &lt;mime&gt;application/excel&lt;/mime&gt;
+      &lt;mime&gt;application/xls&lt;/mime&gt;
+      &lt;mime&gt;application/msworddoc&lt;/mime&gt;
+      &lt;mime&gt;application/msworddot&lt;/mime&gt;
+      &lt;mime&gt;application/powerpoint&lt;/mime&gt;
+      &lt;mime&gt;application/ppt&lt;/mime&gt;
+      
+      &lt;mime&gt;application/x-tika-msoffice&lt;/mime&gt;
+      &lt;mime&gt;application/msword&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-excel&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-excel.sheet.binary.macroenabled.12&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-powerpoint&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.visio&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-outlook&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-ooxml" class="org.apache.tika.parser.microsoft.ooxml.OOXMLParser"&gt;
+      &lt;mime&gt;application/x-tika-ooxml&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.openxmlformats-package.core-properties+xml&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.openxmlformats-officedocument.spreadsheetml.template&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-excel.sheet.macroenabled.12&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-excel.template.macroenabled.12&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-excel.addin.macroenabled.12&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.openxmlformats-officedocument.presentationml.presentation&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.openxmlformats-officedocument.presentationml.template&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.openxmlformats-officedocument.presentationml.slideshow&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-powerpoint.presentation.macroenabled.12&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-powerpoint.slideshow.macroenabled.12&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-powerpoint.addin.macroenabled.12&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.openxmlformats-officedocument.wordprocessingml.document&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.openxmlformats-officedocument.wordprocessingml.template&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-word.document.macroenabled.12&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.ms-word.template.macroenabled.12&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-html" class="org.apache.tika.parser.html.HtmlParser"&gt;
+      &lt;mime&gt;text/html&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser mame="parse-rtf" class="org.apache.tika.parser.rtf.RTFParser"&gt;
+      &lt;mime&gt;application/rtf&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-pdf" class="org.apache.tika.parser.pdf.PDFParser"&gt;
+      &lt;mime&gt;application/pdf&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-txt" class="org.apache.tika.parser.txt.TXTParser"&gt;
+      &lt;mime&gt;text/plain&lt;/mime&gt;
+      &lt;mime&gt;script/groovy&lt;/mime&gt;
+      &lt;mime&gt;application/x-groovy&lt;/mime&gt;
+      &lt;mime&gt;application/x-javascript&lt;/mime&gt;
+      &lt;mime&gt;application/javascript&lt;/mime&gt;
+      &lt;mime&gt;text/javascript&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-openoffice" class="org.apache.tika.parser.opendocument.OpenOfficeParser"&gt;
+
+      &lt;mime&gt;application/vnd.oasis.opendocument.database&lt;/mime&gt;
+
+      &lt;mime&gt;application/vnd.sun.xml.writer&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.text&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.graphics&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.presentation&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.spreadsheet&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.chart&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.image&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.formula&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.text-master&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.text-web&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.text-template&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.graphics-template&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.presentation-template&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.spreadsheet-template&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.chart-template&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.image-template&lt;/mime&gt;
+      &lt;mime&gt;application/vnd.oasis.opendocument.formula-template&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.text&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.graphics&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.presentation&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.spreadsheet&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.chart&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.image&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.formula&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.text-master&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.text-web&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.text-template&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.graphics-template&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.presentation-template&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.spreadsheet-template&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.chart-template&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.image-template&lt;/mime&gt;
+      &lt;mime&gt;application/x-vnd.oasis.opendocument.formula-template&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-image" class="org.apache.tika.parser.image.ImageParser"&gt;
+      &lt;mime&gt;image/bmp&lt;/mime&gt;
+      &lt;mime&gt;image/gif&lt;/mime&gt;
+      &lt;mime&gt;image/jpeg&lt;/mime&gt;
+      &lt;mime&gt;image/png&lt;/mime&gt;
+      &lt;mime&gt;image/tiff&lt;/mime&gt;
+      &lt;mime&gt;image/vnd.wap.wbmp&lt;/mime&gt;
+      &lt;mime&gt;image/x-icon&lt;/mime&gt;
+      &lt;mime&gt;image/x-psd&lt;/mime&gt;
+      &lt;mime&gt;image/x-xcf&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-class" class="org.apache.tika.parser.asm.ClassParser"&gt;
+      &lt;mime&gt;application/x-tika-java-class&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-mp3" class="org.apache.tika.parser.mp3.Mp3Parser"&gt;
+      &lt;mime&gt;audio/mpeg&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-midi" class="org.apache.tika.parser.audio.MidiParser"&gt;
+      &lt;mime&gt;application/x-midi&lt;/mime&gt;
+      &lt;mime&gt;audio/midi&lt;/mime&gt;
+    &lt;/parser&gt;
+
+    &lt;parser name="parse-audio" class="org.apache.tika.parser.audio.AudioParser"&gt;
+      &lt;mime&gt;audio/basic&lt;/mime&gt;
+      &lt;mime&gt;audio/x-wav&lt;/mime&gt;
+      &lt;mime&gt;audio/x-aiff&lt;/mime&gt;
+    &lt;/parser&gt;
+
+  &lt;/parsers&gt;
+
+&lt;/properties&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Old-style DocumentReaders and Tika Parsers</title>
+
+    <para>As you see configuration above, there is both old-style
+    DocumentReaders and new Tika parsers registered.</para>
+
+    <para><emphasis>But MSWordDocumentReader and
+    org.apache.tika.parser.microsoft.OfficeParser both refer to same
+    "application/msword"</emphasis> mimetype, exclaims attentive reader. And
+    he is right. But only one DocumentReader will be fetched.</para>
+
+    <para>Old-style DocumentReader registered in configuration become
+    registered into DocumentReaderService. So, mimetypes that is supported by
+    those DocumentReaders will have a registered pair, and user will always
+    fetch this DocumentReaders with getDocumentReader(..) method. Tika
+    configuration will be checked for Parsers only if there is no already
+    registered DocumentReader.</para>
+
+    <section>
+      <title>How to make and register own DocumentReader</title>
+
+      <para>You can make you own DocumentReader in two ways.</para>
+
+      <para><emphasis role="bold">Old-Style Document
+      Reader</emphasis>:</para>
+      <itemizedlist>
+        <listitem>
+          <para>extend BaseDocumentReader</para>
+        </listitem> 
+      </itemizedlist>          
+  <programlisting language="java">public class MyDocumentReader extends BaseDocumentReader
+{
+   public String[] getMimeTypes()
+   {
+      return new String[]{"mymimetype"};
+   }
+   ...
+}</programlisting>
+          
+        <itemizedlist>
+          <listitem>
+            <para>register it as component-plugin</para>
+          </listitem>
+        </itemizedlist>
+            <programlisting language="xml">&lt;component-plugin&gt;
+   &lt;name&gt;my.DocumentReader&lt;/name&gt;
+   &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
+   &lt;type&gt;com.mycompany.document.MyDocumentReader&lt;/type&gt;
+   &lt;description&gt;to read my own file format&lt;/description&gt;
+&lt;/component-plugin&gt;</programlisting>
+          
+     
+
+      <para><emphasis role="bold">Tika Parser</emphasis>:</para>
+      <itemizedlist>
+        <listitem>
+          <para>implement Parser</para>
+        </listitem>
+      </itemizedlist>
+      <programlisting language="java">public class MyParser implements Parser
+{
+   ...
+}</programlisting>
+          
+        <itemizedlist>
+          <listitem>
+            <para>register it in tika-config.xml</para>
+          </listitem>
+        </itemizedlist>
+<programlisting language="xml"> &lt;parser name="parse-mydocument" class="com.mycompany.document.MyParser"&gt;
+      &lt;mime&gt;mymimetype&lt;/mime&gt;
+ &lt;/parser&gt;
+</programlisting>
+          
+     
+    </section>
+  </section>
+
+  <section>
+    <title>TikaDocumentReader features and notes</title>
+
+    <para>TikaDocumentReader features and notes:<itemizedlist>
+        <listitem>
+          <para>TikaDocumentReader may return document contant as Reader
+          object. Old-Style DocumentReader does not;</para>
+        </listitem>
+
+        <listitem>
+          <para>TikaDocumentReader do not detects document mimetipe. You will
+          get exact parser as configured in tika-config;</para>
+        </listitem>
+
+        <listitem>
+          <para>All readers methods closes InputStream at final.</para>
+        </listitem>
+      </itemizedlist></para>
+  </section>
+</chapter>

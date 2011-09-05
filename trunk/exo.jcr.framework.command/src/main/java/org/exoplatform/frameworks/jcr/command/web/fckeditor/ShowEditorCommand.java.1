@@ -1,0 +1,99 @@
+/*
+ * Copyright (C) 2009 eXo Platform SAS.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.exoplatform.frameworks.jcr.command.web.fckeditor;
+
+import java.io.PrintWriter;
+
+import javax.jcr.Property;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.chain.Command;
+import org.apache.commons.chain.Context;
+import org.exoplatform.frameworks.jcr.command.DefaultKeys;
+import org.exoplatform.frameworks.jcr.command.web.WebAppContext;
+import org.exoplatform.frameworks.web.fckeditor.FCKeditor;
+/**
+ * Created by The eXo Platform SARL        .
+ * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
+ * @version $Id: ShowEditorCommand.java.1 5800 2006-05-28 18:03:31Z geaz $
+ */
+
+public class ShowEditorCommand implements Command {
+
+  // should be set in servletContext? no defaults?
+  private static final String DEFAULT_EDITOR_NAME = "FCKEditor";
+  
+  private static final String DEFAULT_SUBMIT_NAME = "Submit";
+  private static final String DEFAULT_ACTION_NAME = "/index.jsp";
+
+  private String contentKey = DefaultKeys.RESULT;
+  private String pathKey = DefaultKeys.PATH; 
+
+  private String editorKey = "editor"; 
+  private String formActionKey = "formAction"; 
+  private String submitKey = "submit"; 
+  
+  public boolean execute(Context context) throws Exception {
+    WebAppContext webCtx = (WebAppContext)context;
+    HttpServletResponse response = webCtx.getResponse();
+    HttpServletRequest request = webCtx.getRequest();
+    PrintWriter out = response.getWriter();
+
+    String content = (String)context.get(contentKey);
+    if(content == null)
+      content = "";
+      //throw new Exception("path undefined");
+    if(content == "") {
+      String path = (String)context.get(pathKey);
+      if(path != null) {
+        //System.out.println(webCtx.getSession().getItem(path+"/jcr:content/jcr:data"));
+        Property prop = (Property)webCtx.getSession().getItem(path+"/jcr:content/jcr:data");
+        content = prop.getString();
+      }
+    }
+    
+    String editorName = (String)context.get(editorKey);
+    if(editorName == null)
+      editorName = DEFAULT_EDITOR_NAME;
+
+    String formAction = (String)context.get(formActionKey);
+    if(formAction == null)
+      formAction = DEFAULT_ACTION_NAME;
+
+    String submit = (String)context.get(submitKey);
+    if(submit == null)
+      submit = DEFAULT_SUBMIT_NAME;
+    
+    FCKeditor editor = new FCKeditor(request, editorName);
+    editor.setValue(content);
+    out.println("<form action="+request.getContextPath()+formAction+"?editor="+editorName+" method=POST>");
+    out.println(editor.create());
+    out.println("<br/><input type=submit value="+submit+">");
+
+    out.println("</form>");
+    out.flush();
+    out.close();
+
+    //response.sendRedirect(formAction);
+    
+    return false;
+  }
+
+}

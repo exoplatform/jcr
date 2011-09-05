@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.WhyuseJCR">
+  <?dbhtml filename="ch-why-jcr.html"?>
+
+  <title>Why use JCR?</title>
+
+  <section>
+    <title>What is JCR?</title>
+
+    <para>JCR (Java Content Repository) is a java interface used to access
+    contents that are not only web contents, but also other hierarchically
+    stored data. The content is stored in a repository. The repository can be
+    a file system, a relational database or an XML document. The internal
+    structure of JCR data looks similar to an XML document, that means a
+    document tree with nodes and data, but with a small difference, in JCR the
+    data are stored in "property items".</para>
+
+    <para>Or better to cite the specification of JCR: "A content repository is
+    a high-level information management system that is a superset of
+    traditional data repositories."</para>
+  </section>
+
+  <section>
+    <title>Why use JCR?</title>
+
+    <para>How do you know the data of your website are stored? The images are
+    probably in a file system, the meta data are in some dedicated files -
+    maybe in XML - the text documents and pdfs are stored in different folders
+    with the meta data in an other place (a database?) and in a proprietary
+    structure. How do you manage to update these data and how do you manage
+    the access rights? If your boss asks you to manage different versions of
+    each document or not? The larger your website is, the more you need a
+    <ulink
+    url="http://en.wikipedia.org/wiki/Content_management_system">Content
+    Management Systems</ulink> (CMS) which tackles all these issues.</para>
+
+    <para>These CMS solutions are sold by different vendors and each vendor
+    provides its own API for interfacing the proprietary content repository.
+    The developers have to deal with this and need to learn the
+    vendor-specific API. If in the future you wish to switch to a different
+    vendor, everything will be different and you will have a new
+    implementation, a new interface, etc.</para>
+
+    <para>JCR provides a unique java interface for interacting with both text
+    and binary data, for dealing with any kind and amount of meta data your
+    documents might have. JCR supplies methods for storing, updating, deleting
+    and retrieving your data, independent of the fact if this data is stored
+    in a RDBMS, in a file system or as an XML document - you just don't need
+    to care about. The JCR interface is also defined as classes and methods
+    for searching, versioning, access control, locking, and
+    observation.</para>
+
+    <para>Furthermore, an export and import functionality is specified so that
+    a switch to a different vendor is always possible.</para>
+  </section>
+
+  <section>
+    <title>What does eXo do?</title>
+
+    <para>eXo fully complies a JCR standard <ulink
+    url="http://jcp.org/en/jsr/detail?id=170">JSR 170</ulink>; therefore with
+    eXo JCR you can use a vendor-independent API. It means that you could
+    switch any time to a different vendor. Using the standard lowers your
+    lifecycle cost and reduces your long term risk.</para>
+
+    <para>Of course eXo does not only offer JCR, but also the complete
+    solution for ECM (Enterprise Content Management) and for WCM (Web Content
+    Management).</para>
+  </section>
+
+  <section>
+    <title>Further Reading</title>
+
+    <para>In order to further understand the theory of JCR and the API, please
+    refer to some external documents about this standard:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Roy T. Fielding, <ulink
+        url="http://www.day.com/content/dam/day/whitepapers/JSR_170_White_Paper.pdf">JSR
+        170 Overview: Standardizing the Content Repository Interface</ulink>
+        (March 13, 2005)</para>
+      </listitem>
+
+      <listitem>
+        <para>Benjamin Mestrallet, Tuan Nguyen, Gennady Azarenkov, Francois
+        Moron and Brice Revenant <ulink
+        url="http://www.theserverside.com/tt/articles/article.tss?l=eXoPlatform2">eXo
+        Platform v2, Portal, JCR, ECM, Groupware and Business
+        Intelligence.</ulink> (January 2006)</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</chapter>

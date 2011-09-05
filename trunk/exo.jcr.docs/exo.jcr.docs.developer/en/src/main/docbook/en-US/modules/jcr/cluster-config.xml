@@ -1,0 +1,238 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This document was created with Syntext Serna Free. --><!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<chapter id="JCR.ClusterConfig">
+<?dbhtml filename="ch-cluster-config.html"?>  <title>Configuring JBoss AS with eXo JCR in cluster</title>
+  <section>
+    <title>Launching Cluster</title>
+    <section>
+      <title>Deploying eXo JCR to JBoss As</title>
+      <para>To deploy eXo JCR to JBoss, do the following steps:</para>
+      <orderedlist>
+        <listitem>
+          <para>Download the latest version of eXo JCR .ear file distribution.</para>
+        </listitem>
+        <listitem>
+          <para>Copy &lt;jcr.ear&gt; into
+          &lt;%jboss_home%/server/default/deploy&gt;</para>
+        </listitem>
+        <listitem>
+          <para>Put exo-configuration.xml to the root
+          &lt;%jboss_home%/exo-configuration.xml&gt;</para>
+        </listitem>
+        <listitem>
+          <para>Configure JAAS by inserting XML fragment shown below into
+          &lt;%jboss_home%/server/default/conf/login-config.xml&gt;</para>
+          
+          <programlisting language="xml">&lt;application-policy name=&quot;exo-domain&quot;&gt;
+   &lt;authentication&gt;
+      &lt;login-module code=&quot;org.exoplatform.services.security.j2ee.JbossLoginModule&quot; flag=&quot;required&quot;&gt;&lt;/login-module&gt;
+   &lt;/authentication&gt;
+&lt;/application-policy&gt;</programlisting>
+        </listitem>
+        <listitem>
+          <para>Ensure that you use JBossTS <link linkend="Kernel.TransactionService">Transaction Service</link> and
+          JBossCache <link linkend="JCR.JBossTransactionsService">Transaction Manager</link>. Your exo-configuration.xml must contain such
+          parts:</para>
+          
+          <programlisting language="xml">&lt;component&gt;
+   &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
+   &lt;type&gt;org.jboss.cache.GenericTransactionManagerLookup&lt;/type&gt;^
+&lt;/component&gt;
+
+&lt;component&gt;
+   &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+   &lt;type&gt;org.exoplatform.services.transaction.jbosscache.JBossTransactionsService&lt;/type&gt;
+   &lt;init-params&gt;
+      &lt;value-param&gt;
+         &lt;name&gt;timeout&lt;/name&gt;
+         &lt;value&gt;300&lt;/value&gt;
+      &lt;/value-param&gt;
+   &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+        </listitem>
+        <listitem>
+          <para>Start server:</para>
+          <itemizedlist>
+            <listitem>
+              <para>bin/run.sh for Unix</para>
+            </listitem>
+            <listitem>
+              <para>bin/run.bat for Windows</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+        <listitem>
+          <para>Try accessing <uri>http://localhostu:8080/browser</uri> with
+          root/exo as login/password if you have done everything right, you&apos;ll
+          get access to repository browser.</para>
+        </listitem>
+      </orderedlist>
+    </section>
+    <section id="JCR.ClusterConfig.JCRExternalConfig">
+      <title>Configuring JCR to use external configuration</title>
+      <itemizedlist>
+        <listitem>
+          <para>To manually configure repository, create a new configuration
+          file (e.g., exo-jcr-configuration.xml). For details, see <link linkend="JCR.eXoJCRconfiguration">JCR Configuration</link>. Your
+          configuration must look like:</para>
+          
+          <programlisting language="xml">&lt;repository-service default-repository=&quot;repository1&quot;&gt;
+   &lt;repositories&gt;
+      &lt;repository name=&quot;repository1&quot; system-workspace=&quot;ws1&quot; default-workspace=&quot;ws1&quot;&gt;
+         &lt;security-domain&gt;exo-domain&lt;/security-domain&gt;
+         &lt;access-control&gt;optional&lt;/access-control&gt;
+         &lt;authentication-policy&gt;org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator&lt;/authentication-policy&gt;
+         &lt;workspaces&gt;
+            &lt;workspace name=&quot;ws1&quot;&gt;
+               &lt;container class=&quot;org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer&quot;&gt;
+                  &lt;properties&gt;
+                     &lt;property name=&quot;source-name&quot; value=&quot;jdbcjcr&quot; /&gt;
+                     &lt;property name=&quot;dialect&quot; value=&quot;oracle&quot; /&gt;
+                     &lt;property name=&quot;multi-db&quot; value=&quot;false&quot; /&gt;
+                     &lt;property name=&quot;update-storage&quot; value=&quot;false&quot; /&gt;
+                     &lt;property name=&quot;max-buffer-size&quot; value=&quot;200k&quot; /&gt;
+                     &lt;property name=&quot;swap-directory&quot; value=&quot;../temp/swap/production&quot; /&gt;
+                  &lt;/properties&gt;
+                  &lt;value-storages&gt;
+                     see &quot;<link linkend="conf_value_storage">Value storage configuration</link>&quot; part.
+                  &lt;/value-storages&gt;
+               &lt;/container&gt;
+               &lt;initializer class=&quot;org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer&quot;&gt;
+                  &lt;properties&gt;
+                     &lt;property name=&quot;root-nodetype&quot; value=&quot;nt:unstructured&quot; /&gt;
+                  &lt;/properties&gt;
+               &lt;/initializer&gt;
+               &lt;cache enabled=&quot;true&quot; class=&quot;org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache&quot;&gt;
+                     see  &quot;<link linkend="conf_cache">Cache configuration</link>&quot; part.
+               &lt;/cache&gt;
+               &lt;query-handler class=&quot;org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex&quot;&gt;
+                  see  &quot;<link linkend="conf_indexer">Indexer configuration</link>&quot; part.
+               &lt;/query-handler&gt;
+               &lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
+                  see  &quot;<link linkend="conf_lock_manager">Lock Manager configuration</link>&quot; part.
+               &lt;/lock-manager&gt;
+            &lt;/workspace&gt;
+            &lt;workspace name=&quot;ws2&quot;&gt;
+                        ...
+            &lt;/workspace&gt;
+            &lt;workspace name=&quot;wsN&quot;&gt;
+                        ...
+            &lt;/workspace&gt;
+         &lt;/workspaces&gt;
+      &lt;/repository&gt;
+   &lt;/repositories&gt;
+&lt;/repository-service&gt; </programlisting>
+        </listitem>
+        <listitem>
+          <para>Then,  update RepositoryServiceConfiguration configuration in
+          exo-configuration.xml to use this file:</para>
+          
+          <programlisting language="xml">&lt;component&gt;
+   &lt;key&gt;org.exoplatform.services.jcr.config.RepositoryServiceConfiguration&lt;/key&gt;
+   &lt;type&gt;org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl&lt;/type&gt;
+   &lt;init-params&gt;
+      &lt;value-param&gt;
+         &lt;name&gt;conf-path&lt;/name&gt;
+         &lt;description&gt;JCR configuration file&lt;/description&gt;
+         &lt;value&gt;exo-jcr-configuration.xml&lt;/value&gt;
+      &lt;/value-param&gt;
+   &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+  <section>
+    <title>Requirements</title>
+    <section>
+      <title>Environment requirements</title>
+      <itemizedlist>
+        <listitem>
+          <para>Every node of cluster MUST have the same mounted Network File
+          System with the read and write permissions on it.</para>
+          <para>&quot;/mnt/tornado&quot; - path to the mounted Network File System (all
+          cluster nodes must use the same NFS).</para>
+        </listitem>
+        <listitem>
+          <para>Every node of cluster MUST use the same database.</para>
+        </listitem>
+        <listitem>
+          <para>The same Clusters on different nodes MUST have the same 
+          names (e.g., if Indexer cluster in workspace production on the first
+          node has the name &quot;production_indexer_cluster&quot;, then indexer clusters in
+          workspace production on all other nodes MUST have the same name
+          &quot;production_indexer_cluster&quot; ).</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section>
+      <title>Configuration requirements</title>
+      <para>Configuration of every workspace in repository must contains of
+      such parts:</para>
+      <itemizedlist>
+        <listitem id="conf_value_storage">
+          <para>Value Storage configuration:</para>
+          
+          <programlisting language="xml">&lt;value-storages&gt;
+   &lt;value-storage id=&quot;system&quot; class=&quot;org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage&quot;&gt;
+      &lt;properties&gt;
+         &lt;property name=&quot;path&quot; value=&quot;/mnt/tornado/temp/values/production&quot; /&gt;    &lt;!--path within NFS where ValueStorage will hold it&apos;s data--&gt;
+      &lt;/properties&gt;
+      &lt;filters&gt;
+         &lt;filter property-type=&quot;Binary&quot; /&gt;
+      &lt;/filters&gt;
+   &lt;/value-storage&gt;
+&lt;/value-storages&gt;</programlisting>
+        </listitem>
+        <listitem id="conf_cache">
+          <para>Cache configuration:</para>
+          
+          <programlisting language="xml">&lt;cache enabled=&quot;true&quot; class=&quot;org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache&quot;&gt;
+   &lt;properties&gt;
+      &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;jar:/conf/portal/test-jbosscache-data.xml&quot; /&gt;     &lt;!--    path to JBoss Cache configuration for data storage --&gt;
+      &lt;property name=&quot;jgroups-configuration&quot; value=&quot;jar:/conf/portal/udp-mux.xml&quot; /&gt;                     &lt;!--    path to JGroups configuration --&gt;
+      &lt;property name=&quot;jbosscache-cluster-name&quot; value=&quot;JCR_Cluster_cache_production&quot; /&gt;                   &lt;!--    JBoss Cache data storage cluster name --&gt;
+      &lt;property name=&quot;jgroups-multiplexer-stack&quot; value=&quot;true&quot; /&gt;
+   &lt;/properties&gt;
+&lt;/cache&gt; </programlisting>
+        </listitem>
+        <listitem id="conf_indexer">
+          <para>Indexer configuration:</para>
+          
+          <programlisting language="xml">&lt;query-handler class=&quot;org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex&quot;&gt;
+   &lt;properties&gt;
+      &lt;property name=&quot;changesfilter-class&quot; value=&quot;org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter&quot; /&gt;
+      &lt;property name=&quot;index-dir&quot; value=&quot;/mnt/tornado/temp/jcrlucenedb/production&quot; /&gt;                       &lt;!--    path within NFS where ValueStorage will hold it&apos;s data --&gt;
+      &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;jar:/conf/portal/test-jbosscache-indexer.xml&quot; /&gt;    &lt;!--    path to JBoss Cache configuration for indexer --&gt;
+      &lt;property name=&quot;jgroups-configuration&quot; value=&quot;jar:/conf/portal/udp-mux.xml&quot; /&gt;                       &lt;!--    path to JGroups configuration --&gt;
+      &lt;property name=&quot;jbosscache-cluster-name&quot; value=&quot;JCR_Cluster_indexer_production&quot; /&gt;                   &lt;!--    JBoss Cache indexer cluster name --&gt;
+      &lt;property name=&quot;jgroups-multiplexer-stack&quot; value=&quot;true&quot; /&gt;
+   &lt;/properties&gt;
+&lt;/query-handler&gt; </programlisting>
+        </listitem>
+        <listitem id="conf_lock_manager">
+          <para>Lock Manager configuration:</para>
+          
+          <programlisting language="xml">&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
+   &lt;properties&gt;
+      &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
+      &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;jar:/conf/portal/test-jbosscache-lock.xml&quot; /&gt;       &lt;!--    path to JBoss Cache configuration for lock manager --&gt;
+      &lt;property name=&quot;jgroups-configuration&quot; value=&quot;jar:/conf/portal/udp-mux.xml&quot; /&gt;                       &lt;!--    path to JGroups configuration --&gt;
+      &lt;property name=&quot;jgroups-multiplexer-stack&quot; value=&quot;true&quot; /&gt;
+      &lt;property name=&quot;jbosscache-cluster-name&quot; value=&quot;JCR_Cluster_lock_production&quot; /&gt;                      &lt;!--    JBoss Cache locks cluster name --&gt;
+                     
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.name&quot; value=&quot;jcrlocks_production&quot;/&gt;                   &lt;!--    the name of the DB table where lock&apos;s data will be stored --&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.create&quot; value=&quot;true&quot;/&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.drop&quot; value=&quot;false&quot;/&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.primarykey&quot; value=&quot;jcrlocks_production_pk&quot;/&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.fqn.column&quot; value=&quot;fqn&quot;/&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.node.column&quot; value=&quot;node&quot;/&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.parent.column&quot; value=&quot;parent&quot;/&gt;
+      &lt;property name=&quot;jbosscache-cl-cache.jdbc.datasource&quot; value=&quot;jdbcjcr&quot;/&gt;
+   &lt;/properties&gt;
+&lt;/lock-manager&gt;</programlisting>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+</chapter>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.ConfigurationPersister">
+  <?dbhtml filename="ch-jcr-configuration-persister.html"?>
+
+  <title>JCR Configuration persister</title>
+
+  <section>
+    <title>Idea</title>
+
+    <para>JCR Repository Service uses
+    <classname>org.exoplatform.services.jcr.config.RepositoryServiceConfiguration</classname>
+    component to read its configuration.</para>
+
+    <programlisting language="xml">&lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.jcr.config.RepositoryServiceConfiguration&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;conf-path&lt;/name&gt;
+        &lt;description&gt;JCR configuration file&lt;/description&gt;
+        &lt;value&gt;/conf/standalone/exo-jcr-config.xml&lt;/value&gt;
+      &lt;/value-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;</programlisting>
+
+    <para>In the example, Repository Service will read the configuration from
+    the file <filename>/conf/standalone/exo-jcr-config.xml</filename>.</para>
+
+    <para>But in some cases, it's required to change the configuration on the
+    fly. And know that the new one will be used. Additionally we wish not to
+    modify the original file.</para>
+
+    <para>In this case, we have to use the configuration persister feature
+    which allows to store the configuration in different locations.</para>
+  </section>
+
+  <section>
+    <title>Usage</title>
+
+    <para>On startup <classname>RepositoryServiceConfiguration</classname>
+    component checks if a configuration persister was configured. In that
+    case, it uses the provided <classname>ConfigurationPersister</classname>
+    implementation class to instantiate the persister object.</para>
+
+    <para>Configuration with persister:</para>
+    
+    <programlisting language="xml">&lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.jcr.config.RepositoryServiceConfiguration&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;conf-path&lt;/name&gt;
+        &lt;description&gt;JCR configuration file&lt;/description&gt;
+        &lt;value&gt;/conf/standalone/exo-jcr-config.xml&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;properties-param&gt;
+        &lt;name&gt;working-conf&lt;/name&gt;
+        &lt;description&gt;working-conf&lt;/description&gt;
+        &lt;property name="source-name" value="jdbcjcr" /&gt;
+        &lt;property name="dialect" value="mysql" /&gt;
+        &lt;property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister" /&gt;
+      &lt;/properties-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;
+  </programlisting>
+
+    <para>Where:<itemizedlist>
+        <listitem>
+          <para><parameter>source-name</parameter>: JNDI source name
+          configured in <classname>InitialContextInitializer</classname>
+          component. (<parameter>sourceName</parameter> prior v.1.9.) Find
+          more in <link linkend="JCR.JDBCDataContainerConfig">database
+          configuration</link>.</para>
+        </listitem>
+
+        <listitem>
+          <para><parameter>dialect</parameter>: SQL dialect which will be used
+          with database from <parameter>source-name</parameter>. Find more in
+          <link linkend="JCR.JDBCDataContainerConfig">database
+          configuration</link>.</para>
+        </listitem>
+
+        <listitem>
+          <para><parameter>persister-class-name</parameter> - class name of
+          <classname>ConfigurationPersister</classname> interface
+          implementation. (<parameter>persisterClassName</parameter> prior
+          v.1.9.)</para>
+        </listitem>
+      </itemizedlist></para>
+
+    <para>ConfigurationPersister interface:</para>
+    
+    <programlisting language="java">/**
+   * Init persister.
+   * Used by RepositoryServiceConfiguration on init. 
+   * @return - config data stream
+   */
+  void init(PropertiesParam params) throws RepositoryConfigurationException;
+  
+  /**
+   * Read config data.
+   * @return - config data stream
+   */
+  InputStream read() throws RepositoryConfigurationException;
+  
+  /**
+   * Create table, write data.
+   * @param confData - config data stream
+   */
+  void write(InputStream confData) throws RepositoryConfigurationException;
+  
+  /**
+   * Tell if the config exists.
+   * @return - flag
+   */
+  boolean hasConfig() throws RepositoryConfigurationException;
+  </programlisting>
+
+    <para>JCR Core implementation contains a persister which stores the
+    repository configuration in the relational database using JDBC calls -
+    <classname>org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister</classname>.</para>
+
+    <para>The implementation will crate and use table JCR_CONFIG in the
+    provided database.</para>
+
+    <para>But the developer can implement his own persister for his particular
+    usecase.</para>
+  </section>
+</chapter>

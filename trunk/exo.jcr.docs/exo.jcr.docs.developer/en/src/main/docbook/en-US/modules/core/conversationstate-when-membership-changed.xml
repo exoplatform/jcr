@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Core.ConversationStateUserMembershipUpdated">
+  <?dbhtml filename="ch-conversationstate-when-membership-changed.html"?>
+
+  <title>Update ConversationState when user's Membership changed</title>
+
+  <para>When a user logged in portal in ConversationRegistry added
+  ConversationSate for this user. ConversationState keeps user's Identity that
+  is actual for logged in time. In this case even user's Membership updated in
+  OrganizationService ConversationState still keeps old (not actual Identity).
+  User must logged out and loggin in again to update Identity. To fix this
+  issue, need add special listener in configuration of OrganizationServicer.
+  This listener is extended MembershipEventListener.</para>
+
+  <para>Example of configuration.</para>
+
+  <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;configuration
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  &lt;external-component-plugins&gt;
+    &lt;target-component&gt;org.exoplatform.services.organization.OrganizationService&lt;/target-component&gt;
+.....
+.....
+    &lt;component-plugin&gt;
+      &lt;name&gt;MembershipUpdateListener&lt;/name&gt;
+      &lt;set-method&gt;addListenerPlugin&lt;/set-method&gt;
+      &lt;type&gt;org.exoplatform.services.organization.impl.MembershipUpdateListener&lt;/type&gt;
+    &lt;/component-plugin&gt;
+
+   &lt;external-component-plugins&gt;
+&lt;/configuration&gt;</programlisting>
+</chapter>

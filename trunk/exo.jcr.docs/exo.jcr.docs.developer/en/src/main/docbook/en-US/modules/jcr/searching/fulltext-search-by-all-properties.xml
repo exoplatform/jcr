@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.FulltextSearchByAllProperties">
+  <title>Fulltext Search by All Properties in Node</title>
+
+  <para>Find nodes with mixin type 'mix:title' where any property contains
+  'break' string.</para>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>Repository filled with different nodes with mixin type 'mix:title'
+    and different values of 'jcr:title' and 'jcr:description'
+    properties.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>document1 (mix:title) jcr:title ='Star Wars' jcr:description
+            = 'Dart rules!!'</para>
+          </listitem>
+
+          <listitem>
+            <para>document2 (mix:title) jcr:title ='Prison
+            <emphasis>break</emphasis>' jcr:description = 'Run, Forest, run
+            ))'</para>
+          </listitem>
+
+          <listitem>
+            <para>document3 (mix:title) jcr:title ='Titanic' jcr:description =
+            'An iceberg <emphasis>break</emphasis>s a ship.'</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting language="java">// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+String sqlStatement = "SELECT * FROM mix:title WHERE CONTAINS(*,'break')";
+// create query
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting language="java">// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// we want find 'document1'
+String xpathStatement = "//element(*,mix:title)[jcr:contains(.,'break')]";
+// create query
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting language="java">NodeIterator it = result.getNodes();
+
+while(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return "document1" and "document2".</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting language="java">String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>Table content is:</para>
+
+    <table>
+      <title>Table content</title>
+
+      <tgroup cols="4">
+        <thead>
+          <row>
+            <entry>jcr:title</entry>
+
+            <entry>jcr:description</entry>
+
+            <entry>...</entry>
+
+            <entry>jcr:path</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>Prison break.</entry>
+
+            <entry>Run, Forest, run ))</entry>
+
+            <entry>...</entry>
+
+            <entry>/document2</entry>
+          </row>
+
+          <row>
+            <entry>Titanic</entry>
+
+            <entry>An iceberg breaks a ship.</entry>
+
+            <entry>...</entry>
+
+            <entry>/document3</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</section>

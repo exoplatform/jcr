@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+    
+    <!-- =========================================================== -->
+    <!-- JAAS authentication options for exo-domain realm            -->
+    <!-- =========================================================== -->
+    <Call name="addBean">
+      <Arg>
+         <New class="org.eclipse.jetty.plus.jaas.JAASLoginService">
+            <Set name="Name">exo-domain</Set>
+            <Set name="LoginModuleName">exo-domain</Set>
+            <Set name="roleClassNames">
+               <Array type="java.lang.String">
+                  <Item>org.exoplatform.services.security.jaas.RolePrincipal</Item>
+               </Array>
+            </Set>
+            <!--Set name="userClassNames">
+               <Array type="java.lang.String">
+                  <Item>org.exoplatform.services.security.jaas.UserPrincipal</Item>
+               </Array>
+            </Set-->
+         </New>
+       </Arg>
+    </Call>
+
+</Configure>
