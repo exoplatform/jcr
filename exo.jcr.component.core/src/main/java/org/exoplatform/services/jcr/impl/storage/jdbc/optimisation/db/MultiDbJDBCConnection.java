@@ -218,9 +218,10 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
             + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
       
-      FIND_ACL_HOLDERS = "select I.PARENT_ID, I.P_TYPE" +
-      		" from JCR_MITEM I" +
-      		" where I.I_CLASS=2 and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')";
+      FIND_ACL_HOLDERS =
+         "select I.PARENT_ID, I.P_TYPE "
+            + " from JCR_MITEM I where I.I_CLASS=2 and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
+            + " or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')";
    }
 
    /**

@@ -1230,8 +1230,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
       UnsupportedOperationException
    {
-      throw new UnsupportedOperationException("This method is not supported by the old JDBCWorkspaceDataContainer, use CQJDBCWorkspaceDataContainer instead.");
-   }   
+      throw new UnsupportedOperationException(
+         "This method is not supported by the old JDBCWorkspaceDataContainer, use CQJDBCWorkspaceDataContainer instead.");
+   }
 
    /**
     * {@inheritDoc}

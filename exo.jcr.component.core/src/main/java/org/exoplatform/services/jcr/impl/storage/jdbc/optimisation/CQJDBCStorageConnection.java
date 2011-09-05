@@ -1160,13 +1160,15 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
 
             QPathEntry qpe1 =
-               new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX), result.getString(COLUMN_ID));
+               new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX),
+                  result.getString(COLUMN_ID));
             boolean isChild = caid.equals(result.getString(COLUMN_ID));
             caid = result.getString(COLUMN_PARENTID);
             if (result.next())
             {
                QPathEntry qpe2 =
-                  new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX), result.getString(COLUMN_ID));
+                  new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX),
+                     result.getString(COLUMN_ID));
                if (isChild)
                {
                   // The child is the first result then we have the parent

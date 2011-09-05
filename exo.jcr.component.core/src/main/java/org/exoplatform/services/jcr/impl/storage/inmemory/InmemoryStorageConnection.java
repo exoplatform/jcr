@@ -360,7 +360,7 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildNodesDataByPage(org.exoplatform.services.jcr.datamodel.NodeData, int, int, java.util.List)
+    * {@inheritDoc}
     */
    public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
       throws RepositoryException
