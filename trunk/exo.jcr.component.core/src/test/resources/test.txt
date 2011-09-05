@@ -1,3 +1,0 @@
-hello 
-its a little text file for server tests
-Here is all right, I suppose :^)
