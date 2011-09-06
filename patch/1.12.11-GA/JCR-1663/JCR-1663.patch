@@ -1,0 +1,154 @@
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/resource/HierarchicalProperty.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/resource/HierarchicalProperty.java	(revision 4792)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/resource/HierarchicalProperty.java	(working copy)
+@@ -18,13 +18,14 @@
+  */
+ package org.exoplatform.services.jcr.webdav.resource;
+ 
++import org.exoplatform.commons.utils.Tools;
++
+ import java.text.SimpleDateFormat;
+ import java.util.ArrayList;
+ import java.util.Calendar;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Locale;
+-import java.util.TimeZone;
+ 
+ import javax.xml.namespace.QName;
+ 
+@@ -104,7 +105,7 @@
+    {
+       this(name, null);
+       SimpleDateFormat dateFormat = new SimpleDateFormat(formatPattern, Locale.ENGLISH);
+-      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
++      dateFormat.setTimeZone(Tools.getTimeZone("GMT"));
+       this.value = dateFormat.format(dateValue.getTime());
+    }
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/xpath/QueryFormat.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/xpath/QueryFormat.java	(revision 4792)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/xpath/QueryFormat.java	(working copy)
+@@ -16,16 +16,8 @@
+  */
+ package org.exoplatform.services.jcr.impl.core.query.xpath;
+ 
+-import java.util.ArrayList;
+-import java.util.Calendar;
+-import java.util.List;
+-import java.util.TimeZone;
+-
+-import javax.jcr.NamespaceException;
+-import javax.jcr.RepositoryException;
+-import javax.jcr.query.InvalidQueryException;
+-
+ import org.exoplatform.commons.utils.ISO8601;
++import org.exoplatform.commons.utils.Tools;
+ import org.exoplatform.services.jcr.datamodel.InternalQName;
+ import org.exoplatform.services.jcr.datamodel.QPath;
+ import org.exoplatform.services.jcr.datamodel.QPathEntry;
+@@ -47,9 +39,16 @@
+ import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
+ import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
+ import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
+-
+ import org.exoplatform.services.jcr.impl.util.ISO9075;
+ 
++import java.util.ArrayList;
++import java.util.Calendar;
++import java.util.List;
++
++import javax.jcr.NamespaceException;
++import javax.jcr.RepositoryException;
++import javax.jcr.query.InvalidQueryException;
++
+ /**
+  * Implements the query node tree serialization into a String.
+  */
+@@ -510,7 +509,7 @@
+         } else if (node.getValueType() == TYPE_STRING) {
+             b.append("'").append(node.getStringValue().replaceAll("'", "''")).append("'");
+         } else if (node.getValueType() == TYPE_DATE || node.getValueType() == TYPE_TIMESTAMP) {
+-            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
++            Calendar cal = Calendar.getInstance(Tools.getTimeZone("UTC"));
+             cal.setTime(node.getDateValue());
+             b.append(resolver.createJCRName(XPathQueryBuilder.XS_DATETIME).getAsString());
+             b.append("('").append(ISO8601.format(cal)).append("')");
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/sql/QueryFormat.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/sql/QueryFormat.java	(revision 4792)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/sql/QueryFormat.java	(working copy)
+@@ -16,17 +16,8 @@
+  */
+ package org.exoplatform.services.jcr.impl.core.query.sql;
+ 
+-import java.util.ArrayList;
+-import java.util.Calendar;
+-import java.util.Iterator;
+-import java.util.List;
+-import java.util.TimeZone;
+-
+-import javax.jcr.NamespaceException;
+-import javax.jcr.RepositoryException;
+-import javax.jcr.query.InvalidQueryException;
+-
+ import org.exoplatform.commons.utils.ISO8601;
++import org.exoplatform.commons.utils.Tools;
+ import org.exoplatform.services.jcr.datamodel.InternalQName;
+ import org.exoplatform.services.jcr.datamodel.QPath;
+ import org.exoplatform.services.jcr.impl.Constants;
+@@ -48,7 +39,16 @@
+ import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
+ import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
+ 
++import java.util.ArrayList;
++import java.util.Calendar;
++import java.util.Iterator;
++import java.util.List;
+ 
++import javax.jcr.NamespaceException;
++import javax.jcr.RepositoryException;
++import javax.jcr.query.InvalidQueryException;
++
++
+ /**
+  * Implements the query node tree serialization into a String.
+  */
+@@ -553,7 +553,7 @@
+         } else if (node.getValueType() == TYPE_STRING) {
+             b.append("'").append(node.getStringValue().replaceAll("'", "''")).append("'");
+         } else if (node.getValueType() == TYPE_DATE || node.getValueType() == TYPE_TIMESTAMP) {
+-            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
++            Calendar cal = Calendar.getInstance(Tools.getTimeZone("UTC"));
+             cal.setTime(node.getDateValue());
+             b.append("TIMESTAMP '").append(ISO8601.format(cal)).append("'");
+         } else {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/util/JCRDateFormat.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/util/JCRDateFormat.java	(revision 4792)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/util/JCRDateFormat.java	(working copy)
+@@ -19,12 +19,12 @@
+ package org.exoplatform.services.jcr.impl.util;
+ 
+ import org.exoplatform.commons.utils.ISO8601;
++import org.exoplatform.commons.utils.Tools;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+ 
+ import java.text.ParseException;
+ import java.util.Calendar;
+-import java.util.TimeZone;
+ 
+ import javax.jcr.ValueFormatException;
+ 
+@@ -159,7 +159,7 @@
+                   isoCalendar.setFirstDayOfWeek(Integer.parseInt(calendarFields[1]));
+                   isoCalendar.setMinimalDaysInFirstWeek(Integer.parseInt(calendarFields[2]));
+ 
+-                  isoCalendar.setTimeZone(TimeZone.getTimeZone(calendarFields[3]));
++                  isoCalendar.setTimeZone(Tools.getTimeZone(calendarFields[3]));
+                }
+                catch (Exception e)
+                {
