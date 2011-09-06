@@ -19,12 +19,12 @@
 package org.exoplatform.services.jcr.impl.util;
 
 import org.exoplatform.commons.utils.ISO8601;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.text.ParseException;
 import java.util.Calendar;
-import java.util.TimeZone;
 
 import javax.jcr.ValueFormatException;
 
@@ -159,7 +159,7 @@ public class JCRDateFormat
                   isoCalendar.setFirstDayOfWeek(Integer.parseInt(calendarFields[1]));
                   isoCalendar.setMinimalDaysInFirstWeek(Integer.parseInt(calendarFields[2]));
 
-                  isoCalendar.setTimeZone(TimeZone.getTimeZone(calendarFields[3]));
+                  isoCalendar.setTimeZone(Tools.getTimeZone(calendarFields[3]));
                }
                catch (Exception e)
                {
