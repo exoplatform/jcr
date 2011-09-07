@@ -897,6 +897,14 @@
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration-pgsql-sjdbc-jbc.xml</jcr.test.configuration.file>
          </properties>
+         <dependencies>
+            <dependency>
+               <groupId>postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>8.3-606.jdbc3</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
       </profile>
       <profile>
          <id>cache-disabled</id>
