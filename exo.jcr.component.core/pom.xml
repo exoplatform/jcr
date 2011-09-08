@@ -251,13 +251,6 @@
          <version>1.2</version>
          <scope>test</scope>
       </dependency -->
-      <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
-      <!--dependency>
-         <groupId>com.microsoft</groupId>
-         <artifactId>sqljdbc</artifactId>
-         <version>3.0.1301.101</version>
-         <scope>test</scope>
-      </dependency-->
       <!-- For Apache Derby support (aka JavaDB) -->
       <!-- dependency>
          <groupId>org.apache.derby</groupId>
@@ -834,6 +827,34 @@
                <groupId>mysql</groupId>
                <artifactId>mysql-connector-java</artifactId>
                <version>5.1.14</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>mssql</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-mssql-jbc.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.microsoft</groupId>
+               <artifactId>sqljdbc</artifactId>
+               <version>3.0.1301.101</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>mssql-sjdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-mssql-sjdbc-jbc.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.microsoft</groupId>
+               <artifactId>sqljdbc</artifactId>
+               <version>3.0.1301.101</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
