@@ -249,7 +249,7 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-          <property name="url" value="jdbc:sqlserver://dbs-jcr.exoplatform.com.ua:1433;databaseName=db1;" />
+          <property name="url" value="jdbc:sqlserver://localhost:1433;databaseName=db1;" />
           <property name="username" value="tester" />
           <property name="password" value="tester" />
           <property name="maxActive" value="20" />
@@ -305,7 +305,7 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-          <property name="url" value="jdbc:sqlserver://dbs-jcr.exoplatform.com.ua:1433;databaseName=db2;" />
+          <property name="url" value="jdbc:sqlserver://localhost:1433;databaseName=db2;" />
           <property name="username" value="tester" />
           <property name="password" value="tester" />
         </properties-param>
@@ -332,7 +332,7 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-          <property name="url" value="jdbc:sqlserver://dbs-jcr.exoplatform.com.ua:1433;databaseName=db1tck;" />
+          <property name="url" value="jdbc:sqlserver://localhost:1433;databaseName=db1tck;" />
           <property name="username" value="tester" />
           <property name="password" value="tester" />
         </properties-param>
@@ -440,7 +440,7 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-          <property name="url" value="jdbc:sqlserver://dbs-jcr.exoplatform.com.ua:1433;databaseName=testdbcleaner_sjdbc;" />
+          <property name="url" value="jdbc:sqlserver://localhost:1433;databaseName=testdbcleaner_sjdbc;" />
           <property name="username" value="tester" />
           <property name="password" value="tester" />
           <property name="maxActive" value="20" />
