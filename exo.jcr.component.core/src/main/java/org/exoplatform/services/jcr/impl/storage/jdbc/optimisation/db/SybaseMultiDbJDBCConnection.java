@@ -133,7 +133,7 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
                         + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P, "
                         + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " where P.PARENT_ID = "
                         + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
-                        + ".ID and P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".ID";
+                        + ".ID and P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by ID";
 
       DELETE_TEMPORARY_TABLE_A = "drop table " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
