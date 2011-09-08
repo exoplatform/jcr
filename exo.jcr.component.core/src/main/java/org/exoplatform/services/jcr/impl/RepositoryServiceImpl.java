@@ -170,7 +170,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          //managerStartChanges.removeListeners(repositoryContainer);
          repositoryContainers.remove(rEntry.getName());
 
-         throw new RepositoryConfigurationException("Repository conatainer " + rEntry.getName() + " was not started.",
+         throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " was not started.",
             t);
       }
 

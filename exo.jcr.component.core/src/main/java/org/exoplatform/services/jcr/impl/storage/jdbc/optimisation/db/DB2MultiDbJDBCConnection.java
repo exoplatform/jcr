@@ -75,7 +75,7 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
             + " join (select A.* from"
             + " (select Row_Number() over (order by I.ID) as r__, I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM"
             + " from JCR_MITEM I where I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?) J on P.PARENT_ID = J.ID"
-            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by ID";
+            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
    }
    
    /**
