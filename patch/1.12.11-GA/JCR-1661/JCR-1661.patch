@@ -1,0 +1,425 @@
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestMultipleListenersNotifying.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestMultipleListenersNotifying.java	(revision 4874)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestMultipleListenersNotifying.java	(working copy)
+@@ -20,8 +20,14 @@
+ 
+ import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
++import org.exoplatform.services.jcr.datamodel.ItemData;
++import org.exoplatform.services.jcr.datamodel.ItemType;
++import org.exoplatform.services.jcr.datamodel.NodeData;
++import org.exoplatform.services.jcr.datamodel.QPathEntry;
+ import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
+ 
++import javax.jcr.RepositoryException;
++
+ /**
+  * Created by The eXo Platform SAS.
+  * 
+@@ -39,6 +45,12 @@
+       {
+          super(null, new SystemDataContainerHolder(null));
+       }
++
++      public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
++         throws RepositoryException
++      {
++         return null;
++      }
+    }
+ 
+    class Counter
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/ItemDataConsumer.java	(working copy)
+@@ -70,6 +70,24 @@
+    ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException;
+ 
+    /**
++    * Find Item by parent (id) and name (with path index) of defined type and create 
++    * or not (defined by createNullItemData) null item data.
++    * 
++    * @param parent 
++    *          NodeData
++    * @param name 
++    *          item name
++    * @param itemType 
++    *          itemType
++    * @param createNullItemData 
++    *          defines if NullItemData should be created          
++    * @return ItemData, data by parent and name
++    * @throws RepositoryException
++    */
++   ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
++      throws RepositoryException;
++
++   /**
+     * Find Item by identifier.
+     * 
+     * @param String identifier
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(working copy)
+@@ -576,7 +576,7 @@
+ 
+       PropertyData prop =
+          (PropertyData)dataManager.getItemData(((NodeData)getData()), new QPathEntry(Constants.JCR_MIXINTYPES, 0),
+-            ItemType.PROPERTY);
++            ItemType.PROPERTY, false);
+       ItemState state;
+ 
+       if (prop != null)
+@@ -1775,7 +1775,7 @@
+ 
+       for (PropertyDefinitionData pd : ntmanager.getAllPropertyDefinitions(removedName))
+       {
+-         ItemData p = dataManager.getItemData(nodeData(), new QPathEntry(pd.getName(), 1), ItemType.PROPERTY);
++         ItemData p = dataManager.getItemData(nodeData(), new QPathEntry(pd.getName(), 1), ItemType.PROPERTY, false);
+          if (p != null && !p.isNode())
+             // remove it
+             dataManager.delete(p, ancestorToSave);
+@@ -2853,13 +2853,15 @@
+ 
+       int ind = 1;
+ 
+-      NodeData sibling = (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind), ItemType.NODE);
++      NodeData sibling =
++         (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind), ItemType.NODE, false);
+       while (sibling != null)
+       {
+          if (allowSns)
+          {
+             ind++;
+-            sibling = (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind), ItemType.NODE);
++            sibling =
++               (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind), ItemType.NODE, false);
+          }
+          else
+          {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java	(working copy)
+@@ -224,6 +224,12 @@
+     */
+    public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
+    {
++      return getItemData(parent, name, itemType, true);
++   }
++
++   public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
++      throws RepositoryException
++   {
+       if (name.getName().equals(JCRPath.PARENT_RELPATH) && name.getNamespace().equals(Constants.NS_DEFAULT_URI))
+       {
+          if (parent.getIdentifier().equals(Constants.ROOT_UUID))
+@@ -249,7 +255,7 @@
+             return null;
+          }
+          // 2. Try from txdatamanager
+-         data = transactionableManager.getItemData(parent, name, itemType);
++         data = transactionableManager.getItemData(parent, name, itemType, createNullItemData);
+       }
+       else if (!state.isDeleted())
+       {
+@@ -328,6 +334,31 @@
+    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType, boolean apiRead)
+       throws RepositoryException
+    {
++      return getItem(parent, name, pool, itemType, apiRead, true);
++   }
++
++   /**
++    * For internal use. Return Item by parent NodeDada and the name of searched item.
++    * 
++    * @param parent
++    *          - parent of the searched item
++    * @param name
++    *          - item name
++    * @param itemType
++    *          - item type
++    * @param pool
++    *          - indicates does the item fall in pool
++    * @param apiRead 
++    *          - if true will call postRead Action and check permissions              
++    * @param createNullItemData
++    *          - defines if there is a need to create NullItemData  
++    *          
++    * @return existed item or null if not found
++    * @throws RepositoryException
++    */
++   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType, boolean apiRead,
++      boolean createNullItemData) throws RepositoryException
++   {
+       long start = System.currentTimeMillis();
+       if (log.isDebugEnabled())
+       {
+@@ -337,7 +368,7 @@
+       ItemImpl item = null;
+       try
+       {
+-         return item = readItem(getItemData(parent, name, itemType), parent, pool, apiRead);
++         return item = readItem(getItemData(parent, name, itemType, createNullItemData), parent, pool, apiRead);
+       }
+       finally
+       {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/nodetype/ItemAutocreator.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/nodetype/ItemAutocreator.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/nodetype/ItemAutocreator.java	(working copy)
+@@ -118,7 +118,7 @@
+          {
+             final ItemData pdata =
+                avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
+-                  ndef.getName(), 0), ItemType.NODE);
++                  ndef.getName(), 0), ItemType.NODE, false);
+             if (pdata == null && !addedNodes.contains(ndef.getName()) || pdata != null && !pdata.isNode())
+             {
+ 
+@@ -163,7 +163,7 @@
+ 
+             final ItemData pdata =
+                avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
+-                  pdef.getName(), 0), ItemType.PROPERTY);
++                  pdef.getName(), 0), ItemType.PROPERTY, false);
+             if (pdata == null && !addedProperties.contains(pdef.getName()) || pdata != null && pdata.isNode())
+             {
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/ItemImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/ItemImpl.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/ItemImpl.java	(working copy)
+@@ -419,7 +419,8 @@
+       PropertyImpl prevProp;
+       PropertyDefinitionDatas defs;
+       ItemImpl prevItem =
+-         dataManager.getItem(parentNode.nodeData(), new QPathEntry(propertyName, 0), true, ItemType.PROPERTY);
++         dataManager.getItem(parentNode.nodeData(), new QPathEntry(propertyName, 0), true, ItemType.PROPERTY, true,
++            false);
+ 
+       NodeTypeDataManager ntm = session.getWorkspace().getNodeTypesHolder();
+       NodeData parentData = (NodeData)parentNode.getData();
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/BaseXmlImporter.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/BaseXmlImporter.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/xml/importing/BaseXmlImporter.java	(working copy)
+@@ -229,7 +229,7 @@
+       ItemData sameNameNode = null;
+       try
+       {
+-         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0), ItemType.NODE);
++         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0), ItemType.NODE, false);
+       }
+       catch (PathNotFoundException e)
+       {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java	(working copy)
+@@ -119,6 +119,15 @@
+    /**
+     * {@inheritDoc}
+     */
++   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
++      throws RepositoryException
++   {
++      return copyItemData(storageDataManager.getItemData(parentData, name, itemType, createNullItemData));
++   }
++
++   /**
++    * {@inheritDoc}
++    */
+    public ItemData getItemData(String identifier) throws RepositoryException
+    {
+       return copyItemData(storageDataManager.getItemData(identifier));
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/TransactionableDataManager.java	(working copy)
+@@ -254,6 +254,15 @@
+     */
+    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
+    {
++      return getItemData(parentData, name, itemType, true);
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
++      throws RepositoryException
++   {
+       ItemData data = null;
+       if (txStarted())
+       {
+@@ -269,7 +278,7 @@
+       }
+       else
+       {
+-         return storageDataManager.getItemData(parentData, name, itemType);
++         return storageDataManager.getItemData(parentData, name, itemType, createNullItemData);
+       }
+    }
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(working copy)
+@@ -139,15 +139,24 @@
+    @Override
+    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
+    {
++      return getItemData(parentData, name, itemType, true);
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
++      throws RepositoryException
++   {
+       if (parentData != null)
+       {
+          final QPath ipath = QPath.makeChildPath(parentData.getQPath(), name);
+          if (isSystemDescendant(ipath) && !this.equals(versionDataManager))
+          {
+-            return versionDataManager.getItemData(parentData, name, itemType);
++            return versionDataManager.getItemData(parentData, name, itemType, createNullItemData);
+          }
+       }
+-      return super.getItemData(parentData, name, itemType);
++      return super.getItemData(parentData, name, itemType, createNullItemData);
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/ACLInheritanceSupportedWorkspaceDataManager.java	(working copy)
+@@ -182,9 +182,19 @@
+    /**
+     * {@inheritDoc}
+     */
+-   public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
++   public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType)
++      throws RepositoryException
+    {
+-      final ItemData item = persistentManager.getItemData(parent, name, itemType);
++      return getItemData(parent, name, itemType, true);
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
++      throws RepositoryException
++   {
++      final ItemData item = persistentManager.getItemData(parent, name, itemType, createNullItemData);
+       return item != null && item.isNode() ? initACL(parent, (NodeData)item) : item;
+    }
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/BufferedJBossCache.java	(working copy)
+@@ -994,7 +994,8 @@
+             LOG.error("Unexpected object found by FQN:" + getFqn() + " and key:" + key + ". Expected Set, but found:"
+                + existingObject.getClass().getName());
+          }
+-         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL)
++         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL
++            && cache.getMembers().size() > 1)
+          {
+             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
+@@ -1029,7 +1030,7 @@
+       @Override
+       public void apply()
+       {
+-         if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL)
++         if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL && cache.getMembers().size() > 1)
+          {
+             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+             // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes to reload them from the db
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 4874)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
+@@ -402,7 +402,16 @@
+    @Override
+    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
+    {
++      return getItemData(parentData, name, itemType, true);
++   }
+ 
++   /**
++    * {@inheritDoc}
++    */
++   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
++      throws RepositoryException
++   {
++
+       // 1. Try from cache
+       ItemData data = getCachedItemData(parentData, name, itemType);
+ 
+@@ -419,7 +428,7 @@
+             data = getCachedItemData(parentData, name, itemType);
+             if (data == null)
+             {
+-               data = getPersistedItemData(parentData, name, itemType);
++               data = getPersistedItemData(parentData, name, itemType, createNullItemData);
+             }
+          }
+          finally
+@@ -755,11 +764,36 @@
+    protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name, ItemType itemType)
+       throws RepositoryException
+    {
++      return getPersistedItemData(parentData, name, itemType, true);
++   }
++
++   /**
++    * Get persisted ItemData.
++    * 
++    * @param parentData
++    *          parent
++    * @param name
++    *          Item name
++    * @param itemType
++    *          item type
++    * @param createNullItemData
++    *          indicates if we need to create NullItemData  
++    * @return ItemData
++    * @throws RepositoryException
++    *           error
++    */
++   protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name, ItemType itemType,
++      boolean createNullItemData) throws RepositoryException
++   {
+       ItemData data = super.getItemData(parentData, name, itemType);
+       if (cache.isEnabled())
+       {
+-         if (data == null)
++         if (data != null)
+          {
++            cache.put(data);
++         }
++         else if (createNullItemData)
++         {
+             if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
+             {
+                cache.put(new NullNodeData(parentData, name));
+@@ -769,10 +803,6 @@
+                cache.put(new NullPropertyData(parentData, name));
+             }
+          }
+-         else
+-         {
+-            cache.put(data);
+-         }
+       }
+       return data;
+    }
