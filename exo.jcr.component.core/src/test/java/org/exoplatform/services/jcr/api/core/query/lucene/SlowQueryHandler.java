@@ -116,9 +116,9 @@ public class SlowQueryHandler extends AbstractQueryHandler
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean, boolean)
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean, boolean, boolean)
     */
-   public void setOnline(boolean isOnline, boolean allowQuery) throws IOException
+   public void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException
    {
       // TODO Auto-generated method stub
       

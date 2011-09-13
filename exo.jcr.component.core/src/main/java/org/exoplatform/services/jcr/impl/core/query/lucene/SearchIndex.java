@@ -75,6 +75,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -521,6 +523,10 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    protected boolean isSuspended = false;
 
+   protected Set<String> recoveryFilterClasses = new HashSet<String>();
+
+   protected List<AbstractRecoveryFilter> recoveryFilters = null;
+
    /**
     * Working constructor.
     * 
@@ -583,13 +589,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          indexDirectory = new File(path);
 
-            if (!indexDirectory.exists())
+         if (!indexDirectory.exists())
+         {
+            if (!indexDirectory.mkdirs())
             {
-               if (!indexDirectory.mkdirs())
-               {
-                  throw new RepositoryException("fail to create index dir " + path);
-               }
+               throw new RepositoryException("fail to create index dir " + path);
             }
+         }
       }
       else
       {
@@ -641,7 +647,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       // if RW mode, create initial index and start check
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
+         // set true if indexRecoveryFilters are required and some filter gives positive flag
          final boolean doReindexing = (index.numDocs() == 0 && context.isCreateInitialIndex());
+         // if existing index should be removed
+         final boolean doForceReindexing = (context.isRecoveryFilterUsed() && isIndexRecoveryRequired());
+
          final boolean doCheck = (consistencyCheckEnabled && (index.getRedoLogApplied() || forceConsistencyCheck));
          final ItemDataConsumer itemStateManager = context.getItemStateManager();
 
@@ -654,7 +664,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                {
                   try
                   {
-                     reindex(doReindexing, doCheck, itemStateManager);
+                     reindex(doReindexing, doForceReindexing, doCheck, itemStateManager);
                   }
                   catch (IOException e)
                   {
@@ -668,7 +678,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          }
          else
          {
-            reindex(doReindexing, doCheck, itemStateManager);
+            reindex(doReindexing, doForceReindexing, doCheck, itemStateManager);
          }
       }
       // initialize spell checker
@@ -700,11 +710,99 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       return wsId;
    }
 
-   private void reindex(boolean doReindexing, boolean doCheck, ItemDataConsumer itemStateManager) throws IOException
+   /**
+    * Adds new recovery filter to existing list.
+    * 
+    * @param recoveryFilterClassName
+    */
+   public void addRecoveryFilterClass(String recoveryFilterClassName)
    {
-      if (doReindexing)
+      recoveryFilterClasses.add(recoveryFilterClassName);
+   }
+
+   /**
+    * Invokes all recovery filters from the set
+    * @return true if any filter requires reindexing 
+    */
+   @SuppressWarnings("unchecked")
+   private boolean isIndexRecoveryRequired() throws RepositoryException
+   {
+      // instantiate filters first, if not initialized
+      if (recoveryFilters == null)
       {
-         index.createInitialIndex(itemStateManager);
+         recoveryFilters = new ArrayList<AbstractRecoveryFilter>();
+         log.info("Initializing RecoveryFilters.");
+         for (String recoveryFilterClassName : recoveryFilterClasses)
+         {
+            AbstractRecoveryFilter filter = null;
+            Class<? extends AbstractRecoveryFilter> filterClass;
+            try
+            {
+               filterClass =
+                  (Class<? extends AbstractRecoveryFilter>)Class.forName(recoveryFilterClassName, true, this.getClass()
+                     .getClassLoader());
+               Constructor<? extends AbstractRecoveryFilter> constuctor = filterClass.getConstructor(SearchIndex.class);
+               filter = constuctor.newInstance(this);
+               recoveryFilters.add(filter);
+            }
+            catch (ClassNotFoundException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (IllegalArgumentException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (InstantiationException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (IllegalAccessException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (InvocationTargetException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (SecurityException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (NoSuchMethodException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+         }
+      }
+
+      // invoke filters
+      for (AbstractRecoveryFilter filter : recoveryFilters)
+      {
+         if (filter.accept())
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   /**
+    * @param doReindexing
+    *          performs indexing if set to true 
+    * @param doForceReindexing
+    *          skips index existence check
+    * @param doCheck
+    *          checks index
+    * @param itemStateManager
+    * @throws IOException
+    */
+   private void reindex(boolean doReindexing, boolean doForceReindexing, boolean doCheck,
+      ItemDataConsumer itemStateManager) throws IOException
+   {
+      if (doReindexing || doForceReindexing)
+      {
+         index.createInitialIndex(itemStateManager, doForceReindexing);
       }
       if (doCheck)
       {
@@ -974,6 +1072,17 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void close()
    {
+      // cleanup resources obtained by filters
+      if (recoveryFilters != null)
+      {
+         for (AbstractRecoveryFilter filter : recoveryFilters)
+         {
+            filter.close();
+         }
+         recoveryFilters.clear();
+         recoveryFilters = null;
+      }
+
       if (synonymProviderConfigFs != null)
       {
          try
@@ -1902,7 +2011,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          if (log.isDebugEnabled())
          {
             time = System.currentTimeMillis() - time;
-            log.debug("Retrieved {} aggregate roots in {} ms.", new Integer(found), new Long(time));            
+            log.debug("Retrieved {} aggregate roots in {} ms.", new Integer(found), new Long(time));
          }
       }
    }
@@ -3042,7 +3151,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean, boolean)
     */
-   public void setOnline(boolean isOnline, boolean allowQuery) throws IOException
+   public void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException
    {
       checkOpen();
       if (isOnline)
@@ -3053,7 +3162,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          this.allowQuery = allowQuery;
       }
-      index.setOnline(isOnline);
+      index.setOnline(isOnline, dropStaleIndexes);
    }
 
    /**

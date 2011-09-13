@@ -110,7 +110,6 @@ public abstract class AbstractQueryHandler implements QueryHandler
     */
    public void init() throws IOException, RepositoryException, RepositoryConfigurationException
    {
-      // TODO Auto-generated method stub
       doInit();
       initialized = true;
    }
@@ -263,13 +262,5 @@ public abstract class AbstractQueryHandler implements QueryHandler
    public void setIndexUpdateMonitor(IndexUpdateMonitor indexUpdateMonitor)
    {
       this.indexUpdateMonitor = indexUpdateMonitor;
-   }
-
-   /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean)
-    */
-   public void setOnline(boolean isOnline) throws IOException
-   {
-      setOnline(isOnline, false);
    }
 }

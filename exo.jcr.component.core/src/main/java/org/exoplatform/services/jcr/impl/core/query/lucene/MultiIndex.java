@@ -430,13 +430,26 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IllegalStateException
     *             if this index is not empty.
     */
-   void createInitialIndex(ItemDataConsumer stateMgr) throws IOException
+   void createInitialIndex(ItemDataConsumer stateMgr, boolean doForceReindexing) throws IOException
    {
       // only do an initial index if there are no indexes at all
       boolean indexCreated = false;
+
+      if (doForceReindexing && !indexes.isEmpty())
+      {
+         log.info("Removing stale indexes.");
+
+         List<PersistentIndex> oldIndexes = new ArrayList<PersistentIndex>(indexes);
+         for (PersistentIndex persistentIndex : oldIndexes)
+         {
+            deleteIndex(persistentIndex);
+         }
+         attemptDelete();
+      }
+
       if (indexNames.size() == 0)
       {
-         setOnline(false);
+         setOnline(false, false);
 
          try
          {
@@ -513,7 +526,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          finally
          {
-            setOnline(true);
+            setOnline(true, false);
          }
       }
       else
@@ -809,25 +822,28 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private void invokeOfflineIndex() throws IOException
    {
       List<String> processedIDs = offlineIndex.getProcessedIDs();
-      // remove all nodes placed in offline index
-      update(processedIDs, Collections.<Document> emptyList());
+      if (!processedIDs.isEmpty())
+      {
+         // remove all nodes placed in offline index
+         update(processedIDs, Collections.<Document> emptyList());
 
-      executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+         executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
 
-      // create index
-      CreateIndex create = new CreateIndex(getTransactionId(), null);
-      executeAndLog(create);
+         // create index
+         CreateIndex create = new CreateIndex(getTransactionId(), null);
+         executeAndLog(create);
 
-      // invoke offline (copy offline into working index)
-      executeAndLog(new OfflineInvoke(getTransactionId(), create.getIndexName()));
+         // invoke offline (copy offline into working index)
+         executeAndLog(new OfflineInvoke(getTransactionId(), create.getIndexName()));
 
-      // add new index
-      AddIndex add = new AddIndex(getTransactionId(), create.getIndexName());
-      executeAndLog(add);
+         // add new index
+         AddIndex add = new AddIndex(getTransactionId(), create.getIndexName());
+         executeAndLog(add);
 
-      executeAndLog(new Commit(getTransactionId()));
+         executeAndLog(new Commit(getTransactionId()));
 
-      indexNames.write();
+         indexNames.write();
+      }
       offlineIndex.close();
       deleteIndex(offlineIndex);
       offlineIndex = null;
@@ -3361,7 +3377,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @param isOnline
     * @throws IOException
     */
-   public synchronized void setOnline(boolean isOnline) throws IOException
+   public synchronized void setOnline(boolean isOnline, boolean dropStaleIndexes) throws IOException
    {
       // if mode really changed
       if (online != isOnline)
@@ -3404,7 +3420,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                flush();
             }
             releaseMultiReader();
-            staleIndexes.addAll(indexes);
+            if (dropStaleIndexes)
+            {
+               staleIndexes.addAll(indexes);
+            }
+
             online = false;
          }
       }

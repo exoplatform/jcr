@@ -200,26 +200,19 @@ public interface QueryHandler
 
    /**
     * Switches index into corresponding ONLINE or OFFLINE mode. Offline mode means that new indexing data is
-    * collected but index is guaranteed to be unmodified during offline state. Queries are denied in offline
-    * mode. Please refer to {{@link #setOnline(boolean, boolean)}} if queries must be allowed while index is
-    * offline. 
-    * 
-    * @param isOnline
-    * @throws IOException
-    */
-   void setOnline(boolean isOnline) throws IOException;
-
-   /**
-    * Switches index into corresponding ONLINE or OFFLINE mode. Offline mode means that new indexing data is
     * collected but index is guaranteed to be unmodified during offline state. Passing the allowQuery flag, can
     * allow or deny performing queries on index during offline mode. AllowQuery is not used when setting index
-    * back online.
+    * back online. When dropStaleIndexes is set, indexes present on the moment of switching index offline will be
+    * marked as stale and removed on switching it back online.
     * 
     * @param isOnline
     * @param allowQuery
+    *          doesn't matter, when switching index to online
+    * @param dropStaleIndexes
+    *          doesn't matter, when switching index to online
     * @throws IOException
     */
-   void setOnline(boolean isOnline, boolean allowQuery) throws IOException;
+   void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException;
 
    /**
     * Offline mode means that new indexing data is collected but index is guaranteed to be unmodified during

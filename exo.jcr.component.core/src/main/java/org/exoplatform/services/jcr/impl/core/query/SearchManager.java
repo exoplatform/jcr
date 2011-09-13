@@ -18,9 +18,9 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -237,7 +237,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * Switches index between online and offline modes
     */
    private RemoteCommand changeIndexState;
-   
+
    private final ExoContainerContext ctx;
 
    private String hotReindexingState = "not stated";
@@ -754,10 +754,18 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new RepositoryConfigurationException(e);
       }
 
+      // Recovery Filters are 
+      String changesFilterClassName = config.getParameterValue(QueryHandlerParams.PARAM_CHANGES_FILTER_CLASS, null);
+
+      boolean recoveryFilterUsed =
+         (org.exoplatform.services.jcr.impl.core.query.ispn.LocalIndexChangesFilter.class.getName().equals(
+            changesFilterClassName) || org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter.class
+            .getName().equals(changesFilterClassName)) ? true : false;
+
       QueryHandlerContext context =
          new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
-            PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, virtualTableResolver,
-            indexRecovery, rpcService, repositoryName);
+            PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, recoveryFilterUsed,
+            virtualTableResolver, indexRecovery, rpcService, repositoryName);
 
       return context;
    }
@@ -918,7 +926,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          catch (NoSuchMethodException e)
          {
             // No constructor with the workspace id can be found so we use the default constructor
-            Constructor<?> constuctor = qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
+            Constructor<?> constuctor =
+               qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
             handler = (QueryHandler)constuctor.newInstance(config, cfm);
          }
          QueryHandler parentHandler = (this.parentSearchManager != null) ? parentSearchManager.getHandler() : null;
@@ -1114,28 +1123,22 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    }
 
    /**
-    * Switches index into online or offline modes.
-    * 
-    * @param isOnline
-    * @throws IOException
-    */
-   public void setOnline(boolean isOnline) throws IOException
-   {
-      // deny queries
-      handler.setOnline(isOnline, false);
-   }
-
-   /**
-    * Switches index into online or offline modes. Passing the allowQuery flag, can
-    * allow or deny performing queries on index during offline mode
+    * Switches index into corresponding ONLINE or OFFLINE mode. Offline mode means that new indexing data is
+    * collected but index is guaranteed to be unmodified during offline state. Passing the allowQuery flag, can
+    * allow or deny performing queries on index during offline mode. AllowQuery is not used when setting index
+    * back online. When dropStaleIndexes is set, indexes present on the moment of switching index offline will be
+    * marked as stale and removed on switching it back online.
     * 
     * @param isOnline
     * @param allowQuery
+    *          doesn't matter, when switching index to online
+    * @param dropStaleIndexes
+    *          doesn't matter, when switching index to online
     * @throws IOException
     */
-   public void setOnline(boolean isOnline, boolean allowQuery) throws IOException
+   public void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException
    {
-      handler.setOnline(isOnline, allowQuery);
+      handler.setOnline(isOnline, allowQuery, dropStaleIndexes);
    }
 
    public boolean isOnline()
@@ -1217,7 +1220,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                }
                else
                {
-                  handler.setOnline(false, !dropExisting);
+                  handler.setOnline(false, !dropExisting, true);
                }
                // launch reindexing thread safely, resume nodes if any exception occurs
                if (handler instanceof SearchIndex)
@@ -1270,7 +1273,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                {
                   try
                   {
-                     handler.setOnline(true, true);
+                     handler.setOnline(true, true, true);
                   }
                   catch (IOException e)
                   {
@@ -1416,7 +1419,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          {
             boolean isOnline = (Boolean)args[0];
             boolean allowQuery = (args.length == 2) ? (Boolean)args[1] : false;
-            SearchManager.this.setOnline(isOnline, allowQuery);
+            SearchManager.this.setOnline(isOnline, allowQuery, true);
             return null;
          }
       });

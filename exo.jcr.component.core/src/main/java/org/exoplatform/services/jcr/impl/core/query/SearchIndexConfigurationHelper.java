@@ -202,5 +202,9 @@ public class SearchIndexConfigurationHelper
       {
          searchIndex.setAsyncReindexing(Boolean.parseBoolean(value));
       }
+      else if (QueryHandlerParams.PARAM_INDEX_RECOVERY_FILTER.equals(name))
+      {
+         searchIndex.addRecoveryFilterClass(value);
+      }
    }
 }

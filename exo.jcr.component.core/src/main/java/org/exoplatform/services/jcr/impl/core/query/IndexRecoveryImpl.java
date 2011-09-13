@@ -125,7 +125,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
          public Serializable execute(Serializable[] args) throws Throwable
          {
             boolean isOnline = (Boolean)args[0];
-            searchManager.setOnline(isOnline);
+            searchManager.setOnline(isOnline, false, false);
             IndexRecoveryImpl.this.isOnline = isOnline;
             return null;
          }
@@ -300,7 +300,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
          throw new RepositoryException(e);
       }
    }
-   
+
    /**
     * @see org.exoplatform.services.jcr.impl.core.query.IndexRecovery#checkIndexReady()
     */
@@ -452,7 +452,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
                      // node which was responsible for resuming leave the cluster, so resume component
                      log
                         .error("Node responsible for setting index back online seems to leave the cluster. Setting back online.");
-                     searchManager.setOnline(true);
+                     searchManager.setOnline(true, false, false);
                   }
                   catch (SecurityException e1)
                   {

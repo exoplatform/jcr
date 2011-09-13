@@ -72,6 +72,8 @@ public class QueryHandlerContext
 
    private final boolean createInitialIndex;
 
+   private final boolean recoveryFilterUsed;
+
    private final LuceneVirtualTableResolver virtualTableResolver;
 
    /**
@@ -88,7 +90,7 @@ public class QueryHandlerContext
     * Field containing RPCService, if any configured in container  
     */
    private final RPCService rpcService;
-   
+
    private final String repositoryName;
 
    /**
@@ -121,7 +123,8 @@ public class QueryHandlerContext
    public QueryHandlerContext(WorkspaceContainerFacade container, ItemDataConsumer stateMgr, IndexingTree indexingTree,
       NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
       String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
-      LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery, RPCService rpcService, String repositoryName)
+      boolean useIndexRecoveryFilters, LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery,
+      RPCService rpcService, String repositoryName)
    {
       this.indexRecovery = indexRecovery;
       this.container = container;
@@ -137,6 +140,7 @@ public class QueryHandlerContext
       this.rpcService = rpcService;
       this.parentHandler = parentHandler;
       this.repositoryName = repositoryName;
+      this.recoveryFilterUsed = useIndexRecoveryFilters;
       ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).addListener(propRegistry);
    }
 
@@ -162,6 +166,14 @@ public class QueryHandlerContext
    public boolean isCreateInitialIndex()
    {
       return createInitialIndex;
+   }
+
+   /**
+    * @return the recoveryFilterUsed
+    */
+   public boolean isRecoveryFilterUsed()
+   {
+      return recoveryFilterUsed;
    }
 
    /**
@@ -256,7 +268,7 @@ public class QueryHandlerContext
    {
       return rpcService;
    }
-   
+
    /**
     * @return
     *          The name of current repository
