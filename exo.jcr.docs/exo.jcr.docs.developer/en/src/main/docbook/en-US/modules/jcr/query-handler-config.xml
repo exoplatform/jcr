@@ -176,7 +176,9 @@
               <entry>rdbms-reindexing</entry>
 
               <entry>indicate that need to use rdbms reindexing mechanism if
-              possible, the default value is true</entry>
+              possible, the default value is true. To increase the spead of
+              re-indexing for PostgreSQL need to set enable_seqscan=off or
+              default_statistics_target=50 in configuration of DB</entry>
             </row>
 
             <row>
