@@ -111,6 +111,9 @@
         &lt;field name="version"&gt;&lt;string&gt;3&lt;/string&gt;&lt;/field&gt;
         &lt;field  name="referralMode"&gt;&lt;string&gt;follow&lt;/string&gt;&lt;/field&gt;            
         &lt;!-- field  name="serverName"&gt;&lt;string&gt;active.directory&lt;/string&gt;&lt;/field--&gt;
+        &lt;field name="minConnection"&gt;&lt;int&gt;5&lt;/int&gt;&lt;/field&gt;
+        &lt;field name="maxConnection"&gt;&lt;int&gt;10&lt;/int&gt;&lt;/field&gt;
+        &lt;field name="timeout"&gt;&lt;int&gt;50000&lt;/int&gt;&lt;/field&gt;
       &lt;/object&gt;
     &lt;/object-param&gt;
   &lt;/init-params&gt;
@@ -162,6 +165,24 @@
           set this to active.directory in order to work with Active Directory
           servers. Any other value will be ignore and the service will act as
           on a standard LDAP.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">maxConnection</emphasis>: the maximum
+          number of connections per connection identity that can be maintained
+          concurrently.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">minConnection</emphasis>: the number of
+          connections per connection identity to create when initially
+          creating a connection for the identity.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">timeout</emphasis>: the number of
+          milliseconds that an idle connection may remain in the pool without
+          being closed and removed from the pool.</para>
         </listitem>
       </itemizedlist>
     </section>
