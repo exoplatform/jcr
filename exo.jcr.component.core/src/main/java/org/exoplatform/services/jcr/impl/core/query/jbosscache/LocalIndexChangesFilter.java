@@ -26,11 +26,12 @@ import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
+import org.exoplatform.services.jcr.impl.core.query.LocalIndexMarker;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -61,7 +62,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
  *
  */
-public class LocalIndexChangesFilter extends IndexerChangesFilter
+public class LocalIndexChangesFilter extends IndexerChangesFilter implements LocalIndexMarker
 {
    /**
     * Logger instance for this class
@@ -86,7 +87,7 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
    private final Fqn<String> rootFqn;
 
    private final JmxRegistrationManager jmxManager;
-   
+
    public static final String LISTWRAPPER = "$lists".intern();
 
    /**
@@ -126,12 +127,14 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
       initCache.getConfiguration().setCacheLoaderConfig(cacheLoaderConfig);
       this.rootFqn = Fqn.fromElements(searchManager.getWsId());
       this.cache =
-         ExoJBossCacheFactory.getUniqueInstance(CacheType.INDEX_CACHE, rootFqn, initCache,
-            config.getParameterBoolean(PARAM_JBOSSCACHE_SHAREABLE, PARAM_JBOSSCACHE_SHAREABLE_DEFAULT));
+         ExoJBossCacheFactory.getUniqueInstance(CacheType.INDEX_CACHE, rootFqn, initCache, config.getParameterBoolean(
+            PARAM_JBOSSCACHE_SHAREABLE, PARAM_JBOSSCACHE_SHAREABLE_DEFAULT));
 
       PrivilegedJBossCacheHelper.create(cache);
       PrivilegedJBossCacheHelper.start(cache);
-      this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(searchManager.getExoContainerContext(), cache, CacheType.INDEX_CACHE);
+      this.jmxManager =
+         ExoJBossCacheFactory.getJmxRegistrationManager(searchManager.getExoContainerContext(), cache,
+            CacheType.INDEX_CACHE);
       if (jmxManager != null)
       {
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
@@ -172,7 +175,7 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
       String id = IdGenerator.generate();
       cache.put(Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER, changes);
    }
-   
+
    /**
     * @see java.lang.Object#finalize()
     */
@@ -191,11 +194,11 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
                   return null;
                }
             });
-         }         
+         }
       }
       finally
       {
-         super.finalize();         
+         super.finalize();
       }
-   }    
+   }
 }

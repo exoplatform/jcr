@@ -756,11 +756,24 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
       // Recovery Filters are 
       String changesFilterClassName = config.getParameterValue(QueryHandlerParams.PARAM_CHANGES_FILTER_CLASS, null);
+      boolean recoveryFilterUsed = false;
 
-      boolean recoveryFilterUsed =
-         (org.exoplatform.services.jcr.impl.core.query.ispn.LocalIndexChangesFilter.class.getName().equals(
-            changesFilterClassName) || org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter.class
-            .getName().equals(changesFilterClassName)) ? true : false;
+      if (changesFilterClassName != null)
+      {
+         try
+         {
+            Class<?> changesFilterClass = Class.forName(changesFilterClassName);
+            // Set recoveryFilterUsed, if changes filter implements LocalIndex strategy 
+            if (changesFilterClass != null)
+            {
+               recoveryFilterUsed = LocalIndexMarker.class.isAssignableFrom(changesFilterClass);
+            }
+         }
+         catch (ClassNotFoundException e)
+         {
+            throw new RepositoryConfigurationException(e.getMessage(), e);
+         }
+      }
 
       QueryHandlerContext context =
          new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,

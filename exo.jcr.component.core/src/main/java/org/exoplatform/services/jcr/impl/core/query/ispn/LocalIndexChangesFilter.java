@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
+import org.exoplatform.services.jcr.impl.core.query.LocalIndexMarker;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
@@ -52,7 +53,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
  * @version $Id: LocalIndexChangesFilter.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class LocalIndexChangesFilter extends IndexerChangesFilter
+public class LocalIndexChangesFilter extends IndexerChangesFilter implements LocalIndexMarker
 {
    /**
     * Logger instance for this class
@@ -60,7 +61,7 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.LocalIndexChangesFilter");
 
    public static final String PARAM_INFINISPAN_CACHESTORE_CLASS = "infinispan-cachestore-classname";
-   
+
    private final Cache<Serializable, Object> cache;
 
    private final String wsId;
@@ -99,7 +100,7 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter
          handler.init();
       }
    }
-   
+
    protected Log getLogger()
    {
       return log;
