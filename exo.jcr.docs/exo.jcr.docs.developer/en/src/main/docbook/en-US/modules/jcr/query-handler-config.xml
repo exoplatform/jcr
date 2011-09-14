@@ -176,9 +176,7 @@
               <entry>rdbms-reindexing</entry>
 
               <entry>indicate that need to use rdbms reindexing mechanism if
-              possible, the default value is true. To increase the spead of
-              re-indexing for PostgreSQL need to set enable_seqscan=off or
-              default_statistics_target=50 in configuration of DB</entry>
+              possible, the default value is true</entry>
             </row>
 
             <row>
@@ -201,6 +199,15 @@
           </tbody>
         </tgroup>
       </table>
+
+      <note>
+        <para>If you use postgreSQL and the parameter rdbms-reindexing is set
+        to true, the performances of the queries used while indexing can be
+        improved by setting the parameter "enable_seqscan" to "off" or
+        "default_statistics_target" to at least "50" in the configuration of
+        your database. Then you need to restart DB server and make analyze of
+        the JCR_SVALUE (JCR_MVALUE) table.</para>
+      </note>
     </section>
 
     <section>
