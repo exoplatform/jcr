@@ -641,7 +641,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       PropertyData prop =
          (PropertyData)dataManager.getItemData(((NodeData)getData()), new QPathEntry(Constants.JCR_MIXINTYPES, 0),
-            ItemType.PROPERTY);
+            ItemType.PROPERTY, false);
       ItemState state;
 
       if (prop != null)
@@ -1922,7 +1922,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       for (PropertyDefinitionData pd : ntmanager.getAllPropertyDefinitions(removedName))
       {
-         ItemData p = dataManager.getItemData(nodeData(), new QPathEntry(pd.getName(), 1), ItemType.PROPERTY);
+         ItemData p = dataManager.getItemData(nodeData(), new QPathEntry(pd.getName(), 1), ItemType.PROPERTY, false);
          if (p != null && !p.isNode())
          {
             // remove it
@@ -3061,13 +3061,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       int ind = 1;
 
-      NodeData sibling = (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind), ItemType.NODE);
+      NodeData sibling =
+         (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind), ItemType.NODE, false);
       while (sibling != null)
       {
          if (allowSns)
          {
             ind++;
-            sibling = (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind), ItemType.NODE);
+            sibling =
+               (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind), ItemType.NODE, false);
          }
          else
          {

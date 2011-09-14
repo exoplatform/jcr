@@ -226,7 +226,7 @@ public abstract class BaseXmlImporter implements ContentImporter
       ItemData sameNameNode = null;
       try
       {
-         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0), ItemType.NODE);
+         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0), ItemType.NODE, false);
       }
       catch (PathNotFoundException e)
       {

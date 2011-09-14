@@ -237,10 +237,21 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
    {
-      return getItemData(parent, name, false, itemType);
+      return getItemData(parent, name, false, itemType, true);
    }
 
-   private ItemData getItemData(NodeData parent, QPathEntry name, boolean skipCheckInPersistence, ItemType itemType)
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
+      throws RepositoryException
+   {
+      return getItemData(parent, name, false, itemType, createNullItemData);
+   }
+
+
+   private ItemData getItemData(NodeData parent, QPathEntry name, boolean skipCheckInPersistence, ItemType itemType,
+      boolean createNullItemData)
       throws RepositoryException
    {
       if (name.getName().equals(JCRPath.PARENT_RELPATH) && name.getNamespace().equals(Constants.NS_DEFAULT_URI))
@@ -270,7 +281,7 @@ public class SessionDataManager implements ItemDataConsumer
          // 2. Try from txdatamanager
          if (!(skipCheckInPersistence))
          {
-            data = transactionableManager.getItemData(parent, name, itemType);
+            data = transactionableManager.getItemData(parent, name, itemType, createNullItemData);
          }
       }
       else if (!state.isDeleted())
@@ -364,6 +375,32 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType, boolean apiRead)
       throws RepositoryException
    {
+      return getItem(parent, name, pool, itemType, apiRead, true);
+   }
+
+   /**
+    * For internal use. Return Item by parent NodeDada and the name of searched item.
+    * 
+    * @param parent
+    *          - parent of the searched item
+    * @param name
+    *          - item name
+    * @param itemType
+    *          - item type
+    * @param pool
+    *          - indicates does the item fall in pool
+    * @param apiRead 
+    *          - if true will call postRead Action and check permissions              
+    * @param createNullItemData
+    *          - defines if there is a need to create NullItemData  
+    *          
+    * @return existed item or null if not found
+    * @throws RepositoryException
+    */
+   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType, boolean apiRead,
+      boolean createNullItemData)
+      throws RepositoryException
+   {
       long start = 0;
       if (log.isDebugEnabled())
       {
@@ -374,7 +411,7 @@ public class SessionDataManager implements ItemDataConsumer
       ItemImpl item = null;
       try
       {
-         return item = readItem(getItemData(parent, name, itemType), parent, pool, apiRead);
+         return item = readItem(getItemData(parent, name, itemType, createNullItemData), parent, pool, apiRead);
       }
       finally
       {
@@ -405,7 +442,13 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, boolean skipCheckInPersistence)
       throws RepositoryException
    {
-      return getItem(parent, name, pool, skipCheckInPersistence, ItemType.UNKNOWN);
+      return getItem(parent, name, pool, skipCheckInPersistence, ItemType.UNKNOWN, true);
+   }
+
+   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, boolean skipCheckInPersistence,
+      ItemType itemType) throws RepositoryException
+   {
+      return getItem(parent, name, pool, skipCheckInPersistence, itemType, true);
    }
 
    /**
@@ -425,7 +468,7 @@ public class SessionDataManager implements ItemDataConsumer
     * @throws RepositoryException
     */
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, boolean skipCheckInPersistence,
-      ItemType itemType) throws RepositoryException
+      ItemType itemType, boolean createNullItemData) throws RepositoryException
    {
       long start = 0;
       if (log.isDebugEnabled())
@@ -437,7 +480,9 @@ public class SessionDataManager implements ItemDataConsumer
       ItemImpl item = null;
       try
       {
-         return item = readItem(getItemData(parent, name, skipCheckInPersistence, itemType), parent, pool, true);
+         return item =
+            readItem(getItemData(parent, name, skipCheckInPersistence, itemType, createNullItemData), parent, pool,
+               true);
       }
       finally
       {
@@ -2817,4 +2862,5 @@ public class SessionDataManager implements ItemDataConsumer
          return -i1.getData().getQPath().compareTo(i2.getData().getQPath());
       }
    }
+
 }

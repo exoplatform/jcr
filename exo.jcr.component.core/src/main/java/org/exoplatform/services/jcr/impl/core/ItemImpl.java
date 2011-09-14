@@ -449,7 +449,7 @@ public abstract class ItemImpl implements Item
       PropertyDefinitionDatas defs;
       ItemImpl prevItem =
          dataManager.getItem(parentNode.nodeData(), new QPathEntry(propertyName, 0), true,
-            dataManager.isNew(parentNode.getIdentifier()), ItemType.PROPERTY);
+            dataManager.isNew(parentNode.getIdentifier()), ItemType.PROPERTY, false);
 
       NodeTypeDataManager ntm = session.getWorkspace().getNodeTypesHolder();
       NodeData parentData = (NodeData)parentNode.getData();

@@ -723,6 +723,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    public ItemData getItemData(final NodeData parentData, final QPathEntry name, final ItemType itemType)
       throws RepositoryException
    {
+      return getItemData(parentData, name, itemType, true);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(final NodeData parentData, final QPathEntry name, final ItemType itemType,
+      final boolean createNullItemData)
+      throws RepositoryException
+   {
       if (cache.isEnabled())
       {
          // 1. Try from cache
@@ -745,7 +755,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   {
                      public ItemData run() throws RepositoryException
                      {
-                        return getPersistedItemData(parentData, name, itemType);
+                        return getPersistedItemData(parentData, name, itemType, createNullItemData);
                      }
                   });
                }
@@ -1726,6 +1736,46 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          else
          {
             cache.put(data);
+         }
+      }
+      return data;
+   }
+
+   /**
+    * Get persisted ItemData.
+    * 
+    * @param parentData
+    *          parent
+    * @param name
+    *          Item name
+    * @param itemType
+    *          item type
+    * @param createNullItemData
+    *          indicates if nullItem should be created     
+    * @return ItemData
+    * @throws RepositoryException
+    *           error
+    */
+   protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name, ItemType itemType,
+      boolean createNullItemData) throws RepositoryException
+   {
+      ItemData data = super.getItemData(parentData, name, itemType);
+      if (cache.isEnabled())
+      {
+         if (data != null)
+         {
+            cache.put(data);
+         }
+         else if (createNullItemData)
+         {
+            if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
+            {
+               cache.put(new NullNodeData(parentData, name));
+            }
+            else
+            {
+               cache.put(new NullPropertyData(parentData, name));
+            }
          }
       }
       return data;

@@ -20,6 +20,10 @@ import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 
 import javax.jcr.InvalidItemStateException;
@@ -47,6 +51,12 @@ public class TestMultipleListenersNotifying extends TestCase
          RepositoryException
       {
          super.save(new ChangesLogWrapper(changes));
+      }
+
+      public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
+         throws RepositoryException
+      {
+         return null;
       }
    }
 

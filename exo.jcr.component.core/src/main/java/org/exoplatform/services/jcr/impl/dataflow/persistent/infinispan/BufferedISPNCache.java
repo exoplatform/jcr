@@ -264,7 +264,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Set, but found:"
                + existingObject.getClass().getName());
          }
-         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL)
+         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL
+            && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -328,7 +329,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Map, but found:"
                + existingObject.getClass().getName());
          }
-         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL)
+         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL
+            && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes to reload them from the db
