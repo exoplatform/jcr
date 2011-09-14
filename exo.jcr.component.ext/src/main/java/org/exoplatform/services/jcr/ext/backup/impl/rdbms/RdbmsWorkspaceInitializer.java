@@ -154,8 +154,20 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       List<Backupable> backupableComponents =
          repository.getWorkspaceContainer(workspaceName).getComponentInstancesOfType(Backupable.class);
       
+      boolean isRepositorySuspended = false;
+      Throwable throwable = null;
       try
       {
+         // set state SUSPENDED to other workspaces if singledb
+         if (workspaceEntry.getContainer().getParameterBoolean("multi-db") == false)
+         {
+            if (repositoryEntry.getWorkspaceEntries().size() != 1)
+            {
+               repository.setState(ManageableRepository.SUSPENDED);
+               isRepositorySuspended = true;
+            }
+         }
+
          // restore all components
          for (Backupable component : backupableComponents)
          {
@@ -179,6 +191,8 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       }
       catch (Throwable e)
       {
+         throwable = e;
+
          for (DataRestore restorer : dataRestorers)
          {
             try
@@ -204,6 +218,26 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             catch (BackupException e)
             {
                log.error("Can't close restorer", e);
+            }
+         }
+
+         try
+         {
+            if (isRepositorySuspended)
+            {
+               repository.setState(ManageableRepository.ONLINE);
+            }
+         }
+         catch (RepositoryException e)
+         {
+            if (throwable == null)
+            {
+               log.error("Con not set ONLYNE state for repository " + repository.getConfiguration().getName(), e);
+            }
+            else
+            {
+               throw new RepositoryException("Con not set ONLYNE state for repository "
+                        + repository.getConfiguration().getName(), e);
             }
          }
       }

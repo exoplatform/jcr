@@ -31,7 +31,6 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
@@ -954,68 +953,39 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
 
-      try
+      if ((Class.forName(fBackupType).equals(FullBackupJob.class)))
       {
-         if ((Class.forName(fBackupType).equals(FullBackupJob.class)))
-         {
-            // set the initializer SysViewWorkspaceInitializer
-            wiEntry.setType(SysViewWorkspaceInitializer.class.getCanonicalName());
+         // set the initializer SysViewWorkspaceInitializer
+         wiEntry.setType(SysViewWorkspaceInitializer.class.getCanonicalName());
 
-            List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
-            wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, pathBackupFile));
+         List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
+         wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, pathBackupFile));
 
-            wiEntry.setParameters(wieParams);
-         }
-         else if ((Class.forName(fBackupType)
-                  .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
-         {
-            // set state SUSPENDED to other workspaces if singledb
-            if (workspaceEntry.getContainer().getParameterBoolean("multi-db") == false)
-            {
-               defRep.setState(ManageableRepository.SUSPENDED);
-            }
-            // set the initializer RdbmsWorkspaceInitializer
-            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
-
-            List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
-            wieParams.add(new SimpleParameterEntry(RdbmsWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(
-                     pathBackupFile).getParent()));
-
-            wiEntry.setParameters(wieParams);
-         }
-
-         workspaceEntry.setInitializer(wiEntry);
-
-         //restore
-         defRep.configWorkspace(workspaceEntry);
-         defRep.createWorkspace(workspaceEntry.getName());
-
-         //set original workspace initializer
-         WorkspaceContainerFacade wcf = defRep.getWorkspaceContainer(workspaceEntry.getName());
-         WorkspaceEntry createdWorkspaceEntry = (WorkspaceEntry) wcf.getComponent(WorkspaceEntry.class);
-         createdWorkspaceEntry.setInitializer(wieOriginal);
+         wiEntry.setParameters(wieParams);
       }
-      finally
+      else if ((Class.forName(fBackupType)
+               .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
       {
-         try
-         {
-            if (workspaceEntry.getContainer().getParameterBoolean("multi-db") == false)
-            {
-               if (defRep.getState() != ManageableRepository.ONLINE)
-               {
-                  defRep.setState(ManageableRepository.ONLINE);
-               }
-            }
-         }
-         catch (RepositoryException e)
-         {
-            log.error("Con not set ONLYNE state for repository +\"" + defRep.getName() + "\"", e);
-         }
-         catch (RepositoryConfigurationException e)
-         {
-            log.error("Con not set ONLYNE state for repository +\"" + defRep.getName() + "\"", e);
-         }
+         // set the initializer RdbmsWorkspaceInitializer
+         wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
+
+         List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
+         wieParams.add(new SimpleParameterEntry(RdbmsWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(
+                  pathBackupFile).getParent()));
+
+         wiEntry.setParameters(wieParams);
       }
+
+      workspaceEntry.setInitializer(wiEntry);
+
+      //restore
+      defRep.configWorkspace(workspaceEntry);
+      defRep.createWorkspace(workspaceEntry.getName());
+
+      //set original workspace initializer
+      WorkspaceContainerFacade wcf = defRep.getWorkspaceContainer(workspaceEntry.getName());
+      WorkspaceEntry createdWorkspaceEntry = (WorkspaceEntry) wcf.getComponent(WorkspaceEntry.class);
+      createdWorkspaceEntry.setInitializer(wieOriginal);
    }
 
    private void incrementalRestore(String pathBackupFile, String repositoryName, String workspaceName)
