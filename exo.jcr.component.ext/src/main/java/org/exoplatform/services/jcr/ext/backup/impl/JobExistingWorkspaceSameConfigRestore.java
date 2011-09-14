@@ -74,12 +74,21 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
 
       try
       {
-         repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
-            .setState(ManageableRepository.SUSPENDED);
+         ManageableRepository repository = repositoryService.getRepository(repositoryName);
+
+         if (wEntry.getContainer().getParameterBoolean("multi-db") == false)
+         {
+            repository.setState(ManageableRepository.SUSPENDED);
+         }
+         else
+         {
+            repository.getWorkspaceContainer(wEntry.getName()).setState(
+                     ManageableRepository.SUSPENDED);
+         }
 
          // get all restorers
          List<Backupable> backupable =
-            repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
+                  repository.getWorkspaceContainer(wEntry.getName())
                .getComponentInstancesOfType(Backupable.class);
 
          File storageDir = backupChainLog.getBackupConfig().getBackupDir();
@@ -105,16 +114,23 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
             restorer.commit();
          }
 
-         repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
-            .setState(ManageableRepository.ONLINE);
+         if (wEntry.getContainer().getParameterBoolean("multi-db") == false)
+         {
+            repository.setState(ManageableRepository.ONLINE);
+         }
+         else
+         {
+            repository.getWorkspaceContainer(wEntry.getName()).setState(
+                     ManageableRepository.ONLINE);
+         }
 
          // incremental restore
          DataManager dataManager =
-            (WorkspacePersistentDataManager)repositoryService.getRepository(repositoryName)
-               .getWorkspaceContainer(wEntry.getName()).getComponent(WorkspacePersistentDataManager.class);
+                  (WorkspacePersistentDataManager) repository.getWorkspaceContainer(wEntry.getName()).getComponent(
+                           WorkspacePersistentDataManager.class);
 
          FileCleanerHolder fileCleanHolder =
-            (FileCleanerHolder)repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
+                  (FileCleanerHolder) repository.getWorkspaceContainer(wEntry.getName())
                .getComponent(FileCleanerHolder.class);
 
          JCRRestore restorer = new JCRRestore(dataManager, fileCleanHolder.getFileCleaner());
@@ -157,8 +173,22 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
 
          try
          {
-            repositoryService.getRepository(repositoryName).getWorkspaceContainer(wEntry.getName())
-               .setState(ManageableRepository.ONLINE);
+            ManageableRepository repository = repositoryService.getRepository(repositoryName);
+
+            if (wEntry.getContainer().getParameterBoolean("multi-db") == false)
+            {
+               if (repository.getState() != ManageableRepository.ONLINE)
+               {
+                  repository.setState(ManageableRepository.ONLINE);
+               }
+            }
+            else
+            {
+               if (repository.getWorkspaceContainer(wEntry.getName()).getState() != ManageableRepository.ONLINE)
+               {
+                  repository.getWorkspaceContainer(wEntry.getName()).setState(ManageableRepository.ONLINE);
+               }
+            }
          }
          catch (RepositoryException e)
          {

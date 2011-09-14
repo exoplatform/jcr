@@ -20,6 +20,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -1303,6 +1305,107 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       assertEquals(bch.getBackupConfig().getBackupDir().getCanonicalPath(), newRepositoryBackupChainLog
                .getBackupConfig().getBackupDir().getCanonicalPath());
+   }
+
+   /**
+    * Use JobExistingWorkspaceSameConfigRestore to restore.
+    */
+   public void testExistedWorkspaceRestoreSingleDBTwoWS() throws Exception
+   {
+      // prepare
+      String dsName1 = helper.createDatasource();
+      String dsName2 = helper.createDatasource();
+
+      ManageableRepository repository = helper.createRepository(container, false, dsName1);
+      WorkspaceEntry wsEntry1 = helper.createWorkspaceEntry(false, dsName1);
+      helper.addWorkspace(repository, wsEntry1);
+      addConent(repository, wsEntry1.getName());
+
+      WorkspaceEntry wsEntry2 = helper.createWorkspaceEntry(false, dsName2);
+      helper.addWorkspace(repository, wsEntry2);
+      addConent(repository, wsEntry2.getName());
+
+      // backup
+      File backDir = new File("target/backup/" + IdGenerator.generate());
+      backDir.mkdirs();
+
+      BackupConfig config = new BackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setWorkspace(wsEntry1.getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      BackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      // restore
+      File backLog = new File(bch.getLogFilePath());
+      assertTrue(backLog.exists());
+
+      BackupChainLog bchLog = new BackupChainLog(backLog);
+
+      assertNotNull(bchLog.getStartedTime());
+      assertNotNull(bchLog.getFinishedTime());
+
+      backup.restoreExistingWorkspace(bchLog, repository.getConfiguration().getName(), repository.getConfiguration()
+               .getWorkspaceEntries().get(1), false);
+      checkConent(repository, repository.getConfiguration().getWorkspaceEntries().get(1).getName());
+      checkConent(repository, repository.getConfiguration().getWorkspaceEntries().get(2).getName());
+   }
+
+   /**
+    * Use JobExistingWorkspaceRestore to restore.
+    */
+   public void testExistedWorkspaceRestoreSingleDBTwoWSWithDiffConfig() throws Exception
+   {
+      // prepare
+      String dsName1 = helper.createDatasource();
+      String dsName2 = helper.createDatasource();
+
+      ManageableRepository repository = helper.createRepository(container, false, dsName1);
+      WorkspaceEntry wsEntry1 = helper.createWorkspaceEntry(false, dsName1);
+      helper.addWorkspace(repository, wsEntry1);
+      addConent(repository, wsEntry1.getName());
+
+      WorkspaceEntry wsEntry2 = helper.createWorkspaceEntry(false, dsName2);
+      helper.addWorkspace(repository, wsEntry2);
+      addConent(repository, wsEntry2.getName());
+
+      // backup
+      File backDir = new File("target/backup/" + IdGenerator.generate());
+      backDir.mkdirs();
+
+      BackupConfig config = new BackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setWorkspace(wsEntry1.getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      BackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      // restore
+      File backLog = new File(bch.getLogFilePath());
+      assertTrue(backLog.exists());
+
+      BackupChainLog bchLog = new BackupChainLog(backLog);
+
+      assertNotNull(bchLog.getStartedTime());
+      assertNotNull(bchLog.getFinishedTime());
+      
+      // change  cofig
+      WorkspaceEntry wsEntry = helper.copyWorkspaceEntry(repository.getConfiguration().getWorkspaceEntries().get(1));
+
+      List<SimpleParameterEntry> params = wsEntry.getContainer().getParameters();
+      params.set(2, new SimpleParameterEntry("max-buffer-size", "307200"));
+
+      wsEntry.getContainer().setParameters(params);
+
+      backup.restoreExistingWorkspace(bchLog, repository.getConfiguration().getName(), wsEntry, false);
+      checkConent(repository, repository.getConfiguration().getWorkspaceEntries().get(1).getName());
+      checkConent(repository, repository.getConfiguration().getWorkspaceEntries().get(2).getName());
    }
 
    /**

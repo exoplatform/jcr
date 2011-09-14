@@ -129,6 +129,89 @@ public class TesterConfigurationHelper
 
       return repository;
    }
+   
+   /**
+   * Create copy of workspace entry. 
+   */
+   public WorkspaceEntry copyWorkspaceEntry(WorkspaceEntry baseWorkspaceEntry) throws Exception
+   {
+      // container entry
+      ArrayList<SimpleParameterEntry> params = new ArrayList<SimpleParameterEntry>();
+      params.addAll(copyList(baseWorkspaceEntry.getContainer().getParameters()));
+      ContainerEntry containerEntry =
+               new ContainerEntry(baseWorkspaceEntry.getContainer().getType(), params);
+      containerEntry.setParameters(params);
+
+      // value storage
+      ArrayList<ValueStorageEntry> list = new ArrayList<ValueStorageEntry>();
+
+      
+      for (ValueStorageEntry baseValueStorageEntry : baseWorkspaceEntry.getContainer().getValueStorages())
+      {
+         ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
+
+         for (ValueStorageFilterEntry baseValueStorageFilterEntry : baseValueStorageEntry.getFilters())
+         {
+            ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
+            filterEntry.setPropertyType(baseValueStorageFilterEntry.getPropertyType());
+            filterEntry.setPropertyName(baseValueStorageFilterEntry.getPropertyName());
+            filterEntry.setAncestorPath(baseValueStorageFilterEntry.getAncestorPath());
+            filterEntry.setMinValueSize(baseValueStorageFilterEntry.getMinValueSize());
+
+            vsparams.add(filterEntry);
+         }
+
+         ValueStorageEntry valueStorageEntry =
+                  new ValueStorageEntry(baseValueStorageEntry.getType(),vsparams);
+         ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
+         spe.addAll(copyList(baseValueStorageEntry.getParameters()));
+         valueStorageEntry.setId(baseValueStorageEntry.getId());
+         valueStorageEntry.setParameters(spe);
+         valueStorageEntry.setFilters(vsparams);
+
+         // containerEntry.setValueStorages();
+         list.add(valueStorageEntry);
+      }
+
+      containerEntry.setValueStorages(list);
+
+      // Indexer
+      params = new ArrayList<SimpleParameterEntry>();
+      params.addAll(copyList(baseWorkspaceEntry.getQueryHandler().getParameters()));
+      QueryHandlerEntry qEntry =
+               new QueryHandlerEntry(baseWorkspaceEntry.getQueryHandler().getType(), params);
+
+      // Cache
+      params = new ArrayList<SimpleParameterEntry>();
+      params.addAll(copyList(baseWorkspaceEntry.getCache().getParameters()));
+      CacheEntry cacheEntry = new CacheEntry(params);
+      cacheEntry.setType(baseWorkspaceEntry.getCache().getType());
+
+      WorkspaceEntry workspaceEntry = new WorkspaceEntry();
+      workspaceEntry.setContainer(containerEntry);
+      workspaceEntry.setCache(cacheEntry);
+      workspaceEntry.setQueryHandler(qEntry);
+      workspaceEntry.setName(baseWorkspaceEntry.getName());
+      workspaceEntry.setUniqueName(baseWorkspaceEntry.getUniqueName());
+
+      return workspaceEntry;
+
+   }
+
+   /**
+    * Create copy of list with SimpleParameterEntry-s
+    */
+   private List<SimpleParameterEntry> copyList(List<SimpleParameterEntry> baseArrayList)
+   {
+      ArrayList<SimpleParameterEntry> arrayList = new ArrayList<SimpleParameterEntry>();
+
+      for (SimpleParameterEntry baseParameter : baseArrayList)
+      {
+         arrayList.add(new SimpleParameterEntry(baseParameter.getName(), baseParameter.getValue()));
+      }
+
+      return arrayList;
+   }
 
    /**
     * Create workspace entry. 
