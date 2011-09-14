@@ -107,6 +107,7 @@
          &lt;property name="rdbms-reindexing" value="true" /&gt;
          &lt;property name="reindexing-page-size" value="1000" /&gt;
          &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
+         &lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter" /&gt;
       &lt;/properties&gt;
    &lt;/query-handler&gt;
 &lt;/workspace&gt;
@@ -196,6 +197,14 @@
               been set to <command>from-coordinator</command>, the index will
               be retrieved from coordinator</entry>
             </row>
+
+            <row>
+              <entry>index-recovery-filter</entry>
+
+              <entry>Defines implementation class or classes of
+              RecoveryFilters, the mechanism of index synchronization for
+              Local Index strategy.</entry>
+            </row>
           </tbody>
         </tgroup>
       </table>
@@ -284,6 +293,69 @@
    &lt;/query-handler&gt;
 &lt;/workspace&gt;
 </programlisting>
+
+      <section>
+        <title>Local Index Recovery Filters</title>
+
+        <para>Common usecase for all cluster-ready applications is a hot
+        joining and leaving of processing units. Node that is joining cluster
+        for the first time or node joining after some downtime, they all must
+        be in a synchronized state. When having a deal with shared value
+        storages, databases and indexes, cluster nodes are synchronized
+        anytime. But it's an issue when local index strategy used. If new node
+        joins cluster, having no index it is retrieved or recreated. Node can
+        be restarted also and thus index not empty. By default existing index
+        is thought to be actual, but can be outdated. JCR offers a mechanism
+        called RecoveryFilters that will automatically retrieve index for the
+        joining node on startup. This feature is a set of filters that can be
+        defined via QueryHandler configuration:</para>
+
+        <programlisting language="xml">&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter" /&gt;</programlisting>
+
+        <para>Filter number is not limited so they can be combined:</para>
+
+        <programlisting language="xml">&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter" /&gt;
+&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.SystemPropertyRecoveryFilter" /&gt;
+</programlisting>
+
+        <para>If any one returns fires, the index is re-synchronized. This
+        feature uses standard index recovery mode defined by previously
+        described parameter (can be "from-indexing" (default) or
+        "from-coordinator")</para>
+
+        <programlisting language="xml">&lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
+</programlisting>
+
+        <para>There are couple implementations of filters: </para>
+
+        <itemizedlist>
+          <listitem>
+            <para>org.exoplatform.services.jcr.impl.core.query.lucene.DummyRecoveryFilter:
+            always returns true, for cases when index must be force
+            resynchronized (recovered) each time;</para>
+          </listitem>
+
+          <listitem>
+            <para>org.exoplatform.services.jcr.impl.core.query.lucene.SystemPropertyRecoveryFilter
+            : return value of system property
+            "org.exoplatform.jcr.recoveryfilter.forcereindexing". So index
+            recovery can be controlled from the top without changing
+            documentation using system properties;</para>
+          </listitem>
+
+          <listitem>
+            <para>org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter
+            : checks number of documents in index on coordinator side and
+            self-side. Return true if differs. Advantage of this filter
+            comparing to other, it will skip reindexing for workspaces where
+            index wasn't modified. I.e. there is 10 repositories with 3
+            workspaces in each one. Only one is really heavily used in cluster
+            : frontend/production. So using this filter will only reindex
+            those workspaces that are really changed, without affecting other
+            indexes thus greatly reducing startup time. </para>
+          </listitem>
+        </itemizedlist>
+      </section>
     </section>
 
     <section>
