@@ -215,7 +215,15 @@
         improved by setting the parameter "enable_seqscan" to "off" or
         "default_statistics_target" to at least "50" in the configuration of
         your database. Then you need to restart DB server and make analyze of
-        the JCR_SVALUE (JCR_MVALUE) table.</para>
+        the JCR_SVALUE (or JCR_MVALUE) table.</para>
+      </note>
+
+      <note>
+        <para>If you use DB2 and the parameter rdbms-reindexing is set to
+        true, the performance of the queiries used while indexing can be
+        improved by making statisticks on tables by running "RUNSTATS ON TABLE
+        &lt;scheme&gt;.&lt;table&gt; WITH DISTRIBUTION AND INDEXES ALL" for
+        JCR_SITEM (or JCR_MITEM) and JCR_SVALUE (or JCR_MVALUE) tables.</para>
       </note>
     </section>
 

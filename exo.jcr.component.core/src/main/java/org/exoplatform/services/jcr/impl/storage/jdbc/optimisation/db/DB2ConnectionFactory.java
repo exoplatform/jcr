@@ -138,6 +138,6 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
    @Override
    public boolean isReindexingSupport()
    {
-      return false;
+      return true;
    }   
 }
