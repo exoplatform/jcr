@@ -170,7 +170,7 @@ public class DBCleanService
             return new DBClean(jdbcConn, cleanScripts, new DBCleanHelper(jdbcConn, selectItems, deleteItems));
          }
 
-         cleanScripts.add("delete from JCR_MITEM where JCR_MITEM.name <> '" + Constants.ROOT_PARENT_NAME + "'");
+         cleanScripts.add("delete from JCR_MITEM where JCR_MITEM.NAME <> '" + Constants.ROOT_PARENT_NAME + "'");
       }
       else
       {
