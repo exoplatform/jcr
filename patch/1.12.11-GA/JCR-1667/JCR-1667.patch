@@ -1,0 +1,23 @@
+Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/hierarchy/impl/NodeHierarchyCreatorImpl.java
+===================================================================
+--- exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/hierarchy/impl/NodeHierarchyCreatorImpl.java	(revision 4915)
++++ exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/hierarchy/impl/NodeHierarchyCreatorImpl.java	(working copy)
+@@ -241,7 +241,6 @@
+          getSession(sessionProvider, currentRepo, currentRepo.getConfiguration().getDefaultWorkspaceName());
+       Node rootNode = session.getRootNode();
+       String publicApplication = getJcrPath(PUBLIC_APPLICATION);
+-      session.logout();
+       return rootNode.getNode(publicApplication.substring(1, publicApplication.length()));
+    }
+ 
+@@ -262,10 +261,6 @@
+          userNode = usersNode.addNode(userName);
+          usersNode.save();
+       }
+-      finally
+-      {
+-         session.logout();
+-      }
+       return userNode;
+    }
+ 
