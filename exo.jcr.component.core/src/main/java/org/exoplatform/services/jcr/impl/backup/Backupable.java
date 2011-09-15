@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.backup;
 
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
+
 import java.io.File;
 
 /**
@@ -47,11 +49,11 @@ public interface Backupable
    /**
     * Get data restorer to support atomic restore.
     * 
-    * @param storageDir
-    *          the directory where backup is stored
+    * @param context
+    *          the context
     * @throws RestoreException
     *          if any exception occurred
     */
-   DataRestore getDataRestorer(File storageDir) throws BackupException;
+   DataRestore getDataRestorer(DataRestoreContext context) throws BackupException;
 
 }

@@ -46,6 +46,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -59,8 +60,8 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionRegionConfig;
+import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.jboss.cache.notifications.annotation.NodeModified;
@@ -2016,7 +2017,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    /**
     * {@inheritDoc}
     */
-   public DataRestore getDataRestorer(File storageDir) throws BackupException
+   public DataRestore getDataRestorer(DataRestoreContext context) throws BackupException
    {
       return new DataRestore()
       {

@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.JCRRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
@@ -92,11 +93,15 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
                .getComponentInstancesOfType(Backupable.class);
 
          File storageDir = backupChainLog.getBackupConfig().getBackupDir();
+         File fullBackupDir = JCRRestore.getFullBackupFile(storageDir);
+
+         DataRestoreContext context = new DataRestoreContext(
+                  new String[] {DataRestoreContext.STORAGE_DIR}, 
+                  new Object[] {fullBackupDir});
 
          for (Backupable component : backupable)
          {
-            File fullBackupDir = JCRRestore.getFullBackupFile(storageDir);
-            dataRestorer.add(component.getDataRestorer(fullBackupDir));
+            dataRestorer.add(component.getDataRestorer(context));
          }
 
          for (DataRestore restorer : dataRestorer)

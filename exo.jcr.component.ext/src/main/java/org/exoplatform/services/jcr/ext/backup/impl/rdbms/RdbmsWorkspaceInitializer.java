@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
@@ -168,10 +169,14 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             }
          }
 
+         DataRestoreContext context = new DataRestoreContext(
+                  new String[] {DataRestoreContext.STORAGE_DIR}, 
+                  new Object[] {new File(restorePath)});
+
          // restore all components
          for (Backupable component : backupableComponents)
          {
-            dataRestorers.add(component.getDataRestorer(new File(restorePath)));
+            dataRestorers.add(component.getDataRestorer(context));
          }
 
          for (DataRestore restorer : dataRestorers)

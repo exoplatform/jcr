@@ -54,6 +54,7 @@ import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
@@ -1593,11 +1594,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}}
     */
-   public DataRestore getDataRestorer(File storageDir) throws BackupException
+   public DataRestore getDataRestorer(DataRestoreContext context) throws BackupException
    {
       try
       {
-         File backupDir = new File(storageDir, getStorageName());
+         File backupDir = new File((File) context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName());
 
          if (!PrivilegedFileHelper.exists(backupDir))
          {

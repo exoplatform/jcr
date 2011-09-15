@@ -41,6 +41,7 @@ import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.DummyDataRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
@@ -827,14 +828,15 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    /**
     * {@inheritDoc}
     */
-   public DataRestore getDataRestorer(File storageDir) throws BackupException
+   public DataRestore getDataRestorer(DataRestoreContext context) throws BackupException
    {
       List<LockData> locks = new ArrayList<LockData>();
 
       ObjectInputStream in = null;
       try
       {
-         File contentFile = new File(storageDir, "CacheLocks" + DBBackup.CONTENT_FILE_SUFFIX);
+         File contentFile = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), 
+                  "CacheLocks" + DBBackup.CONTENT_FILE_SUFFIX);
 
          // it is possible that backup was created on configuration without Backupable WorkspaceLockManager class
          if (!PrivilegedFileHelper.exists(contentFile))

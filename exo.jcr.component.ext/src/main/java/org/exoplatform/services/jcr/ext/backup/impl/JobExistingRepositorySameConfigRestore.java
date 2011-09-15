@@ -30,7 +30,7 @@ import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.JCRRestore;
-import org.exoplatform.services.jcr.impl.backup.JdbcBackupable;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
@@ -116,17 +116,25 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
 
             File fullBackupDir =
                JCRRestore.getFullBackupFile(workspacesMapping.get(wEntry.getName()).getBackupConfig().getBackupDir());
+            
+            DataRestoreContext context;
+
+            if (jdbcConn != null)
+            {
+               context = new DataRestoreContext(
+                        new String[] {DataRestoreContext.STORAGE_DIR, DataRestoreContext.DB_CONNECTION}, 
+                        new Object[] {fullBackupDir, jdbcConn});
+            }
+            else
+            {
+               context = new DataRestoreContext(
+                        new String[] {DataRestoreContext.STORAGE_DIR}, 
+                        new Object[] {fullBackupDir});
+            }
 
             for (Backupable component : backupable)
             {
-               if (component instanceof JdbcBackupable && jdbcConn != null)
-               {
-                  dataRestorer.add(((JdbcBackupable)component).getDataRestorer(fullBackupDir, jdbcConn));
-               }
-               else
-               {
-                  dataRestorer.add(component.getDataRestorer(fullBackupDir));
-               }
+               dataRestorer.add(component.getDataRestorer(context));
             }
          }
 

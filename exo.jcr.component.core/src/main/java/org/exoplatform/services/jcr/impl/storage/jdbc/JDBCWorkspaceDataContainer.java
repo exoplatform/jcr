@@ -29,11 +29,12 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.ComplexDataRestore;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
-import org.exoplatform.services.jcr.impl.backup.JdbcBackupable;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
 import org.exoplatform.services.jcr.impl.backup.rdbms.SybaseDBRestore;
@@ -96,7 +97,7 @@ import javax.sql.DataSource;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id:GenericWorkspaceDataContainer.java 13433 2007-03-15 16:07:23Z peterit $
  */
-public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable, JdbcBackupable,
+public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable, Backupable,
    Reindexable
 {
 
@@ -1157,7 +1158,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public DataRestore getDataRestorer(File storageDir, Connection jdbcConn) throws BackupException
+   public DataRestore getDataRestorer(DataRestoreContext context) throws BackupException
    {
 
       List<DataRestore> restorers = new ArrayList<DataRestore>();
@@ -1165,8 +1166,33 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       ObjectReader backupInfo = null;
       try
       {
+         File storageDir = (File) context.getObject(DataRestoreContext.STORAGE_DIR);
+         Connection jdbcConn = null;
+
+         if (context.getObject(DataRestoreContext.DB_CONNECTION) == null)
+         {
+            try
+            {
+               jdbcConn = connFactory.getJdbcConnection();
+               jdbcConn.setAutoCommit(false);
+            }
+            catch (SQLException e)
+            {
+               throw new BackupException(e);
+            }
+            catch (RepositoryException e)
+            {
+               throw new BackupException(e);
+            }
+
+         }
+         else
+         {
+            jdbcConn = (Connection) context.getObject(DataRestoreContext.DB_CONNECTION);
+         }
+
          backupInfo =
-            new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
+                  new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
                "JDBCWorkspaceDataContainer.info")));
 
          String srcContainerName = backupInfo.readString();
@@ -1362,28 +1388,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                LOG.error("Can't close object reader", e);
             }
          }
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public DataRestore getDataRestorer(File storageDir) throws BackupException
-   {
-      try
-      {
-         Connection jdbcConn = connFactory.getJdbcConnection();
-         jdbcConn.setAutoCommit(false);
-
-         return getDataRestorer(storageDir, jdbcConn);
-      }
-      catch (SQLException e)
-      {
-         throw new BackupException(e);
-      }
-      catch (RepositoryException e)
-      {
-         throw new BackupException(e);
       }
    }
 
