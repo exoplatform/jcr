@@ -41,6 +41,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -81,6 +82,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -527,6 +529,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
    protected List<AbstractRecoveryFilter> recoveryFilters = null;
 
+   protected Map<String, String> optionalParameters = new HashMap<String, String>();
+
    /**
     * Working constructor.
     * 
@@ -718,6 +722,30 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void addRecoveryFilterClass(String recoveryFilterClassName)
    {
       recoveryFilterClasses.add(recoveryFilterClassName);
+   }
+
+   /**
+    * Puts optional parameter not listed in {@link QueryHandlerParams}. Usually used by
+    * extended plug-ins or services like RecoveryFilters.
+    * 
+    * @param key
+    * @param value
+    */
+   public void addOptionalParameter(String key, String value)
+   {
+      optionalParameters.put(key, value);
+   }
+
+   /**
+    * Returns whole set of optional (additional) parameters from QueryHandlerEntry 
+    * that are not listed in {@link QueryHandlerParams}. Can be used by extended 
+    * services and plug-ins requirind additional configuration. 
+    * 
+    * @return unmodifiable map
+    */
+   public Map<String, String> getOptionalParameters()
+   {
+      return Collections.unmodifiableMap(optionalParameters);
    }
 
    /**

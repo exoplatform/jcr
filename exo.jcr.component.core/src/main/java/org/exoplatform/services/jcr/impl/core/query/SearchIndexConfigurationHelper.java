@@ -206,5 +206,9 @@ public class SearchIndexConfigurationHelper
       {
          searchIndex.addRecoveryFilterClass(value);
       }
+      else
+      {
+         searchIndex.addOptionalParameter(name, value);
+      }
    }
 }
