@@ -2342,7 +2342,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          if (LOG.isDebugEnabled())
          {
-            LOG.debug("The method addListener is not supported", e);
+            LOG.debug("The bloom filters are disabled as they are not supported by the cache implementation " + cache.getClass().getName());
          }
          return;
       }
