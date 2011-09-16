@@ -63,11 +63,16 @@
   Default value 1000000.</para>
 
   <note>
+    <para>Bloom filters are not supported by all the cache implementations so
+    far only the inplementation for infinispan supports it.</para>
+
     <para>Bloom-filter used to avoid read nodes that definitely do not have
     ACL. <emphasis
     role="bold">acl-bloomfilter-false-positive-probability</emphasis> and
     <emphasis role="bold">acl-bloomfilter-elements-number</emphasis> used to
-    configure such filters.</para>
+    configure such filters. Bloom filters are not supported by all the cache
+    implementations so far only the inplementation for infinispan supports
+    it.</para>
 
     <para>More about Bloom filters you can read here <ulink
     url="http://en.wikipedia.org/wiki/Bloom_filter">http://en.wikipedia.org/wiki/Bloom_filter</ulink>.</para>

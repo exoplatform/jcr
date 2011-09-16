@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -86,6 +88,8 @@ import javax.transaction.TransactionManager;
  * 
  * @version $Id$
  */
+@Managed
+@NameTemplate(@Property(key = "service", value = "DataManager"))
 public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager implements Suspendable,
    TopologyChangeListener, Startable, WorkspaceStorageCacheListener
 {
@@ -110,6 +114,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    private final TransactionableResourceManager txResourceManager;
 
    private final AtomicBoolean filtersEnabled = new AtomicBoolean();
+
+   private final AtomicBoolean filtersSupported = new AtomicBoolean(true);
 
    /**
     * Bloom filter parameters.
@@ -2390,6 +2396,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       catch (UnsupportedOperationException e)
       {
+         filtersSupported.set(false);
          if (LOG.isDebugEnabled())
          {
             LOG.debug("The bloom filters are disabled as they are not supported by the cache implementation " + cache.getClass().getName());
@@ -2407,6 +2414,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    protected boolean loadFilters(boolean cleanOnFail)
    {
+      if (!filtersSupported.get())
+      {
+         if (LOG.isWarnEnabled())
+         {
+            LOG.warn("The bloom filters are not supported therefore they cannot be reloaded");
+         }
+         return false;
+      }
       filtersEnabled.set(false);
       this.filterPermissions = new BloomFilter<String>(bfProbability, bfElementNumber);
       this.filterOwner = new BloomFilter<String>(bfProbability, bfElementNumber);
@@ -2420,6 +2435,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       catch (UnsupportedOperationException e)
       {
+         filtersSupported.set(false);
          if (LOG.isDebugEnabled())
          {
             LOG.debug("The method getACLHolders is not supported", e);
@@ -2429,30 +2445,37 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          LOG.error("Could not load all the ACL loaders", e);
       }
-      if (fails)
+      finally
       {
-         if (cleanOnFail)
+         if (fails)
          {
-            clear();
-            cache.removeListener(this);
+            if (cleanOnFail)
+            {
+               clear();
+               cache.removeListener(this);
+            }
+            return false;
          }
-         return false;
-      }
-      else if (holders != null && !holders.isEmpty())
-      {
-         LOG.info("Adding all the ACL Holders found into the BloomFilters");
-         for (int i = 0, length = holders.size(); i < length; i++)
+         else if (holders != null && !holders.isEmpty())
          {
-            ACLHolder holder = holders.get(i);
-            if (holder.hasOwner())
+            LOG.info("Adding all the ACL Holders found into the BloomFilters");
+            for (int i = 0, length = holders.size(); i < length; i++)
             {
-               filterOwner.add(holder.getId());
+               ACLHolder holder = holders.get(i);
+               if (holder == null)
+               {
+                  continue;
+               }
+               if (holder.hasOwner())
+               {
+                  filterOwner.add(holder.getId());
+               }
+               if (holder.hasPermissions())
+               {
+                  filterPermissions.add(holder.getId());
+               }
             }
-            if (holder.hasPermissions())
-            {
-               filterPermissions.add(holder.getId());
-            }
-         }
+         }         
       }
       filtersEnabled.set(true);
       return true;

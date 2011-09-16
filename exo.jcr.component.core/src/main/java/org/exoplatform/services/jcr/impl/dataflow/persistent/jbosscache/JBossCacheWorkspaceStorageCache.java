@@ -2088,7 +2088,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       // As the listeners in JBC really slow down the whole application, we decided to disable
       // the bloom filters in case of JBC
-      throw new UnsupportedOperationException("The cache listeners are not supported by the LinkedWorkspaceStorageCacheImpl");
+      throw new UnsupportedOperationException("The cache listeners are not supported by the JBossCacheWorkspaceStorageCache");
    }
 
    /**
@@ -2098,7 +2098,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       // As the listeners in JBC really slow down the whole application, we decided to disable
       // the bloom filters in case of JBC
-      throw new UnsupportedOperationException("The cache listeners are not supported by the LinkedWorkspaceStorageCacheImpl");
+      throw new UnsupportedOperationException("The cache listeners are not supported by the JBossCacheWorkspaceStorageCache");
    }
    
    /**

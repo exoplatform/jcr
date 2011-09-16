@@ -275,18 +275,23 @@
             <entry>acl-bloomfilter-false-positive-probability</entry>
 
             <entry>ACL Bloom-filter desired false positive probability. Range
-            [0..1]. Default value 0.1d.</entry>
+            [0..1]. Default value 0.1d. (See the note below) </entry>
           </row>
 
           <row>
             <entry>acl-bloomfilter-elements-number</entry>
 
             <entry>Expected number of ACL-elements in the Bloom-filter.
-            Default value 1000000.</entry>
+            Default value 1000000. (See the note below)</entry>
           </row>
         </tbody>
       </tgroup>
     </table>
+
+    <note>
+      <para>Bloom filters are not supported by all the cache implementations
+      so far only the inplementation for infinispan supports it.</para>
+    </note>
 
     <para><emphasis role="bold">value-storages</emphasis>: The list of value
     storage plugins.</para>
