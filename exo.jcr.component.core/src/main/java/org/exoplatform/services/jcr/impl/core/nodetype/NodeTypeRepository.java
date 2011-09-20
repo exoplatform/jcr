@@ -124,6 +124,13 @@ public interface NodeTypeRepository extends ComponentPersister
    void removeNodeType(NodeTypeData nodeType);
 
    /**
+    * @param nodeTypeName
+    * @param nodeType
+    * @exception RepositoryException
+    */
+   void unregisterNodeType(NodeTypeData nodeType) throws RepositoryException;
+
+   /**
     * Write node types to stream
     * 
     * @param os output stream

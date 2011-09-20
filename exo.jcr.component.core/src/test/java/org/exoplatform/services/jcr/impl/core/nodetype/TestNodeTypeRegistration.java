@@ -23,6 +23,10 @@ import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
+import org.exoplatform.services.jcr.dataflow.DataManager;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.nodetype.registration.JCRNodeTypeDataPersister;
+import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -38,6 +42,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -1489,5 +1494,45 @@ public class TestNodeTypeRegistration extends AbstractNodeTypeTest
       l1.addNode("l2", "myNodeType");
       l1.addNode("l3", "myNodeTypes");
       session.save();
+   }
+
+   public void testNodeTypePersistedUnregistration() throws Exception
+   {
+      NodeTypeValue testNtv = new NodeTypeValue();
+      testNtv.setName("testingNodeType");
+
+      List<NodeTypeValue> list = new ArrayList<NodeTypeValue>();
+      list.add(testNtv);
+
+      InternalQName testingNodeTypeName = new InternalQName("", "testingNodeType");
+
+      NodeTypeDataPersister nodeTypeDataPersister =
+         new JCRNodeTypeDataPersister((DataManager)session.getTransientNodesManager().getTransactManager(), true);
+      nodeTypeDataPersister.start();
+
+
+      nodeTypeManager.registerNodeTypes(list, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
+      assertNotNull(nodeTypeDataPersister.getNodeType(testingNodeTypeName));
+      assertNotNull(nodeTypeManager.getNodeType("testingNodeType"));
+
+      nodeTypeManager.unregisterNodeType("testingNodeType");
+      try
+      {
+         nodeTypeManager.getNodeType("testingNodeType");
+         fail();
+      }
+      catch (NoSuchNodeTypeException e)
+      {
+         // ok
+      }
+      try
+      {
+         nodeTypeDataPersister.getNodeType(testingNodeTypeName);
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+         // ok
+      }
    }
 }

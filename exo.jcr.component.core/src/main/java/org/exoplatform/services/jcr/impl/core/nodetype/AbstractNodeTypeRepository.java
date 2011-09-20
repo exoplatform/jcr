@@ -155,6 +155,15 @@ public abstract class AbstractNodeTypeRepository implements NodeTypeRepository
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public void unregisterNodeType(NodeTypeData nodeType) throws RepositoryException
+   {
+      nodeTypeDataPersister.removeNodeType(nodeType);
+      removeNodeType(nodeType);
+   }
+
+   /**
     * @see org.picocontainer.Startable#start()
     */
    public void start()

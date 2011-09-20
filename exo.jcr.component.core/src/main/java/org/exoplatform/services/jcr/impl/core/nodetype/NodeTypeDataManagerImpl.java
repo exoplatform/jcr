@@ -884,7 +884,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
          throw new RepositoryException(message);
 
       }
-      this.nodeTypeRepository.removeNodeType(nodeType);
+      this.nodeTypeRepository.unregisterNodeType(nodeType);
    }
 
    /**
