@@ -176,7 +176,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
                (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
             WorkspaceEntry wsConfig = new WorkspaceEntry();
-            wsConfig.setName("testConfigWorkspaceSuccess");
+            wsConfig.setName("testCWS");
 
             wsConfig.setAccessManager(defConfig.getAccessManager());
             wsConfig.setCache(defConfig.getCache());
@@ -207,8 +207,8 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          public Object run() throws Exception
          {
             // remove configured workspace
-            repository.createWorkspace("testConfigWorkspaceSuccess");
-            repository.internalRemoveWorkspace("testConfigWorkspaceSuccess");
+            repository.createWorkspace("testCWS");
+            repository.internalRemoveWorkspace("testCWS");
             return null;
          }
 
@@ -273,7 +273,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
       final WorkspaceEntry wsConfig = new WorkspaceEntry();
-      wsConfig.setName("testCreateWorkspaceSuccess");
+      wsConfig.setName("testCWS");
 
       wsConfig.setAccessManager(defConfig.getAccessManager());
       wsConfig.setCache(defConfig.getCache());
@@ -285,7 +285,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          public Object run() throws Exception
          {
             repository.configWorkspace(wsConfig);
-            repository.createWorkspace("testCreateWorkspaceSuccess");
+            repository.createWorkspace("testCWS");
             return null;
          }
 
@@ -308,7 +308,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          public Object run() throws Exception
          {
             // remove configured workspace
-            repository.internalRemoveWorkspace("testCreateWorkspaceSuccess");
+            repository.internalRemoveWorkspace("testCWS");
             return null;
          }
 
@@ -363,7 +363,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
       final WorkspaceEntry wsConfig = new WorkspaceEntry();
-      wsConfig.setName("testInternalRemoveWorkspaceSuccess");
+      wsConfig.setName("testIRWS");
 
       wsConfig.setAccessManager(defConfig.getAccessManager());
       wsConfig.setCache(defConfig.getCache());
@@ -376,8 +376,8 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          public Object run() throws Exception
          {
             repository.configWorkspace(wsConfig);
-            repository.createWorkspace("testInternalRemoveWorkspaceSuccess");
-            repository.internalRemoveWorkspace("testInternalRemoveWorkspaceSuccess");
+            repository.createWorkspace("testIRWS");
+            repository.internalRemoveWorkspace("testIRWS");
             return null;
          }
 
