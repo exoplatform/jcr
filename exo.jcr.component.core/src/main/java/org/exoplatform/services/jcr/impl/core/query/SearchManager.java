@@ -779,7 +779,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       QueryHandlerContext context =
          new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
             PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, recoveryFilterUsed,
-            virtualTableResolver, indexRecovery, rpcService, repositoryName);
+            virtualTableResolver, indexRecovery, rpcService, repositoryName, wsId);
 
       return context;
    }

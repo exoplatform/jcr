@@ -437,7 +437,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
       if (doForceReindexing && !indexes.isEmpty())
       {
-         log.info("Removing stale indexes.");
+         log.info("Removing stale indexes (" + handler.getContext().getWorkspacePath(true) + ").");
 
          List<PersistentIndex> oldIndexes = new ArrayList<PersistentIndex>(indexes);
          for (PersistentIndex persistentIndex : oldIndexes)
@@ -458,7 +458,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                && handler.getContext().getIndexRecovery() != null && handler.getContext().getRPCService() != null
                && handler.getContext().getRPCService().isCoordinator() == false)
             {
-               log.info("Retrieving index from coordinator...");
+               log.info("Retrieving index from coordinator (" + handler.getContext().getWorkspacePath(true) + ")...");
                indexCreated = recoveryIndexFromCoordinator();
 
                if (indexCreated)
@@ -512,14 +512,15 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                }
 
                executeAndLog(new Commit(getTransactionId()));
-               log.info("Created initial index for {} nodes", new Long(count));
+               log.info("Initial index for {} nodes created ({}).", new Long(count), handler.getContext()
+                  .getWorkspacePath(true));
                releaseMultiReader();
                scheduleFlushTask();
             }
          }
          catch (Exception e)
          {
-            String msg = "Error indexing workspace";
+            String msg = "Error indexing workspace.";
             IOException ex = new IOException(msg);
             ex.initCause(e);
             throw ex;
@@ -531,7 +532,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
       else
       {
-         throw new IllegalStateException("Index already present");
+         throw new IllegalStateException("Index already present.");
       }
    }
 
@@ -3385,7 +3386,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // switching to ONLINE
          if (isOnline)
          {
-            log.info("Setting index back online");
+            log.info("Setting index ONLINE ({})", handler.getContext().getWorkspacePath(true));
             if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
             {
                offlineIndex.commit(true);
@@ -3410,7 +3411,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // switching to OFFLINE
          else
          {
-            log.info("Setting index offline");
+            log.info("Setting index OFFLINE ({})", handler.getContext().getWorkspacePath(true));
             merger.dispose();
             offlineIndex =
                new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,

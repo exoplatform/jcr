@@ -93,6 +93,8 @@ public class QueryHandlerContext
 
    private final String repositoryName;
 
+   private final String workspaceName;
+
    /**
     * Creates a new context instance.
     * 
@@ -124,7 +126,7 @@ public class QueryHandlerContext
       NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
       String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
       boolean useIndexRecoveryFilters, LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery,
-      RPCService rpcService, String repositoryName)
+      RPCService rpcService, String repositoryName, String workspaceName)
    {
       this.indexRecovery = indexRecovery;
       this.container = container;
@@ -140,6 +142,7 @@ public class QueryHandlerContext
       this.rpcService = rpcService;
       this.parentHandler = parentHandler;
       this.repositoryName = repositoryName;
+      this.workspaceName = workspaceName;
       this.recoveryFilterUsed = useIndexRecoveryFilters;
       ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).addListener(propRegistry);
    }
@@ -276,6 +279,25 @@ public class QueryHandlerContext
    public String getRepositoryName()
    {
       return repositoryName;
+   }
+
+   /**
+    * @return
+    *          The name of current workspace
+    */
+   public String getWorkspaceName()
+   {
+      return workspaceName;
+   }
+
+   /**
+    * @return
+    *          The full path of workspace including information if current QueryHandler is a System one.
+    *          I.e. "repository/production[system]"
+    */
+   public String getWorkspacePath(boolean includeSystemMark)
+   {
+      return repositoryName + "/" + workspaceName + ((includeSystemMark && parentHandler == null) ? "[system]" : "");
    }
 
 }
