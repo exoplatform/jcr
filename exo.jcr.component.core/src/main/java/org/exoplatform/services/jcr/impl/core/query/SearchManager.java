@@ -521,7 +521,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       if (itemStates.getSize() > 0)
       {
          //Check if SearchManager started and filter configured
-         if (changesFilter != null)
+         if (changesFilter != null && parentSearchManager!=null)
          {
             changesFilter.onSaveItems(itemStates);
          }
@@ -951,6 +951,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          if (parentSearchManager != null)
          {
             changesFilter = initializeChangesFilter();
+            parentSearchManager.setChangesFilter(changesFilter);
          }
       }
       catch (SecurityException e)
@@ -980,6 +981,20 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       catch (InvocationTargetException e)
       {
          throw new RepositoryException(e.getMessage(), e);
+      }
+   }
+
+   /**
+    * Inserts the instance of {@link IndexerChangesFilter} into the {@link SearchManager}. 
+    * Used to set instance for {@link SystemSearchManager}.
+    * 
+    * @param changesFilter
+    */
+   protected void setChangesFilter(IndexerChangesFilter changesFilter)
+   {
+      if (this.changesFilter == null)
+      {
+         this.changesFilter = changesFilter;
       }
    }
 
@@ -1598,7 +1613,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
       try
       {
-         File backupDir = new File((File) context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName());
+         File backupDir = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName());
 
          if (!PrivilegedFileHelper.exists(backupDir))
          {
