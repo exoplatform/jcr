@@ -205,6 +205,14 @@
               RecoveryFilters, the mechanism of index synchronization for
               Local Index strategy.</entry>
             </row>
+
+            <row>
+              <entry>async-reindexing</entry>
+
+              <entry>Controls the process of re-indexing on JCR's startup. If
+              flag set, indexing will be launched asynchronously, without
+              blocking the JCR. Default is "false".</entry>
+            </row>
           </tbody>
         </tgroup>
       </table>
@@ -334,7 +342,7 @@
         <programlisting language="xml">&lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
 </programlisting>
 
-        <para>There are couple implementations of filters: </para>
+        <para>There are couple implementations of filters:</para>
 
         <itemizedlist>
           <listitem>
@@ -352,6 +360,18 @@
           </listitem>
 
           <listitem>
+            <para>org.exoplatform.services.jcr.impl.core.query.lucene.ConfigurationPropertyRecoveryFilter
+            : return value of QueryHandler configuration property
+            "index-recovery-filter-forcereindexing". So index recovery can be
+            controlled from configuration separately for each workspace.
+            I.e:</para>
+
+            <programlisting language="xml">&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.ConfigurationPropertyRecoveryFilter" /&gt;
+&lt;property name="index-recovery-filter-forcereindexing" value="true" /&gt;
+</programlisting>
+          </listitem>
+
+          <listitem>
             <para>org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter
             : checks number of documents in index on coordinator side and
             self-side. Return true if differs. Advantage of this filter
@@ -360,7 +380,7 @@
             workspaces in each one. Only one is really heavily used in cluster
             : frontend/production. So using this filter will only reindex
             those workspaces that are really changed, without affecting other
-            indexes thus greatly reducing startup time. </para>
+            indexes thus greatly reducing startup time.</para>
           </listitem>
         </itemizedlist>
       </section>
@@ -399,6 +419,122 @@
 
       <para>See more about template configurations <link
       linkend="JCR.JBossCacheConfigurationTemplates">here</link>.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Asynchronous reindexing</title>
+
+    <para>Managing a big set of data using JCR in production environment
+    sometimes requires special operations with Indexes, stored on File System.
+    One of those maintenance operations is a recreation of it. Also called
+    "re-indexing". There are various usecases when it's important to do. They
+    include hardware faults, hard restarts, data-corruption, migrations and
+    JCR updates that brings new features related to index. Usually index
+    re-creation requested on server's startup or in runtime.</para>
+
+    <section>
+      <title>On startup indexing</title>
+
+      <para>Common usecase for updating and re-creating the index is to stop
+      the server and manually remove indexes for workspaces requiring it. When
+      server will be started, missing indexes are automatically recovered by
+      re-indexing. JCR Supports direct RDBMS re-indexing, that usually is
+      faster than ordinary and can be configured via QueryHandler parameter
+      "rdbms-reindexing" set to "true" (for more information please refer to
+      "Query-handler configuration overview"). New feature to introduce is
+      asynchronous indexing on startup. Usually startup is blocked until
+      process is finished. Block can take any period of time, depending on
+      amount of data persisted in repositories. But this can be resolved by
+      using an asynchronous approaches of startup indexation. Saying briefly,
+      it performs all operations with index in background, without blocking
+      the repository. This is controlled by the value of "async-reindexing"
+      parameter in QueryHandler configuration. With asynchronous indexation
+      active, JCR starts with no active indexes present. Queries on JCR still
+      can be executed without exceptions, but no results will be returned
+      until index creation completed. Checking index state is possible via
+      QueryManagerImpl:</para>
+
+      <para><programlisting lang="java">boolean online = ((QueryManagerImpl)Workspace.getQueryManager()).getQueryHandeler().isOnline();</programlisting></para>
+
+      <para>"OFFLINE" state means that index is currently re-creating. When
+      state changed, corresponding log event is printed. From the start of
+      background task index is switched to "OFFLINE", with following log event
+      : </para>
+
+      <programlisting>[INFO] Setting index OFFLINE (repository/production[system]).</programlisting>
+
+      <para>When process finished, two events are logged : </para>
+
+      <programlisting>[INFO] Created initial index for 143018 nodes (repository/production[system]).
+[INFO] Setting index ONLINE (repository/production[system]).</programlisting>
+
+      <para>Those two log lines indicates the end of process for workspace
+      given in brackets. Calling isOnline() as mentioned above, will also
+      return true.</para>
+    </section>
+
+    <section>
+      <title>Hot Asynchronous Workspace Reindexing via JMX</title>
+
+      <para>Some hard system faults, error during upgrades, migration issues
+      and some other factors may corrupt the index. Most likely end customers
+      would like the production systems to fix index issues in run-time,
+      without delays and restarts. Current versions of JCR supports "Hot
+      Asynchronous Workspace Reindexing" feature. It allows end-user (Service
+      Administrator) to launch the process in background without stopping or
+      blocking whole application by using any JMX-compatible console (see
+      screenshot below, "JConsole in action").<mediaobject>
+          <imageobject>
+            <imagedata align="center" fileref="images/JConsole.png" />
+          </imageobject>
+        </mediaobject>Server can continue working as expected while index is
+      recreated. This depends on the flag "allow queries", passed via JMX
+      interface to reindex operation invocation. If the flag set, then
+      application continues working. But there is one critical limitation the
+      end-users must be aware. Index is frozen while background task is
+      running. It meant that queries are performed on index present on the
+      moment of task startup and data written into repository after startup
+      won't be available through the search until process finished. Data added
+      during re-indexation is also indexed, but will be available only when
+      task is done. Briefly, JCR makes the snapshot of indexes on asynch task
+      startup and uses it for searches. When operation finished, stale indexes
+      replaced by newly created including newly added data. If flag "allow
+      queries" is set to false, then all queries will throw an exception while
+      task is running. Current state can be acquired using the following JMX
+      operation:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>getHotReindexingState() - returns information about latest
+          invocation: start time, if in progress or finish time if
+          done.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Notices</title>
+
+      <para>First of all, can't launch Hot re-indexing via JMX if index is
+      already in offline mode. It means that index is currently is invoked in
+      some operations, like re-indexing at startup, copying in cluster to
+      another node or whatever. Another important this is Hot Asynchronous
+      Reindexing via JMX and "on startup" reindexing are completely different
+      features. So you can't get the state of startup reindexing using command
+      getHotReindexingState in JMX interface, but there are some common JMX
+      operations:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>getIOMode - returns current index IO mode (READ_ONLY /
+          READ_WRITE), belongs to clustered configuration states;</para>
+        </listitem>
+
+        <listitem>
+          <para>getState - returns current state: ONLINE / OFFLINE.</para>
+        </listitem>
+      </itemizedlist>
     </section>
   </section>
 
