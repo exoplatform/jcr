@@ -133,7 +133,8 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
                         + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P, "
                         + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " where P.PARENT_ID = "
                         + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
-                        + ".ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by ID";
+                        + ".ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID "
+                        + "order by " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".ID";
 
       DELETE_TEMPORARY_TABLE_A = "drop table " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
@@ -154,7 +155,10 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
       try
       {
          // the Sybase is not allowed DDL query (CREATE TABLE, DROP TABLE, etc. ) within a multi-statement transaction
-         dbConnection.setAutoCommit(true);
+         if (!dbConnection.getAutoCommit())
+         {
+            dbConnection.setAutoCommit(true);
+         }
 
          selectLimitOffsetNodesIntoTemporaryTable =
                   dbConnection.prepareStatement(SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE.replaceAll(

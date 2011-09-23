@@ -244,13 +244,6 @@
          <artifactId>hsqldb</artifactId>
          <scope>test</scope>
       </dependency>
-      <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
-      <!-- dependency>
-         <groupId>net.sourceforge.jtds</groupId>
-         <artifactId>jtds</artifactId>
-         <version>1.2</version>
-         <scope>test</scope>
-      </dependency -->
       <!-- For Apache Derby support (aka JavaDB) -->
       <!-- dependency>
          <groupId>org.apache.derby</groupId>
@@ -269,13 +262,6 @@
          <groupId>com.ingres.jdbc</groupId>
          <artifactId>iijdbc</artifactId>
          <version>9.2</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
-      <!-- dependency>
-         <groupId>com.sybase.jdbc3.jdbc</groupId>
-         <artifactId>jconn3</artifactId>
-         <version>6.05</version>
          <scope>test</scope>
       </dependency -->
    </dependencies>      
@@ -897,6 +883,34 @@
                <version>9.7</version>
                <scope>test</scope>
             </dependency>            
+         </dependencies>
+      </profile>
+      <profile>
+         <id>sybase</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-sybase-jbc.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.sybase.jdbc3.jdbc</groupId>
+               <artifactId>jconn3</artifactId>
+               <version>6.05</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>sybase-sjdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-sybase-sjdbc-jbc.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.sybase.jdbc3.jdbc</groupId>
+               <artifactId>jconn3</artifactId>
+               <version>6.05</version>
+               <scope>test</scope>
+            </dependency>
          </dependencies>
       </profile>
       <profile>
