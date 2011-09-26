@@ -223,7 +223,7 @@ public class BaseVersionImplTest extends JcrImplBaseTest
       versionedVersionHistoryData = new ArrayList<ValueData>();
       versionedVersionHistoryData.add(new TestTransientValueData(versionedVersionHistoryUuid.getBytes(), 0));
 
-      changesLog = new SessionChangesLog(session.getId());
+      changesLog = new SessionChangesLog(session);
 
       ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
 
@@ -267,7 +267,7 @@ public class BaseVersionImplTest extends JcrImplBaseTest
    public void createVersionable(int testCase) throws Exception
    {
 
-      versionableLog = new SessionChangesLog(session.getId());
+      versionableLog = new SessionChangesLog(session);
 
       // target node
       versionable =

@@ -120,7 +120,9 @@ public class SessionChangesLogTest extends JcrImplBaseTest
             try
             {
                userSession = (SessionImpl)frepository.login(fcredentials, "ws");
-               chlog[0] = new SessionChangesLogInfo(new SessionChangesLog(userSession.getId()), userSession.getId());
+               chlog[0] =
+                  new SessionChangesLogInfo(new SessionChangesLog(userSession), userSession
+                     .getId());
             }
             catch (RepositoryException e)
             {
@@ -148,7 +150,7 @@ public class SessionChangesLogTest extends JcrImplBaseTest
    public void testSameSession()
    {
 
-      SessionChangesLog chlog = new SessionChangesLog(session.getId());
+      SessionChangesLog chlog = new SessionChangesLog(session);
       assertEquals("Session must be same as given id owns", session, getRegisteredSession(chlog.getSessionId()));
    }
 
@@ -248,7 +250,7 @@ public class SessionChangesLogTest extends JcrImplBaseTest
 
    public void testAddRootChanges() throws Exception
    {
-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
+      SessionChangesLog changesLog = new SessionChangesLog(session);
       try
       {
          changesLog.add(new ItemState(new TransientPropertyData(Constants.ROOT_PATH, Constants.ROOT_UUID, 0,

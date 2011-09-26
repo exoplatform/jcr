@@ -147,7 +147,9 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
                path = resource.setProperty("jcr:data", vals).getPath();
             }
             else
+            {
                path = resource.setProperty("jcr:data", fBLOB1).getPath();
+            }
             resource.setProperty("jcr:mimeType", "application/x-octet-stream");
             resource.setProperty("jcr:lastModified", Calendar.getInstance());
             testRoot.save();
@@ -191,7 +193,7 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
       {
          try
          {
-            SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession().getId());
+            SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession());
 
             TransientNodeData ntfile =
                TransientNodeData.createNodeData(rootData, InternalQName.parse("[]blob" + i), Constants.NT_FILE);
@@ -218,7 +220,9 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
                data.add(new TransientValueData(fBLOB2));
             }
             else
+            {
                data.add(new TransientValueData(fBLOB1));
+            }
 
             TransientPropertyData resData =
                TransientPropertyData.createPropertyData(res, Constants.JCR_DATA, PropertyType.BINARY, data.size() > 1,
@@ -259,7 +263,7 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
    {
       final DataManager dm =
          ((NodeImpl)testRoot).getSession().getTransientNodesManager().getTransactManager().getStorageDataManager();
-      final SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession().getId());
+      final SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession());
 
       class Remover
       {
@@ -301,12 +305,18 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
          }
 
          if (item == null)
+         {
             break;
+         }
 
          if (item.isNode())
+         {
             parent = (NodeData)item;
+         }
          else if (i < relPathEntries.length - 1)
+         {
             throw new IllegalPathException("Path can not contains a property as the intermediate element");
+         }
       }
       return item;
    }

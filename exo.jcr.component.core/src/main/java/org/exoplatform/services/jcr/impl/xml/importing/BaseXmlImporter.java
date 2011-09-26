@@ -129,6 +129,7 @@ public abstract class BaseXmlImporter implements ContentImporter
       this.currentWorkspaceName = currentWorkspaceName;
       this.tree = new Stack<NodeData>();
       this.tree.push(parent);
+      // no session instance required
       this.changesLog = new PlainChangesLogImpl(SESSION_ID);
       this.ancestorToSave = ancestorToSave;
       this.isNeedReloadAncestorToSave = false;
@@ -157,6 +158,7 @@ public abstract class BaseXmlImporter implements ContentImporter
       {
          String str = "";
          for (int i = 0; i < changesLog.getAllStates().size(); i++)
+         {
             str +=
                " " + ItemState.nameFromValue(changesLog.getAllStates().get(i).getState()) + "\t\t"
                   + changesLog.getAllStates().get(i).getData().getIdentifier() + "\t" + "isPersisted="
@@ -164,6 +166,7 @@ public abstract class BaseXmlImporter implements ContentImporter
                   + changesLog.getAllStates().get(i).isEventFire() + "\t" + "isInternallyCreated="
                   + changesLog.getAllStates().get(i).isInternallyCreated() + "\t"
                   + changesLog.getAllStates().get(i).getData().getQPath().getAsString() + "\n";
+         }
          log.debug(str);
       }
       if (isNeedReloadAncestorToSave)
@@ -196,7 +199,9 @@ public abstract class BaseXmlImporter implements ContentImporter
          {
             int cur = ((NodeData)stateData).getOrderNumber();
             if (cur > max)
+            {
                max = cur;
+            }
          }
       }
       return ++max;
@@ -401,7 +406,9 @@ public abstract class BaseXmlImporter implements ContentImporter
          currentNodeInfo.setIsNewIdentifer(true);
       }
       if (uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING)
+      {
          currentNodeInfo.setParentIdentifer(getParent().getIdentifier());
+      }
 
    }
 
@@ -439,7 +446,9 @@ public abstract class BaseXmlImporter implements ContentImporter
          {
             ((ImportItemData)data).setParentIdentifer(identifier);
             if (reloadSNS)
+            {
                ((ImportItemData)data).setQPath(QPath.makeChildPath(newPath, data.getQPath().getName()));
+            }
 
          }
 
@@ -565,7 +574,9 @@ public abstract class BaseXmlImporter implements ContentImporter
       {
          ItemState state = allStates.get(i);
          if (state.getData().getIdentifier().equals(identifer))
+         {
             return state;
+         }
       }
       return null;
    }
@@ -582,9 +593,13 @@ public abstract class BaseXmlImporter implements ContentImporter
       String id1 = data.getParentIdentifier();
       String id2 = parent.getIdentifier();
       if (id1 == id2)
+      {
          return true;
+      }
       if (id1 == null && id2 != null)
+      {
          return false;
+      }
       return id1.equals(id2);
    }
 
@@ -684,9 +699,13 @@ public abstract class BaseXmlImporter implements ContentImporter
          if (i1.getState() != i2.getState())
          {
             if (i2.isDeleted())
+            {
                sign = 1;
+            }
             else
+            {
                sign = -1;
+            }
          }
          return sign;
       }

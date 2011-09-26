@@ -145,8 +145,8 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
     * {@inheritDoc}
     */
    @Override
-   public List<PropertyData> getChildPropertiesData(final NodeData nodeData, final List<QPathEntryFilter> itemDataFilters)
-      throws RepositoryException
+   public List<PropertyData> getChildPropertiesData(final NodeData nodeData,
+      final List<QPathEntryFilter> itemDataFilters) throws RepositoryException
    {
       if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
       {
@@ -286,18 +286,20 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
                final String pairId = IdGenerator.generate();
 
                versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType(),
-                  pairId));
+                  pairId, changes.getSession()));
                nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType(),
-                  pairId));
+                  pairId, changes.getSession()));
             }
             else
             {
-               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType()));
+               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType(),
+                  changes.getSession()));
             }
          }
          else if (nvstates.size() > 0)
          {
-            nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType()));
+            nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType(),
+               changes.getSession()));
          }
       }
 

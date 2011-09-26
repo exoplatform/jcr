@@ -27,6 +27,8 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jcr.Session;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -37,7 +39,7 @@ import java.util.List;
 public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
 {
    private static final int NULL_VALUE = -1;
-   
+
    private static final int NOT_NULL_VALUE = 1;
 
    private static final long serialVersionUID = 5624550860372364084L;
@@ -53,6 +55,8 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     */
    protected String pairId = null;
 
+   protected Session session = null;
+
    /**
     * Full qualified constructor.
     * 
@@ -61,12 +65,25 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     * @param eventType int
     * @param pairId String
     */
-   public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType, String pairId)
+   public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType, String pairId, Session session)
    {
       this.items = items;
       this.sessionId = sessionId;
       this.eventType = eventType;
       this.pairId = pairId;
+      this.session = session;
+   }
+
+   /**
+    * Constructor.
+    * 
+    * @param items List of ItemState
+    * @param sessionId String 
+    * @param eventType int
+    */
+   public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType, Session session)
+   {
+      this(items, sessionId, eventType, null, session);
    }
 
    /**
@@ -78,9 +95,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     */
    public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType)
    {
-      this.items = items;
-      this.sessionId = sessionId;
-      this.eventType = eventType;
+      this(items, sessionId, eventType, (Session)null);
    }
 
    /**
@@ -89,9 +104,19 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     * @param items List of ItemState
     * @param sessionId String 
     */
-   public PlainChangesLogImpl(List<ItemState> items, String sessionId)
+   public PlainChangesLogImpl(List<ItemState> items, String sessionId, Session session)
    {
-      this(items, sessionId, -1);
+      this(items, sessionId, -1, session);
+   }
+
+   /**
+    * An empty log.
+    * 
+    * @param sessionId String
+    */
+   public PlainChangesLogImpl(String sessionId, Session session)
+   {
+      this(new ArrayList<ItemState>(), sessionId, session);
    }
 
    /**
@@ -101,7 +126,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     */
    public PlainChangesLogImpl(String sessionId)
    {
-      this(new ArrayList<ItemState>(), sessionId);
+      this(new ArrayList<ItemState>(), sessionId, (Session)null);
    }
 
    /**
@@ -109,7 +134,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     */
    public PlainChangesLogImpl()
    {
-      this(new ArrayList<ItemState>(), null);
+      this(new ArrayList<ItemState>(), null, null);
    }
 
    /*
@@ -196,15 +221,25 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       return pairId;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public Session getSession()
+   {
+      return session;
+   }
+
    public String dump()
    {
       String str = "ChangesLog: \n";
       for (int i = 0; i < items.size(); i++)
+      {
          str +=
             " " + ItemState.nameFromValue(items.get(i).getState()) + "\t" + items.get(i).getData().getIdentifier()
                + "\t" + "isPersisted=" + items.get(i).isPersisted() + "\t" + "isEventFire="
                + items.get(i).isEventFire() + "\t" + "isInternallyCreated=" + items.get(i).isInternallyCreated() + "\t"
                + items.get(i).getData().getQPath().getAsString() + "\n";
+      }
 
       return str;
    }
@@ -227,7 +262,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
          out.writeObject(items.get(i));
       }
 
-      if (pairId != null) 
+      if (pairId != null)
       {
          out.writeInt(NOT_NULL_VALUE);
          buff = pairId.getBytes(Constants.DEFAULT_ENCODING);
@@ -253,7 +288,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       {
          add((ItemState)in.readObject());
       }
-      
+
       if (in.readInt() == NOT_NULL_VALUE)
       {
          buf = new byte[in.readInt()];

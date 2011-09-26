@@ -107,7 +107,7 @@ public class SessionDataManager implements ItemDataConsumer
    public SessionDataManager(SessionImpl session, LocalWorkspaceDataManagerStub dataManager) throws RepositoryException
    {
       this.session = session;
-      this.changesLog = new SessionChangesLog(session.getId());
+      this.changesLog = new SessionChangesLog(session);
       this.itemsPool = new ItemReferencePool();
       this.itemFactory = new SessionItemFactory();
       this.accessManager = session.getAccessManager();
@@ -2034,7 +2034,7 @@ public class SessionDataManager implements ItemDataConsumer
 
       // remove from changes log (Session pending changes)
       PlainChangesLog slog = changesLog.pushLog(item.getQPath());
-      SessionChangesLog changes = new SessionChangesLog(slog.getAllStates(), session.getId());
+      SessionChangesLog changes = new SessionChangesLog(slog.getAllStates(), session);
 
       String exceptions = "";
 

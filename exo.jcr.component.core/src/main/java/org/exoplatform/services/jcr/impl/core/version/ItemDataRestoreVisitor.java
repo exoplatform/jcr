@@ -204,8 +204,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                   parent.getPrimaryTypeName(), parent.getMixinTypeNames()).getOnParentVersion();
 
             if (onParentVersion == OnParentVersionAction.VERSION
-               && nodeTypeDataManager.isNodeType(Constants.MIX_VERSIONABLE, node.getPrimaryTypeName(),
-                  node.getMixinTypeNames()))
+               && nodeTypeDataManager.isNodeType(Constants.MIX_VERSIONABLE, node.getPrimaryTypeName(), node
+                  .getMixinTypeNames()))
             {
                remainedNode = node.getQPath();
 
@@ -240,8 +240,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             }
 
             ItemState state =
-               new ItemState(node, ItemState.DELETED, true, ancestorToSave != null ? ancestorToSave
-                  : removedRoot.getQPath());
+               new ItemState(node, ItemState.DELETED, true, ancestorToSave != null ? ancestorToSave : removedRoot
+                  .getQPath());
 
             itemRemovedStates.add(state);
          }
@@ -282,7 +282,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
       super(userSession.getTransientNodesManager().getTransactManager());
 
       this.userSession = userSession;
-      this.changes = new SessionChangesLog(userSession.getId());
+      this.changes = new SessionChangesLog(userSession);
       this.context = context;
       this.destName = destName;
       this.history = history;
@@ -309,7 +309,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          for (ItemState state : delegatedChanges.getAllStates())
          {
             if (state.getData().getIdentifier().equals(identifier))
+            {
                return state.getData();
+            }
          }
       }
 
@@ -323,7 +325,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          for (ItemState state : delegatedChanges.getAllStates())
          {
             if (state.getData().getQPath().equals(path))
+            {
                return state.getData();
+            }
          }
       }
 
@@ -338,7 +342,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          for (ItemState state : delegatedChanges.getAllStates())
          {
             if (state.getData().getQPath().equals(path) || state.getData().getQPath().isDescendantOf(path))
+            {
                removed.add(state);
+            }
          }
 
          for (ItemState state : removed)
@@ -355,7 +361,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
       QPath nodePath = QPath.makeChildPath(parentData.getQPath(), name);
 
       if (log.isDebugEnabled())
+      {
          log.debug("Restore: " + nodePath.getAsString() + ", removeExisting=" + removeExisting);
+      }
 
       PropertyData frozenIdentifier =
          (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENUUID, 1), ItemType.PROPERTY);
@@ -383,11 +391,13 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                   // parent
                   sameIdentifierPath.getName().equals(nodePath.getName()))
                { // same
-                 // name
+                  // name
 
                   if (sameIdentifierPath.getIndex() != nodePath.getIndex())
+                  {
                      // but different index, see below... fix it
                      nodePath = QPath.makeChildPath(parentData.getQPath(), name, sameIdentifierPath.getIndex());
+                  }
 
                   // if it's a target node
                   existing = sameIdentifierNode;
@@ -606,7 +616,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
 
             NodeData cHistory = null;
             if ((cHistory = (NodeData)dataManager.getItemData(vhIdentifier)) == null)
+            {
                throw new RepositoryException("Version history is not found with uuid " + vhIdentifier);
+            }
 
             childHistory = new VersionHistoryDataHelper(cHistory, dataManager, nodeTypeDataManager);
          }
@@ -677,8 +689,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
 
          int action =
             nodeTypeDataManager.getChildNodeDefinition(qname, frozen.getPrimaryTypeName(),
-               currentNode().getPrimaryTypeName(),
-               currentNode().getMixinTypeNames()).getOnParentVersion();
+               currentNode().getPrimaryTypeName(), currentNode().getMixinTypeNames()).getOnParentVersion();
 
          if (log.isDebugEnabled())
          {
@@ -695,8 +706,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             // jcr:uuid
             String jcrUuid = null;
             NodeData existing = null;
-            if (nodeTypeDataManager.isNodeType(Constants.MIX_REFERENCEABLE, frozen.getPrimaryTypeName(),
-               frozen.getMixinTypeNames()))
+            if (nodeTypeDataManager.isNodeType(Constants.MIX_REFERENCEABLE, frozen.getPrimaryTypeName(), frozen
+               .getMixinTypeNames()))
             {
                // copy uuid from frozen state of mix:referenceable,
                // NOTE: mix:referenceable stored in frozen state with genereted ID
@@ -772,12 +783,12 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             AccessControlList acl = currentNode().getACL();
 
             boolean isPrivilegeable =
-               nodeTypeDataManager.isNodeType(Constants.EXO_PRIVILEGEABLE, frozen.getPrimaryTypeName(),
-                  frozen.getMixinTypeNames());
+               nodeTypeDataManager.isNodeType(Constants.EXO_PRIVILEGEABLE, frozen.getPrimaryTypeName(), frozen
+                  .getMixinTypeNames());
 
             boolean isOwneable =
-               nodeTypeDataManager.isNodeType(Constants.EXO_OWNEABLE, frozen.getPrimaryTypeName(),
-                  frozen.getMixinTypeNames());
+               nodeTypeDataManager.isNodeType(Constants.EXO_OWNEABLE, frozen.getPrimaryTypeName(), frozen
+                  .getMixinTypeNames());
 
             if (isPrivilegeable || isOwneable)
             {
@@ -816,8 +827,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             {
                // copy existed - i.e. left unchanged
                ItemDataCopyVisitor copyVisitor =
-                  new ItemDataCopyVisitor(currentNode(), frozen.getQPath().getName(), nodeTypeDataManager,
-                     userSession.getTransientNodesManager(), userSession.getTransientNodesManager(), true);
+                  new ItemDataCopyVisitor(currentNode(), frozen.getQPath().getName(), nodeTypeDataManager, userSession
+                     .getTransientNodesManager(), userSession.getTransientNodesManager(), true);
                existed.accept(copyVisitor);
                changes.addAll(copyVisitor.getItemAddStates());
             } // else - nothing to do, i.e. left unchanged
@@ -839,6 +850,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          InternalQName qname = property.getQPath().getName();
 
          if (nodeTypeDataManager.isNodeType(Constants.NT_FROZENNODE, frozenParent.getPrimaryTypeName()))
+         {
             if (qname.equals(Constants.JCR_FROZENPRIMARYTYPE))
             {
                qname = Constants.JCR_PRIMARYTYPE;
@@ -857,11 +869,11 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                // skip these props, as they are a nt:frozenNode special props
                return;
             }
+         }
 
          int action =
-            nodeTypeDataManager
-               .getPropertyDefinitions(qname, currentNode().getPrimaryTypeName(), currentNode().getMixinTypeNames())
-               .getAnyDefinition().getOnParentVersion();
+            nodeTypeDataManager.getPropertyDefinitions(qname, currentNode().getPrimaryTypeName(),
+               currentNode().getMixinTypeNames()).getAnyDefinition().getOnParentVersion();
 
          if (log.isDebugEnabled())
          {
@@ -878,14 +890,14 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             if (qname.equals(Constants.JCR_PREDECESSORS))
             {
                tagetProperty =
-                  TransientPropertyData.createPropertyData(currentNode(), qname, property.getType(),
-                     property.isMultiValued(), new ArrayList<ValueData>());
+                  TransientPropertyData.createPropertyData(currentNode(), qname, property.getType(), property
+                     .isMultiValued(), new ArrayList<ValueData>());
             }
             else
             {
                tagetProperty =
-                  TransientPropertyData.createPropertyData(currentNode(), qname, property.getType(),
-                     property.isMultiValued(), copyValues(property));
+                  TransientPropertyData.createPropertyData(currentNode(), qname, property.getType(), property
+                     .isMultiValued(), copyValues(property));
             }
 
             changes.add(ItemState.createAddedState(tagetProperty));
