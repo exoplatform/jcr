@@ -420,7 +420,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          // copy state
          PlainChangesLogImpl newLog =
             new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSessionId(), changesLog.getEventType(),
-               changesLog.getPairId(), changesLog.getSession());
+               changesLog.getPairId());
 
          for (Iterator<ItemState> iter = changesLog.getAllStates().iterator(); iter.hasNext();)
          {

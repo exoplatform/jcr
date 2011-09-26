@@ -22,8 +22,6 @@ import org.exoplatform.services.jcr.observation.ExtendedEventType;
 
 import java.util.List;
 
-import javax.jcr.Session;
-
 /**
  * Created by The eXo Platform SAS.<br/> Plain changes log implementation (i.e. no nested logs
  * inside)
@@ -35,12 +33,12 @@ public interface PlainChangesLog extends ItemStateChangesLog
 {
 
    /**
-    * Return Session Id.
+    * Return Sesion Id.
     * 
     * @return sessionId of a session produced this changes log
     */
    String getSessionId();
-
+   
    /**
     * Return pair Id of system and non-system logs.
     * 
@@ -69,11 +67,4 @@ public interface PlainChangesLog extends ItemStateChangesLog
     * @param states List of ItemState
     */
    PlainChangesLog addAll(List<ItemState> states);
-
-   /**
-    * Return Session instance if any.
-    * 
-    * @return Session instance if any.
-    */
-   Session getSession();
 }

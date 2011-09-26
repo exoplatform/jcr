@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 import javax.jcr.observation.Event;
 
 public class TestSessionsObservation extends JcrAPIBaseTest
@@ -261,27 +260,5 @@ public class TestSessionsObservation extends JcrAPIBaseTest
          sessionWs1.getWorkspace().getObservationManager().removeEventListener(listener1);
          sessionWs1.getWorkspace().getObservationManager().removeEventListener(listener2);
       }
-   }
-
-   public void testMoveOnClosedSession() throws Exception
-   {
-
-      testRootWs1.addNode("newNode");
-      sessionWs1.save();
-
-      int counter = 0;
-
-      SimpleListener listener = new SimpleListener("testSessionOpen", log, counter);
-
-      Session sessionWs1ForListener = repository.login(credentials, "ws1");
-
-      sessionWs1ForListener.getWorkspace().getObservationManager().addEventListener(listener,
-         Event.NODE_ADDED | Event.NODE_REMOVED, testRootWs1.getPath() + "/", false, null, null, false);
-
-      sessionWs1ForListener.logout();
-
-      sessionWs1.logout();
-      sessionWs1.getWorkspace().move(testRootWs1.getPath() + "/newNode", testRootWs1.getPath() + "/newNode2");
-      assertEquals(2, listener.getCounter());
    }
 }

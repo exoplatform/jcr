@@ -93,14 +93,8 @@ public class ActionLauncher implements ItemsPersistenceListener
             String sessionId = subLog.getSessionId();
 
             SessionImpl userSession = sessionRegistry.getSession(sessionId);
-            // try to get session from changesLog
-            if (userSession == null)
-            {
-               userSession = (SessionImpl)subLog.getSession();
-            }
 
             if (userSession != null)
-            {
                for (ItemState itemState : subLog.getAllStates())
                {
                   if (itemState.isEventFire())
@@ -129,7 +123,6 @@ public class ActionLauncher implements ItemsPersistenceListener
                      }
                   }
                }
-            }
          }
          if (events.getSize() > 0)
          {
@@ -149,18 +142,14 @@ public class ActionLauncher implements ItemsPersistenceListener
    private boolean isSessionMatch(ListenerCriteria criteria, String sessionId)
    {
       if (criteria.getNoLocal() && criteria.getSessionId().equals(sessionId))
-      {
          return false;
-      }
       return true;
    }
 
    private boolean isPathMatch(ListenerCriteria criteria, ItemData item, SessionImpl userSession)
    {
       if (criteria.getAbsPath() == null)
-      {
          return true;
-      }
       try
       {
          QPath cLoc = userSession.getLocationFactory().parseAbsPath(criteria.getAbsPath()).getInternalPath();
@@ -182,21 +171,15 @@ public class ActionLauncher implements ItemsPersistenceListener
    {
 
       if (criteria.getIdentifier() == null)
-      {
          return true;
-      }
 
       // assotiated parent is node itself for node and parent for property ????
       for (int i = 0; i < criteria.getIdentifier().length; i++)
       {
          if (item.isNode() && criteria.getIdentifier()[i].equals(item.getIdentifier()))
-         {
             return true;
-         }
          else if (!item.isNode() && criteria.getIdentifier()[i].equals(item.getParentIdentifier()))
-         {
             return true;
-         }
       }
       return false;
 
@@ -206,9 +189,7 @@ public class ActionLauncher implements ItemsPersistenceListener
       PlainChangesLog changesLog) throws RepositoryException
    {
       if (criteria.getNodeTypeName() == null)
-      {
          return true;
-      }
 
       NodeData node = (NodeData)workspaceDataManager.getItemData(item.getParentIdentifier());
       if (node == null)
@@ -250,9 +231,7 @@ public class ActionLauncher implements ItemsPersistenceListener
             testQNames[0] = node.getPrimaryTypeName();
          }
          if (ntManager.isNodeType(criteriaNT.getName(), testQNames))
-         {
             return true;
-         }
       }
       return false;
    }
@@ -263,40 +242,24 @@ public class ActionLauncher implements ItemsPersistenceListener
       if (state.getData().isNode())
       {
          if (state.isAdded() || state.isRenamed() || state.isUpdated())
-         {
             return Event.NODE_ADDED;
-         }
          else if (state.isDeleted())
-         {
             return Event.NODE_REMOVED;
-         }
          else if (state.isUpdated())
-         {
             return SKIP_EVENT;
-         }
          else if (state.isUnchanged())
-         {
             return SKIP_EVENT;
-         }
       }
       else
       { // property
          if (state.isAdded())
-         {
             return Event.PROPERTY_ADDED;
-         }
          else if (state.isDeleted())
-         {
             return Event.PROPERTY_REMOVED;
-         }
          else if (state.isUpdated())
-         {
             return Event.PROPERTY_CHANGED;
-         }
          else if (state.isUnchanged())
-         {
             return SKIP_EVENT;
-         }
       }
       throw new RepositoryException("Unexpected ItemState for Node " + ItemState.nameFromValue(state.getState()) + " "
          + state.getData().getQPath().getAsString());
