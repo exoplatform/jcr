@@ -285,43 +285,18 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
                // we have pair of logs for system and non-system (this) workspaces
                final String pairId = IdGenerator.generate();
 
-               if (changes.getSession() != null)
-               {
-                  versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSession(), changes.getEventType(),
-                     pairId));
-                  nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSession(), changes.getEventType(),
-                     pairId));
-               }
-               else
-               {
-                  versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType(),
-                     pairId));
-                  nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes
-                     .getEventType(), pairId));
-               }
+               versionLogs.addLog(PlainChangesLogImpl.createCopy(vstates, pairId, changes));
+               nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, pairId, changes));
             }
             else
             {
-               if (changes.getSession() != null)
-               {
-                  versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSession(), changes.getEventType()));
-               }
-               else
-               {
-                  versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType()));
-               }
+               versionLogs.addLog(PlainChangesLogImpl.createCopy(vstates, changes));
+               nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
             }
          }
          else if (nvstates.size() > 0)
          {
-            if (changes.getSession() != null)
-            {
-               nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSession(), changes.getEventType()));
-            }
-            else
-            {
-               nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType()));
-            }
+            nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
          }
       }
 

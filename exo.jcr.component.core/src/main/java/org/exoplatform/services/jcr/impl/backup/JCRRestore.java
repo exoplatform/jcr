@@ -266,15 +266,7 @@ public class JCRRestore
                }
             }
 
-            PlainChangesLog plog;
-            if (next.getSession() != null)
-            {
-               plog = new PlainChangesLogImpl(normalized, next.getSession(), next.getEventType());
-            }
-            else
-            {
-               plog = new PlainChangesLogImpl(normalized, next.getSessionId(), next.getEventType());
-            }
+            PlainChangesLog plog = PlainChangesLogImpl.createCopy(normalized, next);
             result.addLog(plog);
          }
 

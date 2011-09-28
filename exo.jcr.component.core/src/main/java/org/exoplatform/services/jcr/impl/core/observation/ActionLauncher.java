@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.observation;
 
+import org.exoplatform.services.jcr.core.ExtendedSession;
+import org.exoplatform.services.jcr.core.ExtendedWorkspace;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
@@ -31,7 +33,6 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
@@ -92,11 +93,11 @@ public class ActionLauncher implements ItemsPersistenceListener
             PlainChangesLog subLog = logIterator.nextLog();
             String sessionId = subLog.getSessionId();
 
-            SessionImpl userSession;
+            ExtendedSession userSession;
 
-            if (subLog.getSession() instanceof SessionImpl)
+            if (subLog.getSession() != null)
             {
-               userSession = (SessionImpl)subLog.getSession();
+               userSession = subLog.getSession();
             }
             else
             {
@@ -155,7 +156,7 @@ public class ActionLauncher implements ItemsPersistenceListener
       return !(criteria.getNoLocal() && criteria.getSessionId().equals(sessionId));
    }
 
-   private boolean isPathMatch(ListenerCriteria criteria, ItemData item, SessionImpl userSession)
+   private boolean isPathMatch(ListenerCriteria criteria, ItemData item, ExtendedSession userSession)
    {
       if (criteria.getAbsPath() == null)
       {
@@ -202,7 +203,7 @@ public class ActionLauncher implements ItemsPersistenceListener
 
    }
 
-   private boolean isNodeTypeMatch(ListenerCriteria criteria, ItemData item, SessionImpl userSession,
+   private boolean isNodeTypeMatch(ListenerCriteria criteria, ItemData item, ExtendedSession userSession,
       PlainChangesLog changesLog) throws RepositoryException
    {
       if (criteria.getNodeTypeName() == null)
@@ -233,7 +234,7 @@ public class ActionLauncher implements ItemsPersistenceListener
          }
       }
 
-      NodeTypeDataManager ntManager = userSession.getWorkspace().getNodeTypesHolder();
+      NodeTypeDataManager ntManager = ((ExtendedWorkspace)userSession.getWorkspace()).getNodeTypesHolder();
       LocationFactory locationFactory = userSession.getLocationFactory();
       for (int i = 0; i < criteria.getNodeTypeName().length; i++)
       {

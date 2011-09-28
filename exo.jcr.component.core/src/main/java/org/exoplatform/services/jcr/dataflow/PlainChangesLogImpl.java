@@ -28,8 +28,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.jcr.Session;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -59,48 +57,15 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
    protected String pairId;
 
    /**
-    * Full qualified constructor.
-    * 
-    * @param items List of ItemState
-    * @param session Session 
-    * @param eventType int
-    * @param pairId String
-    */
-   public PlainChangesLogImpl(List<ItemState> items, Session session, int eventType, String pairId)
-   {
-      this.items = items;
-      this.session = (ExtendedSession)session;
-      this.sessionId = this.session.getId();
-      this.eventType = eventType;
-      this.pairId = pairId;
-   }
-
-   /**
-    * Full qualified constructor. Used for compatibility with asynchronous replication.
-    * 
-    * @param items List of ItemState
-    * @param sessionId String 
-    * @param eventType int
-    * @param pairId String
-    */
-   public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType, String pairId)
-   {
-      this.items = items;
-      this.sessionId = sessionId;
-      this.eventType = eventType;
-      this.pairId = pairId;
-   }
-
-   /**
     * Constructor.
     * 
     * @param items List of ItemState
     * @param session Session 
     * @param eventType int
     */
-   public PlainChangesLogImpl(List<ItemState> items, Session session, int eventType)
+   public PlainChangesLogImpl(List<ItemState> items, ExtendedSession session, int eventType)
    {
-      this(items, session, eventType, null);
+      this(items, session.getId(), eventType, null, session);
    }
 
    /**
@@ -112,10 +77,8 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     */
    public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType)
    {
-      this(items, sessionId, eventType, null);
+      this(items, sessionId, eventType, null, null);
    }
-
-   //
 
    /**
     * Constructor with undefined event type.
@@ -123,7 +86,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     * @param items List of ItemState
     * @param session Session 
     */
-   public PlainChangesLogImpl(List<ItemState> items, Session session)
+   public PlainChangesLogImpl(List<ItemState> items, ExtendedSession session)
    {
       this(items, session, -1);
    }
@@ -133,7 +96,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     * 
     * @param session Session 
     */
-   public PlainChangesLogImpl(Session session)
+   public PlainChangesLogImpl(ExtendedSession session)
    {
       this(new ArrayList<ItemState>(), session);
    }
@@ -199,7 +162,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
    /**
     * {@inheritDoc}
     */
-   public Session getSession()
+   public ExtendedSession getSession()
    {
       return session;
    }
@@ -261,6 +224,55 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       }
 
       return str;
+   }
+
+   /**
+    * Full qualified constructor.
+    * 
+    * @param items List of ItemState
+    * @param sessionId String 
+    * @param eventType int
+    * @param pairId String
+    */
+   protected PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType, String pairId,
+      ExtendedSession session)
+   {
+      this.items = items;
+      this.session = session;
+      this.sessionId = sessionId;
+      this.eventType = eventType;
+      this.pairId = pairId;
+   }
+
+   /**
+    * Creates a new instance of {@link PlainChangesLogImpl} by copying metadata from originalLog 
+    * instance with Items provided.
+    * 
+    * @param items
+    * @param originalLog
+    * @return
+    */
+   public static PlainChangesLogImpl createCopy(List<ItemState> items, PlainChangesLog originalLog)
+   {
+      return createCopy(items, originalLog.getPairId(), originalLog);
+   }
+
+   /**
+    * Creates a new instance of {@link PlainChangesLogImpl} by copying metadata from originalLog 
+    * instance with Items and PairID provided. Metadata will be copied excluding PairID.
+    * 
+    * @param items
+    * @param originalLog
+    * @return
+    */
+   public static PlainChangesLogImpl createCopy(List<ItemState> items, String pairId, PlainChangesLog originalLog)
+   {
+      if (originalLog.getSession() != null)
+      {
+         return new PlainChangesLogImpl(items, originalLog.getSession().getId(), originalLog.getEventType(), pairId,
+            originalLog.getSession());
+      }
+      return new PlainChangesLogImpl(items, originalLog.getSessionId(), originalLog.getEventType(), pairId, null);
    }
 
    // Need for Externalizable

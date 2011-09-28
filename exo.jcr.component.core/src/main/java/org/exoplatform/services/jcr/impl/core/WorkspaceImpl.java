@@ -466,8 +466,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
             (NodeData)srcParentNode.getData(), nodeTypeManager, session.getTransientNodesManager(), true);
       srcNode.getData().accept(initializer);
 
-      PlainChangesLog changes = new PlainChangesLogImpl(session);
-      changes.addAll(initializer.getAllStates());
+      PlainChangesLog changes = new PlainChangesLogImpl(initializer.getAllStates(), session);
 
       // reload items pool
       for (ItemState state : initializer.getItemAddStates())
@@ -724,6 +723,9 @@ public class WorkspaceImpl implements ExtendedWorkspace
       return (RepositoryImpl)session.getRepository();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public NodeTypeDataManager getNodeTypesHolder() throws RepositoryException
    {
       return nodeTypeManager;

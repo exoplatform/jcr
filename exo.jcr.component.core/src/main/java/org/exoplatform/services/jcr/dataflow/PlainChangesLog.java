@@ -18,11 +18,10 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
+import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.observation.ExtendedEventType;
 
 import java.util.List;
-
-import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS.<br/> Plain changes log implementation (i.e. no nested logs
@@ -74,5 +73,5 @@ public interface PlainChangesLog extends ItemStateChangesLog
     * Returns session instance is present
     * @return session instance
     */
-   Session getSession();
+   ExtendedSession getSession();
 }

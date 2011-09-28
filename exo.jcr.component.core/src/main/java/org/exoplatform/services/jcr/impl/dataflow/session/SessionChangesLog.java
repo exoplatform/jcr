@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
+import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -34,8 +35,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS.<br/> Responsible for managing session changes log. Relying on
@@ -86,7 +85,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     * 
     * @param sessionId
     */
-   public SessionChangesLog(Session session)
+   public SessionChangesLog(ExtendedSession session)
    {
       super(session);
    }
@@ -97,7 +96,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     * @param items
     * @param sessionId
     */
-   public SessionChangesLog(List<ItemState> items, Session session)
+   public SessionChangesLog(List<ItemState> items, ExtendedSession session)
    {
       super(items, session);
       for (int i = 0, length = items.size(); i < length; i++)
