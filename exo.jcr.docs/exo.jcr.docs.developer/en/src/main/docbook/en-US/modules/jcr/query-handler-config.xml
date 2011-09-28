@@ -486,7 +486,7 @@
       blocking whole application by using any JMX-compatible console (see
       screenshot below, "JConsole in action").<mediaobject>
           <imageobject>
-            <imagedata align="center" fileref="images/JConsole.png" />
+            <imagedata align="center" fileref="images/jmx-jconsole.png" />
           </imageobject>
         </mediaobject>Server can continue working as expected while index is
       recreated. This depends on the flag "allow queries", passed via JMX
