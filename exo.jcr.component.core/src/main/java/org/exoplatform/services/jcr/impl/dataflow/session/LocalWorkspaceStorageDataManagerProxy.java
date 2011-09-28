@@ -94,8 +94,14 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
             states.add(new ItemState(copyItemData(change.getData()), change.getState(), change.isEventFire(), change
                .getAncestorToSave(), change.isInternallyCreated(), change.isPersisted(), change.getOldPath()));
          }
-
-         newLog.addLog(new PlainChangesLogImpl(states, changes.getSessionId(), changes.getEventType()));
+         if (changes.getSession() != null)
+         {
+            newLog.addLog(new PlainChangesLogImpl(states, changes.getSession(), changes.getEventType()));
+         }
+         else
+         {
+            newLog.addLog(new PlainChangesLogImpl(states, changes.getSessionId(), changes.getEventType()));
+         }
       }
 
       storageDataManager.save(newLog);
@@ -145,7 +151,8 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    /**
     * {@inheritDoc}
     */
-   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
    {
       return copyNodes(storageDataManager.getChildNodesData(parent, patternFilters));
    }
@@ -166,7 +173,7 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    {
       return storageDataManager.getLastOrderNumber(parent);
    }
-   
+
    /**
     * {@inheritDoc}
     */

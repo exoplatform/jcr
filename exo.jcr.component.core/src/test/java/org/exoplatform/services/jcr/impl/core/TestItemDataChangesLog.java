@@ -70,7 +70,7 @@ public class TestItemDataChangesLog extends JcrImplBaseTest
    public void testBasicOperations() throws Exception
    {
 
-      SessionChangesLog cLog = new SessionChangesLog("s1");
+      SessionChangesLog cLog = new SessionChangesLog(new DummySession("s1"));
       cLog.add(ItemState.createAddedState(data1));
       cLog.add(ItemState.createAddedState(data2));
       cLog.add(ItemState.createDeletedState(data2));
@@ -92,7 +92,7 @@ public class TestItemDataChangesLog extends JcrImplBaseTest
    public void testSessionOperations() throws Exception
    {
 
-      SessionChangesLog cLog = new SessionChangesLog("s1");
+      SessionChangesLog cLog = new SessionChangesLog(new DummySession("s1"));
 
       TransientNodeData d1 =
          TransientNodeData.createNodeData(data1, new InternalQName(null, "testSessionOperations"), new InternalQName(

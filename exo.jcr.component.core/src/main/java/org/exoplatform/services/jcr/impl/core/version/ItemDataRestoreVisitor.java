@@ -282,7 +282,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
       super(userSession.getTransientNodesManager().getTransactManager());
 
       this.userSession = userSession;
-      this.changes = new SessionChangesLog(userSession.getId());
+      this.changes = new SessionChangesLog(userSession);
       this.context = context;
       this.destName = destName;
       this.history = history;
@@ -309,7 +309,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          for (ItemState state : delegatedChanges.getAllStates())
          {
             if (state.getData().getIdentifier().equals(identifier))
+            {
                return state.getData();
+            }
          }
       }
 
@@ -323,7 +325,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          for (ItemState state : delegatedChanges.getAllStates())
          {
             if (state.getData().getQPath().equals(path))
+            {
                return state.getData();
+            }
          }
       }
 
@@ -338,7 +342,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          for (ItemState state : delegatedChanges.getAllStates())
          {
             if (state.getData().getQPath().equals(path) || state.getData().getQPath().isDescendantOf(path))
+            {
                removed.add(state);
+            }
          }
 
          for (ItemState state : removed)
@@ -355,7 +361,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
       QPath nodePath = QPath.makeChildPath(parentData.getQPath(), name);
 
       if (log.isDebugEnabled())
+      {
          log.debug("Restore: " + nodePath.getAsString() + ", removeExisting=" + removeExisting);
+      }
 
       PropertyData frozenIdentifier =
          (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENUUID, 1), ItemType.PROPERTY);
@@ -386,8 +394,10 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                  // name
 
                   if (sameIdentifierPath.getIndex() != nodePath.getIndex())
+                  {
                      // but different index, see below... fix it
                      nodePath = QPath.makeChildPath(parentData.getQPath(), name, sameIdentifierPath.getIndex());
+                  }
 
                   // if it's a target node
                   existing = sameIdentifierNode;
@@ -606,7 +616,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
 
             NodeData cHistory = null;
             if ((cHistory = (NodeData)dataManager.getItemData(vhIdentifier)) == null)
+            {
                throw new RepositoryException("Version history is not found with uuid " + vhIdentifier);
+            }
 
             childHistory = new VersionHistoryDataHelper(cHistory, dataManager, nodeTypeDataManager);
          }
@@ -839,6 +851,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          InternalQName qname = property.getQPath().getName();
 
          if (nodeTypeDataManager.isNodeType(Constants.NT_FROZENNODE, frozenParent.getPrimaryTypeName()))
+         {
             if (qname.equals(Constants.JCR_FROZENPRIMARYTYPE))
             {
                qname = Constants.JCR_PRIMARYTYPE;
@@ -857,6 +870,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                // skip these props, as they are a nt:frozenNode special props
                return;
             }
+         }
 
          int action =
             nodeTypeDataManager

@@ -127,7 +127,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
    {
       session.checkLive();
 
-      SessionChangesLog changes = new SessionChangesLog(session.getId());
+      SessionChangesLog changes = new SessionChangesLog(session);
 
       clone(srcWorkspace, srcAbsPath, destAbsPath, removeExisting, changes);
 
@@ -214,7 +214,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
 
       srcNode.getData().accept(initializer);
 
-      PlainChangesLogImpl changesLog = new PlainChangesLogImpl(initializer.getItemAddStates(), session.getId());
+      PlainChangesLogImpl changesLog = new PlainChangesLogImpl(initializer.getItemAddStates(), session);
 
       session.getTransientNodesManager().getTransactManager().save(changesLog);
    }
@@ -466,7 +466,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
             (NodeData)srcParentNode.getData(), nodeTypeManager, session.getTransientNodesManager(), true);
       srcNode.getData().accept(initializer);
 
-      PlainChangesLog changes = new PlainChangesLogImpl(session.getId());
+      PlainChangesLog changes = new PlainChangesLogImpl(session);
       changes.addAll(initializer.getAllStates());
 
       // reload items pool
@@ -590,7 +590,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
       List<VersionImpl> notExistedVersions = new ArrayList<VersionImpl>();
 
       TransactionableDataManager dataManager = session.getTransientNodesManager().getTransactManager();
-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
+      SessionChangesLog changesLog = new SessionChangesLog(session);
       for (Version v : versions)
       {
          String versionableIdentifier = v.getContainingHistory().getVersionableUUID();

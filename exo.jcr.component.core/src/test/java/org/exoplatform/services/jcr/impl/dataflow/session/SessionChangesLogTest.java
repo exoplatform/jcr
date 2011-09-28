@@ -20,10 +20,10 @@ package org.exoplatform.services.jcr.impl.dataflow.session;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.DummySession;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -120,7 +120,7 @@ public class SessionChangesLogTest extends JcrImplBaseTest
             try
             {
                userSession = (SessionImpl)frepository.login(fcredentials, "ws");
-               chlog[0] = new SessionChangesLogInfo(new SessionChangesLog(userSession.getId()), userSession.getId());
+               chlog[0] = new SessionChangesLogInfo(new SessionChangesLog(userSession), userSession.getId());
             }
             catch (RepositoryException e)
             {
@@ -148,7 +148,7 @@ public class SessionChangesLogTest extends JcrImplBaseTest
    public void testSameSession()
    {
 
-      SessionChangesLog chlog = new SessionChangesLog(session.getId());
+      SessionChangesLog chlog = new SessionChangesLog(session);
       assertEquals("Session must be same as given id owns", session, getRegisteredSession(chlog.getSessionId()));
    }
 
@@ -156,7 +156,7 @@ public class SessionChangesLogTest extends JcrImplBaseTest
    {
 
       String id = IdGenerator.generate();
-      SessionChangesLog chlog = new SessionChangesLog(id);
+      SessionChangesLog chlog = new SessionChangesLog(new DummySession(id));
 
       assertNull("No session should be linked to the log", getRegisteredSession(chlog.getSessionId()));
    }
@@ -248,7 +248,7 @@ public class SessionChangesLogTest extends JcrImplBaseTest
 
    public void testAddRootChanges() throws Exception
    {
-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
+      SessionChangesLog changesLog = new SessionChangesLog(session);
       try
       {
          changesLog.add(new ItemState(new TransientPropertyData(Constants.ROOT_PATH, Constants.ROOT_UUID, 0,

@@ -171,7 +171,9 @@ public class JCRRestore
             while (cli.hasNextLog())
             {
                if (cli.nextLog().getEventType() == ExtendedEvent.LOCK)
+               {
                   cli.removeLog();
+               }
             }
 
             saveChangesLog(changesLog);
@@ -194,22 +196,30 @@ public class JCRRestore
          TransactionChangesLog normalizeChangesLog =
             getNormalizedChangesLog(e.getIdentifier(), e.getState(), changesLog);
          if (normalizeChangesLog != null)
+         {
             saveChangesLog(normalizeChangesLog);
+         }
          else
+         {
             throw new RepositoryException(
                "Collisions found during save of restore changes log, but caused item is not found by ID "
                   + e.getIdentifier() + ". " + e, e);
+         }
       }
       catch (JCRItemExistsException e)
       {
          TransactionChangesLog normalizeChangesLog =
             getNormalizedChangesLog(e.getIdentifier(), e.getState(), changesLog);
          if (normalizeChangesLog != null)
+         {
             saveChangesLog(normalizeChangesLog);
+         }
          else
+         {
             throw new RepositoryException(
                "Collisions found during save of restore changes log, but caused item is not found by ID "
                   + e.getIdentifier() + ". " + e, e);
+         }
       }
    }
 
@@ -239,7 +249,9 @@ public class JCRRestore
                      // Node... by ID and desc path
                      if (!item.getIdentifier().equals(collisionID)
                         && !item.getQPath().isDescendantOf(citem.getData().getQPath()))
+                     {
                         normalized.add(change);
+                     }
                   }
                   else if (!item.getIdentifier().equals(collisionID))
                   {
@@ -248,11 +260,21 @@ public class JCRRestore
                   }
                }
                else
+               {
                   // another state
                   normalized.add(change);
+               }
             }
 
-            PlainChangesLog plog = new PlainChangesLogImpl(normalized, next.getSessionId(), next.getEventType());
+            PlainChangesLog plog;
+            if (next.getSession() != null)
+            {
+               plog = new PlainChangesLogImpl(normalized, next.getSession(), next.getEventType());
+            }
+            else
+            {
+               plog = new PlainChangesLogImpl(normalized, next.getSessionId(), next.getEventType());
+            }
             result.addLog(plog);
          }
 
@@ -393,7 +415,9 @@ public class JCRRestore
          }
 
          for (int i = 0; i < listFile.size(); i++)
+         {
             fileCleaner.addFile(listFile.get(i));
+         }
       }
    }
 
@@ -427,9 +451,13 @@ public class JCRRestore
       {
          boolean b = true;
          if (fs.getItemSateId() != this.getItemSateId())
+         {
             b = false;
+         }
          if (fs.getValueDataId() != this.getValueDataId())
+         {
             b = false;
+         }
          return b;
       }
 

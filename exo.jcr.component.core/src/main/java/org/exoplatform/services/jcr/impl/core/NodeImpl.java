@@ -413,7 +413,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       checkValid();
 
-      PlainChangesLog changesLog = new PlainChangesLogImpl(session.getId());
+      PlainChangesLog changesLog = new PlainChangesLogImpl(session);
 
       removeMergeFailed(version, changesLog);
 
@@ -497,7 +497,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       // the new version identifier
       String verIdentifier = IdGenerator.generate();
 
-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
+      SessionChangesLog changesLog = new SessionChangesLog(session);
 
       VersionHistoryImpl vh = versionHistory(false);
       vh.addVersion(this.nodeData(), verIdentifier, changesLog);
@@ -550,7 +550,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          return;
       }
 
-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
+      SessionChangesLog changesLog = new SessionChangesLog(session);
 
       changesLog.add(ItemState.createUpdatedState(updatePropertyData(Constants.JCR_ISCHECKEDOUT,
          new TransientValueData(true))));
@@ -711,7 +711,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             + session.getUserID() + " item owner " + getACL().getOwner());
       }
 
-      PlainChangesLog changesLog = new PlainChangesLogImpl(session.getId());
+      PlainChangesLog changesLog = new PlainChangesLogImpl(session);
 
       VersionImpl base = (VersionImpl)getBaseVersion();
       base.addPredecessor(version.getUUID(), changesLog);
@@ -1709,8 +1709,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       Lock newLock = session.getLockManager().addLock(this, isDeep, isSessionScoped, -1);
 
-      PlainChangesLog changesLog =
-         new PlainChangesLogImpl(new ArrayList<ItemState>(), session.getId(), ExtendedEvent.LOCK);
+      PlainChangesLog changesLog = new PlainChangesLogImpl(new ArrayList<ItemState>(), session, ExtendedEvent.LOCK);
 
       PropertyData propData =
          TransientPropertyData.createPropertyData(nodeData(), Constants.JCR_LOCKOWNER, PropertyType.STRING, false,
@@ -1758,8 +1757,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       Lock newLock = session.getLockManager().addLock(this, isDeep, false, timeOut);
 
-      PlainChangesLog changesLog =
-         new PlainChangesLogImpl(new ArrayList<ItemState>(), session.getId(), ExtendedEvent.LOCK);
+      PlainChangesLog changesLog = new PlainChangesLogImpl(new ArrayList<ItemState>(), session, ExtendedEvent.LOCK);
 
       PropertyData propData =
          TransientPropertyData.createPropertyData(nodeData(), Constants.JCR_LOCKOWNER, PropertyType.STRING, false,
@@ -2520,7 +2518,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new LockException("Node " + getPath() + " is locked ");
       }
 
-      SessionChangesLog changes = new SessionChangesLog(session.getId());
+      SessionChangesLog changes = new SessionChangesLog(session);
 
       String srcPath;
       try
@@ -2850,8 +2848,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    protected void doUnlock() throws RepositoryException
    {
 
-      PlainChangesLog changesLog =
-         new PlainChangesLogImpl(new ArrayList<ItemState>(), session.getId(), ExtendedEvent.UNLOCK);
+      PlainChangesLog changesLog = new PlainChangesLogImpl(new ArrayList<ItemState>(), session, ExtendedEvent.UNLOCK);
 
       ItemData lockOwner =
          dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_LOCKOWNER, 0), ItemType.PROPERTY);

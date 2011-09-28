@@ -347,7 +347,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
             + refs.get(0).getQPath().getAsString());
       }
 
-      PlainChangesLog changes = new PlainChangesLogImpl(session.getId());
+      PlainChangesLog changes = new PlainChangesLogImpl(session);
 
       // remove labels first
       try
@@ -527,7 +527,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
 
       NodeData versionData = getVersionData(versionName);
 
-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
+      SessionChangesLog changesLog = new SessionChangesLog(session);
 
       PropertyData labelData =
          TransientPropertyData.createPropertyData(labels, labelQName, PropertyType.REFERENCE, false,
@@ -553,7 +553,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
 
       if (vldata != null)
       {
-         PlainChangesLog changes = new PlainChangesLogImpl(session.getId());
+         PlainChangesLog changes = new PlainChangesLogImpl(session);
          changes.add(ItemState.createDeletedState(vldata));
          dataManager.getTransactManager().save(changes);
       }
@@ -570,15 +570,17 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       throws RepositoryException
    {
       checkValid();
-      
+
       NodeTypeDataManager ntManager = session.getWorkspace().getNodeTypesHolder();
-      
-      boolean isPrivilegeable = ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, versionableNodeData.getPrimaryTypeName(),
-         versionableNodeData.getMixinTypeNames());
-      
-      boolean isOwneable = ntManager.isNodeType(Constants.EXO_OWNEABLE, versionableNodeData.getPrimaryTypeName(),
-         versionableNodeData.getMixinTypeNames());
-      
+
+      boolean isPrivilegeable =
+         ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, versionableNodeData.getPrimaryTypeName(),
+            versionableNodeData.getMixinTypeNames());
+
+      boolean isOwneable =
+         ntManager.isNodeType(Constants.EXO_OWNEABLE, versionableNodeData.getPrimaryTypeName(), versionableNodeData
+            .getMixinTypeNames());
+
       List<InternalQName> mixinsList = new ArrayList<InternalQName>();
       mixinsList.add(Constants.MIX_REFERENCEABLE);
 
@@ -601,7 +603,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
 
       AccessControlList acl = new AccessControlList(owner, new ArrayList<AccessControlEntry>(accessList));
       InternalQName[] mixins = mixinsList.toArray(new InternalQName[mixinsList.size()]);
-      
+
       // nt:version
       NodeData versionData =
          TransientNodeData.createNodeData(nodeData(), new InternalQName(null, nextVersionName()), Constants.NT_VERSION,

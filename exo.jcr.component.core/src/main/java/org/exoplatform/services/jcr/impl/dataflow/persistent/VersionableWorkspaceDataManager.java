@@ -145,8 +145,8 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
     * {@inheritDoc}
     */
    @Override
-   public List<PropertyData> getChildPropertiesData(final NodeData nodeData, final List<QPathEntryFilter> itemDataFilters)
-      throws RepositoryException
+   public List<PropertyData> getChildPropertiesData(final NodeData nodeData,
+      final List<QPathEntryFilter> itemDataFilters) throws RepositoryException
    {
       if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
       {
@@ -285,19 +285,43 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
                // we have pair of logs for system and non-system (this) workspaces
                final String pairId = IdGenerator.generate();
 
-               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType(),
-                  pairId));
-               nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType(),
-                  pairId));
+               if (changes.getSession() != null)
+               {
+                  versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSession(), changes.getEventType(),
+                     pairId));
+                  nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSession(), changes.getEventType(),
+                     pairId));
+               }
+               else
+               {
+                  versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType(),
+                     pairId));
+                  nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes
+                     .getEventType(), pairId));
+               }
             }
             else
             {
-               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType()));
+               if (changes.getSession() != null)
+               {
+                  versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSession(), changes.getEventType()));
+               }
+               else
+               {
+                  versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType()));
+               }
             }
          }
          else if (nvstates.size() > 0)
          {
-            nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType()));
+            if (changes.getSession() != null)
+            {
+               nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSession(), changes.getEventType()));
+            }
+            else
+            {
+               nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType()));
+            }
          }
       }
 

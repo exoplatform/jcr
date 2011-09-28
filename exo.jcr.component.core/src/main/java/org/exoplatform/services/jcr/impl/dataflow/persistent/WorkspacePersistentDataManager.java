@@ -418,9 +418,19 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          RepositoryException, IOException
       {
          // copy state
-         PlainChangesLogImpl newLog =
-            new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSessionId(), changesLog.getEventType(),
-               changesLog.getPairId());
+         PlainChangesLogImpl newLog;
+         if (changesLog.getSession() != null)
+         {
+            newLog =
+               new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSession(), changesLog.getEventType(),
+                  changesLog.getPairId());
+         }
+         else
+         {
+            newLog =
+               new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSessionId(),
+                  changesLog.getEventType(), changesLog.getPairId());
+         }
 
          for (Iterator<ItemState> iter = changesLog.getAllStates().iterator(); iter.hasNext();)
          {
@@ -631,8 +641,8 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(final NodeData nodeData, int fromOrderNum, int limit, List<NodeData> childNodes)
-      throws RepositoryException
+   public boolean getChildNodesDataByPage(final NodeData nodeData, int fromOrderNum, int limit,
+      List<NodeData> childNodes) throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
