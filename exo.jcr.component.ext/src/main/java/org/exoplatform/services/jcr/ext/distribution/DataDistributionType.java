@@ -100,4 +100,12 @@ public interface DataDistributionType
     * @throws RepositoryException if an error occurred while trying to remove the expected data
     */
    void removeDataNode(Node rootNode, String dataId) throws RepositoryException;
+
+   /**
+    * Migrate from old structure to new one.
+    * 
+    * @param rootNode the root node under which the data to migrate is stored
+    * @throws RepositoryException if an error occurred during migration
+    */
+   void migrate(Node rootNode) throws RepositoryException;
 }

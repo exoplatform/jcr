@@ -18,9 +18,15 @@
  */
 package org.exoplatform.services.jcr.ext.distribution.impl;
 
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 
 /**
  * This data distribution will distribute the data in a understandable way for a human being.
@@ -75,5 +81,45 @@ public class DataDistributionByName extends AbstractDataDistributionType
    protected boolean useParametersOnLeafOnly()
    {
       return true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void migrate(Node rootNode) throws RepositoryException
+   {
+      NodeIterator iter = ((NodeImpl)rootNode).getNodesLazily(1);
+      if (iter.hasNext() && !iter.nextNode().getPath().endsWith(suffix))
+      {
+         iter = ((NodeImpl)rootNode).getNodesLazily();
+         while (iter.hasNext())
+         {
+            Node userNode = iter.nextNode();
+            List<String> ancestors = getAncestors(userNode.getName());
+            
+            Node node = rootNode;
+
+            for (int i = 0, length = ancestors.size() - 1; i < length; i++)
+            {
+               String nodeName = ancestors.get(i);
+               try
+               {
+                  node = node.getNode(nodeName);
+                  continue;
+               }
+               catch (PathNotFoundException e)
+               {
+                  // ignore me
+               }
+
+               // The node doesn't exist we need to create it
+               node = node.addNode(nodeName, DEFAULT_NODE_TYPE);
+            }
+
+            userNode.getSession().move(userNode.getPath(), node.getPath() + "/" + ancestors.get(ancestors.size() - 1));
+         }
+      }
+
+      rootNode.getSession().save();
    }
 }

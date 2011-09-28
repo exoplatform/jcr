@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.ext.distribution;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -487,7 +486,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                   startSignalWriter.await();
                   for (int j = 0; j < totalTimes; j++)
                   {
-                     session = (SessionImpl)repository.login(credentials, WS_NAME);
+                     session = repository.login(credentials, WS_NAME);
                      Node node = (Node)session.getItem(parentNode.getPath());
                      for (int i = 0; i < totalElement; i++)
                      {
@@ -533,7 +532,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                   startSignalOthers.await();
                   for (int j = 0; j < totalTimes; j++)
                   {
-                     session = (SessionImpl)repository.login(credentials, WS_NAME);
+                     session = repository.login(credentials, WS_NAME);
                      Node node = (Node)session.getItem(parentNode.getPath());                  
                      for (int i = 0; i < totalElement; i++)
                      {
@@ -579,7 +578,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                   startSignalOthers.await();
                   for (int j = 0; j < totalTimes; j++)
                   {
-                     session = (SessionImpl)repository.login(credentials, WS_NAME);
+                     session = repository.login(credentials, WS_NAME);
                      Node node = (Node)session.getItem(parentNode.getPath());                     
                      for (int i = 0; i < totalElement; i++)
                      {
@@ -620,5 +619,57 @@ public class TestDataDistributionManager extends BaseStandaloneTest
          throw errors.get(0);
       }
       System.out.println("Total Time for '" + type.getClass().getSimpleName() + "' = " + (System.currentTimeMillis() - time));
+   }
+
+   public void testMigration() throws Exception
+   {
+      Node rootNode = session.getRootNode().addNode("testRoot");
+      rootNode.addNode("bob").setProperty("bob", "bob");
+      rootNode.addNode("john.smith").setProperty("john.smith", "john.smith");
+      rootNode.addNode("joiv").setProperty("joiv", "joiv");
+      rootNode.addNode("bonjov").setProperty("bonjov", "bonjov");
+      rootNode.addNode("anatoliy.bazko").setProperty("anatoliy.bazko", "anatoliy.bazko");
+      rootNode.getSession().save();
+
+      manager.getDataDistributionType(DataDistributionMode.READABLE).migrate(rootNode);
+
+      assertFalse(rootNode.hasNode("bob"));
+      assertFalse(rootNode.hasNode("john.smith"));
+      assertFalse(rootNode.hasNode("joiv"));
+      assertFalse(rootNode.hasNode("bonjov"));
+      assertFalse(rootNode.hasNode("anatoliy.bazko"));
+
+      assertTrue(rootNode.hasNode("b___/bo___/bob"));
+      assertTrue(rootNode.hasNode("j___/jo___/joh___/john.smith"));
+      assertTrue(rootNode.hasNode("j___/jo___/joi___/joiv"));
+      assertTrue(rootNode.hasNode("b___/bo___/bon___/bonjov"));
+      assertTrue(rootNode.hasNode("a___/an___/ana___/anatoliy.bazko"));
+
+      assertTrue(rootNode.getNode("b___/bo___/bob").hasProperty("bob"));
+      assertTrue(rootNode.getNode("j___/jo___/joh___/john.smith").hasProperty("john.smith"));
+      assertTrue(rootNode.getNode("j___/jo___/joi___/joiv").hasProperty("joiv"));
+      assertTrue(rootNode.getNode("b___/bo___/bon___/bonjov").hasProperty("bonjov"));
+      assertTrue(rootNode.getNode("a___/an___/ana___/anatoliy.bazko").hasProperty("anatoliy.bazko"));
+
+      // shoud not be any changes
+      manager.getDataDistributionType(DataDistributionMode.READABLE).migrate(rootNode);
+
+      assertFalse(rootNode.hasNode("bob"));
+      assertFalse(rootNode.hasNode("john.smith"));
+      assertFalse(rootNode.hasNode("joiv"));
+      assertFalse(rootNode.hasNode("bonjov"));
+      assertFalse(rootNode.hasNode("anatoliy.bazko"));
+
+      assertTrue(rootNode.hasNode("b___/bo___/bob"));
+      assertTrue(rootNode.hasNode("j___/jo___/joh___/john.smith"));
+      assertTrue(rootNode.hasNode("j___/jo___/joi___/joiv"));
+      assertTrue(rootNode.hasNode("b___/bo___/bon___/bonjov"));
+      assertTrue(rootNode.hasNode("a___/an___/ana___/anatoliy.bazko"));
+
+      assertTrue(rootNode.getNode("b___/bo___/bob").hasProperty("bob"));
+      assertTrue(rootNode.getNode("j___/jo___/joh___/john.smith").hasProperty("john.smith"));
+      assertTrue(rootNode.getNode("j___/jo___/joi___/joiv").hasProperty("joiv"));
+      assertTrue(rootNode.getNode("b___/bo___/bon___/bonjov").hasProperty("bonjov"));
+      assertTrue(rootNode.getNode("a___/an___/ana___/anatoliy.bazko").hasProperty("anatoliy.bazko"));
    }
 }

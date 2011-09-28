@@ -43,7 +43,7 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
    /**
     * The default node type to use when we create a new node
     */
-   private static final String DEFAULT_NODE_TYPE = "nt:unstructured".intern();
+   protected static final String DEFAULT_NODE_TYPE = "nt:unstructured".intern();
 
    /**
     * The map defining all the locks available
@@ -141,7 +141,15 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
          lock.unlock();
       }     
    }
-   
+
+   /**
+    * {@inheritDoc}
+    */
+   public void migrate(Node rootNode) throws RepositoryException
+   {
+      throw new UnsupportedOperationException("The method is not supported");
+   }
+
    /**
     * Creates the node of the given node type with the given node name directly under 
     * the given parent node, using the given mixin types and permissions

@@ -75,6 +75,8 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
 
    private final boolean oldDistribution;
 
+   private final boolean autoMigrate;
+
    public NodeHierarchyCreatorImpl(RepositoryService jcrService, InitParams params)
    {
       this(jcrService, null, params);
@@ -91,9 +93,9 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       }
       jcrService_ = jcrService;
       dataDistributionManager_ = dataDistributionManager;
-      oldDistribution =
-         params != null && params.getValueParam("old-user-distribution") != null
-            && Boolean.valueOf(params.getValueParam("old-user-distribution").getValue());
+      oldDistribution = params != null && Boolean.valueOf(params.getValueParam("old-user-distribution").getValue());
+      autoMigrate = params != null && Boolean.valueOf(params.getValueParam("auto-migrate").getValue());
+      
       if (PropertyManager.isDevelopping() && !oldDistribution)
       {
          log.info("The NodeHierarchyCreator is configured to use the new distribution mechanism for the"
@@ -114,6 +116,15 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       catch (Exception e)
       {
          log.error("An error occurs while processing the plugins", e);
+      }
+
+      try
+      {
+         checkForUpgrade();
+      }
+      catch (RepositoryException e)
+      {
+         log.error("An error occurs while upgrading JCR structure", e);
       }
    }
 
@@ -355,6 +366,31 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
                {
                   paths_.put(jcrPath.getAlias(), jcrPath.getPath());
                }
+            }
+         }
+      }
+   }
+
+   private void checkForUpgrade() throws RepositoryException
+   {
+      if (!oldDistribution && autoMigrate)
+      {
+
+         ManageableRepository repo = jcrService_.getCurrentRepository();
+         Session session = repo.login();
+
+         try
+         {
+            String userPath = getJcrPath(USERS_PATH);
+            Node usersNode = (Node)session.getItem(userPath);
+
+            dataDistributionManager_.getDataDistributionType(DataDistributionMode.READABLE).migrate(usersNode);
+         }
+         finally
+         {
+            if (session != null)
+            {
+               session.logout();
             }
          }
       }

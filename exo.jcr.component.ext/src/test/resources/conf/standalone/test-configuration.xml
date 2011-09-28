@@ -468,10 +468,18 @@
          </component-plugin>
       </component-plugins>
    </component>
+
    <component>
       <key>org.exoplatform.services.jcr.ext.hierarchy.NodeHierarchyCreator</key>
       <type>org.exoplatform.services.jcr.ext.hierarchy.impl.NodeHierarchyCreatorImpl</type>
+      <init-params>
+         <value-param>
+            <name>auto-migrate</name>
+            <value>false</value>
+         </value-param>
+      </init-params>
    </component>
+
 	<component>
 		<type>org.exoplatform.services.jcr.ext.hierarchy.impl.NewUserListener</type>
 		<init-params>
