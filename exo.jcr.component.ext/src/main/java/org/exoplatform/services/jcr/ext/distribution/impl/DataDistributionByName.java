@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -88,6 +89,15 @@ public class DataDistributionByName extends AbstractDataDistributionType
     */
    public void migrate(Node rootNode) throws RepositoryException
    {
+      migrate(rootNode, null, null, null);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void migrate(Node rootNode, String nodeType, List<String> mixinTypes, Map<String, String[]> permissions)
+      throws RepositoryException
+   {
       NodeIterator iter = ((NodeImpl)rootNode).getNodesLazily(1);
       if (iter.hasNext() && !iter.nextNode().getPath().endsWith(suffix))
       {
@@ -113,7 +123,7 @@ public class DataDistributionByName extends AbstractDataDistributionType
                }
 
                // The node doesn't exist we need to create it
-               node = node.addNode(nodeName, DEFAULT_NODE_TYPE);
+               node = createNode(node, nodeName, nodeType, mixinTypes, permissions, false, false);
             }
 
             userNode.getSession().move(userNode.getPath(), node.getPath() + "/" + ancestors.get(ancestors.size() - 1));

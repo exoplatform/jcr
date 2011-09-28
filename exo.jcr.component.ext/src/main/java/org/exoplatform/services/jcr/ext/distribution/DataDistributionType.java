@@ -108,4 +108,16 @@ public interface DataDistributionType
     * @throws RepositoryException if an error occurred during migration
     */
    void migrate(Node rootNode) throws RepositoryException;
+
+   /**
+    * Migrate from old structure to new one.
+    * 
+    * @param rootNode the root node under which the data to migrate is stored
+    * @param nodeType the node type to use in case we need to create the node
+    * @param mixinTypes the mixin types to use in case we need to create the node
+    * @param permissions the permissions to use in case we need to create the node
+    * @throws RepositoryException if an error occurred during migration
+    */
+   void migrate(Node rootNode, String nodeType, List<String> mixinTypes, Map<String, String[]> permissions)
+      throws RepositoryException;
 }

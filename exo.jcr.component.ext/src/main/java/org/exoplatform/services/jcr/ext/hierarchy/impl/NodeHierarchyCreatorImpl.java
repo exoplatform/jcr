@@ -93,8 +93,12 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       }
       jcrService_ = jcrService;
       dataDistributionManager_ = dataDistributionManager;
-      oldDistribution = params != null && Boolean.valueOf(params.getValueParam("old-user-distribution").getValue());
-      autoMigrate = params != null && Boolean.valueOf(params.getValueParam("auto-migrate").getValue());
+      oldDistribution =
+         params != null && params.getValueParam("old-user-distribution") != null
+            && Boolean.valueOf(params.getValueParam("old-user-distribution").getValue());
+      autoMigrate =
+         params != null && params.getValueParam("auto-migrate") != null
+            && Boolean.valueOf(params.getValueParam("auto-migrate").getValue());
       
       if (PropertyManager.isDevelopping() && !oldDistribution)
       {

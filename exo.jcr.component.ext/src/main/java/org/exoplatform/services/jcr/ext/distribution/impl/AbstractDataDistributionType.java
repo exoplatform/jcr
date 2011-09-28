@@ -43,7 +43,7 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
    /**
     * The default node type to use when we create a new node
     */
-   protected static final String DEFAULT_NODE_TYPE = "nt:unstructured".intern();
+   private static final String DEFAULT_NODE_TYPE = "nt:unstructured".intern();
 
    /**
     * The map defining all the locks available
@@ -113,7 +113,7 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
             // ignore me
          }
          // The node doesn't exist we need to create it
-         node = createNode(node, nodeName, nodeType, mixinTypes, permissions, i == length - 1);
+         node = createNode(node, nodeName, nodeType, mixinTypes, permissions, i == length - 1, true);
       }
       return node;
    }
@@ -151,6 +151,15 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public void migrate(Node rootNode, String nodeType, List<String> mixinTypes, Map<String, String[]> permissions)
+      throws RepositoryException
+   {
+      throw new UnsupportedOperationException("The method is not supported");
+   }
+
+   /**
     * Creates the node of the given node type with the given node name directly under 
     * the given parent node, using the given mixin types and permissions
     * @param parentNode the parent node
@@ -162,9 +171,9 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
     * @return the created node
     * @throws RepositoryException if any exception occurs while creating the node
     */
-   private Node createNode(final Node parentNode, final String nodeName, final String nodeType,
-      final List<String> mixinTypes, final Map<String, String[]> permissions, final boolean isLeaf)
-      throws RepositoryException
+   protected Node createNode(final Node parentNode, final String nodeName, final String nodeType,
+      final List<String> mixinTypes, final Map<String, String[]> permissions, final boolean isLeaf,
+      final boolean callSave) throws RepositoryException
    {
       Lock lock = getLock(parentNode, nodeName);
       lock.lock();
@@ -212,7 +221,11 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
                }
             }
          }
-         parentNode.save();
+
+         if (callSave)
+         {
+            parentNode.save();
+         }
          return node;         
       }
       finally 
