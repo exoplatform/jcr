@@ -1,0 +1,1726 @@
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLogTest.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLogTest.java	(revision 4991)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLogTest.java	(working copy)
+@@ -20,10 +20,10 @@
+ 
+ import org.exoplatform.services.jcr.JcrImplBaseTest;
+ import org.exoplatform.services.jcr.dataflow.ItemState;
+-import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
+ import org.exoplatform.services.jcr.datamodel.InternalQName;
+ import org.exoplatform.services.jcr.datamodel.NodeData;
+ import org.exoplatform.services.jcr.impl.Constants;
++import org.exoplatform.services.jcr.impl.core.DummySession;
+ import org.exoplatform.services.jcr.impl.core.NodeImpl;
+ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+ import org.exoplatform.services.jcr.impl.core.SessionImpl;
+@@ -120,7 +120,7 @@
+             try
+             {
+                userSession = (SessionImpl)frepository.login(fcredentials, "ws");
+-               chlog[0] = new SessionChangesLogInfo(new SessionChangesLog(userSession.getId()), userSession.getId());
++               chlog[0] = new SessionChangesLogInfo(new SessionChangesLog(userSession), userSession.getId());
+             }
+             catch (RepositoryException e)
+             {
+@@ -148,7 +148,7 @@
+    public void testSameSession()
+    {
+ 
+-      SessionChangesLog chlog = new SessionChangesLog(session.getId());
++      SessionChangesLog chlog = new SessionChangesLog(session);
+       assertEquals("Session must be same as given id owns", session, getRegisteredSession(chlog.getSessionId()));
+    }
+ 
+@@ -156,7 +156,7 @@
+    {
+ 
+       String id = IdGenerator.generate();
+-      SessionChangesLog chlog = new SessionChangesLog(id);
++      SessionChangesLog chlog = new SessionChangesLog(new DummySession(id));
+ 
+       assertNull("No session should be linked to the log", getRegisteredSession(chlog.getSessionId()));
+    }
+@@ -248,7 +248,7 @@
+ 
+    public void testAddRootChanges() throws Exception
+    {
+-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
++      SessionChangesLog changesLog = new SessionChangesLog(session);
+       try
+       {
+          changesLog.add(new ItemState(new TransientPropertyData(Constants.ROOT_PATH, Constants.ROOT_UUID, 0,
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/fs/TestJCRVSReadWrite.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/fs/TestJCRVSReadWrite.java	(revision 4991)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/fs/TestJCRVSReadWrite.java	(working copy)
+@@ -147,7 +147,9 @@
+                path = resource.setProperty("jcr:data", vals).getPath();
+             }
+             else
++            {
+                path = resource.setProperty("jcr:data", fBLOB1).getPath();
++            }
+             resource.setProperty("jcr:mimeType", "application/x-octet-stream");
+             resource.setProperty("jcr:lastModified", Calendar.getInstance());
+             testRoot.save();
+@@ -191,7 +193,7 @@
+       {
+          try
+          {
+-            SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession().getId());
++            SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession());
+ 
+             TransientNodeData ntfile =
+                TransientNodeData.createNodeData(rootData, InternalQName.parse("[]blob" + i), Constants.NT_FILE);
+@@ -218,7 +220,9 @@
+                data.add(new TransientValueData(fBLOB2));
+             }
+             else
++            {
+                data.add(new TransientValueData(fBLOB1));
++            }
+ 
+             TransientPropertyData resData =
+                TransientPropertyData.createPropertyData(res, Constants.JCR_DATA, PropertyType.BINARY, data.size() > 1,
+@@ -259,7 +263,7 @@
+    {
+       final DataManager dm =
+          ((NodeImpl)testRoot).getSession().getTransientNodesManager().getTransactManager().getStorageDataManager();
+-      final SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession().getId());
++      final SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession());
+ 
+       class Remover
+       {
+@@ -301,12 +305,18 @@
+          }
+ 
+          if (item == null)
++         {
+             break;
++         }
+ 
+          if (item.isNode())
++         {
+             parent = (NodeData)item;
++         }
+          else if (i < relPathEntries.length - 1)
++         {
+             throw new IllegalPathException("Path can not contains a property as the intermediate element");
++         }
+       }
+       return item;
+    }
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/version/BaseVersionImplTest.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/version/BaseVersionImplTest.java	(revision 4991)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/version/BaseVersionImplTest.java	(working copy)
+@@ -223,11 +223,11 @@
+       versionedVersionHistoryData = new ArrayList<ValueData>();
+       versionedVersionHistoryData.add(new TestTransientValueData(versionedVersionHistoryUuid.getBytes(), 0));
+ 
+-      changesLog = new SessionChangesLog(session.getId());
++      changesLog = new SessionChangesLog(session);
+ 
+       ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
+ 
+-      SessionChangesLog initChanges = new SessionChangesLog(session.getId());
++      SessionChangesLog initChanges = new SessionChangesLog(session);
+ 
+       NodeData wsRoot = (NodeData)((NodeImpl)session.getRootNode()).getData();
+       testRoot =
+@@ -267,7 +267,7 @@
+    public void createVersionable(int testCase) throws Exception
+    {
+ 
+-      versionableLog = new SessionChangesLog(session.getId());
++      versionableLog = new SessionChangesLog(session);
+ 
+       // target node
+       versionable =
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/DummySession.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/DummySession.java	(revision 0)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/DummySession.java	(revision 0)
+@@ -0,0 +1,268 @@
++/*
++ * Copyright (C) 2011 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.impl.core;
++
++import org.exoplatform.services.jcr.core.ExtendedSession;
++import org.exoplatform.services.jcr.core.SessionLifecycleListener;
++import org.exoplatform.services.jcr.impl.core.LocationFactory;
++import org.xml.sax.ContentHandler;
++import org.xml.sax.SAXException;
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.OutputStream;
++import java.security.AccessControlException;
++import java.util.Map;
++import javax.jcr.AccessDeniedException;
++import javax.jcr.Credentials;
++import javax.jcr.InvalidItemStateException;
++import javax.jcr.InvalidSerializedDataException;
++import javax.jcr.Item;
++import javax.jcr.ItemExistsException;
++import javax.jcr.ItemNotFoundException;
++import javax.jcr.LoginException;
++import javax.jcr.NamespaceException;
++import javax.jcr.Node;
++import javax.jcr.PathNotFoundException;
++import javax.jcr.Repository;
++import javax.jcr.RepositoryException;
++import javax.jcr.Session;
++import javax.jcr.UnsupportedRepositoryOperationException;
++import javax.jcr.ValueFactory;
++import javax.jcr.Workspace;
++import javax.jcr.lock.LockException;
++import javax.jcr.nodetype.ConstraintViolationException;
++import javax.jcr.nodetype.NoSuchNodeTypeException;
++import javax.jcr.version.VersionException;
++import javax.transaction.xa.XAResource;
++
++/**
++* @author Nikolay Zamosenchuk
++* @version $Id: DummySession.xml 34360 2009-07-22 23:58:59Z nzamosenchuk $
++*
++*/
++public class DummySession implements ExtendedSession
++{
++   private String sessionId;
++
++   public DummySession(String sessionId)
++   {
++      this.sessionId = sessionId;
++   }
++
++   public String getId()
++   {
++      return sessionId;
++   }
++
++   // do nothing   
++   public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse,
++      boolean exportChildVersionHisotry) throws IOException, PathNotFoundException, RepositoryException
++   {
++   }
++
++   public LocationFactory getLocationFactory()
++   {
++      return null;
++   }
++
++   public Node getNodeByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException
++   {
++      return null;
++   }
++
++   public long getTimeout()
++   {
++      return 0;
++   }
++
++   public XAResource getXAResource()
++   {
++      return null;
++   }
++
++   public boolean hasExpired()
++   {
++      return false;
++   }
++
++   public void importXML(String parentAbsPath, InputStream in, int uuidBehavior, Map<String, Object> context)
++      throws IOException, PathNotFoundException, ItemExistsException, ConstraintViolationException,
++      InvalidSerializedDataException, RepositoryException
++   {
++   }
++
++   public void registerLifecycleListener(SessionLifecycleListener listener)
++   {
++   }
++
++   public void setTimeout(long timeout)
++   {
++   }
++
++   public void addLockToken(String lt)
++   {
++   }
++
++   public void checkPermission(String absPath, String actions) throws AccessControlException, RepositoryException
++   {
++   }
++
++   public void exportDocumentView(String absPath, ContentHandler contentHandler, boolean skipBinary, boolean noRecurse)
++      throws PathNotFoundException, SAXException, RepositoryException
++   {
++   }
++
++   public void exportDocumentView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse)
++      throws IOException, PathNotFoundException, RepositoryException
++   {
++   }
++
++   public void exportSystemView(String absPath, ContentHandler contentHandler, boolean skipBinary, boolean noRecurse)
++      throws PathNotFoundException, SAXException, RepositoryException
++   {
++   }
++
++   public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse)
++      throws IOException, PathNotFoundException, RepositoryException
++   {
++   }
++
++   public Object getAttribute(String name)
++   {
++      return null;
++   }
++
++   public String[] getAttributeNames()
++   {
++      return null;
++   }
++
++   public ContentHandler getImportContentHandler(String parentAbsPath, int uuidBehavior) throws PathNotFoundException,
++      ConstraintViolationException, VersionException, LockException, RepositoryException
++   {
++      return null;
++   }
++
++   public Item getItem(String absPath) throws PathNotFoundException, RepositoryException
++   {
++      return null;
++   }
++
++   public String[] getLockTokens()
++   {
++      return null;
++   }
++
++   public String getNamespacePrefix(String uri) throws NamespaceException, RepositoryException
++   {
++      return null;
++   }
++
++   public String[] getNamespacePrefixes() throws RepositoryException
++   {
++      return null;
++   }
++
++   public String getNamespaceURI(String prefix) throws NamespaceException, RepositoryException
++   {
++      return null;
++   }
++
++   public Node getNodeByUUID(String uuid) throws ItemNotFoundException, RepositoryException
++   {
++      return null;
++   }
++
++   public Repository getRepository()
++   {
++      return null;
++   }
++
++   public Node getRootNode() throws RepositoryException
++   {
++      return null;
++   }
++
++   public String getUserID()
++   {
++      return null;
++   }
++
++   public ValueFactory getValueFactory() throws UnsupportedRepositoryOperationException, RepositoryException
++   {
++      return null;
++   }
++
++   public Workspace getWorkspace()
++   {
++      return null;
++   }
++
++   public boolean hasPendingChanges() throws RepositoryException
++   {
++      return false;
++   }
++
++   public Session impersonate(Credentials credentials) throws LoginException, RepositoryException
++   {
++      return null;
++   }
++
++   public void importXML(String parentAbsPath, InputStream in, int uuidBehavior) throws IOException,
++      PathNotFoundException, ItemExistsException, ConstraintViolationException, VersionException,
++      InvalidSerializedDataException, LockException, RepositoryException
++   {
++   }
++
++   public boolean isLive()
++   {
++      return false;
++   }
++
++   public boolean itemExists(String absPath) throws RepositoryException
++   {
++      return false;
++   }
++
++   public void logout()
++   {
++   }
++
++   public void move(String srcAbsPath, String destAbsPath) throws ItemExistsException, PathNotFoundException,
++      VersionException, ConstraintViolationException, LockException, RepositoryException
++   {
++   }
++
++   public void refresh(boolean keepChanges) throws RepositoryException
++   {
++   }
++
++   public void removeLockToken(String lt)
++   {
++   }
++
++   public void save() throws AccessDeniedException, ItemExistsException, ConstraintViolationException,
++      InvalidItemStateException, VersionException, LockException, NoSuchNodeTypeException, RepositoryException
++   {
++   }
++
++   public void setNamespacePrefix(String prefix, String uri) throws NamespaceException, RepositoryException
++   {
++   }
++}
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestItemDataChangesLog.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestItemDataChangesLog.java	(revision 4991)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/TestItemDataChangesLog.java	(working copy)
+@@ -70,7 +70,7 @@
+    public void testBasicOperations() throws Exception
+    {
+ 
+-      SessionChangesLog cLog = new SessionChangesLog("s1");
++      SessionChangesLog cLog = new SessionChangesLog(new DummySession("s1"));
+       cLog.add(ItemState.createAddedState(data1));
+       cLog.add(ItemState.createAddedState(data2));
+       cLog.add(ItemState.createDeletedState(data2));
+@@ -92,7 +92,7 @@
+    public void testSessionOperations() throws Exception
+    {
+ 
+-      SessionChangesLog cLog = new SessionChangesLog("s1");
++      SessionChangesLog cLog = new SessionChangesLog(new DummySession("s1"));
+ 
+       TransientNodeData d1 =
+          TransientNodeData.createNodeData(data1, new InternalQName(null, "testSessionOperations"), new InternalQName(
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/observation/TestSessionsObservation.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/observation/TestSessionsObservation.java	(revision 4991)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/observation/TestSessionsObservation.java	(working copy)
+@@ -23,6 +23,7 @@
+ 
+ import javax.jcr.Node;
+ import javax.jcr.RepositoryException;
++import javax.jcr.Session;
+ import javax.jcr.observation.Event;
+ 
+ public class TestSessionsObservation extends JcrAPIBaseTest
+@@ -258,4 +259,26 @@
+          sessionWs1.getWorkspace().getObservationManager().removeEventListener(listener2);
+       }
+    }
++
++   public void testMoveOnClosedSession() throws Exception
++   {
++
++      testRootWs1.addNode("newNode");
++      sessionWs1.save();
++
++      int counter = 0;
++
++      SimpleListener listener = new SimpleListener("testSessionOpen", log, counter);
++
++      Session sessionWs1ForListener = repository.login(credentials, "ws1");
++
++      sessionWs1ForListener.getWorkspace().getObservationManager().addEventListener(listener,
++         Event.NODE_ADDED | Event.NODE_REMOVED, testRootWs1.getPath() + "/", false, null, null, false);
++
++      sessionWs1ForListener.logout();
++
++      sessionWs1.logout();
++      sessionWs1.getWorkspace().move(testRootWs1.getPath() + "/newNode", testRootWs1.getPath() + "/newNode2");
++      assertEquals(2, listener.getCounter());
++   }
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PlainChangesLogImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PlainChangesLogImpl.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PlainChangesLogImpl.java	(working copy)
+@@ -18,6 +18,7 @@
+  */
+ package org.exoplatform.services.jcr.dataflow;
+ 
++import org.exoplatform.services.jcr.core.ExtendedSession;
+ import org.exoplatform.services.jcr.impl.Constants;
+ 
+ import java.io.Externalizable;
+@@ -37,7 +38,7 @@
+ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
+ {
+    private static final int NULL_VALUE = -1;
+-   
++
+    private static final int NOT_NULL_VALUE = 1;
+ 
+    private static final long serialVersionUID = 5624550860372364084L;
+@@ -48,25 +49,23 @@
+ 
+    protected int eventType;
+ 
++   protected ExtendedSession session;
++
+    /**
+     * Identifier of system and non-system logs pair. Null if no pair found. 
+     */
+-   protected String pairId = null;
++   protected String pairId;
+ 
+    /**
+-    * Full qualified constructor.
++    * Constructor.
+     * 
+     * @param items List of ItemState
+-    * @param sessionId String 
++    * @param session Session 
+     * @param eventType int
+-    * @param pairId String
+     */
+-   public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType, String pairId)
++   public PlainChangesLogImpl(List<ItemState> items, ExtendedSession session, int eventType)
+    {
+-      this.items = items;
+-      this.sessionId = sessionId;
+-      this.eventType = eventType;
+-      this.pairId = pairId;
++      this(items, session.getId(), eventType, null, session);
+    }
+ 
+    /**
+@@ -78,30 +77,38 @@
+     */
+    public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType)
+    {
+-      this.items = items;
+-      this.sessionId = sessionId;
+-      this.eventType = eventType;
++      this(items, sessionId, eventType, null, null);
+    }
+ 
+    /**
+     * Constructor with undefined event type.
+     * 
+     * @param items List of ItemState
+-    * @param sessionId String 
++    * @param session Session 
+     */
+-   public PlainChangesLogImpl(List<ItemState> items, String sessionId)
++   public PlainChangesLogImpl(List<ItemState> items, ExtendedSession session)
+    {
+-      this(items, sessionId, -1);
++      this(items, session, -1);
+    }
+ 
+    /**
+     * An empty log.
+     * 
++    * @param session Session 
++    */
++   public PlainChangesLogImpl(ExtendedSession session)
++   {
++      this(new ArrayList<ItemState>(), session);
++   }
++
++   /**
++    * An empty log.
++    * 
+     * @param sessionId String
+     */
+    public PlainChangesLogImpl(String sessionId)
+    {
+-      this(new ArrayList<ItemState>(), sessionId);
++      this(new ArrayList<ItemState>(), sessionId, -1);
+    }
+ 
+    /**
+@@ -109,7 +116,7 @@
+     */
+    public PlainChangesLogImpl()
+    {
+-      this(new ArrayList<ItemState>(), null);
++      this(new ArrayList<ItemState>(), (String)null, -1);
+    }
+ 
+    /*
+@@ -152,6 +159,14 @@
+       return sessionId;
+    }
+ 
++   /**
++    * {@inheritDoc}
++    */
++   public ExtendedSession getSession()
++   {
++      return session;
++   }
++
+    /*
+     * (non-Javadoc)
+     * 
+@@ -200,15 +215,66 @@
+    {
+       String str = "ChangesLog: \n";
+       for (int i = 0; i < items.size(); i++)
++      {
+          str +=
+             " " + ItemState.nameFromValue(items.get(i).getState()) + "\t" + items.get(i).getData().getIdentifier()
+                + "\t" + "isPersisted=" + items.get(i).isPersisted() + "\t" + "isEventFire="
+                + items.get(i).isEventFire() + "\t" + "isInternallyCreated=" + items.get(i).isInternallyCreated() + "\t"
+                + items.get(i).getData().getQPath().getAsString() + "\n";
++      }
+ 
+       return str;
+    }
+ 
++   /**
++    * Full qualified constructor.
++    * 
++    * @param items List of ItemState
++    * @param sessionId String 
++    * @param eventType int
++    * @param pairId String
++    */
++   protected PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType, String pairId,
++      ExtendedSession session)
++   {
++      this.items = items;
++      this.session = session;
++      this.sessionId = sessionId;
++      this.eventType = eventType;
++      this.pairId = pairId;
++   }
++
++   /**
++    * Creates a new instance of {@link PlainChangesLogImpl} by copying metadata from originalLog 
++    * instance with Items provided.
++    * 
++    * @param items
++    * @param originalLog
++    * @return
++    */
++   public static PlainChangesLogImpl createCopy(List<ItemState> items, PlainChangesLog originalLog)
++   {
++      return createCopy(items, originalLog.getPairId(), originalLog);
++   }
++
++   /**
++    * Creates a new instance of {@link PlainChangesLogImpl} by copying metadata from originalLog 
++    * instance with Items and PairID provided. Metadata will be copied excluding PairID.
++    * 
++    * @param items
++    * @param originalLog
++    * @return
++    */
++   public static PlainChangesLogImpl createCopy(List<ItemState> items, String pairId, PlainChangesLog originalLog)
++   {
++      if (originalLog.getSession() != null)
++      {
++         return new PlainChangesLogImpl(items, originalLog.getSession().getId(), originalLog.getEventType(), pairId,
++            originalLog.getSession());
++      }
++      return new PlainChangesLogImpl(items, originalLog.getSessionId(), originalLog.getEventType(), pairId, null);
++   }
++
+    // Need for Externalizable
+    // ------------------ [ BEGIN ] ------------------
+ 
+@@ -227,7 +293,7 @@
+          out.writeObject(items.get(i));
+       }
+ 
+-      if (pairId != null) 
++      if (pairId != null)
+       {
+          out.writeInt(NOT_NULL_VALUE);
+          buff = pairId.getBytes(Constants.DEFAULT_ENCODING);
+@@ -253,7 +319,7 @@
+       {
+          add((ItemState)in.readObject());
+       }
+-      
++
+       if (in.readInt() == NOT_NULL_VALUE)
+       {
+          buf = new byte[in.readInt()];
+@@ -261,5 +327,7 @@
+          pairId = new String(buf, Constants.DEFAULT_ENCODING);
+       }
+    }
++
+    // ------------------ [ END ] ------------------
++
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PlainChangesLog.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PlainChangesLog.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PlainChangesLog.java	(working copy)
+@@ -18,6 +18,7 @@
+  */
+ package org.exoplatform.services.jcr.dataflow;
+ 
++import org.exoplatform.services.jcr.core.ExtendedSession;
+ import org.exoplatform.services.jcr.observation.ExtendedEventType;
+ 
+ import java.util.List;
+@@ -38,7 +39,7 @@
+     * @return sessionId of a session produced this changes log
+     */
+    String getSessionId();
+-   
++
+    /**
+     * Return pair Id of system and non-system logs.
+     * 
+@@ -67,4 +68,10 @@
+     * @param states List of ItemState
+     */
+    PlainChangesLog addAll(List<ItemState> states);
++
++   /**
++    * Returns session instance is present
++    * @return session instance
++    */
++   ExtendedSession getSession();
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/NodeImpl.java	(working copy)
+@@ -363,7 +363,7 @@
+ 
+       checkValid();
+ 
+-      PlainChangesLog changesLog = new PlainChangesLogImpl(session.getId());
++      PlainChangesLog changesLog = new PlainChangesLogImpl(session);
+ 
+       removeMergeFailed(version, changesLog);
+ 
+@@ -439,7 +439,7 @@
+       // the new version identifier
+       String verIdentifier = IdGenerator.generate();
+ 
+-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
++      SessionChangesLog changesLog = new SessionChangesLog(session);
+ 
+       VersionHistoryImpl vh = versionHistory(false);
+       vh.addVersion(this.nodeData(), verIdentifier, changesLog);
+@@ -486,7 +486,7 @@
+       if (checkedOut())
+          return;
+ 
+-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
++      SessionChangesLog changesLog = new SessionChangesLog(session);
+ 
+       changesLog.add(ItemState.createUpdatedState(updatePropertyData(Constants.JCR_ISCHECKEDOUT,
+          new TransientValueData(true))));
+@@ -643,7 +643,7 @@
+             + session.getUserID() + " item owner " + getACL().getOwner());
+       }
+ 
+-      PlainChangesLog changesLog = new PlainChangesLogImpl(session.getId());
++      PlainChangesLog changesLog = new PlainChangesLogImpl(session);
+ 
+       VersionImpl base = (VersionImpl)getBaseVersion();
+       base.addPredecessor(version.getUUID(), changesLog);
+@@ -1563,8 +1563,7 @@
+ 
+       Lock newLock = session.getLockManager().addLock(this, isDeep, isSessionScoped, -1);
+ 
+-      PlainChangesLog changesLog =
+-         new PlainChangesLogImpl(new ArrayList<ItemState>(), session.getId(), ExtendedEvent.LOCK);
++      PlainChangesLog changesLog = new PlainChangesLogImpl(new ArrayList<ItemState>(), session, ExtendedEvent.LOCK);
+ 
+       PropertyData propData =
+          TransientPropertyData.createPropertyData(nodeData(), Constants.JCR_LOCKOWNER, PropertyType.STRING, false,
+@@ -1608,8 +1607,7 @@
+ 
+       Lock newLock = session.getLockManager().addLock(this, isDeep, false, timeOut);
+ 
+-      PlainChangesLog changesLog =
+-         new PlainChangesLogImpl(new ArrayList<ItemState>(), session.getId(), ExtendedEvent.LOCK);
++      PlainChangesLog changesLog = new PlainChangesLogImpl(new ArrayList<ItemState>(), session, ExtendedEvent.LOCK);
+ 
+       PropertyData propData =
+          TransientPropertyData.createPropertyData(nodeData(), Constants.JCR_LOCKOWNER, PropertyType.STRING, false,
+@@ -2318,7 +2316,7 @@
+       if (!checkLocking())
+          throw new LockException("Node " + getPath() + " is locked ");
+ 
+-      SessionChangesLog changes = new SessionChangesLog(session.getId());
++      SessionChangesLog changes = new SessionChangesLog(session);
+ 
+       String srcPath;
+       try
+@@ -2634,8 +2632,7 @@
+    protected void doUnlock() throws RepositoryException
+    {
+ 
+-      PlainChangesLog changesLog =
+-         new PlainChangesLogImpl(new ArrayList<ItemState>(), session.getId(), ExtendedEvent.UNLOCK);
++      PlainChangesLog changesLog = new PlainChangesLogImpl(new ArrayList<ItemState>(), session, ExtendedEvent.UNLOCK);
+ 
+       ItemData lockOwner =
+          dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_LOCKOWNER, 0), ItemType.PROPERTY);
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionDataManager.java	(working copy)
+@@ -104,7 +104,7 @@
+    public SessionDataManager(SessionImpl session, LocalWorkspaceDataManagerStub dataManager) throws RepositoryException
+    {
+       this.session = session;
+-      this.changesLog = new SessionChangesLog(session.getId());
++      this.changesLog = new SessionChangesLog(session);
+       this.itemsPool = new ItemReferencePool();
+       this.itemFactory = new SessionItemFactory();
+       this.accessManager = session.getAccessManager();
+@@ -1703,7 +1703,7 @@
+ 
+       // remove from changes log (Session pending changes)
+       PlainChangesLog slog = changesLog.pushLog(item.getQPath());
+-      SessionChangesLog changes = new SessionChangesLog(slog.getAllStates(), session.getId());
++      SessionChangesLog changes = new SessionChangesLog(slog.getAllStates(), session);
+ 
+       String exceptions = "";
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/FileSystemLockPersister.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/FileSystemLockPersister.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/FileSystemLockPersister.java	(working copy)
+@@ -152,7 +152,9 @@
+          return;
+       }
+       if (!lockFile.delete())
++      {
+          throw new LockException("Fail to remove lock information");
++      }
+ 
+    }
+ 
+@@ -197,9 +199,11 @@
+                   (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKOWNER, 0),
+                      ItemType.PROPERTY);
+                if (dataLockOwner != null)
++               {
+                   plainChangesLog.add(ItemState.createDeletedState(new TransientPropertyData(QPath.makeChildPath(
+                      lockedNodeData.getQPath(), Constants.JCR_LOCKOWNER), dataLockOwner.getIdentifier(), 0,
+                      dataLockOwner.getType(), dataLockOwner.getParentIdentifier(), dataLockOwner.isMultiValued())));
++               }
+ 
+                if (plainChangesLog.getSize() > 0)
+                {
+@@ -222,7 +226,9 @@
+                log.warn("Persistent lock information for node id " + list[i] + " doesn't exists");
+             }
+             if (!lockFile.delete())
++            {
+                throw new LockException("Fail to remove lock information");
++            }
+          }
+       }
+       catch (RepositoryException e)
+@@ -288,8 +294,10 @@
+       String root = config.getParameterValue(PARAM_ROOT_DIR);
+ 
+       if (root == null)
++      {
+          throw new RepositoryConfigurationException("Repository service configuration." + " Source name ("
+             + PARAM_ROOT_DIR + ") is expected");
++      }
+       rootDir = new File(root);
+       if (rootDir.exists())
+       {
+@@ -301,7 +309,9 @@
+       else
+       {
+          if (!rootDir.mkdirs())
++         {
+             throw new RepositoryException("Can't create dir" + root);
++         }
+       }
+    }
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java	(working copy)
+@@ -270,7 +270,7 @@
+                   normalized.add(change);
+             }
+ 
+-            PlainChangesLog plog = new PlainChangesLogImpl(normalized, next.getSessionId(), next.getEventType());
++            PlainChangesLog plog = PlainChangesLogImpl.createCopy(normalized,next);
+             result.addLog(plog);
+          }
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataMergeVisitor.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataMergeVisitor.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataMergeVisitor.java	(working copy)
+@@ -174,7 +174,7 @@
+       this.bestEffort = bestEffort;
+       this.failed = failed;
+ 
+-      this.changes = new SessionChangesLog(mergeSession.getId());
++      this.changes = new SessionChangesLog(mergeSession);
+    }
+ 
+    @Override
+@@ -530,6 +530,7 @@
+             ItemType.PROPERTY);
+ 
+       if (predecessorsProperty != null)
++      {
+          for (ValueData pv : predecessorsProperty.getValues())
+          {
+             try
+@@ -537,7 +538,9 @@
+                String pidentifier = new String(pv.getAsByteArray());
+ 
+                if (pidentifier.equals(corrVersion.getIdentifier()))
++               {
+                   return true; // got it
++               }
+ 
+                // search in predecessors of the predecessor
+                NodeData predecessor = (NodeData)mergeDataManager.getItemData(pidentifier);
+@@ -560,6 +563,7 @@
+             }
+          }
+       // else it's a root version
++      }
+ 
+       return false;
+    }
+@@ -576,6 +580,7 @@
+             ItemType.PROPERTY);
+ 
+       if (successorsProperty != null)
++      {
+          for (ValueData sv : successorsProperty.getValues())
+          {
+             try
+@@ -583,7 +588,9 @@
+                String sidentifier = new String(sv.getAsByteArray());
+ 
+                if (sidentifier.equals(corrVersion.getIdentifier()))
++               {
+                   return true; // got it
++               }
+ 
+                // search in successors of the successor
+                NodeData successor = (NodeData)mergeDataManager.getItemData(sidentifier);
+@@ -606,6 +613,7 @@
+             }
+          }
+       // else it's a end of version graph node
++      }
+ 
+       return false;
+    }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/VersionHistoryImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/VersionHistoryImpl.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/VersionHistoryImpl.java	(working copy)
+@@ -328,7 +328,7 @@
+          throw new ReferentialIntegrityException("There are Reference property pointed to this Version "
+             + refs.get(0).getQPath().getAsString());
+ 
+-      PlainChangesLog changes = new PlainChangesLogImpl(session.getId());
++      PlainChangesLog changes = new PlainChangesLogImpl(session);
+ 
+       // remove labels first
+       try
+@@ -506,7 +506,7 @@
+ 
+       NodeData versionData = getVersionData(versionName);
+ 
+-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
++      SessionChangesLog changesLog = new SessionChangesLog(session);
+ 
+       PropertyData labelData =
+          TransientPropertyData.createPropertyData(labels, labelQName, PropertyType.REFERENCE, false,
+@@ -532,7 +532,7 @@
+ 
+       if (vldata != null)
+       {
+-         PlainChangesLog changes = new PlainChangesLogImpl(session.getId());
++         PlainChangesLog changes = new PlainChangesLogImpl(session);
+          changes.add(ItemState.createDeletedState(vldata));
+          dataManager.getTransactManager().save(changes);
+       }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataRestoreVisitor.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataRestoreVisitor.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/version/ItemDataRestoreVisitor.java	(working copy)
+@@ -150,7 +150,7 @@
+       super(userSession.getTransientNodesManager().getTransactManager());
+ 
+       this.userSession = userSession;
+-      this.changes = new SessionChangesLog(userSession.getId());
++      this.changes = new SessionChangesLog(userSession);
+       this.context = context;
+       this.destName = destName;
+       this.history = history;
+@@ -177,7 +177,9 @@
+          for (ItemState state : delegatedChanges.getAllStates())
+          {
+             if (state.getData().getIdentifier().equals(identifier))
++            {
+                return state.getData();
++            }
+          }
+       }
+ 
+@@ -191,7 +193,9 @@
+          for (ItemState state : delegatedChanges.getAllStates())
+          {
+             if (state.getData().getQPath().equals(path))
++            {
+                return state.getData();
++            }
+          }
+       }
+ 
+@@ -206,7 +210,9 @@
+          for (ItemState state : delegatedChanges.getAllStates())
+          {
+             if (state.getData().getQPath().equals(path) || state.getData().getQPath().isDescendantOf(path))
++            {
+                removed.add(state);
++            }
+          }
+ 
+          for (ItemState state : removed)
+@@ -223,7 +229,9 @@
+       QPath nodePath = QPath.makeChildPath(parentData.getQPath(), name);
+ 
+       if (log.isDebugEnabled())
++      {
+          log.debug("Restore: " + nodePath.getAsString() + ", removeExisting=" + removeExisting);
++      }
+ 
+       PropertyData frozenIdentifier =
+          (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENUUID, 1), ItemType.PROPERTY);
+@@ -254,8 +262,10 @@
+                   // name
+ 
+                   if (sameIdentifierPath.getIndex() != nodePath.getIndex())
++                  {
+                      // but different index, see below... fix it
+                      nodePath = QPath.makeChildPath(parentData.getQPath(), name, sameIdentifierPath.getIndex());
++                  }
+ 
+                   // if it's a target node
+                   existing = sameIdentifierNode;
+@@ -466,7 +476,9 @@
+ 
+             NodeData cHistory = null;
+             if ((cHistory = (NodeData)dataManager.getItemData(vhIdentifier)) == null)
++            {
+                throw new RepositoryException("Version history is not found with uuid " + vhIdentifier);
++            }
+ 
+             childHistory = new VersionHistoryDataHelper(cHistory, dataManager, nodeTypeDataManager);
+          }
+@@ -687,6 +699,7 @@
+          InternalQName qname = property.getQPath().getName();
+ 
+          if (nodeTypeDataManager.isNodeType(Constants.NT_FROZENNODE, frozenParent.getPrimaryTypeName()))
++         {
+             if (qname.equals(Constants.JCR_FROZENPRIMARYTYPE))
+             {
+                qname = Constants.JCR_PRIMARYTYPE;
+@@ -705,6 +718,7 @@
+                // skip these props, as they are a nt:frozenNode special props
+                return;
+             }
++         }
+ 
+          int action =
+             nodeTypeDataManager.getPropertyDefinitions(qname, currentNode().getPrimaryTypeName(),
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/observation/ActionLauncher.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/observation/ActionLauncher.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/observation/ActionLauncher.java	(working copy)
+@@ -18,6 +18,8 @@
+  */
+ package org.exoplatform.services.jcr.impl.core.observation;
+ 
++import org.exoplatform.services.jcr.core.ExtendedSession;
++import org.exoplatform.services.jcr.core.ExtendedWorkspace;
+ import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
+ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+ import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
+@@ -31,7 +33,6 @@
+ import org.exoplatform.services.jcr.datamodel.NodeData;
+ import org.exoplatform.services.jcr.datamodel.QPath;
+ import org.exoplatform.services.jcr.impl.core.LocationFactory;
+-import org.exoplatform.services.jcr.impl.core.SessionImpl;
+ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+ import org.exoplatform.services.jcr.impl.util.EntityCollection;
+@@ -92,9 +93,19 @@
+             PlainChangesLog subLog = logIterator.nextLog();
+             String sessionId = subLog.getSessionId();
+ 
+-            SessionImpl userSession = sessionRegistry.getSession(sessionId);
++            ExtendedSession userSession;
+ 
++            if (subLog.getSession() != null)
++            {
++               userSession = subLog.getSession();
++            }
++            else
++            {
++               userSession = sessionRegistry.getSession(sessionId);
++            }
++
+             if (userSession != null)
++            {
+                for (ItemState itemState : subLog.getAllStates())
+                {
+                   if (itemState.isEventFire())
+@@ -123,6 +134,7 @@
+                      }
+                   }
+                }
++            }
+          }
+          if (events.getSize() > 0)
+          {
+@@ -141,15 +153,15 @@
+ 
+    private boolean isSessionMatch(ListenerCriteria criteria, String sessionId)
+    {
+-      if (criteria.getNoLocal() && criteria.getSessionId().equals(sessionId))
+-         return false;
+-      return true;
++      return !(criteria.getNoLocal() && criteria.getSessionId().equals(sessionId));
+    }
+ 
+-   private boolean isPathMatch(ListenerCriteria criteria, ItemData item, SessionImpl userSession)
++   private boolean isPathMatch(ListenerCriteria criteria, ItemData item, ExtendedSession userSession)
+    {
+       if (criteria.getAbsPath() == null)
++      {
+          return true;
++      }
+       try
+       {
+          QPath cLoc = userSession.getLocationFactory().parseAbsPath(criteria.getAbsPath()).getInternalPath();
+@@ -171,25 +183,33 @@
+    {
+ 
+       if (criteria.getIdentifier() == null)
++      {
+          return true;
++      }
+ 
+       // assotiated parent is node itself for node and parent for property ????
+       for (int i = 0; i < criteria.getIdentifier().length; i++)
+       {
+          if (item.isNode() && criteria.getIdentifier()[i].equals(item.getIdentifier()))
++         {
+             return true;
++         }
+          else if (!item.isNode() && criteria.getIdentifier()[i].equals(item.getParentIdentifier()))
++         {
+             return true;
++         }
+       }
+       return false;
+ 
+    }
+ 
+-   private boolean isNodeTypeMatch(ListenerCriteria criteria, ItemData item, SessionImpl userSession,
++   private boolean isNodeTypeMatch(ListenerCriteria criteria, ItemData item, ExtendedSession userSession,
+       PlainChangesLog changesLog) throws RepositoryException
+    {
+       if (criteria.getNodeTypeName() == null)
++      {
+          return true;
++      }
+ 
+       NodeData node = (NodeData)workspaceDataManager.getItemData(item.getParentIdentifier());
+       if (node == null)
+@@ -214,7 +234,7 @@
+          }
+       }
+ 
+-      NodeTypeDataManager ntManager = userSession.getWorkspace().getNodeTypesHolder();
++      NodeTypeDataManager ntManager = ((ExtendedWorkspace)userSession.getWorkspace()).getNodeTypesHolder();
+       LocationFactory locationFactory = userSession.getLocationFactory();
+       for (int i = 0; i < criteria.getNodeTypeName().length; i++)
+       {
+@@ -231,7 +251,9 @@
+             testQNames[0] = node.getPrimaryTypeName();
+          }
+          if (ntManager.isNodeType(criteriaNT.getName(), testQNames))
++         {
+             return true;
++         }
+       }
+       return false;
+    }
+@@ -242,24 +264,40 @@
+       if (state.getData().isNode())
+       {
+          if (state.isAdded() || state.isRenamed() || state.isUpdated())
++         {
+             return Event.NODE_ADDED;
++         }
+          else if (state.isDeleted())
++         {
+             return Event.NODE_REMOVED;
++         }
+          else if (state.isUpdated())
++         {
+             return SKIP_EVENT;
++         }
+          else if (state.isUnchanged())
++         {
+             return SKIP_EVENT;
++         }
+       }
+       else
+       { // property
+          if (state.isAdded())
++         {
+             return Event.PROPERTY_ADDED;
++         }
+          else if (state.isDeleted())
++         {
+             return Event.PROPERTY_REMOVED;
++         }
+          else if (state.isUpdated())
++         {
+             return Event.PROPERTY_CHANGED;
++         }
+          else if (state.isUnchanged())
++         {
+             return SKIP_EVENT;
++         }
+       }
+       throw new RepositoryException("Unexpected ItemState for Node " + ItemState.nameFromValue(state.getState()) + " "
+          + state.getData().getQPath().getAsString());
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/WorkspaceImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/WorkspaceImpl.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/WorkspaceImpl.java	(working copy)
+@@ -110,9 +110,13 @@
+ 
+       QueryManagerFactory qf = (QueryManagerFactory)container.getComponentInstanceOfType(QueryManagerFactory.class);
+       if (qf == null)
++      {
+          this.queryManager = null;
++      }
+       else
++      {
+          this.queryManager = qf.getQueryManager(session);
++      }
+    }
+ 
+    /**
+@@ -123,7 +127,7 @@
+       PathNotFoundException, ItemExistsException, RepositoryException
+    {
+ 
+-      SessionChangesLog changes = new SessionChangesLog(session.getId());
++      SessionChangesLog changes = new SessionChangesLog(session);
+ 
+       clone(srcWorkspace, srcAbsPath, destAbsPath, removeExisting, changes);
+ 
+@@ -162,8 +166,10 @@
+       // get destination node
+       JCRPath destNodePath = session.getLocationFactory().parseAbsPath(destAbsPath);
+       if (destNodePath.isIndexSetExplicitly())
++      {
+          throw new RepositoryException("The path provided must not have an index on its final element. "
+             + destNodePath.getAsString(false));
++      }
+       // get source node
+       JCRPath srcNodePath = srcSession.getLocationFactory().parseAbsPath(srcAbsPath);
+ 
+@@ -208,7 +214,7 @@
+ 
+       srcNode.getData().accept(initializer);
+ 
+-      PlainChangesLogImpl changesLog = new PlainChangesLogImpl(initializer.getItemAddStates(), session.getId());
++      PlainChangesLogImpl changesLog = new PlainChangesLogImpl(initializer.getItemAddStates(), session);
+ 
+       session.getTransientNodesManager().getTransactManager().save(changesLog);
+    }
+@@ -296,7 +302,9 @@
+    public QueryManager getQueryManager() throws RepositoryException
+    {
+       if (queryManager == null)
++      {
+          throw new RepositoryException("Query Manager Factory not found. Check configuration.");
++      }
+       return queryManager;
+    }
+ 
+@@ -382,8 +390,10 @@
+       // get destination node
+       JCRPath destNodePath = session.getLocationFactory().parseAbsPath(destAbsPath);
+       if (destNodePath.isIndexSetExplicitly())
++      {
+          throw new RepositoryException("The path provided must not have an index on its final element. "
+             + destNodePath.getAsString(false));
++      }
+       // get source node
+       JCRPath srcNodePath = session.getLocationFactory().parseAbsPath(srcAbsPath);
+ 
+@@ -427,19 +437,22 @@
+ 
+       // Check if versionable ancestor is not checked-in
+       if (!srcNode.checkedOut())
++      {
+          throw new VersionException("Source parent node " + srcNode.getPath()
+             + " or its nearest ancestor is checked-in");
++      }
+       // Check locking
+       if (!srcNode.checkLocking())
++      {
+          throw new LockException("Source parent node " + srcNode.getPath() + " is     locked ");
++      }
+ 
+       ItemDataMoveVisitor initializer =
+          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
+             nodeTypeManager, session.getTransientNodesManager(), true);
+       srcNode.getData().accept(initializer);
+ 
+-      PlainChangesLog changes = new PlainChangesLogImpl(session.getId());
+-      changes.addAll(initializer.getAllStates());
++      PlainChangesLog changes = new PlainChangesLogImpl(initializer.getAllStates(), session);
+ 
+       session.getTransientNodesManager().getTransactManager().save(changes);
+    }
+@@ -460,13 +473,17 @@
+    {
+ 
+       if (srcWorkspace.equals(getName()))
++      {
+          throw new RepositoryException("Source and destination workspace are equals " + name);
++      }
+ 
+       // make dest node path
+       JCRPath destNodePath = session.getLocationFactory().parseAbsPath(destAbsPath);
+ 
+       if (destNodePath.isIndexSetExplicitly())
++      {
+          throw new RepositoryException("DestPath should not contain an index " + destAbsPath);
++      }
+ 
+       // find src node
+       SessionImpl srcSession = repository().internalLogin(session.getUserState(), srcWorkspace);
+@@ -540,7 +557,9 @@
+    {
+ 
+       if (session.hasPendingChanges())
++      {
+          throw new InvalidItemStateException("Session has pending changes ");
++      }
+ 
+       // for restore operation
+       List<String> existedIdentifiers = new ArrayList<String>(); // InWorkspace
+@@ -575,9 +594,13 @@
+                   ((SessionImpl)v.getSession()).getTransientNodesManager().getTransactManager();
+                corrNode = (NodeData)vDataManager.getItemData(versionableIdentifier);
+                if (corrNode != null)
++               {
+                   versionableParentIdentifier = corrNode.getParentIdentifier();
++               }
+                else
++               {
+                   log.warn("Workspace.restore(). Correspondent node is not found " + versionableIdentifier);
++               }
+             }
+             if (versionableParentIdentifier != null && existedIdentifiers.contains(versionableParentIdentifier))
+             {
+@@ -592,7 +615,7 @@
+          }
+       }
+ 
+-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
++      SessionChangesLog changesLog = new SessionChangesLog(session);
+ 
+       for (VersionImpl v : existedVersions.keySet())
+       {
+@@ -605,7 +628,7 @@
+             // parent
+             // it's a VH
+             VersionHistoryDataHelper historyHelper =
+-               new VersionHistoryDataHelper((NodeData)vh, dataManager, nodeTypeManager);
++               new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
+ 
+             changesLog.addAll(v.restoreLog(destParent, node.getQPath().getName(), historyHelper, session,
+                removeExisting, changesLog).getAllStates());
+@@ -643,7 +666,7 @@
+                // version parent it's a VH
+                NodeData vh = (NodeData)dataManager.getItemData(v.getParentIdentifier());
+                VersionHistoryDataHelper historyHelper =
+-                  new VersionHistoryDataHelper((NodeData)vh, dataManager, nodeTypeManager);
++                  new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
+ 
+                changesLog.addAll(v.restoreLog(destParent, node.getQPath().getName(), historyHelper, session,
+                   removeExisting, changesLog).getAllStates());
+@@ -675,6 +698,9 @@
+       return (RepositoryImpl)session.getRepository();
+    }
+ 
++   /**
++    * {@inheritDoc}
++    */
+    public NodeTypeDataManager getNodeTypesHolder() throws RepositoryException
+    {
+       return nodeTypeManager;
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/LocalWorkspaceStorageDataManagerProxy.java	(working copy)
+@@ -94,7 +94,7 @@
+                .getAncestorToSave(), change.isInternallyCreated(), change.isPersisted()));
+          }
+ 
+-         newLog.addLog(new PlainChangesLogImpl(states, changes.getSessionId(), changes.getEventType()));
++         newLog.addLog(PlainChangesLogImpl.createCopy(states, changes));
+       }
+ 
+       storageDataManager.save(newLog);
+@@ -139,7 +139,7 @@
+    {
+       return storageDataManager.getLastOrderNumber(parent);
+    }
+-   
++
+    /**
+     * {@inheritDoc}
+     */
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/session/SessionChangesLog.java	(working copy)
+@@ -18,6 +18,7 @@
+  */
+ package org.exoplatform.services.jcr.impl.dataflow.session;
+ 
++import org.exoplatform.services.jcr.core.ExtendedSession;
+ import org.exoplatform.services.jcr.dataflow.ItemState;
+ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
+ import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
+@@ -84,9 +85,9 @@
+     * 
+     * @param sessionId
+     */
+-   public SessionChangesLog(String sessionId)
++   public SessionChangesLog(ExtendedSession session)
+    {
+-      super(sessionId);
++      super(session);
+    }
+ 
+    /**
+@@ -95,14 +96,14 @@
+     * @param items
+     * @param sessionId
+     */
+-   public SessionChangesLog(List<ItemState> items, String sessionId)
++   public SessionChangesLog(List<ItemState> items, ExtendedSession session)
+    {
+-      super(items, sessionId);
++      super(items, session);
+       for (int i = 0, length = items.size(); i < length; i++)
+       {
+          ItemState change = items.get(i);
+          addItem(change);
+-      }     
++      }
+    }
+ 
+    /**
+@@ -192,13 +193,17 @@
+             {
+                Map<String, ItemState> children = lastChildNodeStates.get(item.getData().getParentIdentifier());
+                if (children != null)
++               {
+                   children.remove(item.getData().getIdentifier());
++               }
+             }
+             else
+             {
+                Map<String, ItemState> children = lastChildPropertyStates.get(item.getData().getParentIdentifier());
+                if (children != null)
++               {
+                   children.remove(item.getData().getIdentifier());
++               }
+             }
+          }
+       }
+@@ -324,7 +329,8 @@
+     */
+    public PlainChangesLog pushLog(QPath rootPath)
+    {
+-      PlainChangesLog cLog = new PlainChangesLogImpl(sessionId);
++      // session instance is always present in SessionChangesLog
++      PlainChangesLog cLog = new PlainChangesLogImpl(session);
+ 
+       if (rootPath.equals(Constants.ROOT_PATH))
+       {
+@@ -422,7 +428,9 @@
+       {
+          ItemData item = items.get(i).getData();
+          if (item.getParentIdentifier().equals(rootIdentifier) || item.getIdentifier().equals(rootIdentifier))
++         {
+             list.add(items.get(i));
++         }
+       }
+       return list;
+    }
+@@ -478,11 +486,15 @@
+          {
+             // the node
+             if (items.get(i).isAdded())
++            {
+                // if a new item - no modify changes can be
+                return new ArrayList<ItemState>();
++            }
+ 
+             if (!items.get(i).isDeleted())
++            {
+                changes.put(item.getIdentifier(), items.get(i));
++            }
+          }
+          else if (item.getParentIdentifier().equals(rootData.getIdentifier()))
+          {
+@@ -538,7 +550,9 @@
+                         rename = state;
+                         delete = allStates.get(i - 1); // try the fresh delete state
+                         if (delete.getData().getIdentifier().equals(rename.getData().getIdentifier()))
++                        {
+                            return new ItemState[]{delete, rename}; // 3. ok, got it
++                        }
+                      }
+                   }
+ 
+@@ -594,7 +608,9 @@
+             }
+          }
+          else
++         {
+             byState = true;
++         }
+          if (byState
+             && (isPersisted != null ? istate.isPersisted() == isPersisted : true)
+             && ((orAncestor != null && orAncestor ? rootPath.isDescendantOf(istate.getData().getQPath()) : true) || rootPath
+@@ -641,7 +657,9 @@
+             }
+          }
+          else
++         {
+             byState = true;
++         }
+          if (byState && (isPersisted != null ? istate.isPersisted() == isPersisted : true)
+             && istate.getData().getIdentifier().equals(id))
+          {
+@@ -757,22 +775,34 @@
+       public boolean equals(Object obj)
+       {
+          if (this == obj)
++         {
+             return true;
++         }
+          if (obj == null)
++         {
+             return false;
++         }
+          if (getClass() != obj.getClass())
++         {
+             return false;
++         }
+          IDStateBasedKey other = (IDStateBasedKey)obj;
+ 
+          if (identifier == null)
+          {
+             if (other.identifier != null)
++            {
+                return false;
++            }
+          }
+          else if (!identifier.equals(other.identifier))
++         {
+             return false;
++         }
+          if (state != other.state)
++         {
+             return false;
++         }
+          return true;
+       }
+    }
+@@ -846,37 +876,55 @@
+       public boolean equals(Object obj)
+       {
+          if (this == obj)
++         {
+             return true;
++         }
+          if (obj == null)
++         {
+             return false;
++         }
+          if (getClass() != obj.getClass())
++         {
+             return false;
++         }
+          ParentIDQPathBasedKey other = (ParentIDQPathBasedKey)obj;
+ 
+          if (name == null)
+          {
+             if (other.name != null)
++            {
+                return false;
++            }
+          }
+          else if (!name.getName().equals(other.name.getName())
+             || !name.getNamespace().equals(other.name.getNamespace()) || name.getIndex() != other.name.getIndex())
++         {
+             return false;
++         }
+ 
+          if (parentIdentifier == null)
+          {
+             if (other.parentIdentifier != null)
++            {
+                return false;
++            }
+          }
+          else if (!parentIdentifier.equals(other.parentIdentifier))
++         {
+             return false;
++         }
+ 
+          if (itemType == null)
+          {
+             if (other.itemType != null)
++            {
+                return false;
++            }
+          }
+          else if (!itemType.equals(other.itemType))
++         {
+             return false;
++         }
+ 
+          return true;
+       }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java	(working copy)
+@@ -270,9 +270,7 @@
+          RepositoryException, IOException
+       {
+          // copy state
+-         PlainChangesLogImpl newLog =
+-            new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSessionId(), changesLog.getEventType(),
+-               changesLog.getPairId());
++         PlainChangesLogImpl newLog = PlainChangesLogImpl.createCopy(new ArrayList<ItemState>(), changesLog);
+ 
+          for (Iterator<ItemState> iter = changesLog.getAllStates().iterator(); iter.hasNext();)
+          {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/VersionableWorkspaceDataManager.java	(working copy)
+@@ -219,19 +219,18 @@
+                // we have pair of logs for system and non-system (this) workspaces
+                final String pairId = IdGenerator.generate();
+ 
+-               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType(),
+-                  pairId));
+-               nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType(),
+-                  pairId));
++               versionLogs.addLog(PlainChangesLogImpl.createCopy(vstates, pairId, changes));
++               nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, pairId, changes));
+             }
+             else
+             {
+-               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType()));
++               versionLogs.addLog(PlainChangesLogImpl.createCopy(vstates, changes));
++               nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
+             }
+          }
+          else if (nvstates.size() > 0)
+          {
+-            nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType()));
++            nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
+          }
+       }
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ExtendedWorkspace.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ExtendedWorkspace.java	(revision 4991)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ExtendedWorkspace.java	(working copy)
+@@ -18,6 +18,8 @@
+  */
+ package org.exoplatform.services.jcr.core;
+ 
++import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
++
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.util.Map;
+@@ -58,4 +60,12 @@
+       throws IOException, PathNotFoundException, ItemExistsException, ConstraintViolationException,
+       InvalidSerializedDataException, RepositoryException;
+ 
++   /**
++    * Returns {@link NodeTypeDataManager} instance
++    * 
++    * @return NodeTypeDataManager
++    * @throws RepositoryException
++    */
++   NodeTypeDataManager getNodeTypesHolder() throws RepositoryException;
++
+ }
