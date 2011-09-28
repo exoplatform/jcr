@@ -1113,6 +1113,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    /**
     * {@inheritDoc}
     */
+   public NodeIterator getNodesLazily(int pageSize) throws RepositoryException
+   {
+      checkValid();
+      return new LazyNodeIteratorByPage(dataManager, pageSize);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public NodeIterator getNodes(String namePattern) throws RepositoryException
    {
 
@@ -3495,7 +3504,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    {
       private final SessionDataManager dataManager;
 
-      private int limit = session.getLazyNodeIteratorPageSize();
+      private final int limit;
 
       private int fromOrderNum = 0;
 
@@ -3509,7 +3518,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       LazyNodeIteratorByPage(SessionDataManager dataManager) throws RepositoryException
       {
+         this(dataManager, session.getLazyNodeIteratorPageSize());
+      }
+
+      LazyNodeIteratorByPage(SessionDataManager dataManager, int limit) throws RepositoryException
+      {
          this.dataManager = dataManager;
+         this.limit = limit;
       }
 
       /**

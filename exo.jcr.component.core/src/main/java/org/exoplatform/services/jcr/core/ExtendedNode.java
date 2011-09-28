@@ -130,4 +130,17 @@ public interface ExtendedNode extends Node
     * @throws RepositoryException If an error occurs.
     */
    public NodeIterator getNodesLazily() throws RepositoryException;
+
+   /**
+    * Returns a <code>NodeIterator</code> over all child <code>Node</code>s of
+    * this <code>Node</code>. Does <i>not</i> include properties of this
+    * <code>Node</code>. If this node has no child nodes, then an empty iterator is returned.
+    * 
+    * @param pageSize
+    *          the amount of the nodes which can be retrieved from the storage per request
+    * @return A <code>NodeIterator</code> over all child <code>Node</code>s of
+    *         this <code>Node</code>.
+    * @throws RepositoryException If an error occurs.
+    */
+   public NodeIterator getNodesLazily(int pageSize) throws RepositoryException;
 }
