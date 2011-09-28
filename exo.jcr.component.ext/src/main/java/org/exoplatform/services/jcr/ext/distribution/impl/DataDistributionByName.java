@@ -98,36 +98,55 @@ public class DataDistributionByName extends AbstractDataDistributionType
    public void migrate(Node rootNode, String nodeType, List<String> mixinTypes, Map<String, String[]> permissions)
       throws RepositoryException
    {
+      // try to detect if migration is needed
       NodeIterator iter = ((NodeImpl)rootNode).getNodesLazily(1);
-      if (iter.hasNext() && !iter.nextNode().getPath().endsWith(suffix))
+      while (iter.hasNext())
       {
-         iter = ((NodeImpl)rootNode).getNodesLazily();
-         while (iter.hasNext())
+         String userName = iter.nextNode().getName();
+         if (userName.length() == 1)
          {
-            Node userNode = iter.nextNode();
-            List<String> ancestors = getAncestors(userNode.getName());
-            
-            Node node = rootNode;
+            continue;
+         }
+         else if (userName.endsWith(suffix) || (!iter.hasNext()))
+         {
+            return;
+         }
+         else
+         {
+            break;
+         }
+      }
 
-            for (int i = 0, length = ancestors.size() - 1; i < length; i++)
+      iter = ((NodeImpl)rootNode).getNodesLazily();
+      while (iter.hasNext())
+      {
+         Node userNode = iter.nextNode();
+         if (userNode.getName().length() == 1)
+         {
+            continue;
+         }
+         List<String> ancestors = getAncestors(userNode.getName());
+
+         Node node = rootNode;
+
+         for (int i = 0, length = ancestors.size() - 1; i < length; i++)
+         {
+            String nodeName = ancestors.get(i);
+            try
             {
-               String nodeName = ancestors.get(i);
-               try
-               {
-                  node = node.getNode(nodeName);
-                  continue;
-               }
-               catch (PathNotFoundException e)
-               {
-                  // ignore me
-               }
-
-               // The node doesn't exist we need to create it
-               node = createNode(node, nodeName, nodeType, mixinTypes, permissions, false, false);
+               node = node.getNode(nodeName);
+               continue;
+            }
+            catch (PathNotFoundException e)
+            {
+               // ignore me
             }
 
-            userNode.getSession().move(userNode.getPath(), node.getPath() + "/" + ancestors.get(ancestors.size() - 1));
+            // The node doesn't exist we need to create it
+            node = createNode(node, nodeName, nodeType, mixinTypes, permissions, false, false);
          }
+
+         userNode.getSession().move(userNode.getPath(), node.getPath() + "/" + ancestors.get(ancestors.size() - 1));
       }
 
       rootNode.getSession().save();
