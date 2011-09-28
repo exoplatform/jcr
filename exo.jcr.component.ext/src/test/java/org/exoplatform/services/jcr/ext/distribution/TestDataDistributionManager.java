@@ -624,6 +624,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
    public void testMigration() throws Exception
    {
       Node rootNode = session.getRootNode().addNode("testRoot");
+      rootNode.addNode("a").setProperty("a", "a");
       rootNode.addNode("bob").setProperty("bob", "bob");
       rootNode.addNode("john.smith").setProperty("john.smith", "john.smith");
       rootNode.addNode("joiv").setProperty("joiv", "joiv");
@@ -633,6 +634,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
 
       manager.getDataDistributionType(DataDistributionMode.READABLE).migrate(rootNode);
 
+      assertTrue(rootNode.hasNode("a"));
       assertFalse(rootNode.hasNode("bob"));
       assertFalse(rootNode.hasNode("john.smith"));
       assertFalse(rootNode.hasNode("joiv"));
@@ -645,6 +647,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       assertTrue(rootNode.hasNode("b___/bo___/bon___/bonjov"));
       assertTrue(rootNode.hasNode("a___/an___/ana___/anatoliy.bazko"));
 
+      assertTrue(rootNode.getNode("a").hasProperty("a"));
       assertTrue(rootNode.getNode("b___/bo___/bob").hasProperty("bob"));
       assertTrue(rootNode.getNode("j___/jo___/joh___/john.smith").hasProperty("john.smith"));
       assertTrue(rootNode.getNode("j___/jo___/joi___/joiv").hasProperty("joiv"));
@@ -654,6 +657,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       // shoud not be any changes
       manager.getDataDistributionType(DataDistributionMode.READABLE).migrate(rootNode);
 
+      assertTrue(rootNode.hasNode("a"));
       assertFalse(rootNode.hasNode("bob"));
       assertFalse(rootNode.hasNode("john.smith"));
       assertFalse(rootNode.hasNode("joiv"));
@@ -666,6 +670,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       assertTrue(rootNode.hasNode("b___/bo___/bon___/bonjov"));
       assertTrue(rootNode.hasNode("a___/an___/ana___/anatoliy.bazko"));
 
+      assertTrue(rootNode.getNode("a").hasProperty("a"));
       assertTrue(rootNode.getNode("b___/bo___/bob").hasProperty("bob"));
       assertTrue(rootNode.getNode("j___/jo___/joh___/john.smith").hasProperty("john.smith"));
       assertTrue(rootNode.getNode("j___/jo___/joi___/joiv").hasProperty("joiv"));
