@@ -178,7 +178,7 @@
         UTF-8 encoding should be used, either by configuring utf8 as the
         default server character set, or by configuring the JDBC driver to use
         UTF-8 through the characterEncoding property. MySQL database should be
-        created in single-byte encoding, e.g. "latin1": </para>
+        created in single-byte encoding, e.g. "latin1":</para>
 
         <programlisting>CREATE DATABASE db1 CHARACTER SET latin1 COLLATE latin1_general_cs;</programlisting>
 
@@ -453,17 +453,6 @@ session.logout();
         </itemizedlist>
 
         <para>That's all. JCR is ready for running in a cluster.</para>
-      </section>
-
-      <section>
-        <title>Is JCR suitable for remote sites\* synchronization?</title>
-
-        <itemizedlist>
-          <listitem>
-            <para>Remote sites can be visualized as different buildings
-            seperated by a WAN network.</para>
-          </listitem>
-        </itemizedlist>
       </section>
 
       <section>
