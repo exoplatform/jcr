@@ -34,6 +34,10 @@ import java.sql.SQLException;
  */
 public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
+   /**
+    * Template for query. Since there is no way to set parameter for TOP via prepared statement.
+    * We need to replace it in the code.
+    */
    private static final String FIND_NODES_AND_PROPERTIES_TEMPLATE =
       "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
          + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V WITH (INDEX (jcr_idx_svalue_property)), JCR_SITEM P "
