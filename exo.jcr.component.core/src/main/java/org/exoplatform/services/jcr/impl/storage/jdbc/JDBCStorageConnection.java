@@ -1086,15 +1086,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    }
 
    /**
-    * GetNodesAndProperties.
-    * 
-    * @param lastNodeId the id if the last doc get from the db
-    * @param offset
-    * @param limit
-    * @param result
-    * @return
-    * @throws RepositoryException
-    * @throws IllegalStateException
+    * Returns from storage the next page of nodes and its properties.
     */
    public List<NodeDataIndexing> getNodesAndProperties(String lastNodeId, int offset, int limit)
       throws RepositoryException, IllegalStateException
@@ -1105,6 +1097,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       try
       {
          ResultSet resultSet = findNodesAndProperties(lastNodeId, offset, limit);
+         int processed = 0;
 
          try
          {
@@ -1115,26 +1108,35 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                if (tempNodeData == null)
                {
                   tempNodeData = new TempNodeData(resultSet);
+                  processed++;
                }
                else if (!resultSet.getString(COLUMN_ID).equals(tempNodeData.cid))
                {
-                  result.add(createNodeDataIndexing(tempNodeData));
+                  if (!needToSkipOffsetNodes() || processed > offset)
+                  {
+                     result.add(createNodeDataIndexing(tempNodeData));
+                  }
+
                   tempNodeData = new TempNodeData(resultSet);
+                  processed++;
                }
 
-               String key = resultSet.getString("P_NAME");
-
-               SortedSet<TempPropertyData> values = tempNodeData.properties.get(key);
-               if (values == null)
+               if (!needToSkipOffsetNodes() || processed > offset)
                {
-                  values = new TreeSet<TempPropertyData>();
-                  tempNodeData.properties.put(key, values);
-               }
+                  String key = resultSet.getString("P_NAME");
 
-               values.add(new ExtendedTempPropertyData(resultSet));
+                  SortedSet<TempPropertyData> values = tempNodeData.properties.get(key);
+                  if (values == null)
+                  {
+                     values = new TreeSet<TempPropertyData>();
+                     tempNodeData.properties.put(key, values);
+                  }
+
+                  values.add(new ExtendedTempPropertyData(resultSet));
+               }
             }
 
-            if (tempNodeData != null)
+            if (tempNodeData != null && (!needToSkipOffsetNodes() || processed > offset))
             {
                result.add(createNodeDataIndexing(tempNodeData));
             }
@@ -1165,6 +1167,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
 
       return result;
+   }
+
+   /**
+    * Some implementations could require to skip first 'offset' nodes from
+    * result set. 
+    */
+   protected boolean needToSkipOffsetNodes()
+   {
+      return false;
    }
 
    /**

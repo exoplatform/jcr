@@ -129,6 +129,6 @@ public class MSSQLConnectionFactory extends GenericCQConnectionFactory
    @Override
    public boolean isIDNeededForPaging()
    {
-      return false;
+      return true;
    }   
 }

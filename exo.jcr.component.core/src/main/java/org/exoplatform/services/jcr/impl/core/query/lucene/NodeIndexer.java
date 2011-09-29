@@ -310,7 +310,7 @@ public class NodeIndexer
 
             // seems nt:file found, try for nt:resource props
             PropertyData pmime = node.getProperty(Constants.JCR_MIMETYPE.getAsString());
-            if (pmime == null)
+            if (pmime == null && !node.containAllProperties())
             {
                pmime =
                   (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0),
@@ -342,7 +342,7 @@ public class NodeIndexer
 
                   // check the jcr:encoding property
                   PropertyData encProp = node.getProperty(Constants.JCR_ENCODING.getAsString());
-                  if (encProp == null)
+                  if (encProp == null && !node.containAllProperties())
                   {
                      encProp =
                         (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0),

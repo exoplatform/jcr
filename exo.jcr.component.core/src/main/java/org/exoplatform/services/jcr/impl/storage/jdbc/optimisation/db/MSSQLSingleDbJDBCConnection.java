@@ -34,6 +34,13 @@ import java.sql.SQLException;
  */
 public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
+   private static final String FIND_NODES_AND_PROPERTIES_TEMPLATE =
+      "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
+         + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V WITH (INDEX (jcr_idx_svalue_property)), JCR_SITEM P "
+         + " join (select TOP ${TOP} I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I WITH (INDEX (jcr_pk_sitem))"
+         + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID) J on P.PARENT_ID = J.ID"
+         + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
+
    /**
     * MSSQL Singledatabase JDBC Connection constructor.
     * 
@@ -66,40 +73,30 @@ public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected void prepareQueries() throws SQLException
+   protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
    {
-      super.prepareQueries();
-      FIND_NODES_AND_PROPERTIES =
-         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
-            + " join (select A.* from"
-            + " (select Row_Number() over (order by I.ID) as r__, I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM"
-            + " from JCR_SITEM I where I.CONTAINER_NAME=? and I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?"
-            + " ) J on P.PARENT_ID = J.ID"
-            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
+      if (findNodesAndProperties != null)
+      {
+         findNodesAndProperties.close();
+      }
+
+      findNodesAndProperties =
+         dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES_TEMPLATE.replace("${TOP}",
+            new Integer(offset + limit).toString()));
+
+      findNodesAndProperties.setString(1, containerName);
+      findNodesAndProperties.setString(2, getInternalId(lastNodeId));
+      findNodesAndProperties.setString(3, containerName);
+
+      return findNodesAndProperties.executeQuery();
    }
 
    /**
     * {@inheritDoc}
     */
-   @Override
-   protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
+   protected boolean needToSkipOffsetNodes()
    {
-      if (findNodesAndProperties == null)
-      {
-         findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
-      }
-      else
-      {
-         findNodesAndProperties.clearParameters();
-      }
-
-      findNodesAndProperties.setString(1, containerName);
-      findNodesAndProperties.setInt(2, offset + limit);
-      findNodesAndProperties.setInt(3, offset);
-      findNodesAndProperties.setString(4, containerName);
-
-      return findNodesAndProperties.executeQuery();
+      return true;
    }
 
    /**

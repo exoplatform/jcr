@@ -156,4 +156,12 @@ public class NodeDataIndexing implements NodeData
    {
       return nodeData.getACL();
    }
+
+   /**
+    * Indicates if all properties was read from storage.
+    */
+   public boolean containAllProperties()
+   {
+      return properties != null;
+   }
 }
