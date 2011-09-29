@@ -251,7 +251,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       SessionActionCatalog catalog =
          (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
-      actionHandler = new SessionActionInterceptor(catalog, container);
+      actionHandler = new SessionActionInterceptor(catalog, container, workspaceName);
 
       sessionRegistry = (SessionRegistry)container.getComponentInstanceOfType(SessionRegistry.class);
 

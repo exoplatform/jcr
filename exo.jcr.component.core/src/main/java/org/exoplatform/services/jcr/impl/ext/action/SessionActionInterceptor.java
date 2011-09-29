@@ -57,15 +57,18 @@ public class SessionActionInterceptor
 
    private final ExoContainer container;
 
+   private final String workspaceName;
+
    /**
     * SessionActionInterceptor is per session, and only one action per session/time can be active.
     */
    private ItemImpl activeItem = null;
 
-   public SessionActionInterceptor(ActionCatalog catalog, ExoContainer container)
+   public SessionActionInterceptor(ActionCatalog catalog, ExoContainer container, String workspaceName)
    {
       this.catalog = catalog;
       this.container = container;
+      this.workspaceName = workspaceName;
    }
 
    /**
@@ -78,12 +81,18 @@ public class SessionActionInterceptor
    public void postAddMixin(NodeImpl node, InternalQName mixinType) throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = node;
+      }
       else
+      {
          return;
+      }
 
       try
       {
@@ -91,6 +100,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.ADD_MIXIN);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
          conditions.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{mixinType});
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -107,12 +117,18 @@ public class SessionActionInterceptor
    public void postAddNode(NodeImpl node) throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = node;
+      }
       else
+      {
          return;
+      }
 
       try
       {
@@ -120,6 +136,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.NODE_ADDED);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
          conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -136,12 +153,18 @@ public class SessionActionInterceptor
    public void postCheckin(NodeImpl node) throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = node;
+      }
       else
+      {
          return;
+      }
 
       try
       {
@@ -149,6 +172,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.CHECKIN);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
          conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -165,12 +189,18 @@ public class SessionActionInterceptor
    public void postCheckout(NodeImpl node) throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = node;
+      }
       else
+      {
          return;
+      }
 
       try
       {
@@ -178,6 +208,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.CHECKOUT);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
          conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -194,12 +225,18 @@ public class SessionActionInterceptor
    public void postLock(NodeImpl node) throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = node;
+      }
       else
+      {
          return;
+      }
 
       try
       {
@@ -207,6 +244,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.LOCK);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
          conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -223,18 +261,25 @@ public class SessionActionInterceptor
    public void postRead(ItemImpl item) throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = item;
+      }
       else
+      {
          return;
+      }
 
       try
       {
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.READ);
          conditions.put(SessionEventMatcher.PATH_KEY, item.getInternalPath());
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
 
          if (item.isNode())
          {
@@ -261,12 +306,18 @@ public class SessionActionInterceptor
       throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = currentProperty;
+      }
       else
+      {
          return;
+      }
 
       try
       {
@@ -290,6 +341,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, event);
          conditions.put(SessionEventMatcher.PATH_KEY, currentProperty.getInternalPath());
          conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames(parent));
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, currentProperty);
@@ -307,12 +359,18 @@ public class SessionActionInterceptor
    public void postUnlock(NodeImpl node) throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = node;
+      }
       else
+      {
          return;
+      }
 
       try
       {
@@ -320,6 +378,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.UNLOCK);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
          conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -336,12 +395,18 @@ public class SessionActionInterceptor
    public void preRemoveItem(ItemImpl item) throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = item;
+      }
       else
+      {
          return;
+      }
 
       try
       {
@@ -349,6 +414,7 @@ public class SessionActionInterceptor
          int event = item.isNode() ? ExtendedEvent.NODE_REMOVED : ExtendedEvent.PROPERTY_REMOVED;
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, event);
          conditions.put(SessionEventMatcher.PATH_KEY, item.getInternalPath());
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
          if (item.isNode())
          {
             conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)item.getData()));
@@ -373,12 +439,18 @@ public class SessionActionInterceptor
    public void preRemoveMixin(NodeImpl node, InternalQName mixinType) throws RepositoryException
    {
       if (catalog == null)
+      {
          return;
+      }
 
       if (activeItem == null)
+      {
          activeItem = node;
+      }
       else
+      {
          return;
+      }
 
       try
       {
@@ -386,6 +458,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.REMOVE_MIXIN);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
          conditions.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{mixinType});
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
