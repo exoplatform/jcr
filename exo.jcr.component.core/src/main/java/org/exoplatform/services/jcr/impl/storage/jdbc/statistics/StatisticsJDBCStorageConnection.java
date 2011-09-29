@@ -130,7 +130,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     */
    private static final String GET_CHILD_NODES_DATA_DESCR = "getChildNodesData";
 
-   private static final String GET_CHILD_NODES_DATA_PATTERN_DESCR = "getChildNodesData";
+   private static final String GET_CHILD_NODES_DATA_PATTERN_DESCR = "getChildNodesDataPattern";
 
    /**
     * The description of the statistics corresponding to the method 
