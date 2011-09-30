@@ -594,8 +594,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
@@ -760,8 +760,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;component&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;type&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/type&gt;
@@ -1021,8 +1021,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
@@ -1200,8 +1200,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
@@ -1336,8 +1336,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;import&gt;war:/conf/sample-ext/common/common-configuration.xml&lt;/import&gt;
   &lt;import&gt;war:/conf/sample-ext/jcr/jcr-configuration.xml&lt;/import&gt;
   &lt;import&gt;war:/conf/sample-ext/portal/portal-configuration.xml&lt;/import&gt;
@@ -1361,8 +1361,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
     &lt;jmx-name&gt;database:type=HibernateService&lt;/jmx-name&gt;
@@ -1419,8 +1419,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the RepositoryServiceConfiguration --&gt;
     &lt;target-component&gt;org.exoplatform.services.jcr.config.RepositoryServiceConfiguration&lt;/target-component&gt;
@@ -1529,8 +1529,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the ResourceBundleService --&gt;
     &lt;target-component&gt;org.exoplatform.services.resources.ResourceBundleService&lt;/target-component&gt;
@@ -1651,8 +1651,8 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the UserPortalConfigService --&gt;
     &lt;target-component&gt;org.exoplatform.portal.config.UserPortalConfigService&lt;/target-component&gt;
@@ -1743,8 +1743,8 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the ExtensibleFilter --&gt;
     &lt;target-component&gt;org.exoplatform.web.filter.ExtensibleFilter&lt;/target-component&gt;
@@ -1867,8 +1867,8 @@ public class SampleFilter implements Filter
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_0.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the ListenerService --&gt;
     &lt;target-component&gt;org.exoplatform.services.listener.ListenerService&lt;/target-component&gt;
