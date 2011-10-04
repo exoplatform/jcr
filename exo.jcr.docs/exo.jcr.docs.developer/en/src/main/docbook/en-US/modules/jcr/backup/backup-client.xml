@@ -1006,13 +1006,13 @@ failure message in response  - the description of failure</programlisting>
             stop &lt;backup_id&gt; 
             status &lt;backup_id&gt; 
             restores &lt;repo[/ws]&gt; 
-            restore [remove-exists] [&lt;repo[/ws]&gt;] {&lt;backup_id&gt;|&lt;backup_set_path&gt;} [&lt;pathToConfigFile&gt;] 
+            restore [remove-exists] {{&lt;backup_id&gt;|&lt;backup_set_path&gt;} | {&lt;repo[/ws]&gt; {&lt;backup_id&gt;|&lt;backup_set_path&gt;} [&lt;pathToConfigFile&gt;]}} 
             list [completed] 
             info 
             drop [force-close-session] &lt;repo[/ws]&gt;  
             help  
 
- start          - start backup of repositpry or workspace 
+ start          - start backup of repository or workspace 
  stop           - stop backup 
  status         - information about the current or completed backup by 'backup_id' 
  restores       - information about the last restore on specific repository or workspace 
@@ -1029,8 +1029,23 @@ failure message in response  - the description of failure</programlisting>
  &lt;backup_set_dir&gt;    - path to folder with backup set on remote server
  &lt;incr&gt;              - incemental job period 
  &lt;pathToConfigFile&gt;  - path (local) to  repository or workspace configuration 
- remove-exists       - removed fully (db, value storage, index) existed repository/workspace 
- force-close-session - close opened sessions on repositpry or workspace.</programlisting>
+ remove-exists       - remove fully (db, value storage, index) exists repository/workspace 
+ force-close-session - close opened sessions on repository or workspace. 
+
+ All valid combination of parameters for command restore: 
+  1. restore remove-exists &lt;repo/ws&gt; &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+  2. restore remove-exists &lt;repo&gt;    &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+  3. restore remove-exists &lt;repo/ws&gt; &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+  4. restore remove-exists &lt;repo&gt;    &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+  5. restore remove-exists &lt;backup_id&gt; 
+  6. restore remove-exists &lt;backup_set_path&gt; 
+  7. restore &lt;repo/ws&gt; &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+  8. restore &lt;repo&gt;    &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+  9. restore &lt;repo/ws&gt; &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+ 10. restore &lt;repo&gt;    &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+ 11. restore &lt;backup_id&gt; 
+ 12. restore &lt;backup_set_path&gt; 
+</programlisting>
   </section>
 
   <section>
@@ -1563,10 +1578,11 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
   status code = 200</programlisting>The
           /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml
           content the configuration for restored workspace <emphasis
-          role="bold">"backup"</emphasis>:</para></listitem>
+          role="bold">"backup"</emphasis>:</para>
+        </listitem>
       </itemizedlist>
-          
-          <programlisting language="xml">&lt;repository-service default-repository="repository"&gt;
+
+      <programlisting language="xml">&lt;repository-service default-repository="repository"&gt;
   &lt;repositories&gt;
     &lt;repository name="repository" system-workspace="production" default-workspace="production"&gt;
       &lt;security-domain&gt;exo-domain&lt;/security-domain&gt;
@@ -1650,7 +1666,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
 
     <para>This usecase needs RestRepositoryService enabled. (Deleting the
     repository needs it)</para>
-    
+
     <programlisting language="xml">&lt;component&gt;
    &lt;type&gt;org.exoplatform.services.jcr.ext.repository.RestRepositoryService&lt;/type&gt;
 &lt;/component&gt;</programlisting>
@@ -1738,8 +1754,8 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
           role="bold">"repository"</emphasis>:</para>
         </listitem>
       </itemizedlist>
-      
-          <programlisting language="xml">&lt;repository-service default-repository="repository"&gt;
+
+      <programlisting language="xml">&lt;repository-service default-repository="repository"&gt;
    &lt;repositories&gt;
       &lt;repository name="repository" system-workspace="production" default-workspace="production"&gt;
          &lt;security-domain&gt;exo-domain&lt;/security-domain&gt;
@@ -1873,7 +1889,6 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
    &lt;/repositories&gt;
 &lt;/repository-service&gt;
 </programlisting>
-      
     </section>
 
     <section>

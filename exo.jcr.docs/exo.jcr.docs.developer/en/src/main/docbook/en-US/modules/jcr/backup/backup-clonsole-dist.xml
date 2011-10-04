@@ -4,14 +4,14 @@
 <chapter id="JCR.BackupClient">
   <?dbhtml filename="ch-backup-clonsole.dist.html"?>
 
-  <title>Backup console binary distribution </title>
+  <title>Backup console binary distribution</title>
 
   <section>
     <title>Introduction</title>
 
     <para>The backup console binary distribution is script-based front-end to
     backup client to creation backup, restore, getting status of current or
-    completed backup/restore, etc. </para>
+    completed backup/restore, etc.</para>
 
     <para>The backup console binary distribution conatins original backup
     console and script adaptation for use with GateIn based products like
@@ -41,7 +41,7 @@
                                         stop &lt;backup_id&gt;
                                         status &lt;backup_id&gt;
                                         restores &lt;repo[/ws]&gt;
-                                        restore [remove-exists] [&lt;repo[/ws]&gt;] {&lt;backup_id&gt;|&lt;backup_set_path&gt;} [&lt;pathToConfigFile&gt;]
+                                        restore [remove-exists] {{&lt;backup_id&gt;|&lt;backup_set_path&gt;} | {&lt;repo[/ws]&gt; {&lt;backup_id&gt;|&lt;backup_set_path&gt;} [&lt;pathToConfigFile&gt;]}}
                                         list [completed]
                                         info
                                         drop [force-close-session] &lt;repo[/ws]&gt;
@@ -64,7 +64,23 @@
            &lt;incr&gt;                    :  incremental job period
            &lt;pathToConfigFile&gt;        :  path (local) to  repository or workspace configuration
            remove-exists             :  remove fully (db, value storage, index) exists repository/workspace
-           force-close-session       :  close opened sessions on repository or workspace</programlisting>
+           force-close-session       :  close opened sessions on repository or workspace
+
+  
+           All valid combination of parameters for command restore: 
+            1. restore remove-exists &lt;repo/ws&gt; &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+            2. restore remove-exists &lt;repo&gt;    &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+            3. restore remove-exists &lt;repo/ws&gt; &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+            4. restore remove-exists &lt;repo&gt;    &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+            5. restore remove-exists &lt;backup_id&gt; 
+            6. restore remove-exists &lt;backup_set_path&gt; 
+            7. restore &lt;repo/ws&gt; &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+            8. restore &lt;repo&gt;    &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+            9. restore &lt;repo/ws&gt; &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+           10. restore &lt;repo&gt;    &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+           11. restore &lt;backup_id&gt; 
+           12. restore &lt;backup_set_path&gt; 
+</programlisting>
   </section>
 
   <section>
@@ -86,7 +102,7 @@
                                         stop &lt;backup_id&gt;
                                         status &lt;backup_id&gt;
                                         restores &lt;repo[/ws]&gt;
-                                        restore [remove-exists] [&lt;repo[/ws]&gt;] {&lt;backup_id&gt;|&lt;backup_set_path&gt;} [&lt;pathToConfigFile&gt;]
+                                        restore [remove-exists] {{&lt;backup_id&gt;|&lt;backup_set_path&gt;} | {&lt;repo[/ws]&gt; {&lt;backup_id&gt;|&lt;backup_set_path&gt;} [&lt;pathToConfigFile&gt;]}}
                                         list [completed]
                                         info
                                         drop [force-close-session] &lt;repo[/ws]&gt;
@@ -109,7 +125,22 @@
            &lt;incr&gt;                    :  incremental job period
            &lt;pathToConfigFile&gt;        :  path (local) to  repository or workspace configuration
            remove-exists             :  remove fully (db, value storage, index) exists repository/workspace
-           force-close-session       :  close opened sessions on repository or workspace</programlisting>
+           force-close-session       :  close opened sessions on repository or workspace
+
+
+           All valid combination of parameters for command restore: 
+            1. restore remove-exists &lt;repo/ws&gt; &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+            2. restore remove-exists &lt;repo&gt;    &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+            3. restore remove-exists &lt;repo/ws&gt; &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+            4. restore remove-exists &lt;repo&gt;    &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+            5. restore remove-exists &lt;backup_id&gt; 
+            6. restore remove-exists &lt;backup_set_path&gt; 
+            7. restore &lt;repo/ws&gt; &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+            8. restore &lt;repo&gt;    &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+            9. restore &lt;repo/ws&gt; &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+           10. restore &lt;repo&gt;    &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+           11. restore &lt;backup_id&gt; 
+           12. restore &lt;backup_set_path&gt; </programlisting>
   </section>
 
   <section>
