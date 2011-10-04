@@ -25,6 +25,8 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -47,14 +49,31 @@ import java.util.zip.ZipEntry;
 public class DBBackup
 {
    /**
+    * Logger.
+    */
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBBackup");
+
+   /**
     * Suffix for content file.
     */
+   @Deprecated
    public static final String CONTENT_FILE_SUFFIX = ".dump";
 
    /**
     * Suffix for content length file.
     */
+   @Deprecated
    public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
+
+   /**
+    * Suffix for content file.
+    */
+   public static final String CONTENT_ZIP_FILE = "dump.zip";
+
+   /**
+    * Suffix for content length file.
+    */
+   public static final String CONTENT_LEN_ZIP_FILE = "dump-len.zip";
 
    /**
     * MySQL dialect.
@@ -100,19 +119,32 @@ public class DBBackup
     */
    public static void backup(File storageDir, Connection jdbcConn, Map<String, String> scripts) throws BackupException
    {
+      Exception exc = null;
+
+      ObjectZipWriterImpl contentWriter = null;
+      ObjectZipWriterImpl contentLenWriter = null;
+
       try
       {
+         contentWriter =
+            new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(new File(storageDir, CONTENT_ZIP_FILE)));
+
+         contentLenWriter =
+            new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(new File(storageDir, CONTENT_LEN_ZIP_FILE)));
+
          for (Entry<String, String> entry : scripts.entrySet())
          {
-            dumpTable(jdbcConn, entry.getKey(), entry.getValue(), storageDir);
+            dumpTable(jdbcConn, entry.getKey(), entry.getValue(), storageDir, contentWriter, contentLenWriter);
          }
       }
       catch (IOException e)
       {
+         exc = e;
          throw new BackupException(e);
       }
       catch (SQLException e)
       {
+         exc = e;
          throw new BackupException("SQL Exception: " + ExceptionManagementHelper.getFullSQLExceptionMessage(e), e);
       }
       finally
@@ -124,6 +156,39 @@ public class DBBackup
                jdbcConn.close();
             }
             catch (SQLException e)
+            {
+               if (exc != null)
+               {
+                  LOG.error("Can't close connection", e);
+                  throw new BackupException(exc);
+               }
+               else
+               {
+                  throw new BackupException(e);
+               }
+            }
+         }
+
+         try
+         {
+            if (contentWriter != null)
+            {
+               contentWriter.close();
+            }
+
+            if (contentLenWriter != null)
+            {
+               contentLenWriter.close();
+            }
+         }
+         catch (Exception e)
+         {
+            if (exc != null)
+            {
+               LOG.error("Can't close zip", e);
+               throw new BackupException(exc);
+            }
+            else
             {
                throw new BackupException(e);
             }
@@ -137,8 +202,8 @@ public class DBBackup
     * @throws IOException 
     * @throws SQLException 
     */
-   private static void dumpTable(Connection jdbcConn, String tableName, String script, File storageDir)
-      throws IOException, SQLException
+   private static void dumpTable(Connection jdbcConn, String tableName, String script, File storageDir,
+      ObjectZipWriterImpl contentWriter, ObjectZipWriterImpl contentLenWriter) throws IOException, SQLException
    {
       // Need privileges
       SecurityManager security = System.getSecurityManager();
@@ -147,18 +212,11 @@ public class DBBackup
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      ObjectZipWriterImpl contentWriter = null;
-      ObjectZipWriterImpl contentLenWriter = null;
       PreparedStatement stmt = null;
       ResultSet rs = null;
       try
       {
-         File contentFile = new File(storageDir, tableName + CONTENT_FILE_SUFFIX);
-         contentWriter = new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(contentFile));
          contentWriter.putNextEntry(new ZipEntry(tableName));
-
-         File contentLenFile = new File(storageDir, tableName + CONTENT_LEN_FILE_SUFFIX);
-         contentLenWriter = new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(contentLenFile));
          contentLenWriter.putNextEntry(new ZipEntry(tableName));
 
          stmt = jdbcConn.prepareStatement(script);
@@ -212,21 +270,12 @@ public class DBBackup
                }
             }
          }
+
+         contentWriter.closeEntry();
+         contentLenWriter.closeEntry();
       }
       finally
       {
-         if (contentWriter != null)
-         {
-            contentWriter.closeEntry();
-            contentWriter.close();
-         }
-
-         if (contentLenWriter != null)
-         {
-            contentLenWriter.closeEntry();
-            contentLenWriter.close();
-         }
-
          if (rs != null)
          {
             rs.close();

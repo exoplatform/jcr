@@ -372,12 +372,32 @@ public class DBRestore implements DataRestore
 
       try
       {
-         contentReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(restoreRule.getContentFile()));
-         contentReader.getNextEntry();
+         File contentFile = new File(storageDir, restoreRule.getSrcTableName() + DBBackup.CONTENT_FILE_SUFFIX);
 
-         contentLenReader =
-            new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(restoreRule.getContentLenFile()));
-         contentLenReader.getNextEntry();
+         // check old style backup format, when for every table was dedicated zip file 
+         if (PrivilegedFileHelper.exists(contentFile))
+         {
+            contentReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentFile));
+            contentReader.getNextEntry();
+
+            File contentLenFile =
+               new File(storageDir, restoreRule.getSrcTableName() + DBBackup.CONTENT_LEN_FILE_SUFFIX);
+
+            contentLenReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentLenFile));
+            contentLenReader.getNextEntry();
+         }
+         else
+         {
+            contentFile = new File(storageDir, DBBackup.CONTENT_ZIP_FILE);
+            contentReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentFile));
+
+            while (!contentReader.getNextEntry().getName().equals(restoreRule.getSrcTableName()));
+
+            File contentLenFile = new File(storageDir, DBBackup.CONTENT_LEN_ZIP_FILE);
+            contentLenReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentLenFile));
+
+            while (!contentLenReader.getNextEntry().getName().equals(restoreRule.getSrcTableName()));
+         }
 
          // get information about source table
          int sourceColumnCount = contentReader.readInt();

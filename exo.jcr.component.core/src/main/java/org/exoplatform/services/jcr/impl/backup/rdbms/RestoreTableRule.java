@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.backup.rdbms;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,9 +27,7 @@ import java.util.Set;
  */
 public class RestoreTableRule
 {
-   private File contentFile;
-
-   private File contentLenFile;
+   private String srcTableName;
 
    private Integer deleteColumnIndex = null;
 
@@ -52,24 +49,14 @@ public class RestoreTableRule
 
    private Boolean dstMultiDb = null;
 
-   public File getContentFile()
+   public String getSrcTableName()
    {
-      return contentFile;
+      return srcTableName;
    }
 
-   public void setContentFile(File contentFile)
+   public void setSrcTableName(String srcTableName)
    {
-      this.contentFile = contentFile;
-   }
-
-   public File getContentLenFile()
-   {
-      return contentLenFile;
-   }
-
-   public void setContentLenFile(File contentLenFile)
-   {
-      this.contentLenFile = contentLenFile;
+      this.srcTableName = srcTableName;
    }
 
    public Integer getDeleteColumnIndex()

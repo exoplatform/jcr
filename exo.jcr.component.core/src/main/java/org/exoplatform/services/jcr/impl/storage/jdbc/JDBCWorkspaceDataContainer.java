@@ -1208,8 +1208,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          restoreTableRule.setSrcMultiDb(srcMultiDb);
          restoreTableRule.setDstContainerName(containerName);
          restoreTableRule.setDstMultiDb(multiDb);
-         restoreTableRule.setContentFile(new File(storageDir, srcTableName + DBBackup.CONTENT_FILE_SUFFIX));
-         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + DBBackup.CONTENT_LEN_FILE_SUFFIX));
+         restoreTableRule.setSrcTableName(srcTableName);
 
          if (multiDb)
          {
@@ -1261,8 +1260,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          restoreTableRule.setSrcMultiDb(srcMultiDb);
          restoreTableRule.setDstContainerName(containerName);
          restoreTableRule.setDstMultiDb(multiDb);
-         restoreTableRule.setContentFile(new File(storageDir, srcTableName + DBBackup.CONTENT_FILE_SUFFIX));
-         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + DBBackup.CONTENT_LEN_FILE_SUFFIX));
+         restoreTableRule.setSrcTableName(srcTableName);
 
          // auto increment ID column
          restoreTableRule.setSkipColumnIndex(0);
@@ -1285,8 +1283,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          restoreTableRule.setSrcMultiDb(srcMultiDb);
          restoreTableRule.setDstContainerName(containerName);
          restoreTableRule.setDstMultiDb(multiDb);
-         restoreTableRule.setContentFile(new File(storageDir, srcTableName + DBBackup.CONTENT_FILE_SUFFIX));
-         restoreTableRule.setContentLenFile(new File(storageDir, srcTableName + DBBackup.CONTENT_LEN_FILE_SUFFIX));
+         restoreTableRule.setSrcTableName(srcTableName);
 
          if (!multiDb || !srcMultiDb)
          {
