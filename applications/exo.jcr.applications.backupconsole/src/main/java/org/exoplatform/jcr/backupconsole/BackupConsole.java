@@ -72,13 +72,13 @@ public class BackupConsole
          + "            stop <backup_id> \n"
          + "            status <backup_id> \n" 
          + "            restores <repo[/ws]> \n"
-         + "            restore [remove-exists] [<repo[/ws]>] {<backup_id>|<backup_set_path>} [<pathToConfigFile>] \n"
+         + "            restore [remove-exists] {{<backup_id>|<backup_set_path>} | {<repo[/ws]> {<backup_id>|<backup_set_path>} [<pathToConfigFile>]}} \n"
          + "            list [completed] \n"
          + "            info \n" 
          + "            drop [force-close-session] <repo[/ws]>  \n"
          + "            help  \n\n"
 
-         + " start          - start backup of repositpry or workspace \n" 
+         + " start          - start backup of repository or workspace \n" 
          + " stop           - stop backup \n"
          + " status         - information about the current or completed backup by 'backup_id' \n"
          + " restores       - information about the last restore on specific repository or workspace \n"
@@ -96,7 +96,20 @@ public class BackupConsole
          + " <incr>              - incemental job period \n"
          + " <pathToConfigFile>  - path (local) to  repository or workspace configuration \n"
                      + " remove-exists       - remove fully (db, value storage, index) exists repository/workspace \n"
-         + " force-close-session - close opened sessions on repositpry or workspace. \n\n";
+         + " force-close-session - close opened sessions on repository or workspace. \n\n"
+         + " All valid combination of parameters for command restore: \n"
+         + "  1. restore remove-exists <repo/ws> <backup_id>       <pathToConfigFile> \n"
+         + "  2. restore remove-exists <repo>    <backup_id>       <pathToConfigFile> \n"
+         + "  3. restore remove-exists <repo/ws> <backup_set_path> <pathToConfigFile> \n"
+         + "  4. restore remove-exists <repo>    <backup_set_path> <pathToConfigFile> \n"
+         + "  5. restore remove-exists <backup_id> \n"
+         + "  6. restore remove-exists <backup_set_path> \n"
+         + "  7. restore <repo/ws> <backup_id>       <pathToConfigFile> \n"
+         + "  8. restore <repo>    <backup_id>       <pathToConfigFile> \n"
+         + "  9. restore <repo/ws> <backup_set_path> <pathToConfigFile> \n"
+         + " 10. restore <repo>    <backup_set_path> <pathToConfigFile> \n"
+         + " 11. restore <backup_id> \n"
+         + " 12. restore <backup_set_path> \n";
 
    /**
     * Main.
@@ -445,7 +458,7 @@ public class BackupConsole
          {
 
             /*
-            All valid combination of paramter.  
+            All valid combination of parameters for command restore.  
             1. restore remove-exists <repo/ws> <backup_id>       <pathToConfigFile>
             2. restore remove-exists <repo>    <backup_id>       <pathToConfigFile>
             3. restore remove-exists <repo/ws> <backup_set_path> <pathToConfigFile>
@@ -551,7 +564,7 @@ public class BackupConsole
 
             if (curArg == args.length)
             {
-               System.out.println(INCORRECT_PARAM + "There is no path to config file parameter."); //NOSONAR
+               System.out.println(INCORRECT_PARAM + "The path to the configuration file is missing."); //NOSONAR
                return;
             }
             String pathToConf = args[curArg++];

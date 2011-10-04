@@ -71,7 +71,7 @@ echo            ^<command^>                 :  start ^<repo[/ws]^> ^<backup_dir^
 echo                                         stop ^<backup_id^> 
 echo                                         status ^<backup_id^> 
 echo                                         restores ^<repo[/ws]^> 
-echo                                         restore ^<repo[/ws]^> ^<backup_id^> ^<pathToConfigFile^> 
+echo                                         restore [remove-exists] {{^<backup_id^>|^<backup_set_path^>} | {^<repo[/ws]^> {^<backup_id^>|^<backup_set_path^>} [^<pathToConfigFile^>]}} 
 echo                                         list [completed] 
 echo                                         info 
 echo                                         drop [force-close-session] ^<repo[/ws]^> 
@@ -94,3 +94,18 @@ echo            ^<backup_id^>               :  the identifier for backup
 echo            ^<incr^>                    :  incremental job period 
 echo            ^<pathToConfigFile^>        :  path (local) to  repository or workspace configuration 
 echo            force-close-session       :  close opened sessions on repository or workspace
+echo 
+echo            All valid combination of parameters for command restore:
+echo             1. restore remove-exists ^<repo/ws^> ^<backup_id^>       ^<pathToConfigFile^>
+echo             2. restore remove-exists ^<repo^>    ^<backup_id^>       ^<pathToConfigFile^>
+echo             3. restore remove-exists ^<repo/ws^> ^<backup_set_path^> ^<pathToConfigFile^>
+echo             4. restore remove-exists ^<repo^>    ^<backup_set_path^> ^<pathToConfigFile^>
+echo             5. restore remove-exists ^<backup_id^>
+echo             6. restore remove-exists ^<backup_set_path^>
+echo             7. restore ^<repo/ws^> ^<backup_id^>       ^<pathToConfigFile^>
+echo             8. restore ^<repo^>    ^<backup_id^>       ^<pathToConfigFile^>
+echo             9. restore ^<repo/ws^> ^<backup_set_path^> ^<pathToConfigFile^>
+echo            10. restore ^<repo^>    ^<backup_set_path^> ^<pathToConfigFile^>
+echo            11. restore ^<backup_id^>
+echo            12. restore ^<backup_set_path^>
+                                                                                                                                                         
