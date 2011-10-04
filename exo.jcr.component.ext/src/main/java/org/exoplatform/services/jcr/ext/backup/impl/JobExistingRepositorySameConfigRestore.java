@@ -116,20 +116,20 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
 
             File fullBackupDir =
                JCRRestore.getFullBackupFile(workspacesMapping.get(wEntry.getName()).getBackupConfig().getBackupDir());
-            
+
             DataRestoreContext context;
 
             if (jdbcConn != null)
             {
-               context = new DataRestoreContext(
-                        new String[] {DataRestoreContext.STORAGE_DIR, DataRestoreContext.DB_CONNECTION}, 
-                        new Object[] {fullBackupDir, jdbcConn});
+               context =
+                  new DataRestoreContext(
+                     new String[]{DataRestoreContext.STORAGE_DIR, DataRestoreContext.DB_CONNECTION}, new Object[]{
+                        fullBackupDir, jdbcConn});
             }
             else
             {
-               context = new DataRestoreContext(
-                        new String[] {DataRestoreContext.STORAGE_DIR}, 
-                        new Object[] {fullBackupDir});
+               context =
+                  new DataRestoreContext(new String[]{DataRestoreContext.STORAGE_DIR}, new Object[]{fullBackupDir});
             }
 
             for (Backupable component : backupable)
@@ -225,5 +225,14 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             log.error("Can't resume repository", e);
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isSameConfiguration()
+   {
+      return true;
    }
 }
