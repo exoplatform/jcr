@@ -73,7 +73,6 @@ import org.picocontainer.Startable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -1304,55 +1303,39 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
          }
 
-
-         // prepare value storage restorer
-         List<ValueStorageEntry> valueStorages = wsConfig.getContainer().getValueStorages();
-         String[] valueStoragesFiles = PrivilegedFileHelper.list(storageDir, new FilenameFilter()
-         {
-            public boolean accept(File dir, String name)
-            {
-               return name.startsWith("values-") && name.endsWith(".zip");
-            }
-         });
-
          if (wsConfig.getContainer().getValueStorages() != null)
          {
             List<File> dataDirs = new ArrayList<File>();
             List<File> backupDirs = new ArrayList<File>();
 
-            if ((valueStoragesFiles == null && valueStorages.size() != 0)
-               || (valueStoragesFiles != null && valueStoragesFiles.length != valueStorages.size()))
-            {
-               throw new RepositoryConfigurationException("Workspace configuration [" + wsConfig.getName()
-                  + "] has a different amount of value storages than exist in backup");
-            }
-
+            List<ValueStorageEntry> valueStorages = wsConfig.getContainer().getValueStorages();
             for (ValueStorageEntry valueStorage : valueStorages)
             {
+               File dataDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+               dataDirs.add(dataDir);
+
                File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
-               if (!PrivilegedFileHelper.exists(zipFile))
+               if (PrivilegedFileHelper.exists(zipFile))
                {
-                  throw new RepositoryConfigurationException("Can't restore value storage. File " + zipFile.getName()
-                     + " doesn't exists");
+                  backupDirs.add(zipFile);
                }
                else
                {
-                  File dataDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-
-                  dataDirs.add(dataDir);
-                  backupDirs.add(zipFile);
+                  // try to check if we have deal with old backup format
+                  zipFile = new File(storageDir, "values/" + valueStorage.getId());
+                  if (PrivilegedFileHelper.exists(zipFile))
+                  {
+                     backupDirs.add(zipFile);
+                  }
+                  else
+                  {
+                     throw new RepositoryConfigurationException("There is no backup data for value storage with id "
+                        + valueStorage.getId());
+                  }
                }
             }
 
             restorers.add(new DirectoryRestore(dataDirs, backupDirs));
-         }
-         else
-         {
-            if (valueStoragesFiles != null && valueStoragesFiles.length != 0)
-            {
-               throw new RepositoryConfigurationException("Value storage didn't configure in workspace ["
-                  + wsConfig.getName() + "] configuration but value storage backup files exist");
-            }
          }
 
          return new ComplexDataRestore(restorers);

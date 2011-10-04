@@ -1615,14 +1615,22 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          File zipFile = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName() + ".zip");
 
-         if (!PrivilegedFileHelper.exists(zipFile))
+         if (PrivilegedFileHelper.exists(zipFile))
          {
-            throw new RepositoryConfigurationException("Can't restore index. File " + zipFile.getName()
-               + " doesn't exists");
+            return new DirectoryRestore(getIndexDirectory(), zipFile);
          }
          else
          {
-            return new DirectoryRestore(getIndexDirectory(), zipFile);
+            // try to check if we have deal with old backup format
+            zipFile = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName());
+            if (PrivilegedFileHelper.exists(zipFile))
+            {
+               return new DirectoryRestore(getIndexDirectory(), zipFile);
+            }
+            else
+            {
+               throw new BackupException("There is no backup data for index");
+            }
          }
       }
       catch (RepositoryConfigurationException e)

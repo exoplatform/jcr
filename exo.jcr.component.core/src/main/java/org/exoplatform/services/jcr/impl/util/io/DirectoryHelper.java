@@ -236,9 +236,7 @@ public class DirectoryHelper
    }
 
    /**
-    * Uncompress data to the destination directory. If <code>srcZipPath</code> is the directory we assume
-    * that every file in the directory is compressed, in other case <code>srcZipPath</code> should contain
-    * the compress data.
+    * Uncompress data to the destination directory. 
     * 
     * @param srcZipPath
     *          path to the compressed file, could be the file or the directory
@@ -249,55 +247,54 @@ public class DirectoryHelper
     */
    public static void uncompressDirectory(File srcZipPath, File dstDirPath) throws IOException
    {
-      if (PrivilegedFileHelper.isDirectory(srcZipPath))
-      {
-         uncompressEveryFileInDirectory(srcZipPath, dstDirPath);
-      }
-      else
-      {
+      ZipInputStream in = PrivilegedFileHelper.zipInputStream(srcZipPath);
+      ZipEntry entry = null;
 
-         ZipInputStream in = PrivilegedFileHelper.zipInputStream(srcZipPath);
-         ZipEntry entry = null;
-
-         try
+      try
+      {
+         while ((entry = in.getNextEntry()) != null)
          {
-            while ((entry = in.getNextEntry()) != null)
-            {
-               File dstFile = new File(dstDirPath, entry.getName());
-               PrivilegedFileHelper.mkdirs(dstFile.getParentFile());
+            File dstFile = new File(dstDirPath, entry.getName());
+            PrivilegedFileHelper.mkdirs(dstFile.getParentFile());
 
-               if (entry.isDirectory())
+            if (entry.isDirectory())
+            {
+               PrivilegedFileHelper.mkdirs(dstFile);
+            }
+            else
+            {
+               OutputStream out = PrivilegedFileHelper.fileOutputStream(dstFile);
+               try
                {
-                  PrivilegedFileHelper.mkdirs(dstFile);
+                  transfer(in, out);
                }
-               else
+               finally
                {
-                  OutputStream out = PrivilegedFileHelper.fileOutputStream(dstFile);
-                  try
-                  {
-                     transfer(in, out);
-                  }
-                  finally
-                  {
-                     out.close();
-                  }
+                  out.close();
                }
             }
          }
-         finally
+      }
+      finally
+      {
+         if (in != null)
          {
-            if (in != null)
-            {
-               in.close();
-            }
+            in.close();
          }
       }
    }
 
    /**
-    * Uncompress data in case when every file in the directory is compressed.
+    * Uncompress data to the destination directory. 
+    * 
+    * @param srcZipPath
+    *          path to the compressed file, could be the file or the directory
+    * @param dstDirPath
+    *          destination path
+    * @throws IOException
+    *          if any exception occurred
     */
-   private static void uncompressEveryFileInDirectory(File srcPath, File dstPath) throws IOException
+   public static void uncompressEveryFileFromDirectory(File srcPath, File dstPath) throws IOException
    {
       if (PrivilegedFileHelper.isDirectory(srcPath))
       {
@@ -309,7 +306,7 @@ public class DirectoryHelper
          String files[] = PrivilegedFileHelper.list(srcPath);
          for (int i = 0; i < files.length; i++)
          {
-            uncompressEveryFileInDirectory(new File(srcPath, files[i]), new File(dstPath, files[i]));
+            uncompressEveryFileFromDirectory(new File(srcPath, files[i]), new File(dstPath, files[i]));
          }
       }
       else

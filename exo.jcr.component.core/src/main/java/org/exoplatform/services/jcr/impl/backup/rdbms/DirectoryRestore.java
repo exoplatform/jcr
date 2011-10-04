@@ -131,7 +131,14 @@ public class DirectoryRestore implements DataRestore
 
          try
          {
-            DirectoryHelper.uncompressDirectory(zipFile, dataDir);
+            if (PrivilegedFileHelper.isDirectory(zipFile))
+            {
+               DirectoryHelper.uncompressEveryFileFromDirectory(zipFile, dataDir);
+            }
+            else
+            {
+               DirectoryHelper.uncompressDirectory(zipFile, dataDir);
+            }
          }
          catch (IOException e)
          {
