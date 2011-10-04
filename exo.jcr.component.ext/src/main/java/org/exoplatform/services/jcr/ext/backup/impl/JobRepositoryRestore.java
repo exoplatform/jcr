@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+
+
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -160,7 +162,7 @@ public class JobRepositoryRestore extends Thread
     *           will be generated the Throwable
     */
    protected void restoreRepository() throws RepositoryRestoreExeption, BackupOperationException,
-      ClassNotFoundException
+            ClassNotFoundException
    {
       List<WorkspaceEntry> originalWorkspaceEntrys = repositoryEntry.getWorkspaceEntries();
 
@@ -180,7 +182,7 @@ public class JobRepositoryRestore extends Thread
 
       //getting backup chail log to system workspace.
       BackupChainLog systemBackupChainLog = workspacesMapping.get(systemWorkspaceEntry.getName());
-
+      
       WorkspaceInitializerEntry wiEntry = getWorkspaceInitializerEntry(systemBackupChainLog);
 
       // set initializer
@@ -204,15 +206,8 @@ public class JobRepositoryRestore extends Thread
          WorkspaceEntry createdWorkspaceEntry = (WorkspaceEntry)wcf.getComponent(WorkspaceEntry.class);
          createdWorkspaceEntry.setInitializer(wieOriginal);
 
-         // if same configuration is used, then no need to retain configuration. There is
-         // a common usecase, when no configuration persister is used, so configuration can't 
-         // be rewritten, but backup-restore cycles are always performed. This usecase is 
-         // correct if same configuration used. Otherwise exception will be thrown on retain.  
-         if (!isSameConfiguration())
-         {
-            // save configuration to persistence (file or persister)
-            repositoryService.getConfig().retain();
-         }
+         // save configuration to persistence (file or persister)
+         repositoryService.getConfig().retain();
 
          for (WorkspaceEntry wsEntry : originalWorkspaceEntrys)
          {
@@ -275,7 +270,8 @@ public class JobRepositoryRestore extends Thread
     * @throws RepositoryConfigurationException 
     */
    protected void removeRepository(RepositoryService repositoryService, String repositoryName)
-      throws RepositoryException, RepositoryConfigurationException
+      throws RepositoryException,
+      RepositoryConfigurationException
    {
       ManageableRepository mr = null;
 
@@ -297,7 +293,7 @@ public class JobRepositoryRestore extends Thread
    }
 
    private WorkspaceInitializerEntry getWorkspaceInitializerEntry(BackupChainLog systemBackupChainLog)
-      throws BackupOperationException, ClassNotFoundException
+            throws BackupOperationException, ClassNotFoundException
    {
       String fullBackupPath = systemBackupChainLog.getJobEntryInfos().get(0).getURL().getPath();
 
@@ -309,20 +305,20 @@ public class JobRepositoryRestore extends Thread
             fullbackupType = systemBackupChainLog.getFullBackupType();
          }
          else if ((Class.forName(systemBackupChainLog.getFullBackupType())
-            .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
+                  .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
          {
             fullbackupType = systemBackupChainLog.getFullBackupType();
          }
          else
          {
             throw new BackupOperationException("Class  \"" + systemBackupChainLog.getFullBackupType()
-               + "\" is not support as full backup.");
+                     + "\" is not support as full backup.");
          }
       }
       catch (ClassNotFoundException e)
       {
          throw new BackupOperationException("Class \"" + systemBackupChainLog.getFullBackupType() + "\" is not found.",
-            e);
+                  e);
       }
 
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
@@ -333,19 +329,19 @@ public class JobRepositoryRestore extends Thread
 
          List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
          wieParams.add(new SimpleParameterEntry(BackupWorkspaceInitializer.RESTORE_PATH_PARAMETER, (new File(
-            fullBackupPath).getParent())));
+                  fullBackupPath).getParent())));
 
          wiEntry.setParameters(wieParams);
       }
       else if ((Class.forName(fullbackupType)
-         .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
+               .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
       {
          // set the initializer RdbmsBackupWorkspaceInitializer
          wiEntry.setType(RdbmsBackupWorkspaceInitializer.class.getCanonicalName());
 
          List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
          wieParams.add(new SimpleParameterEntry(RdbmsBackupWorkspaceInitializer.RESTORE_PATH_PARAMETER, (new File(
-            fullBackupPath).getParent())));
+                  fullBackupPath).getParent())));
 
          wiEntry.setParameters(wieParams);
       }
@@ -396,14 +392,6 @@ public class JobRepositoryRestore extends Thread
 
          log.error("The restore was fail", t);
       }
-   }
-
-   /**
-    * @return true, if configuration the same
-    */
-   public boolean isSameConfiguration()
-   {
-      return false;
    }
 
    /**
