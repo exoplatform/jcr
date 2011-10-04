@@ -48,9 +48,9 @@ public class DirectoryRestore implements DataRestore
    protected final List<File> dataDirs = new ArrayList<File>();
 
    /**
-    * The list of directories with backuped data.
+    * The list of compressed files.
     */
-   protected final List<File> backupDirs = new ArrayList<File>();
+   protected final List<File> zipFiles = new ArrayList<File>();
 
    /**
     * The list of temporary directories.
@@ -71,24 +71,24 @@ public class DirectoryRestore implements DataRestore
     * Constructor DirectoryRestorer.
     * 
     * @param dataDirs
-    * @param backupDirs
+    * @param zipFiles
     */
-   public DirectoryRestore(List<File> dataDirs, List<File> backupDirs)
+   public DirectoryRestore(List<File> dataDirs, List<File> zipFiles)
    {
       this.dataDirs.addAll(dataDirs);
-      this.backupDirs.addAll(backupDirs);
+      this.zipFiles.addAll(zipFiles);
    }
 
    /**
     * Constructor DirectoryRestorer.
     * 
     * @param dataDir
-    * @param backupDir
+    * @param zipFile
     */
-   public DirectoryRestore(File dataDir, File backupDir)
+   public DirectoryRestore(File dataDir, File zipFile)
    {
       this.dataDirs.add(dataDir);
-      this.backupDirs.add(backupDir);
+      this.zipFiles.add(zipFile);
    }
 
    /**
@@ -96,8 +96,10 @@ public class DirectoryRestore implements DataRestore
     */
    public void clean() throws BackupException
    {
-      for (File dataDir : dataDirs)
+      for (int i = 0; i < dataDirs.size(); i++)
       {
+         File dataDir = dataDirs.get(i);
+
          try
          {
             File tmpDir = new File(tempDir, PREFIX + IdGenerator.generate());
@@ -122,14 +124,14 @@ public class DirectoryRestore implements DataRestore
     */
    public void restore() throws BackupException
    {
-      for (int i = 0; i < backupDirs.size(); i++)
+      for (int i = 0; i < zipFiles.size(); i++)
       {
-         File backupDir = backupDirs.get(i);
+         File zipFile = zipFiles.get(i);
          File dataDir = dataDirs.get(i);
 
          try
          {
-            DirectoryHelper.uncompressDirectory(backupDir, dataDir);
+            DirectoryHelper.uncompressDirectory(zipFile, dataDir);
          }
          catch (IOException e)
          {
@@ -189,7 +191,7 @@ public class DirectoryRestore implements DataRestore
       }
 
       dataDirs.clear();
-      backupDirs.clear();
+      zipFiles.clear();
       tmpDirs.clear();
    }
 }

@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.ext.backup;
 
 import org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob;
-import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 
 import java.io.File;
 import java.net.URL;
@@ -49,28 +48,15 @@ public class TestRdbmsFullBackupJob
       URL url = job.getStorageURL();
       assertNotNull(url);
 
-      File valuesDir = new File(url.getFile(), "values");
-      assertTrue(valuesDir.exists());
-      String values[] = valuesDir.list();
-
-      assertEquals(values.length, 1);
-      assertTrue(new File(valuesDir, values[0]).isDirectory());
-
-      File indexesDir = new File(url.getFile(), "index");
-      assertTrue(indexesDir.exists());
-
-      indexesDir = new File(url.getFile(), "index" + "_" + SystemSearchManager.INDEX_DIR_SUFFIX);
-      assertTrue(indexesDir.exists());
-
+      assertTrue(new File(url.getFile(), "values-draft.zip").exists());
+      assertTrue(new File(url.getFile(), "index.zip").exists());
+      assertTrue(new File(url.getFile(), "index_system.zip").exists());
       assertTrue(new File(url.getFile(), "JCR_MITEM.dump").exists());
       assertTrue(new File(url.getFile(), "JCR_MITEM.len").exists());
-
       assertTrue(new File(url.getFile(), "JCR_MVALUE.dump").exists());
       assertTrue(new File(url.getFile(), "JCR_MVALUE.len").exists());
-
       assertTrue(new File(url.getFile(), "JCR_MREF.dump").exists());
       assertTrue(new File(url.getFile(), "JCR_MREF.len").exists());
-
    }
 
    public void testRDBMSFullBackupJob() throws Exception
@@ -89,14 +75,9 @@ public class TestRdbmsFullBackupJob
       URL url = job.getStorageURL();
       assertNotNull(url);
 
-      File valuesDir = new File(url.getFile(), "values");
-      assertFalse(valuesDir.exists());
-
-      File indexesDir = new File(url.getFile(), "index");
-      assertTrue(indexesDir.exists());
-
-      indexesDir = new File(url.getFile(), "index" + "_" + SystemSearchManager.INDEX_DIR_SUFFIX);
-      assertFalse(indexesDir.exists());
+      assertFalse(new File(url.getFile(), "values-draft.zip").exists());
+      assertTrue(new File(url.getFile(), "index.zip").exists());
+      assertFalse(new File(url.getFile(), "index_system.zip").exists());
 
       assertTrue(new File(url.getFile(), "JCR_MITEM.dump").exists());
       assertTrue(new File(url.getFile(), "JCR_MITEM.len").exists());

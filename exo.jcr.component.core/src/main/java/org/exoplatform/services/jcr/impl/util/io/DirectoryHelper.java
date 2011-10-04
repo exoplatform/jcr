@@ -108,15 +108,7 @@ public class DirectoryHelper
             in = PrivilegedFileHelper.fileInputStream(srcPath);
             out = PrivilegedFileHelper.fileOutputStream(dstPath);
 
-            // Transfer bytes from in to out
-            byte[] buf = new byte[2048];
-
-            int len;
-
-            while ((len = in.read(buf)) > 0)
-            {
-               out.write(buf, 0, len);
-            }
+            transfer(in, out);
          }
          finally
          {
@@ -166,49 +158,130 @@ public class DirectoryHelper
    }
 
    /**
-    * Compress directory.
+    * Compress data. In case when <code>rootPath</code> is a directory this method
+    * compress all files and folders inside the directory into single one. IOException
+    * will be thrown if directory is empty. If the <code>rootPath</code> is the file 
+    * the only this file will be compressed. 
     * 
-    * @param srcPath
-    *          source path
-    * @param dstPath
-    *          destination path
+    * @param rootPath
+    *          the root path, can be the directory or the file
+    * @param dstZipPath
+    *          the path to the destination compressed file
     * @throws IOException
     *          if any exception occurred
     */
-   public static void compressDirectory(File srcPath, File dstPath) throws IOException
+   public static void compressDirectory(File rootPath, File dstZipPath) throws IOException
+   {
+      ZipOutputStream zip = PrivilegedFileHelper.zipOutputStream(dstZipPath);
+      try
+      {
+         if (PrivilegedFileHelper.isDirectory(rootPath))
+         {
+            String files[] = PrivilegedFileHelper.list(rootPath);
+            for (int i = 0; i < files.length; i++)
+            {
+               compressDirectory("", new File(rootPath, files[i]), zip);
+            }
+         }
+         else
+         {
+            compressDirectory("", rootPath, zip);
+         }
+      }
+      finally
+      {
+         if (zip != null)
+         {
+            zip.flush();
+            zip.close();
+         }
+      }
+   }
+
+   /**
+    * Compress files and directories. 
+    */
+   private static void compressDirectory(String relativePath, File srcPath, ZipOutputStream zip) throws IOException
    {
       if (PrivilegedFileHelper.isDirectory(srcPath))
       {
-         if (!PrivilegedFileHelper.exists(dstPath))
-         {
-            PrivilegedFileHelper.mkdirs(dstPath);
-         }
+         zip.putNextEntry(new ZipEntry(relativePath + "/" + srcPath.getName() + "/"));
+         zip.closeEntry();
 
          String files[] = PrivilegedFileHelper.list(srcPath);
          for (int i = 0; i < files.length; i++)
          {
-            compressDirectory(new File(srcPath, files[i]), new File(dstPath, files[i]));
+            compressDirectory(relativePath + "/" + srcPath.getName(), new File(srcPath, files[i]), zip);
          }
       }
       else
       {
-         InputStream in = null;
-         ZipOutputStream out = null;
+         InputStream in = PrivilegedFileHelper.fileInputStream(srcPath);
+         try
+         {
+            zip.putNextEntry(new ZipEntry(relativePath + "/" + srcPath.getName()));
+
+            transfer(in, zip);
+
+            zip.closeEntry();
+         }
+         finally
+         {
+            if (in != null)
+            {
+               in.close();
+            }
+         }
+      }
+   }
+
+   /**
+    * Uncompress data to the destination directory. If <code>srcZipPath</code> is the directory we assume
+    * that every file in the directory is compressed, in other case <code>srcZipPath</code> should contain
+    * the compress data.
+    * 
+    * @param srcZipPath
+    *          path to the compressed file, could be the file or the directory
+    * @param dstDirPath
+    *          destination path
+    * @throws IOException
+    *          if any exception occurred
+    */
+   public static void uncompressDirectory(File srcZipPath, File dstDirPath) throws IOException
+   {
+      if (PrivilegedFileHelper.isDirectory(srcZipPath))
+      {
+         uncompressEveryFileInDirectory(srcZipPath, dstDirPath);
+      }
+      else
+      {
+
+         ZipInputStream in = PrivilegedFileHelper.zipInputStream(srcZipPath);
+         ZipEntry entry = null;
 
          try
          {
-            in = PrivilegedFileHelper.fileInputStream(srcPath);
-            out = PrivilegedFileHelper.zipOutputStream(dstPath);
-            out.putNextEntry(new ZipEntry(srcPath.getName()));
-
-            // Transfer bytes from in to out
-            byte[] buf = new byte[2048];
-
-            int len;
-
-            while ((len = in.read(buf)) > 0)
+            while ((entry = in.getNextEntry()) != null)
             {
-               out.write(buf, 0, len);
+               File dstFile = new File(dstDirPath, entry.getName());
+               PrivilegedFileHelper.mkdirs(dstFile.getParentFile());
+
+               if (entry.isDirectory())
+               {
+                  PrivilegedFileHelper.mkdirs(dstFile);
+               }
+               else
+               {
+                  OutputStream out = PrivilegedFileHelper.fileOutputStream(dstFile);
+                  try
+                  {
+                     transfer(in, out);
+                  }
+                  finally
+                  {
+                     out.close();
+                  }
+               }
             }
          }
          finally
@@ -217,28 +290,14 @@ public class DirectoryHelper
             {
                in.close();
             }
-
-            if (out != null)
-            {
-               out.flush();
-               out.closeEntry();
-               out.close();
-            }
          }
       }
    }
 
    /**
-    * Uncompress directory.
-    * 
-    * @param srcPath
-    *          source path
-    * @param dstPath
-    *          destination path
-    * @throws IOException
-    *          if any exception occurred
+    * Uncompress data in case when every file in the directory is compressed.
     */
-   public static void uncompressDirectory(File srcPath, File dstPath) throws IOException
+   private static void uncompressEveryFileInDirectory(File srcPath, File dstPath) throws IOException
    {
       if (PrivilegedFileHelper.isDirectory(srcPath))
       {
@@ -250,7 +309,7 @@ public class DirectoryHelper
          String files[] = PrivilegedFileHelper.list(srcPath);
          for (int i = 0; i < files.length; i++)
          {
-            uncompressDirectory(new File(srcPath, files[i]), new File(dstPath, files[i]));
+            uncompressEveryFileInDirectory(new File(srcPath, files[i]), new File(dstPath, files[i]));
          }
       }
       else
@@ -262,17 +321,10 @@ public class DirectoryHelper
          {
             in = PrivilegedFileHelper.zipInputStream(srcPath);
             in.getNextEntry();
+
             out = PrivilegedFileHelper.fileOutputStream(dstPath);
 
-            // Transfer bytes from in to out
-            byte[] buf = new byte[2048];
-
-            int len;
-
-            while ((len = in.read(buf)) > 0)
-            {
-               out.write(buf, 0, len);
-            }
+            transfer(in, out);
          }
          finally
          {
@@ -286,6 +338,21 @@ public class DirectoryHelper
                out.close();
             }
          }
+      }
+   }
+
+   /**
+    * Transfer bytes from in to out
+    */
+   public static void transfer(InputStream in, OutputStream out) throws IOException
+   {
+      byte[] buf = new byte[2048];
+
+      int len;
+
+      while ((len = in.read(buf)) > 0)
+      {
+         out.write(buf, 0, len);
       }
    }
 
@@ -314,9 +381,8 @@ public class DirectoryHelper
       // rename fails, we manually rename by copying the srcFile file to the new one
       if (!PrivilegedFileHelper.renameTo(srcFile, dstFile))
       {
-         java.io.InputStream in = null;
-         java.io.OutputStream out = null;
-         byte buffer[] = null;
+         InputStream in = null;
+         OutputStream out = null;
          try
          {
             in = PrivilegedFileHelper.fileInputStream(srcFile);
@@ -324,15 +390,7 @@ public class DirectoryHelper
             // see if the buffer needs to be initialized. Initialization is
             // only done on-demand since many VM's will never run into the renameTo
             // bug and hence shouldn't waste 1K of mem for no reason.
-            if (buffer == null)
-            {
-               buffer = new byte[1024];
-            }
-            int len;
-            while ((len = in.read(buffer)) >= 0)
-            {
-               out.write(buffer, 0, len);
-            }
+            transfer(in, out);
 
             // delete the srcFile file.
             PrivilegedFileHelper.delete(srcFile);

@@ -73,6 +73,7 @@ import org.picocontainer.Startable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -1119,10 +1120,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                }
                else
                {
-                  File destValuesDir = new File(storageDir, "values");
-                  File destDir = new File(destValuesDir, valueStorage.getId());
-
-                  DirectoryHelper.compressDirectory(srcDir, destDir);
+                  File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
+                  DirectoryHelper.compressDirectory(srcDir, zipFile);
                }
             }
          }
@@ -1308,15 +1307,21 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
          }
 
+
          // prepare value storage restorer
-         File backupValueStorageDir = new File(storageDir, "values");
+         List<ValueStorageEntry> valueStorages = wsConfig.getContainer().getValueStorages();
+         String[] valueStoragesFiles = PrivilegedFileHelper.list(storageDir, new FilenameFilter()
+         {
+            public boolean accept(File dir, String name)
+            {
+               return name.startsWith("values-") && name.endsWith(".zip");
+            }
+         });
+
          if (wsConfig.getContainer().getValueStorages() != null)
          {
             List<File> dataDirs = new ArrayList<File>();
             List<File> backupDirs = new ArrayList<File>();
-
-            List<ValueStorageEntry> valueStorages = wsConfig.getContainer().getValueStorages();
-            String[] valueStoragesFiles = PrivilegedFileHelper.list(backupValueStorageDir);
 
             if ((valueStoragesFiles == null && valueStorages.size() != 0)
                || (valueStoragesFiles != null && valueStoragesFiles.length != valueStorages.size()))
@@ -1327,18 +1332,18 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
             for (ValueStorageEntry valueStorage : valueStorages)
             {
-               File backupDir = new File(backupValueStorageDir, valueStorage.getId());
-               if (!PrivilegedFileHelper.exists(backupDir))
+               File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
+               if (!PrivilegedFileHelper.exists(zipFile))
                {
-                  throw new RepositoryConfigurationException("Can't restore value storage. Directory "
-                     + backupDir.getName() + " doesn't exists");
+                  throw new RepositoryConfigurationException("Can't restore value storage. File " + zipFile.getName()
+                     + " doesn't exists");
                }
                else
                {
                   File dataDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
 
                   dataDirs.add(dataDir);
-                  backupDirs.add(backupDir);
+                  backupDirs.add(zipFile);
                }
             }
 
@@ -1346,7 +1351,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          else
          {
-            if (PrivilegedFileHelper.exists(backupValueStorageDir))
+            if (valueStoragesFiles != null && valueStoragesFiles.length != 0)
             {
                throw new RepositoryConfigurationException("Value storage didn't configure in workspace ["
                   + wsConfig.getName() + "] configuration but value storage backup files exist");

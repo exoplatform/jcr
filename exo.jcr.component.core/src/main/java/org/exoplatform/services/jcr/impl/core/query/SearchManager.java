@@ -18,9 +18,9 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -1571,8 +1571,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          }
          else
          {
-            File destDir = new File(storageDir, getStorageName());
-            DirectoryHelper.compressDirectory(indexDir, destDir);
+            File destZip = new File(storageDir, getStorageName() + ".zip");
+            DirectoryHelper.compressDirectory(indexDir, destZip);
          }
       }
       catch (RepositoryConfigurationException e)
@@ -1613,16 +1613,16 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
       try
       {
-         File backupDir = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName());
+         File zipFile = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName() + ".zip");
 
-         if (!PrivilegedFileHelper.exists(backupDir))
+         if (!PrivilegedFileHelper.exists(zipFile))
          {
-            throw new RepositoryConfigurationException("Can't restore index. Directory " + backupDir.getName()
+            throw new RepositoryConfigurationException("Can't restore index. File " + zipFile.getName()
                + " doesn't exists");
          }
          else
          {
-            return new DirectoryRestore(getIndexDirectory(), backupDir);
+            return new DirectoryRestore(getIndexDirectory(), zipFile);
          }
       }
       catch (RepositoryConfigurationException e)
