@@ -50,13 +50,8 @@ public class TestRdbmsFullBackupJob
 
       assertTrue(new File(url.getFile(), "values-draft.zip").exists());
       assertTrue(new File(url.getFile(), "index.zip").exists());
-      assertTrue(new File(url.getFile(), "index_system.zip").exists());
-      assertTrue(new File(url.getFile(), "JCR_MITEM.dump").exists());
-      assertTrue(new File(url.getFile(), "JCR_MITEM.len").exists());
-      assertTrue(new File(url.getFile(), "JCR_MVALUE.dump").exists());
-      assertTrue(new File(url.getFile(), "JCR_MVALUE.len").exists());
-      assertTrue(new File(url.getFile(), "JCR_MREF.dump").exists());
-      assertTrue(new File(url.getFile(), "JCR_MREF.len").exists());
+      assertTrue(new File(url.getFile(), "dump.zip").exists());
+      assertTrue(new File(url.getFile(), "dump-len.zip").exists());
    }
 
    public void testRDBMSFullBackupJob() throws Exception
@@ -78,15 +73,7 @@ public class TestRdbmsFullBackupJob
       assertFalse(new File(url.getFile(), "values-draft.zip").exists());
       assertTrue(new File(url.getFile(), "index.zip").exists());
       assertFalse(new File(url.getFile(), "index_system.zip").exists());
-
-      assertTrue(new File(url.getFile(), "JCR_MITEM.dump").exists());
-      assertTrue(new File(url.getFile(), "JCR_MITEM.len").exists());
-
-      assertTrue(new File(url.getFile(), "JCR_MVALUE.dump").exists());
-      assertTrue(new File(url.getFile(), "JCR_MVALUE.len").exists());
-
-      assertTrue(new File(url.getFile(), "JCR_MREF.dump").exists());
-      assertTrue(new File(url.getFile(), "JCR_MREF.len").exists());
-
+      assertTrue(new File(url.getFile(), "dump.zip").exists());
+      assertTrue(new File(url.getFile(), "dump-len.zip").exists());
    }
 }
