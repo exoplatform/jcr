@@ -31,7 +31,12 @@ import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DummyDBCleaner;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 
@@ -83,7 +88,14 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
 
          // define one common connection for all restores and cleaners for single db case
          Connection jdbcConn = null;
-         if (!Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB)))
+         
+         // define one common database cleaner for all restores for single db case
+         DBCleaner dbCleaner = null;
+         
+         Boolean isMultiDb =
+            Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
+
+         if (!isMultiDb)
          {
             String dsName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 
@@ -102,9 +114,16 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                }
             });
             jdbcConn.setAutoCommit(false);
+
+            if (!(DialectDetecter.detect(jdbcConn.getMetaData()).equals(DBConstants.DB_DIALECT_SYBASE)))
+            {
+               dbCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
+            }
          }
 
          repositoryService.getRepository(this.repositoryEntry.getName()).setState(ManageableRepository.SUSPENDED);
+
+         boolean isSharedDbCleaner = false;
 
          // collect all restorers
          for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
@@ -121,9 +140,45 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
 
             if (jdbcConn != null)
             {
-               context = new DataRestoreContext(
-                        new String[] {DataRestoreContext.STORAGE_DIR, DataRestoreContext.DB_CONNECTION}, 
-                        new Object[] {fullBackupDir, jdbcConn});
+               if (dbCleaner != null)
+               {
+                  if (isSharedDbCleaner)
+                  {
+                     context = new DataRestoreContext(
+                                 new String[]{
+                                    DataRestoreContext.STORAGE_DIR, 
+                                    DataRestoreContext.DB_CONNECTION, 
+                                    DataRestoreContext.DB_CLEANER}, 
+                                 new Object[]{
+                                    fullBackupDir, 
+                                    jdbcConn, 
+                                    new DummyDBCleaner(jdbcConn, new ArrayList<String>())});
+                  }
+                  else
+                  {
+                     context = new DataRestoreContext(
+                        new String[]{
+                           DataRestoreContext.STORAGE_DIR, 
+                           DataRestoreContext.DB_CONNECTION, 
+                           DataRestoreContext.DB_CLEANER}, 
+                        new Object[]{
+                           fullBackupDir, 
+                           jdbcConn, 
+                           dbCleaner});
+   
+                     isSharedDbCleaner = true;
+                  }
+               }
+               else
+               {
+                  context = new DataRestoreContext(
+                     new String[]{
+                        DataRestoreContext.STORAGE_DIR, 
+                        DataRestoreContext.DB_CONNECTION}, 
+                     new Object[]{
+                        fullBackupDir, 
+                        jdbcConn});
+               }
             }
             else
             {
@@ -152,7 +207,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          {
             restorer.commit();
          }
-
+         
          // resume components
          repositoryService.getRepository(this.repositoryEntry.getName()).setState(ManageableRepository.ONLINE);
 
