@@ -25,8 +25,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -46,10 +44,6 @@ import java.util.regex.Pattern;
  */
 public class DBInitializer
 {
-
-   static public String SQL_DELIMITER = ";";
-
-   static public String SQL_DELIMITER_COMMENT_PREFIX = "/*$DELIMITER:";
 
    static public String SQL_CREATETABLE = "^(CREATE(\\s)+TABLE(\\s)+(IF(\\s)+NOT(\\s)+EXISTS(\\s)+)*){1}";
 
@@ -109,68 +103,7 @@ public class DBInitializer
 
    protected String script(String scriptPath) throws IOException
    {
-      return readScriptResource(scriptPath);
-   }
-
-   protected String readScriptResource(final String path) throws IOException
-   {
-      PrivilegedAction<InputStream> action = new PrivilegedAction<InputStream>()
-      {
-         public InputStream run()
-         {
-            return this.getClass().getResourceAsStream(path);
-         }
-      };
-      final InputStream is = SecurityHelper.doPrivilegedAction(action);
-
-      PrivilegedAction<InputStreamReader> actionGetReader = new PrivilegedAction<InputStreamReader>()
-      {
-         public InputStreamReader run()
-         {
-            return new InputStreamReader(is);
-         }
-      };
-      InputStreamReader isr = SecurityHelper.doPrivilegedAction(actionGetReader);
-
-      try
-      {
-         StringBuilder sbuff = new StringBuilder();
-         char[] buff = new char[is.available()];
-         int r = 0;
-         while ((r = isr.read(buff)) > 0)
-         {
-            sbuff.append(buff, 0, r);
-         }
-
-         return sbuff.toString();
-      }
-      finally
-      {
-         try
-         {
-            is.close();
-         }
-         catch (IOException e)
-         {
-         }
-      }
-   }
-
-   public String cleanWhitespaces(String string)
-   {
-      if (string != null)
-      {
-         char[] cc = string.toCharArray();
-         for (int ci = cc.length - 1; ci > 0; ci--)
-         {
-            if (Character.isWhitespace(cc[ci]))
-            {
-               cc[ci] = ' ';
-            }
-         }
-         return new String(cc);
-      }
-      return string;
+      return DBInitializerHelper.readScriptResource(scriptPath);
    }
 
    protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
@@ -317,32 +250,7 @@ public class DBInitializer
 
    public void init() throws DBInitializerException
    {
-      String[] scripts = null;
-      if (script.startsWith(SQL_DELIMITER_COMMENT_PREFIX))
-      {
-         // read custom prefix
-         try
-         {
-            String s = script.substring(SQL_DELIMITER_COMMENT_PREFIX.length());
-            int endOfDelimIndex = s.indexOf("*/");
-            String delim = s.substring(0, endOfDelimIndex).trim();
-            s = s.substring(endOfDelimIndex + 2).trim();
-            scripts = s.split(delim);
-         }
-         catch (IndexOutOfBoundsException e)
-         {
-            LOG.warn("Error of parse SQL-script file. Invalid DELIMITER configuration. Valid format is '"
-               + SQL_DELIMITER_COMMENT_PREFIX + "XXX*/' at begin of the SQL-script file, where XXX - DELIMITER string."
-               + " Spaces will be trimed. ", e);
-            LOG.info("Using DELIMITER:[" + SQL_DELIMITER + "]");
-            scripts = script.split(SQL_DELIMITER);
-         }
-      }
-      else
-      {
-         scripts = script.split(SQL_DELIMITER);
-      }
-
+      String[] scripts = DBInitializerHelper.scripts(script);
       String sql = null;
       Statement st = null;
       Set<String> existingTables = new HashSet<String>();
@@ -355,7 +263,7 @@ public class DBInitializer
          connection.setAutoCommit(true);
          for (String scr : scripts)
          {
-            String s = cleanWhitespaces(scr.trim());
+            String s = DBInitializerHelper.cleanWhitespaces(scr.trim());
             if (s.length() > 0)
             {
                if (isObjectExists(connection, sql = s, existingTables))

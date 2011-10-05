@@ -28,8 +28,7 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
-import org.exoplatform.services.jcr.impl.clean.rdbms.DBClean;
-import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -50,6 +49,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -62,7 +62,7 @@ import javax.naming.NamingException;
  * Date: 22 01 2011
  * 
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: DBRestor.java 34360 2010-11-11 11:11:11Z tolusha $
+ * @version $Id: DBRestore.java 34360 2010-11-11 11:11:11Z tolusha $
  */
 public class DBRestore implements DataRestore
 {
@@ -102,7 +102,7 @@ public class DBRestore implements DataRestore
    protected final Connection jdbcConn;
 
    /**
-    * Directory with tables dump.
+    * Directory for dumps.
     */
    private final File storageDir;
 
@@ -114,7 +114,7 @@ public class DBRestore implements DataRestore
    /**
     * Database cleaner.
     */
-   private final DBClean dbClean;
+   private final DBCleaner dbCleaner;
 
    /**
     * Database dialect.
@@ -122,9 +122,19 @@ public class DBRestore implements DataRestore
    protected final int dialect;
 
    /**
-    * Contains constraint for JCR_SITEM or JCR_MITEM table.  
+    * Contains queries for adding constraints and indexes.  
     */
-   private String constraint;
+   protected Map<String, String> addQueries = new LinkedHashMap<String, String>();
+
+   /**
+    * Contains queries for dropping constraints and indexes.  
+    */
+   protected Map<String, String> dropQueries = new LinkedHashMap<String, String>();
+
+   /**
+    * Contains object names which executed queries.   
+    */
+   protected List<String> successfulExecuted;
 
    /**
     * Constructor DBRestor.
@@ -134,7 +144,7 @@ public class DBRestore implements DataRestore
     * @throws RepositoryConfigurationException 
     */
    public DBRestore(File storageDir, Connection jdbcConn, Map<String, RestoreTableRule> tables,
-      WorkspaceEntry wsConfig, FileCleaner fileCleaner) throws NamingException, SQLException,
+      WorkspaceEntry wsConfig, FileCleaner fileCleaner, DBCleaner dbCleaner) throws NamingException, SQLException,
       RepositoryConfigurationException
    {
       this.jdbcConn = jdbcConn;
@@ -145,7 +155,7 @@ public class DBRestore implements DataRestore
 
       this.storageDir = storageDir;
       this.tables = tables;
-      this.dbClean = DBCleanService.getDBCleaner(this.jdbcConn, wsConfig);
+      this.dbCleaner = dbCleaner;
       this.dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
    }
 
@@ -156,7 +166,7 @@ public class DBRestore implements DataRestore
    {
       try
       {
-         dbClean.clean();
+         dbCleaner.executeCleanScripts();
       }
       catch (SQLException e)
       {
@@ -171,17 +181,20 @@ public class DBRestore implements DataRestore
    {
       try
       {
+         boolean isMultiDb = tables.entrySet().iterator().next().getValue().getDstMultiDb();
+         prepareQueries(isMultiDb);
+
+         preRestoreTables(isMultiDb);
+
          for (Entry<String, RestoreTableRule> entry : tables.entrySet())
          {
             String tableName = entry.getKey();
             RestoreTableRule restoreRule = entry.getValue();
 
-            preRestoreTable(tableName, restoreRule);
-
             restoreTable(storageDir, jdbcConn, tableName, restoreRule);
-
-            postRestoreTable(tableName, restoreRule);
          }
+
+         postRestoreTables(isMultiDb);
       }
       catch (IOException e)
       {
@@ -194,106 +207,135 @@ public class DBRestore implements DataRestore
    }
 
    /**
-    * Prepare of restore table. (Drop constraint, etc...)
+    * Prepare queries for restoring.
     * 
-    * @param tableName
-    *        name of table 
-    * @param restoreRule
-    *        rule of table 
-    * @throws SQLException
-    *           Will throw SQLException if fail.
+    * @param isMultiDb
+    *          indicates if we have multi-db configuration or not
     */
-   public void preRestoreTable(String tableName, RestoreTableRule restoreRule) throws SQLException
+   protected void prepareQueries(boolean isMultiDb)
    {
-      Statement st = null;
+      String multiDb = isMultiDb ? "M" : "S";
+      
+      String constraintName = validateConstraintName("JCR_PK_" + multiDb + "VALUE");
+      String constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(ID)";
+      addQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "VALUE ADD " + constraint);
+      dropQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "VALUE " + dropCommand(true, constraintName));
 
-      try
-      {
-         if (tableName.equals("JCR_SITEM") || tableName.equals("JCR_MITEM"))
-         {
-            // resolve constraint name depends on database
-            String constraintName;
-            if (dialect == DBBackup.DB_DIALECT_DB2 || dialect == DBBackup.DB_DIALECT_DB2V8)
-            {
-               constraintName = "JCR_FK_" + (restoreRule.getDstMultiDb() ? "M" : "S") + "ITEM_PAREN";
-            }
-            else
-            {
-               constraintName = "JCR_FK_" + (restoreRule.getDstMultiDb() ? "M" : "S") + "ITEM_PARENT";
-            }
-            constraint = "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES " + tableName + "(ID)";
+      constraintName = validateConstraintName("JCR_PK_" + multiDb + "ITEM");
+      constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(ID)";
+      addQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
 
-            // drop constraint
-            st = jdbcConn.createStatement();
+      constraintName = validateConstraintName("JCR_FK_" + multiDb + "VALUE_PROPERTY");
+      constraint = "CONSTRAINT " + constraintName + " FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
+      addQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "VALUE ADD " + constraint);
+      dropQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "VALUE " + dropCommand(false, constraintName));
 
-            if (dialect == DBBackup.DB_DIALECT_MYSQL || dialect == DBBackup.DB_DIALECT_MYSQL_UTF8)
-            {
-               st.execute("ALTER TABLE " + tableName + " DROP FOREIGN KEY " + constraintName);
-            }
-            else
-            {
-               st.execute("ALTER TABLE " + tableName + " DROP CONSTRAINT " + constraintName);
-            }
-         }
-      }
-      finally
-      {
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.warn("Can't close statemnt", e);
-            }
-         }
-      }
+      constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT");
+      constraint = "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
+      addQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
+      dropQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(false, constraintName));
+
+      constraintName = validateConstraintName("JCR_PK_" + multiDb + "ITEM");
+      dropQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(true, constraintName));
+
+      constraintName = validateConstraintName("JCR_PK_" + multiDb + "REF");
+      constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)";
+      addQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "REF ADD " + constraint);
+      dropQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "REF " + dropCommand(true, constraintName));
+
+      constraintName = validateConstraintName("JCR_PK_" + multiDb + "CONTAINER");
+      constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(VERSION)";
+      addQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "CONTAINER ADD " + constraint);
+      dropQueries.put(constraintName, "ALTER TABLE JCR_" + multiDb + "CONTAINER " + dropCommand(true, constraintName));
    }
 
    /**
-    * After of restore table. (Add constraint, etc...)
+    * Validate name of constraint. For some DBs constrains name is limited.
     * 
-    * @param tableName
-    *        name of table 
-    * @param restoreRule
-    *        rule of table 
+    * @param string
+    *          the constraint name
+    * @return the constraint name accepted for specific DB
+    */
+   protected String validateConstraintName(String string)
+   {
+      return string;
+   }
+
+   /**
+    * Return the command to drop primary or foreign key.  
+    * 
+    * @param isPrimaryKey
+    *          boolean
+    * @return String
+    */
+   protected String dropCommand(boolean isPrimaryKey, String constraintName)
+   {
+      return "DROP CONSTRAINT " + constraintName;
+   }
+
+   /**
+    * Prepare of restore tables. (Drop constraint, etc...)
+    * 
+    * @param isMultiDb
+    *          boolean
+    * @throws SQLException
+    *           will throw SQLException if fail.          
+    */
+   public void preRestoreTables(boolean isMultiDb) throws SQLException
+   {
+      executeQueries(dropQueries);
+   }
+
+   /**
+    * After of restore tables. (Add constraint, etc...)
+    * 
+    * @param isMultiDb
+    *          boolean
     * @throws SQLException
     *           Will throw SQLException if fail.
     */
-   public void postRestoreTable(String tableName, RestoreTableRule restoreRule) throws SQLException
+   public void postRestoreTables(boolean isMultiDb) throws SQLException
    {
+      executeQueries(addQueries);
+   }
+
+   /**
+    * Execute queries.
+    * 
+    * @param queries
+    *         the map with queries.
+    * @throws SQLException
+    */
+   protected List<String> executeQueries(final Map<String, String> queries) throws SQLException
+   {
+      successfulExecuted = new ArrayList<String>();
       Statement st = null;
 
-      try
+      for (String constraintName : queries.keySet())
       {
-         if (tableName.equals("JCR_SITEM") || tableName.equals("JCR_MITEM"))
+         try
          {
-            if (constraint != null)
+            st = jdbcConn.createStatement();
+            st.execute(queries.get(constraintName));
+            successfulExecuted.add(constraintName);
+         }
+         finally
+         {
+            if (st != null)
             {
-               // add constraint
-               st = jdbcConn.createStatement();
-               st.execute("ALTER TABLE " + tableName + " ADD " + constraint);
+               try
+               {
+                  st.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.warn("Can't close statemnt", e);
+               }
             }
          }
       }
-      finally
-      {
-         constraint = null;
 
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.warn("Can't close statemnt", e);
-            }
-         }
-      }
+      return successfulExecuted;
    }
 
    /**
@@ -303,6 +345,16 @@ public class DBRestore implements DataRestore
    {
       try
       {
+         try
+         {
+            // don't care about any exception here
+            dbCleaner.executeCommitScripts();
+         }
+         catch (Exception e)
+         {
+            LOG.error("Can't remove temporary objects after cleaning", e);
+         }
+
          jdbcConn.commit();
       }
       catch (SQLException e)
@@ -319,6 +371,9 @@ public class DBRestore implements DataRestore
       try
       {
          jdbcConn.rollback();
+
+         dbCleaner.executeRollbackScripts();
+         jdbcConn.commit();
       }
       catch (SQLException e)
       {

@@ -16,7 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -24,15 +26,45 @@ import java.sql.SQLException;
  * <br/>Date: 2011
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
- * @version $Id: DBCleanHelper.java 111 2011-11-11 11:11:11Z rainf0x $
+ * @version $Id: DummyDBCleaner.java 111 2011-11-11 11:11:11Z rainf0x $
  */
-public interface DBCleanHelper
+public class DummyDBCleaner extends DBCleaner
 {
+
    /**
-    * Clean data from database. The method doesn't close connection or perform commit.
-    * 
-    * @throws SQLException
-    *          if any errors occurred 
+    * DummyDBCleaner constructor.
     */
-   public void executeCleanScripts() throws SQLException;
+   public DummyDBCleaner(Connection connection, List<String> cleanScripts)
+   {
+      super(connection, cleanScripts);
+   }
+
+   /**
+    * DummyDBCleaner constructor.
+    */
+   public DummyDBCleaner(Connection connection, List<String> cleanScripts, DBCleanHelper dbCleanHelper)
+   {
+      super(connection, cleanScripts, dbCleanHelper);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void executeCleanScripts() throws SQLException
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void executeCommitScripts() throws SQLException
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void executeRollbackScripts() throws SQLException
+   {
+   }
 }

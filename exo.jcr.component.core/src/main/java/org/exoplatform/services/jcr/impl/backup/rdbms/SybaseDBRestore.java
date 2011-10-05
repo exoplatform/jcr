@@ -20,13 +20,14 @@ import org.exoplatform.services.database.utils.ExceptionManagementHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.naming.NamingException;
 
@@ -38,16 +39,19 @@ import javax.naming.NamingException;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: SybaseDBRestore.java 111 2011-11-11 11:11:11Z rainf0x $
  */
-public class SybaseDBRestore
-   extends DBRestore
+public class SybaseDBRestore extends DBRestore
 {
-   private String restoreConstraint = null;
-   
+   private final Boolean isMultiDb;
+
+   /**
+    * Constructor SybaseDBRestore.
+    */
    public SybaseDBRestore(File storageDir, Connection jdbcConn, Map<String, RestoreTableRule> tables,
-            WorkspaceEntry wsConfig, FileCleaner fileCleaner) throws NamingException, SQLException,
+      WorkspaceEntry wsConfig, FileCleaner fileCleaner, DBCleaner dbCleaner) throws NamingException, SQLException,
             RepositoryConfigurationException
    {
-      super(storageDir, jdbcConn, tables, wsConfig, fileCleaner);
+      super(storageDir, jdbcConn, tables, wsConfig, fileCleaner, dbCleaner);
+      this.isMultiDb = tables.entrySet().iterator().next().getValue().getDstMultiDb();
    }
 
    /**
@@ -55,19 +59,13 @@ public class SybaseDBRestore
     */
    public void clean() throws BackupException
    {
-
       try
       {
          // the Sybase is not allowed DDL query (CREATE TABLE, DROP TABLE, etc. ) within a multi-statement transaction
          jdbcConn.setAutoCommit(true);
 
-         for (Entry<String, RestoreTableRule> entry : tables.entrySet())
-         {
-            String tableName = entry.getKey();
-            RestoreTableRule restoreRule = entry.getValue();
-
-            super.preRestoreTable(tableName, restoreRule);
-         }
+         super.prepareQueries(isMultiDb);
+         super.executeQueries(dropQueries);
       }
       catch (SQLException e)
       {
@@ -148,12 +146,22 @@ public class SybaseDBRestore
          // restore constraint
          jdbcConn.setAutoCommit(true);
 
-         for (Entry<String, RestoreTableRule> entry : tables.entrySet())
+         if (successfulExecuted.size() == addQueries.size())
          {
-            String tableName = entry.getKey();
-            RestoreTableRule restoreRule = entry.getValue();
+            executeQueries(addQueries);
+         }
+         else
+         {
+            ArrayList<String> notDeletedConstraints = new ArrayList<String>();
+            notDeletedConstraints.addAll(addQueries.keySet());
+            notDeletedConstraints.removeAll(successfulExecuted);
 
-            super.postRestoreTable(tableName, restoreRule);
+            for (String notDeletedConstraint : notDeletedConstraints)
+            {
+               addQueries.remove(notDeletedConstraint);
+            }
+
+            executeQueries(addQueries);
          }
       }
       catch (SQLException e)
@@ -176,14 +184,27 @@ public class SybaseDBRestore
    /**
     * {@inheritDoc}
     */
-   public void preRestoreTable(String tableName, RestoreTableRule restoreRule) throws SQLException
+   public void preRestoreTables(boolean isMultiDb) throws SQLException
    {
    }
 
    /**
     * {@inheritDoc}
     */
-   public void postRestoreTable(String tableName, RestoreTableRule restoreRule) throws SQLException
+   public void postRestoreTables(boolean isMultiDb) throws SQLException
    {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected String validateConstraintName(String string)
+   {
+      if (string.equals("JCR_PK_SCONTAINER"))
+      {
+         return "JCR_PK_MCONTAINER";
+      }
+      
+      return super.validateConstraintName(string);
    }
 }

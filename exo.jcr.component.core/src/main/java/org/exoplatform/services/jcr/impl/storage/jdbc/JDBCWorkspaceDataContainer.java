@@ -32,13 +32,18 @@ import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.ComplexDataRestore;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DB2DBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.H2DBRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.MySQLDBRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.OracleDBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
 import org.exoplatform.services.jcr.impl.backup.rdbms.SybaseDBRestore;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.core.query.Reindexable;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
@@ -61,6 +66,7 @@ import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -270,7 +276,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       String pDbDialect = null;
       try
       {
-         pDbDialect = validateDialect(wsConfig.getContainer().getParameterValue(DB_DIALECT));
+         pDbDialect = DBInitializerHelper.validateDialect(wsConfig.getContainer().getParameterValue(DB_DIALECT));
       }
       catch (RepositoryConfigurationException e)
       {
@@ -642,7 +648,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
 
          // a particular db initializer may be configured here too
          dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
@@ -650,13 +656,13 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       else if (dbDialect == DBConstants.DB_DIALECT_ORACLE)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.pgsql.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_MYSQL)
@@ -675,7 +681,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
@@ -694,43 +700,43 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-utf8.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_MSSQL)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mssql.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DERBY)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.derby.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2v8.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sybase.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ingres.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          // using Postgres initializer
          dbInitilizer =
             new IngresSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
@@ -749,14 +755,14 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                new HSQLDBConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
       else
       {
          // generic, DB_HSQLDB
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
+         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          dbInitilizer = defaultDBInitializer(sqlPath);
       }
 
@@ -779,19 +785,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected GenericConnectionFactory getConnectionFactory()
    {
       return connFactory;
-   }
-
-   protected String validateDialect(String confParam)
-   {
-      for (String dbType : DBConstants.DB_DIALECTS)
-      {
-         if (dbType.equalsIgnoreCase(confParam))
-         {
-            return dbType;
-         }
-      }
-
-      return DBConstants.DB_DIALECT_GENERIC; // by default
    }
 
    /**
@@ -1294,15 +1287,43 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          tables.put(dstTableName, restoreTableRule);
 
-         if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
+         DBCleaner dbCleaner = null;
+         if (context.getObject(DataRestoreContext.DB_CLEANER) != null)
          {
-            restorers.add(new SybaseDBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
+            dbCleaner = (DBCleaner)context.getObject(DataRestoreContext.DB_CLEANER);
          }
          else
          {
-            restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner));
+            dbCleaner = DBCleanService.getWorkspaceDBCleaner(jdbcConn, wsConfig);
          }
 
+         if (dbDialect == DBConstants.DB_DIALECT_DB2 || dbDialect == DBConstants.DB_DIALECT_DB2V8)
+         {
+            restorers.add(new DB2DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
+         }
+         else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
+         {
+            restorers.add(new MySQLDBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
+         }
+         else if (dbDialect == DBConstants.DB_DIALECT_H2)
+         {
+            restorers.add(new H2DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
+         }
+         else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
+         {
+            restorers.add(new SybaseDBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
+         }
+         else if (dbDialect == DBConstants.DB_DIALECT_ORACLE || dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
+         {
+            restorers.add(new OracleDBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
+         }
+         else
+         {
+            restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
+         }
+
+         // prepare value storage restorer
+         File backupValueStorageDir = new File(storageDir, "values");
          if (wsConfig.getContainer().getValueStorages() != null)
          {
             List<File> dataDirs = new ArrayList<File>();

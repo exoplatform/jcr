@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -219,6 +220,96 @@ public class TestDBCleaner extends JcrImplBaseTest
       service.removeRepository(repositoryName);
    }
 
+   public void testRemoveRepositorySingleDBRepositoryDBCleaner() throws Exception
+   {
+      String repositoryName = "repoTestRemoveSingleRepositoryDBCleaner";
+
+      RepositoryEntry repositoryEntry = createSingleDB(repositoryName);
+
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryImpl newRepository = (RepositoryImpl)service.getRepository(repositoryName);
+      assertTrue(service.canRemoveRepository(repositoryName));
+
+      String wsName = repositoryEntry.getWorkspaceEntries().get(0).getName();
+      SessionImpl sess = newRepository.getSystemSession(wsName);
+
+      // now add nodes to workspaces and check it via datasource      
+      NodeImpl node = (NodeImpl)sess.getRootNode().addNode("testNode");
+      String id = node.getData().getIdentifier();
+      sess.save();
+      sess.logout();
+
+      DataSource ds = (DataSource)new InitialContext().lookup(DS_NAME);
+      Connection conn = ds.getConnection();
+      Statement statement = conn.createStatement();
+      ResultSet res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
+      assertTrue(res.next());
+
+      // remove content
+      Connection jdbcConn = ds.getConnection();
+      jdbcConn.setAutoCommit(false);
+      DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
+
+      repositoryDBCleaner.executeCleanScripts();
+      jdbcConn.commit();
+      repositoryDBCleaner.executeCommitScripts();
+
+      // check - does JCR_SITEM become empty
+      res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
+      assertFalse(res.next());
+
+      res = statement.executeQuery("select * from JCR_SITEM");
+      assertTrue(res.next());
+      assertFalse(res.next());
+
+      statement.close();
+
+      service.removeRepository(repositoryName);
+   }
+
+   public void testRemoveRepositorySingleDBRepositoryDBCleanerRollBack() throws Exception
+   {
+      String repositoryName = "repoTestRemoveSingleRepositoryDBCleanerRollBack";
+
+      RepositoryEntry repositoryEntry = createSingleDB(repositoryName);
+
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryImpl newRepository = (RepositoryImpl)service.getRepository(repositoryName);
+      assertTrue(service.canRemoveRepository(repositoryName));
+
+      String wsName = repositoryEntry.getWorkspaceEntries().get(0).getName();
+      SessionImpl sess = newRepository.getSystemSession(wsName);
+
+      // now add nodes to workspaces and check it via datasource      
+      NodeImpl node = (NodeImpl)sess.getRootNode().addNode("testNode");
+      String id = node.getData().getIdentifier();
+      sess.save();
+      sess.logout();
+
+      DataSource ds = (DataSource)new InitialContext().lookup(DS_NAME);
+      Connection conn = ds.getConnection();
+      Statement statement = conn.createStatement();
+      ResultSet res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
+      assertTrue(res.next());
+
+      // remove content
+      Connection jdbcConn = ds.getConnection();
+      jdbcConn.setAutoCommit(false);
+      DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
+
+      repositoryDBCleaner.executeCleanScripts();
+      jdbcConn.rollback();
+      repositoryDBCleaner.executeRollbackScripts();
+
+      // check - does JCR_SITEM become empty
+      res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
+      assertTrue(res.next());
+
+      statement.close();
+
+      service.removeRepository(repositoryName);
+   }
+
    public void testRemoveWorkspaceMultiDB() throws Exception
    {
       String repositoryName = "repoTestRemoveMulti";
@@ -317,8 +408,8 @@ public class TestDBCleaner extends JcrImplBaseTest
       repositoryEntry.setDefaultWorkspaceName(repositoryName + "ws");
 
       WorkspaceEntry workspaceEntry =
-         helper.getNewWs(repositoryName + "ws", true, DS_NAME, "target/temp/values/" + IdGenerator.generate(),
-            wsEntry.getContainer(), false);
+         helper.getNewWs(repositoryName + "ws", true, DS_NAME, "target/temp/values/" + IdGenerator.generate(), wsEntry
+            .getContainer(), false);
 
       repositoryEntry.addWorkspace(workspaceEntry);
 
@@ -340,8 +431,8 @@ public class TestDBCleaner extends JcrImplBaseTest
       repositoryEntry.setDefaultWorkspaceName(repositoryName + "ws");
 
       WorkspaceEntry workspaceEntry =
-         helper.getNewWs(repositoryName + "ws", false, DS_NAME, "target/temp/values/" + IdGenerator.generate(),
-            wsEntry.getContainer(), false);
+         helper.getNewWs(repositoryName + "ws", false, DS_NAME, "target/temp/values/" + IdGenerator.generate(), wsEntry
+            .getContainer(), false);
 
       repositoryEntry.addWorkspace(workspaceEntry);
 

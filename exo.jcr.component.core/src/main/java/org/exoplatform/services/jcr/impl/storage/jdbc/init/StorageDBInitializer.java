@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -58,11 +59,7 @@ public class StorageDBInitializer extends DBInitializer
 
       if (!connection.createStatement().executeQuery(select).next())
       {
-         String insert =
-            "insert into JCR_" + MDB + "ITEM(ID, PARENT_ID, NAME, " + (multiDb ? "" : "CONTAINER_NAME, ")
-               + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('" + Constants.ROOT_PARENT_UUID + "', '"
-               + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_NAME + "', "
-               + (multiDb ? "" : "'" + Constants.ROOT_PARENT_CONAINER_NAME + "', ") + "0, 0, 0, 0)";
+         String insert = DBInitializerHelper.getRootNodeInitializeScript(multiDb);
 
          connection.createStatement().executeUpdate(insert);
       }
