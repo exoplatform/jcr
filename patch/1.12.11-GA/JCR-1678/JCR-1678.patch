@@ -1,0 +1,496 @@
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/core/query/TestQueryMoveNode.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/core/query/TestQueryMoveNode.java	(revision 0)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/api/core/query/TestQueryMoveNode.java	(revision 0)
+@@ -0,0 +1,85 @@
++/*
++ * Copyright (C) 2003-2011 eXo Platform SAS.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Affero General Public License
++ * as published by the Free Software Foundation; either version 3
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see<http://www.gnu.org/licenses/>.
++ */
++package org.exoplatform.services.jcr.api.core.query;
++
++import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
++
++import javax.jcr.Node;
++import javax.jcr.NodeIterator;
++import javax.jcr.query.Query;
++import javax.jcr.query.QueryManager;
++import javax.jcr.query.QueryResult;
++
++/**
++ * Created by The eXo Platform SAS.
++ * 
++ * <br/>Date: 
++ *
++ * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
++ * @version $Id: TestQueryMoveNode.java 111 2011-28-01 11:11:11Z serg $
++ */
++public class TestQueryMoveNode extends BaseUsecasesTest
++{
++
++   public void testReordering() throws Exception
++   {
++      Node testRoot = this.root.addNode("testSameNameSiblingDelete");
++
++      Node subNode_1 = testRoot.addNode("node", "nt:unstructured"); // 1
++      subNode_1.addMixin("mix:referenceable");
++      session.save();
++
++      //check the index
++      String sqlQuery;
++      Query query;
++      QueryResult queryResult;
++      NodeIterator iterator;
++      Node node;
++      QueryManager qm = session.getWorkspace().getQueryManager();
++
++      sqlQuery = "SELECT * FROM nt:unstructured WHERE jcr:path = '/testSameNameSiblingDelete/node[1]'";
++      query = qm.createQuery(sqlQuery, Query.SQL);
++      queryResult = query.execute();
++      iterator = queryResult.getNodes();
++      assertTrue("Node expected ", iterator.getSize() == 1);
++      node = iterator.nextNode();
++      assertEquals("Wrong id ", subNode_1.getUUID(), node.getUUID());
++      assertEquals("Wrong path ", subNode_1.getPath(), node.getPath());
++
++      // move
++      testRoot.addNode("folder");
++      session.save();
++      session.move("/testSameNameSiblingDelete/node", "/testSameNameSiblingDelete/folder/node");
++      session.save();
++
++      sqlQuery = "SELECT * FROM nt:unstructured WHERE jcr:path = '/testSameNameSiblingDelete/node[1]'";
++      query = qm.createQuery(sqlQuery, Query.SQL);
++      queryResult = query.execute();
++      iterator = queryResult.getNodes();
++      assertTrue("There must be no node ", iterator.getSize() == 0);
++
++      sqlQuery = "SELECT * FROM nt:unstructured WHERE jcr:path = '/testSameNameSiblingDelete/folder/node[1]'";
++      query = qm.createQuery(sqlQuery, Query.SQL);
++      queryResult = query.execute();
++      iterator = queryResult.getNodes();
++      assertTrue("Node expected ", iterator.getSize() == 1);
++      node = iterator.nextNode();
++      assertEquals("Wrong id ", subNode_1.getUUID(), node.getUUID());
++      assertEquals("Wrong path ", subNode_1.getPath(), node.getPath());
++   }
++
++}
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/usecases/query/TestQueryChilds.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/usecases/query/TestQueryChilds.java	(revision 0)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/usecases/query/TestQueryChilds.java	(revision 0)
+@@ -0,0 +1,124 @@
++/*
++ * Copyright (C) 2011 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.usecases.query;
++
++import org.exoplatform.services.jcr.impl.core.ItemImpl;
++import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
++
++import java.util.ArrayList;
++import java.util.Iterator;
++import java.util.List;
++
++import javax.jcr.Node;
++import javax.jcr.NodeIterator;
++import javax.jcr.RepositoryException;
++import javax.jcr.query.Query;
++import javax.jcr.query.QueryManager;
++import javax.jcr.query.QueryResult;
++
++/**
++ * @author <a href="mailto:skarpenko@exoplatform.com">Sergiy Karpenko</a>
++ * @version $Id: exo-jboss-codetemplates.xml 34360 16 ????. 2011 skarpenko $
++ *
++ */
++public class TestQueryChilds extends BaseUsecasesTest
++{
++   public void testGetChilds() throws Exception
++   {
++      Node testRoot = this.root.addNode("testSameNameSiblingDelete");
++
++      Node subNode_1 = testRoot.addNode("node", "nt:unstructured"); // 1
++      Node subNode_1_1 = subNode_1.addNode("node1", "nt:unstructured");
++      Node subNode_1_2 = subNode_1.addNode("node2", "nt:unstructured");
++      Node subNode_1_1_1 = subNode_1_1.addNode("node11", "nt:unstructured");
++      //Node subNode_1_1_2 = subNode_1_1.addNode("node12", "nt:unstructured");
++      Node subNode_2 = testRoot.addNode("node", "nt:unstructured"); // 2
++      Node subNode_2_1 = subNode_2.addNode("node3", "nt:unstructured");
++      Node subNode_2_2 = subNode_2.addNode("node4", "nt:unstructured");
++
++      session.save();
++
++      //check the index
++      String sqlQuery;
++      Query query;
++      QueryResult queryResult;
++      NodeIterator iterator;
++      Node node;
++      QueryManager qm = session.getWorkspace().getQueryManager();
++
++      sqlQuery = "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/testSameNameSiblingDelete/node/%'";
++      query = qm.createQuery(sqlQuery, Query.SQL);
++      queryResult = query.execute();
++      iterator = queryResult.getNodes();
++      assertTrue("Node expected ", iterator.getSize() == 3);
++      //      node = iterator.nextNode();
++      //      assertEquals("Wrong id ", subNode_1.getUUID(), node.getUUID());
++      //      assertEquals("Wrong path ", subNode_1.getPath(), node.getPath());
++      testNames(iterator, new String[]{"node1", "node2", "node11"}); //, "node3", "node4" 
++
++      //      // move
++      //      testRoot.addNode("folder");
++      //      session.save();
++      //      session.move("/testSameNameSiblingDelete/node", "/testSameNameSiblingDelete/folder/node");
++      //      session.save();
++      //
++      //      sqlQuery = "SELECT * FROM nt:unstructured WHERE jcr:path = '/testSameNameSiblingDelete/node[1]'";
++      //      query = qm.createQuery(sqlQuery, Query.SQL);
++      //      queryResult = query.execute();
++      //      iterator = queryResult.getNodes();
++      //      assertTrue("There must be no node ", iterator.getSize() == 0);
++      //
++      //      sqlQuery = "SELECT * FROM nt:unstructured WHERE jcr:path = '/testSameNameSiblingDelete/folder/node[1]'";
++      //      query = qm.createQuery(sqlQuery, Query.SQL);
++      //      queryResult = query.execute();
++      //      iterator = queryResult.getNodes();
++      //      assertTrue("Node expected ", iterator.getSize() == 1);
++      //      node = iterator.nextNode();
++      //      assertEquals("Wrong id ", subNode_1.getUUID(), node.getUUID());
++      //      assertEquals("Wrong path ", subNode_1.getPath(), node.getPath());
++   }
++
++   protected void testNames(Iterator iterator, String[] expectedNames) throws RepositoryException
++   {
++
++      List<String> names = new ArrayList<String>();
++      while (iterator.hasNext())
++      {
++         ItemImpl item = (ItemImpl)iterator.next();
++         names.add(item.getName());
++      }
++
++      //compare names
++      assertEquals(expectedNames.length, names.size());
++
++      for (String expectedName : expectedNames)
++      {
++         boolean finded = false;
++         for (String name : names)
++         {
++            if (expectedName.equals(name))
++            {
++               finded = true;
++               break;
++            }
++         }
++         assertTrue(finded);
++      }
++   }
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/FieldNames.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/FieldNames.java	(revision 5022)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/FieldNames.java	(working copy)
+@@ -64,6 +64,16 @@
+     public static final String LOCAL_NAME = "_:LOCAL_NAME".intern();
+ 
+     /**
++     * Name of the field that contains the index of the item.
++     */
++    public static final String INDEX = "_:INDEX".intern();
++
++    /**
++     * Name of the field that contains the relative path of the item.
++     */
++    public static final String PATH = "_:PATH".intern();
++
++    /**
+      * Name of the field that contains the namespace URI of the node name. Terms
+      * are not tokenized.
+      */
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/FieldSelectors.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/FieldSelectors.java	(revision 5022)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/FieldSelectors.java	(working copy)
+@@ -63,4 +63,41 @@
+             }
+         }
+     };
++
++    public static final FieldSelector UUID_AND_PARENT_AND_INDEX = new FieldSelector() {
++        /**
++         * Accepts {@link FieldNames#UUID}, {@link FieldNames#PARENT} 
++         * and {@link FieldNames#INDEX}.
++         *
++         * @param fieldName the field name to check.
++         * @return result.
++         */
++        public FieldSelectorResult accept(String fieldName) {
++            if (FieldNames.UUID == fieldName) {
++                return FieldSelectorResult.LOAD;
++            } else if (FieldNames.PARENT == fieldName) {
++                return FieldSelectorResult.LOAD;
++            } else if (FieldNames.INDEX == fieldName) {
++               return FieldSelectorResult.LOAD;
++            } else {
++                return FieldSelectorResult.NO_LOAD;
++            }
++        }
++    };
++
++    public static final FieldSelector PATH = new FieldSelector() {
++       /**
++        * Accepts {@link FieldNames#PATH}.
++        *
++        * @param fieldName the field name to check.
++        * @return result.
++        */
++       public FieldSelectorResult accept(String fieldName) {
++          if (FieldNames.PATH == fieldName) {
++             return FieldSelectorResult.LOAD;
++          } else {
++             return FieldSelectorResult.NO_LOAD;
++          }
++       }
++    };    
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/IndexFormatVersion.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/IndexFormatVersion.java	(revision 5022)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/IndexFormatVersion.java	(working copy)
+@@ -16,10 +16,10 @@
+  */
+ package org.exoplatform.services.jcr.impl.core.query.lucene;
+ 
++import org.apache.lucene.index.IndexReader;
++
+ import java.util.Collection;
+ 
+-import org.apache.lucene.index.IndexReader;
+-
+ /**
+  * This class indicates the lucene index format that is used.
+  * <ul>
+@@ -52,11 +52,16 @@
+     public static final IndexFormatVersion V2 = new IndexFormatVersion(2);
+ 
+     /**
+-     * V3 is the index format for Jackrabbit releases >= 1.5
++     * V3 is the index format for Jackrabbit releases 1.5.x
+      */
+     public static final IndexFormatVersion V3 = new IndexFormatVersion(3);
+ 
+     /**
++     * V4 is the index format for Jackrabbit releases >= 1.6
++     */
++    public static final IndexFormatVersion V4 = new IndexFormatVersion(4);
++
++    /**
+      * The used version of the index format
+      */
+     private final int version;
+@@ -104,7 +109,9 @@
+     public static IndexFormatVersion getVersion(IndexReader indexReader) {
+         Collection fields = indexReader.getFieldNames(
+                 IndexReader.FieldOption.ALL);
+-        if (fields.contains(FieldNames.LOCAL_NAME) || indexReader.numDocs() == 0) {
++        if ((fields.contains(FieldNames.INDEX) && fields.contains(FieldNames.PATH))|| indexReader.numDocs() == 0) {
++           return IndexFormatVersion.V4;
++        } else if (fields.contains(FieldNames.LOCAL_NAME)) {
+             return IndexFormatVersion.V3;
+         } else if (fields.contains(FieldNames.PROPERTIES_SET)) {
+             return IndexFormatVersion.V2;
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/ChildAxisQuery.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/ChildAxisQuery.java	(revision 5022)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/ChildAxisQuery.java	(working copy)
+@@ -519,15 +519,14 @@
+       {
+          if (position != LocationStepQueryNode.NONE)
+          {
+-            Document node = reader.document(i, FieldSelectors.UUID_AND_PARENT);
++            Document node = reader.document(i, FieldSelectors.UUID_AND_PARENT_AND_INDEX);
+             String parentId = node.get(FieldNames.PARENT);
+             String id = node.get(FieldNames.UUID);
+             try
+             {
+-               //NodeState state = (NodeState) itemMgr.getItemState(parentId);
+-               NodeData state = (NodeData)itemMgr.getItemData(parentId);
+                if (nameTest == null)
+                {
++                  NodeData state = (NodeData)itemMgr.getItemData(parentId);
+                   // only select this node if it is the child at
+                   // specified position
+                   if (position == LocationStepQueryNode.LAST)
+@@ -555,6 +554,7 @@
+                   // specified position
+                   if (position == LocationStepQueryNode.LAST)
+                   {
++                     NodeData state = (NodeData)itemMgr.getItemData(parentId);
+                      // only select last
+ 
+                      if (state == null)
+@@ -572,6 +572,11 @@
+                         }
+                      }
+                   }
++                  else if (version.getVersion() >= IndexFormatVersion.V4.getVersion())
++                  {
++                     if (Integer.valueOf(node.get(FieldNames.INDEX)) != position)
++                        return false;
++                  }
+                   else
+                   {
+                      NodeData nodeData = (NodeData)itemMgr.getItemData(id);
+@@ -693,49 +698,70 @@
+             //NodeId id = new NodeId(UUID.fromString(uuid));
+             try
+             {
+-               long time = System.currentTimeMillis();
+-               NodeData state = (NodeData)itemMgr.getItemData(uuid);
+-               time = System.currentTimeMillis() - time;
+-               log.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));
+-               Iterator<NodeData> entries;
+-               if (nameTest != null)
++               if (nameTest != null && version.getVersion() >= IndexFormatVersion.V4.getVersion())
+                {
+-                  //NodeData childNodeData = (NodeData)itemMgr.getItemData(state, new QPathEntry(nameTest, 1));//state.getChildNodeEntries(nameTest).iterator();
+-                  List<NodeData> childs = itemMgr.getChildNodesData(state);
+-
+-                  List<NodeData> datas = new ArrayList<NodeData>();
+-                  if (childs != null)
++                  StringBuilder path = new StringBuilder(256);
++                  path.append(uuid == null ? "" : uuid).append('/').append(nameTest.getAsString());
++                  TermDocs docs = reader.termDocs(new Term(FieldNames.PATH, path.toString()));
++                  try
+                   {
+-                     for (NodeData nodeData : childs)
++                     while (docs.next())
+                      {
+-                        if (nameTest.equals(nodeData.getQPath().getName()))
+-                           datas.add(nodeData);
++                        childrenHits.set(docs.doc());
+                      }
+-
+                   }
+-                  entries = datas.iterator();//itemMgr.getChildNodesData(childNodeData).iterator();
++                  finally
++                  {
++                     docs.close();
++                  }
+                }
+                else
+                {
+-                  // get all children
+-                  entries = itemMgr.getChildNodesData(state).iterator();
+-               }
+-               while (entries.hasNext())
+-               {
+-                  String childId = entries.next().getIdentifier();
+-                  Term uuidTerm = new Term(FieldNames.UUID, childId);
+-                  TermDocs docs = reader.termDocs(uuidTerm);
+-                  try
++                  long time = System.currentTimeMillis();
++                  NodeData state = (NodeData)itemMgr.getItemData(uuid);
++                  time = System.currentTimeMillis() - time;
++                  log.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));
++                  Iterator<NodeData> entries;
++                  if (nameTest != null)
+                   {
+-                     if (docs.next())
++                     List<NodeData> childs = itemMgr.getChildNodesData(state);
++
++                     List<NodeData> datas = new ArrayList<NodeData>();
++                     if (childs != null)
+                      {
+-                        childrenHits.set(docs.doc());
++                        for (NodeData nodeData : childs)
++                        {
++                           if (nameTest.equals(nodeData.getQPath().getName()))
++                           {
++                              datas.add(nodeData);
++                           }
++                        }
+                      }
++                     entries = datas.iterator();
+                   }
+-                  finally
++                  else
+                   {
+-                     docs.close();
++                     // get all children 
++                     entries = itemMgr.getChildNodesData(state).iterator();
+                   }
++                  while (entries.hasNext())
++                  {
++                     String childId = entries.next().getIdentifier();
++                     Term uuidTerm = new Term(FieldNames.UUID, childId);
++                     TermDocs docs = reader.termDocs(uuidTerm);
++                     try
++                     {
++                        if (docs.next())
++                        {
++                           childrenHits.set(docs.doc());
++                        }
++                     }
++                     finally
++
++                     {
++                        docs.close();
++                     }
++                  }
+                }
+             }
+             catch (RepositoryException e)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/NodeIndexer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/NodeIndexer.java	(revision 5022)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/NodeIndexer.java	(working copy)
+@@ -215,6 +215,17 @@
+          // unknown uri<->prefix mappings
+       }
+ 
++      if (indexFormatVersion.getVersion() >= IndexFormatVersion.V4.getVersion())
++      {
++         doc.add(new Field(FieldNames.INDEX, Integer.toString(node.getQPath().getIndex()), Field.Store.YES,
++            Field.Index.NOT_ANALYZED_NO_NORMS));
++
++         StringBuilder path = new StringBuilder(256);
++         path.append(node.getParentIdentifier() == null ? "" : node.getParentIdentifier()).append('/')
++            .append(node.getQPath().getName().getAsString());
++         doc.add(new Field(FieldNames.PATH, path.toString(), Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
++      }
++
+       for (PropertyData prop : stateProvider.listChildPropertiesData(node))
+       {
+ 
