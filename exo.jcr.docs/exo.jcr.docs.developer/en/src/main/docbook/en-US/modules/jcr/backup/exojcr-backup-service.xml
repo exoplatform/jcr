@@ -18,10 +18,6 @@
     system faults and repository crashes. Also, the backup results may be used
     as a content history.</para>
 
-    <para>The eXo JCR backup service was developed from the JCR 1.8
-    implementation. It's an independent service available as an eXo JCR
-    Extensions project.</para>
-
     <para>The concept is based on the export of a workspace unit in the Full,
     or Full + Incrementals model. A repository workspace can be backup and
     restored using a combination of these modes. In all cases, at least one
@@ -90,6 +86,11 @@
 
       <para>Restoring an incremental backup consists in applying the collected
       set of ChangesLogs to a workspace in the correct order.</para>
+
+      <note>
+        <para>Incremental backup is an experimental feture and not supported,
+        so it must be used with a lot of caution.</para>
+      </note>
     </section>
 
     <section>
@@ -201,8 +202,7 @@
     default. <emphasis role="bold">You need to enable it via
     configuration</emphasis>.</para>
 
-    <para>The following is an example configuration compatible with JCR 1.9.3
-    and later:</para>
+    <para>The following is an example configuration :</para>
 
     <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.jcr.ext.backup.BackupManager&lt;/key&gt;
@@ -210,37 +210,79 @@
   &lt;init-params&gt;
     &lt;properties-param&gt;
       &lt;name&gt;backup-properties&lt;/name&gt;
-      &lt;property name="default-incremental-job-period" value="3600" /&gt; &lt;!-- set default incremental period = 60 minutes --&gt;
-      &lt;property name="full-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob" /&gt;
-      &lt;property name="incremental-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob" /&gt;
       &lt;property name="backup-dir" value="target/backup" /&gt;
     &lt;/properties-param&gt;
   &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
 
-    <para>Where:<itemizedlist>
-        <listitem>
-          <para><emphasis role="bold">incremental-backup-type</emphasis>
-          (since 1.9.3) : The FQN of incremental job class. Must implement
-          org.exoplatform.services.jcr.ext.backup.BackupJob</para>
-        </listitem>
-
-        <listitem>
-          <para><emphasis role="bold">full-backup-type</emphasis> (since
-          1.9.3) : The FQN of the full backup job class; Must implement
-          org.exoplatform.services.jcr.ext.backup.BackupJob</para>
-        </listitem>
-
-        <listitem>
-          <para><emphasis
-          role="bold">default-incremental-job-period</emphasis> (since 1.9.3)
-          : The period between incremetal flushes (in seconds)</para>
-        </listitem>
-
+    <para>Where mandatory paramet is:<itemizedlist>
         <listitem>
           <para><emphasis role="bold">backup-dir</emphasis> : The path to a
           working directory where the service will store internal files and
           chain logs.</para>
+        </listitem>
+      </itemizedlist></para>
+
+    <para>Also, there are optional parameters:<itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">incremental-backup-type</emphasis> : The
+          FQN of incremental job class. Must implement
+          org.exoplatform.services.jcr.ext.backup.BackupJob. By default :
+          org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob
+          used.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis
+          role="bold">default-incremental-job-period</emphasis> : The period
+          between incremetal flushes (in seconds). Default is 3600
+          seconds.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">full-backup-type</emphasis> : The FQN of
+          the full backup job class; Must implement
+          org.exoplatform.services.jcr.ext.backup.BackupJob. By default :
+          org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob
+          used. Please, notice that file-system based implementation
+          org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob is
+          deprecated and not recommended for use.</para>
+        </listitem>
+      </itemizedlist></para>
+  </section>
+
+  <section>
+    <title>RDBMS backup</title>
+
+    <para>RDBMS backup It is the lastest, currently supportedm used by default
+    and recommended implementation of full backup job for BackupManager
+    service. It is useful in case when database is used to store data.</para>
+
+    <para>Brings such advantages:</para>
+
+    <para><itemizedlist>
+        <listitem>
+          <para>fast: backup takes only several minutes to perform full backup
+          of repository with 1 million rows in tables;</para>
+        </listitem>
+
+        <listitem>
+          <para>atomic restore: restore process into existing
+          workspace/repository with same configuration is atomic, it means you
+          don’t loose the data when restore failed, the original data
+          remains;</para>
+        </listitem>
+
+        <listitem>
+          <para>cluster aware: it is possible to make backup/restore in
+          cluster environment into existing workspace/repository with same
+          configuration;</para>
+        </listitem>
+
+        <listitem>
+          <para>consistence backup: all threads make waiting until backup is
+          finished and then continue to work, so, there are no data
+          modification during backup process;</para>
         </listitem>
       </itemizedlist></para>
   </section>
@@ -318,24 +360,27 @@ backup.restore(bchLog, repositoryEntry, workspaceEntry);</programlisting>
         </note>
 
         <para>To restore a backup over an existing workspace, you are required
-        to clear its data. Your backup process should follow these steps:</para>
-          <itemizedlist>
-            <listitem>
-              <para>Remove workspace</para>
-            </listitem>
-          </itemizedlist>
+        to clear its data. Your backup process should follow these
+        steps:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Remove workspace</para>
+          </listitem>
+        </itemizedlist>
+
         <programlisting language="java">ManageableRepository repo = repositoryService.getRepository(repository);
 repo.removeWorkspace(workspace);</programlisting>
-            
-          <itemizedlist>
-            <listitem>
-              <para>Clean database, value storage, index</para>
-            </listitem>
 
-            <listitem>
-              <para>Restore (see snippet above)</para>
-            </listitem>
-          </itemizedlist>
+        <itemizedlist>
+          <listitem>
+            <para>Clean database, value storage, index</para>
+          </listitem>
+
+          <listitem>
+            <para>Restore (see snippet above)</para>
+          </listitem>
+        </itemizedlist>
       </section>
 
       <section>
@@ -349,23 +394,27 @@ repo.removeWorkspace(workspace);</programlisting>
         <para>Restoring the JCR System workspace requires to shutdown the
         system and use of a special initializer.</para>
 
-        <para>Follow these steps (this will also work for normal workspaces): </para>
+        <para>Follow these steps (this will also work for normal
+        workspaces):</para>
+
         <itemizedlist>
-            <listitem>
-              <para>Stop repository (or portal)</para>
-            </listitem>
+          <listitem>
+            <para>Stop repository (or portal)</para>
+          </listitem>
 
-            <listitem>
-              <para>Clean database, value storage, index;</para>
-            </listitem>
+          <listitem>
+            <para>Clean database, value storage, index;</para>
+          </listitem>
 
-            <listitem>
-              <para>In configuration, the workspace set
-              BackupWorkspaceInitializer to refer to your backup.</para>
-            </listitem>              
-          </itemizedlist>
-              <para>For example:</para>
-              <programlisting language="xml">&lt;workspaces&gt;
+          <listitem>
+            <para>In configuration, the workspace set
+            BackupWorkspaceInitializer to refer to your backup.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>For example:</para>
+
+        <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="production" ... &gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
       ...
@@ -378,12 +427,12 @@ repo.removeWorkspace(workspace);</programlisting>
     ...
 &lt;/workspace&gt;
 </programlisting>
-    
-          <itemizedlist> 
-            <listitem>
-              <para>Start repository (or portal).</para>
-            </listitem>
-          </itemizedlist>
+
+        <itemizedlist>
+          <listitem>
+            <para>Start repository (or portal).</para>
+          </listitem>
+        </itemizedlist>
       </section>
     </section>
 
@@ -449,22 +498,22 @@ repo.removeWorkspace(workspace);</programlisting>
 
         <para>Example of configuration initializer to resore the workspace
         "backup" over BackupWorkspaceInitializer:</para>
-        <itemizedlist>
-            <listitem>
-              <para>Stop repository (will be skipped this step if workspace is
-              not exists)</para>
-            </listitem>
 
-            <listitem>
-              <para>Clean database, value storage, index; (will be skipped
-              this step if workspace is new)</para>
-            </listitem>
+        <itemizedlist>
+          <listitem>
+            <para>Stop repository (will be skipped this step if workspace is
+            not exists)</para>
+          </listitem>
+
+          <listitem>
+            <para>Clean database, value storage, index; (will be skipped this
+            step if workspace is new)</para>
+          </listitem>
         </itemizedlist>
-            
-              <para>In configuration, the workspace/-s set
-              BackupWorkspaceInitializer to refer to your
-              backup.</para>
-              
+
+        <para>In configuration, the workspace/-s set
+        BackupWorkspaceInitializer to refer to your backup.</para>
+
         <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="backup" ... &gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
@@ -477,11 +526,12 @@ repo.removeWorkspace(workspace);</programlisting>
    &lt;/initializer&gt;
     ...
 &lt;/workspace&gt;</programlisting>
-      <itemizedlist>    
-        <listitem>
-          <para>Start repository</para>
-        </listitem>
-      </itemizedlist> 
+
+        <itemizedlist>
+          <listitem>
+            <para>Start repository</para>
+          </listitem>
+        </itemizedlist>
       </section>
 
       <section>
@@ -489,26 +539,25 @@ repo.removeWorkspace(workspace);</programlisting>
 
         <para>Example of configuration initializers to restore the repository
         "repository" over BackupWorkspaceInitializer:</para>
-        
+
         <itemizedlist>
-            <listitem>
-              <para>Stop repository (will be skipped this step if repository
-              is not exists)</para>
-            </listitem>
+          <listitem>
+            <para>Stop repository (will be skipped this step if repository is
+            not exists)</para>
+          </listitem>
 
-            <listitem>
-              <para>Clean database, value storage, index; (will be skipped
-              this step if repository is new)</para>
-            </listitem>
+          <listitem>
+            <para>Clean database, value storage, index; (will be skipped this
+            step if repository is new)</para>
+          </listitem>
         </itemizedlist>
-            
-              <para>In configuration of repository will be configured
-              initializers of workspace to refer to your backup.</para>
-        
 
-              <para>For example:</para>
-              
-              <programlisting language="xml">...
+        <para>In configuration of repository will be configured initializers
+        of workspace to refer to your backup.</para>
+
+        <para>For example:</para>
+
+        <programlisting language="xml">...
 &lt;workspaces&gt;
  &lt;workspace name="system" ... &gt;
   &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
@@ -549,11 +598,11 @@ repo.removeWorkspace(workspace);</programlisting>
 &lt;/workspaces&gt;
 </programlisting>
 
-          <itemizedlist>
-            <listitem>
-              <para>Start repository.</para>
-            </listitem>
-          </itemizedlist>
+        <itemizedlist>
+          <listitem>
+            <para>Start repository.</para>
+          </listitem>
+        </itemizedlist>
       </section>
     </section>
   </section>
@@ -911,56 +960,5 @@ repo.removeWorkspace(workspace);</programlisting>
     different locations: backup-dir directory of BackupService to support
     interactive operations via Backup API (e.g. console) and backup set files
     for portability (e.g. on another server).</para>
-  </section>
-
-  <section>
-    <title>RDBMS backup</title>
-
-    <para>RDBMS backup It is another implementation of full backup job for
-    BackupManager service. It is useful in case when database is used to store
-    data. </para>
-
-    <para>Brings such advantages:</para>
-
-    <para><itemizedlist>
-        <listitem>
-          <para>fast: backup takes only several minutes to perform full backup
-          of repository with 1 million rows in tables;</para>
-        </listitem>
-
-        <listitem>
-          <para>atomic restore: restore process into existing
-          workspace/repository with same configuration is atomic, it means you
-          don’t loose the data when restore failed, the original data
-          remains;</para>
-        </listitem>
-
-        <listitem>
-          <para>cluster aware: it is possible to make backup/restore in
-          cluster environment into existing workspace/repository with same
-          configuration;</para>
-        </listitem>
-
-        <listitem>
-          <para>consistence backup: all threads make waiting until backup is
-          finished and then continue to work, so, there are no data
-          modification during backup process;</para>
-        </listitem>
-      </itemizedlist>Configuration:</para>
-
-    <programlisting language="xml">&lt;component&gt;
-  &lt;key&gt;org.exoplatform.services.jcr.ext.backup.BackupManager&lt;/key&gt;
-  &lt;type&gt;org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl&lt;/type&gt;
-  &lt;init-params&gt;
-    &lt;properties-param&gt;
-      &lt;name&gt;backup-properties&lt;/name&gt;
-      &lt;property name="default-incremental-job-period" value="3600" /&gt; &lt;!-- set default incremental period = 60 minutes --&gt;
-      &lt;property name="full-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob" /&gt;
-      &lt;property name="incremental-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob" /&gt;
-      &lt;property name="backup-dir" value="target/backup" /&gt;
-    &lt;/properties-param&gt;
-  &lt;/init-params&gt;
-&lt;/component&gt;
-</programlisting>
   </section>
 </chapter>
