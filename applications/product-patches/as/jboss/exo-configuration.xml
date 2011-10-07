@@ -336,7 +336,24 @@
          </value-param -->
       </init-params>
    </component>
+   <component>
+     <type>org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent</type>
+   </component>
 
+   <component>
+     <type>org.exoplatform.services.jcr.ext.repository.RestRepositoryService</type>
+   </component>
+
+   <component>
+     <key>org.exoplatform.services.jcr.ext.backup.BackupManager</key>
+     <type>org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl</type>
+     <init-params>
+       <properties-param>
+         <name>backup-properties</name>
+         <property name="backup-dir" value="${exo.jcr.parent.dir:..}/temp/backup" />
+       </properties-param>
+     </init-params>
+   </component>
    <component>
      <type>org.exoplatform.services.organization.impl.mock.DummyOrganizationService</type>
    </component>
