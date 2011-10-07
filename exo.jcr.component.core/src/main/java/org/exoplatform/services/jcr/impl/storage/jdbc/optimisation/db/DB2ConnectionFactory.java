@@ -23,6 +23,8 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -138,6 +140,54 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
    @Override
    public boolean isReindexingSupport()
    {
-      return true;
+      Connection con = null;
+      try
+      {
+         con = getJdbcConnection();
+         DatabaseMetaData metaData = con.getMetaData();
+         if (metaData.getDatabaseMajorVersion() > 9)
+         {
+            return true;
+         }
+         else if (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() > 7)
+         {
+            return true;
+         }
+         else if (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() == 7)
+         {
+            // returned string like 'SQL09074'
+            char maintenanceVersion =
+               metaData.getDatabaseProductVersion().charAt(metaData.getDatabaseProductVersion().length() - 1);
+            if (new Integer(maintenanceVersion) >= 2)
+            {
+               return true;
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         log.error("Error checking product version.", e);
+      }
+      catch (RepositoryException e)
+      {
+         log.error("Error checking product version.", e);
+      }
+      finally
+      {
+         if (con != null)
+         {
+            try
+            {
+               con.close();
+            }
+            catch (SQLException e)
+            {
+               // ignore me
+            }
+         }
+      }
+      
+      log.debug("The version of DB2 is prior to 9.7.2, so the old indexing mechanism will be used");
+      return false;
    }   
 }
