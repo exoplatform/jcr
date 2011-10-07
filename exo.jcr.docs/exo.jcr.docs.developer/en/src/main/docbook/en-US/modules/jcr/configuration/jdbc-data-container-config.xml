@@ -52,21 +52,29 @@
         </listitem>
 
         <listitem>
-          <para>Sybase 15.0.3 Driver: Sybase jConnect JDBC driver v7 (Build 26502)</para>
+          <para>Sybase 15.0.3 Driver: Sybase jConnect JDBC driver v7 (Build
+          26502)</para>
         </listitem>
 
         <listitem>
           <para>HSQLDB (2.0.0)</para>
         </listitem>
-  
       </itemizedlist></para>
-
 
     <para><note>
         <para>Please note, that JCR requires at least READ_COMMITED isolation
         level and other RDBMS configurations can cause some side-effects and
         issues. So, please, make sure proper isolation level is configured on
         database server side.</para>
+      </note><note>
+        <para>One more mandatory JCR requirement for underlying databases is a
+        case sensitive collation. Microsoft SQL Server both 2005 and 2008
+        customers must configure it's server with collation corresponding to
+        personal needs and requirements, but obligatorily case sensitive. For
+        more information please refer to Microsoft SQL Server documentation
+        page "Selecting a SQL Server Collation" <ulink
+        url="http://msdn.microsoft.com/en-us/library/ms144250.aspx">here.</ulink>
+        </para>
       </note>Each database software supports ANSI SQL standards but also has
     its own specifics. So, each database has its own configuration in eXo JCR
     as a database dialect parameter. If you need a more detailed configuration
@@ -74,8 +82,8 @@
     SQL-script files.</para>
 
     <para>SQL-scripts you can obtain from jar-file
-    exo.jcr.component.core-XXX.XXX.jar:conf/storage/. They also can be
-    found at SVN <ulink
+    exo.jcr.component.core-XXX.XXX.jar:conf/storage/. They also can be found
+    at SVN <ulink
     url="https://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk/exo.jcr.component.core/src/main/resources/conf/storage/">here.</ulink></para>
 
     <para>In the next two tables correspondence between the scripts and
@@ -131,13 +139,12 @@
 
         <td>jcr-sjdbc.sql</td>
       </tr>
-
     </table>
 
     <table border="1">
       <caption>Multi-database</caption>
 
-        <tr>
+      <tr>
         <td>MySQL DB</td>
 
         <td>jcr-mjdbc.mysql.sql</td>
