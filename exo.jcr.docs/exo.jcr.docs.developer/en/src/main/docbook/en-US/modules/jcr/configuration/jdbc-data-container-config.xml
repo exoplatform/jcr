@@ -69,7 +69,7 @@
       </note><note>
         <para>One more mandatory JCR requirement for underlying databases is a
         case sensitive collation. Microsoft SQL Server both 2005 and 2008
-        customers must configure it's server with collation corresponding to
+        customers must configure their server with collation corresponding to
         personal needs and requirements, but obligatorily case sensitive. For
         more information please refer to Microsoft SQL Server documentation
         page "Selecting a SQL Server Collation" <ulink
