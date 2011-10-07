@@ -41,6 +41,8 @@ import javax.sql.DataSource;
 public class DB2ConnectionFactory extends GenericCQConnectionFactory
 {
 
+   private Boolean isReindexingSupport;
+
    /**
     * DB2ConnectionFactory constructor.
     * 
@@ -140,54 +142,59 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
    @Override
    public boolean isReindexingSupport()
    {
-      Connection con = null;
-      try
+      if (isReindexingSupport == null)
       {
-         con = getJdbcConnection();
-         DatabaseMetaData metaData = con.getMetaData();
-         if (metaData.getDatabaseMajorVersion() > 9)
+         Connection con = null;
+         try
          {
-            return true;
-         }
-         else if (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() > 7)
-         {
-            return true;
-         }
-         else if (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() == 7)
-         {
-            // returned string like 'SQL09074'
-            char maintenanceVersion =
-               metaData.getDatabaseProductVersion().charAt(metaData.getDatabaseProductVersion().length() - 1);
-            if (new Integer(maintenanceVersion) >= 2)
+            con = getJdbcConnection();
+            DatabaseMetaData metaData = con.getMetaData();
+            if (metaData.getDatabaseMajorVersion() > 9)
             {
-               return true;
+               isReindexingSupport = true;
+            }
+            else if (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() > 7)
+            {
+               isReindexingSupport = true;
+            }
+            else if (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() == 7)
+            {
+               // returned string like 'SQL09074'
+               char maintenanceVersion =
+                  metaData.getDatabaseProductVersion().charAt(metaData.getDatabaseProductVersion().length() - 1);
+               isReindexingSupport = new Integer(maintenanceVersion) >= 2;
+            }
+            else
+            {
+               isReindexingSupport = false;
             }
          }
-      }
-      catch (SQLException e)
-      {
-         log.error("Error checking product version.", e);
-      }
-      catch (RepositoryException e)
-      {
-         log.error("Error checking product version.", e);
-      }
-      finally
-      {
-         if (con != null)
+         catch (Exception e)
          {
-            try
+            isReindexingSupport = false;
+            log.error("Error checking product version.", e);
+         }
+         finally
+         {
+            if (con != null)
             {
-               con.close();
-            }
-            catch (SQLException e)
-            {
-               // ignore me
+               try
+               {
+                  con.close();
+               }
+               catch (SQLException e)
+               {
+                  // ignore me
+               }
             }
          }
+
+         if (!isReindexingSupport)
+         {
+            log.debug("The version of DB2 is prior to 9.7.2, so the old indexing mechanism will be used");
+         }
       }
-      
-      log.debug("The version of DB2 is prior to 9.7.2, so the old indexing mechanism will be used");
-      return false;
-   }   
+
+      return isReindexingSupport;
+   }
 }
