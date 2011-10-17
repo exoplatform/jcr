@@ -12,9 +12,10 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>jcr-parent</artifactId>
-      <version>1.14.1-GA</version>
+      <version>1.14.1-GA-CP01-SNAPSHOT</version>
    </parent>
    <artifactId>exo.jcr.framework.command</artifactId>
+  <version>1.14.1-GA-CP01-SNAPSHOT </version>
    <name>eXo JCR :: Framework :: Command</name>
    <description>eXo JCR command framework</description>
    <dependencies>

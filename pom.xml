@@ -29,14 +29,14 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.14.1-GA</version>
+  <version>1.14.1-GA-CP01-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
 
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/tags/1.14.1-GA</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.14.1-GA</developerConnection>
-    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/tags/1.14.1-GA</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/branches/1.14.1-GA-CP01</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/branches/1.14.1-GA-CP01</developerConnection>
+    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/branches/1.14.1-GA-CP01</url>
   </scm>
 
   <properties>
@@ -134,66 +134,66 @@
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.component.ext</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.component.core</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.framework.command</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.component.ftp</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.component.webdav</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.framework.web</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.framework.ftpclient</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.cluster.testclient</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.applications.fckeditor</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
         <type>war</type>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.applications.browser</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
         <type>war</type>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.applications.rest</artifactId>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
         <type>war</type>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.connectors.jca</artifactId>
         <type>rar</type>
-        <version>${project.version}</version>
+        <version>1.14.1-GA-CP01-SNAPSHOT </version>
       </dependency>
       <dependency>
         <groupId>commons-lang</groupId>
