@@ -1,0 +1,127 @@
+Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestGet.java
+===================================================================
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestGet.java	(revision 5039)
++++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestGet.java	(working copy)
+@@ -39,6 +39,7 @@
+ import java.io.InputStreamReader;
+ import java.io.Reader;
+ import java.io.StringWriter;
++import java.net.URLDecoder;
+ import java.text.SimpleDateFormat;
+ import java.util.Calendar;
+ import java.util.Locale;
+@@ -194,6 +195,64 @@
+ 
+    }
+ 
++   /**
++    * We test for parent href to be contained in response.
++    * We GET a collection and receive an html. Html should contain
++    * a href to parent collection of requested collection. 
++    * @throws Exception
++    */
++   public void testParentHrefForGetColRequest() throws Exception
++   {
++      String folderOne = TestUtils.getFolderName();
++      String folderTwo = folderOne + TestUtils.getFolderName();
++
++      // add collections
++      TestUtils.addFolder(session, folderOne, defaultFolderNodeType, "");
++      TestUtils.addFolder(session, folderTwo, defaultFolderNodeType, "");
++
++      // get a sub-collection
++      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + folderTwo, "", null, null);
++      assertEquals(HTTPStatus.OK, response.getStatus());
++
++      // serialize response entity to string
++      XSLTStreamingOutput XSLTout = (XSLTStreamingOutput)response.getEntity();
++      ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
++      XSLTout.write(byteOut);
++
++      assertTrue("Response should contain parent collection href", byteOut.toString().contains(folderOne));
++   }
++
++   /**
++    * We test for parent href to be contained in response. We GET a collection,
++    * which has non latin letters in its name, and receive an html like response. 
++    * Response should contain href to parent collection of requested collection.
++    * Details can be found here: https://issues.jboss.org/browse/EXOJCR-1379
++    * @throws Exception
++    */
++   public void testParentHrefForGetColWithNonLatinNameRequest() throws Exception
++   {
++      // "%40" corresponds to '@' symbol
++      String folderOne = TestUtils.getFolderName() + "%40";
++      String folderTwo = folderOne + TestUtils.getFolderName() + "%40";
++
++      ContainerResponse response;
++
++      //add collections
++      TestUtils.addFolder(session, URLDecoder.decode(folderOne, "UTF-8"), defaultFolderNodeType, "");
++      TestUtils.addFolder(session, URLDecoder.decode(folderTwo, "UTF-8"), defaultFolderNodeType, "");
++
++      //get a sub-collection
++      response = service(WebDAVMethods.GET, getPathWS() + folderTwo, "", null, null);
++      assertEquals(HTTPStatus.OK, response.getStatus());
++
++      // serialize response entity to string
++      XSLTStreamingOutput XSLTout = (XSLTStreamingOutput)response.getEntity();
++      ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
++      XSLTout.write(byteOut);
++
++      assertTrue("Response should contain parent collection href", byteOut.toString().contains(folderOne));
++   }
++
+    @Override
+    protected String getRepositoryName()
+    {
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/resource/CollectionResource.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/resource/CollectionResource.java	(revision 5039)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/resource/CollectionResource.java	(working copy)
+@@ -86,6 +86,11 @@
+    final String XML_HREF = "xlink:href";
+ 
+    /**
++    * XML parent href constant.
++    */
++   final static String XML_PARENT_HREF = "xlink:parent-href";
++
++   /**
+     * XML namespace prefix.
+     */
+    final String PREFIX_XMLNS = "xmlns:sv";
+@@ -418,6 +423,20 @@
+                writer.writeAttribute(XLINK_XMLNS, XLINK_LINK);
+                writer.writeAttribute(XML_NAME, node.getName());
+                writer.writeAttribute(XML_HREF, rootHref + TextUtil.escape(node.getPath(), '%', true));
++
++
++               if (!node.getPath().equals("/"))
++               {
++                  // this is added to fix EXOJCR-1379
++                  // XSLT string operations with actual node href, (which are used during XSLT transformation
++                  // to receive parent href) produce wrong parent-href if node path containes non-latin symbols, 
++                  // so instead we simply add one more attribute which already contains parent-href
++                  // as result: no XLST processor string manipulation is needed
++                  String nodeParentHref = rootHref + TextUtil.escape(node.getParent().getPath(), '%', true);
++                  writer.writeAttribute(XML_PARENT_HREF, nodeParentHref);
++               }
++
++
+                // add properties
+                for (PropertyIterator pi = node.getProperties(); pi.hasNext();)
+                {
+Index: exo.jcr.component.webdav/src/main/resources/xslt/get-method.xsl
+===================================================================
+--- exo.jcr.component.webdav/src/main/resources/xslt/get-method.xsl	(revision 5039)
++++ exo.jcr.component.webdav/src/main/resources/xslt/get-method.xsl	(working copy)
+@@ -26,7 +26,7 @@
+             <!-- Parent node link -->
+             <a>
+               <xsl:attribute name="href">
+-                <xsl:value-of select="substring(./@xlink:href, 1, string-length(./@xlink:href) - string-length(./@sv:name))" />
++                <xsl:value-of select="./@xlink:parent-href" />
+               </xsl:attribute>
+               <xsl:if test="$folder-icon-path!=''">
+                 <img src="{$folder-icon-path}" alt="" />
