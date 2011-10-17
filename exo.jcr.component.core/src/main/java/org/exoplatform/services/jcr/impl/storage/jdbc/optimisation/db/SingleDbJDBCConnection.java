@@ -209,7 +209,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
 
       FIND_PROPERTY_BY_ID =
-         "select I.P_TYPE, V.STORAGE_DESC from JCR_SITEM I, JCR_SVALUE V where I.CONTAINER_NAME=? and I.ID = ? and V.PROPERTY_ID = I.ID";
+         "select I.P_TYPE, V.STORAGE_DESC from JCR_SITEM I, JCR_SVALUE V where I.ID = ? and V.PROPERTY_ID = I.ID";
       DELETE_VALUE_BY_ORDER_NUM = "delete from JCR_SVALUE where PROPERTY_ID=? and ORDER_NUM >= ?";
       UPDATE_VALUE = "update JCR_SVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=? and ORDER_NUM=?";
 
@@ -823,8 +823,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       else
          findPropertyById.clearParameters();
 
-      findPropertyById.setString(1, containerName);
-      findPropertyById.setString(2, id);
+      findPropertyById.setString(1, id);
       return findPropertyById.executeQuery();
    }
    
