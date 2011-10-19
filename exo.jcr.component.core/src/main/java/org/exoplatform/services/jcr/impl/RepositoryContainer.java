@@ -610,6 +610,7 @@ public class RepositoryContainer extends ExoContainer
             {
 
                registerComponentImplementation(RepositorySuspendController.class);
+               registerComponentImplementation(RepositoryCheckController.class);
                registerComponentImplementation(IdGenerator.class);
 
                registerComponentImplementation(RepositoryIndexSearcherHolder.class);

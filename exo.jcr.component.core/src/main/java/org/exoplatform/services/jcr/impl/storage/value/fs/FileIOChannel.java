@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.ValueOperation;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.DeleteValues;
@@ -30,7 +31,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -163,6 +166,48 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    public ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException
    {
       return readValue(getFile(propertyId, orderNumber), orderNumber, maxBufferSize);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void checkValueData(String propertyId, int orderNumber) throws ValueDataNotFoundException, IOException
+   {
+      try
+      {
+         //check that file exists
+         File f = getFile(propertyId, orderNumber);
+         if (!f.exists())
+         {
+            throw new ValueDataNotFoundException("Value data of property with [id=" + propertyId + ", ordernum="
+               + orderNumber + "] do not exists.");
+         }
+         else
+         {
+            //check readability
+            InputStream is = new FileInputStream(f);
+            try
+            {
+               is.read();
+            }
+            finally
+            {
+               try
+               {
+                  is.close();
+               }
+               catch (IOException e)
+               {
+               }
+            }
+         }
+      }
+      catch (IOException e)
+      {
+         throw new ValueDataNotFoundException("Value data of property [id=" + propertyId + ", ordernum=" + orderNumber
+            + "] can not be read.");
+
+      }
    }
 
    /**

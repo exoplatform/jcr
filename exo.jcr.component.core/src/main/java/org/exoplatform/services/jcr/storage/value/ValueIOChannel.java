@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.storage.value;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 
 import java.io.IOException;
 
@@ -44,6 +45,16 @@ public interface ValueIOChannel
     *           if error occurs
     */
    ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException;
+
+   /**
+    * Check ValueData. Check that value storage contain this value and value is readable.
+    * 
+    * @param propertyId - Property ID
+    * @param orderNumber - Property order number
+    * @throws ValueDataNotFoundException thrown if value data not exist or can not be read
+    * @throws IOException
+    */
+   void checkValueData(String propertyId, int orderNumber) throws ValueDataNotFoundException, IOException;
 
    /**
     * Add or update Property value.

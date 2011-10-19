@@ -18,7 +18,9 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.InspectionLog;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
@@ -222,4 +224,17 @@ public interface QueryHandler
     */
    boolean isOnline();
 
+   /**
+    * Check index consistency. Iterator goes through index documents and check, does each document have
+    * according jcr-node. If <b>autoRepair</b> is true - all broken index-documents will be reindexed,
+    * and documents that do not have corresponding jcr-node will be removed.
+    * 
+    * @param itemStateManager
+    * @param isSystem
+    * @param inspectionLog
+    * @throws RepositoryException
+    * @throws IOException
+    */
+   void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, InspectionLog inspectionLog)
+      throws RepositoryException, IOException;
 }

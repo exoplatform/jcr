@@ -22,6 +22,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
@@ -48,6 +49,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.InspectionLog;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
@@ -88,6 +90,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -388,6 +392,78 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       AbstractQueryImpl query = createQueryInstance();
       query.init(session, sessionDataManager, handler, statement, language);
       return query;
+   }
+
+   /**
+    * Check index consistency. Iterator goes through index documents and check, does each document have
+    * according jcr-node. If index is suspended then it will be temporary resumed, while check is running and suspended afterwards.
+	 */
+   public void checkIndex(final InspectionLog inspectionLog, final boolean isSystem) throws RepositoryException, IOException
+   { 
+	  
+      if (isSuspended)
+      {
+         try
+         {
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
+            {
+               public Object run() throws RepositoryException, IOException
+               {
+                  // try resuming the workspace
+                  try
+                  {
+                     if (isSystem && parentSearchManager != null && parentSearchManager.isSuspended)
+                     {
+                        parentSearchManager.resume();
+                     }
+                     resume();
+                     
+                     handler.checkIndex(itemMgr, isSystem, inspectionLog);
+                     return null;
+                  }
+                  catch (ResumeException e)
+                  {
+                     throw new RepositoryException("Can not resume SearchManager for inspection purposes.", e);
+                  }
+                  finally
+                  {
+                     // safely return the state of the workspace
+                     try
+                     {
+                        suspend();
+                        if (isSystem && parentSearchManager != null && !parentSearchManager.isSuspended)
+                        {
+                           parentSearchManager.suspend();
+                        }
+                     }
+                     catch (SuspendException e)
+                     {
+                        log.error(e.getMessage(), e);
+                     }
+                  }
+               }
+            });
+         }
+         catch (PrivilegedActionException e)
+         {
+            Throwable ex = e.getCause();
+            if (ex instanceof RepositoryException)
+            {
+               throw (RepositoryException)ex;
+            }
+            else if (ex instanceof IOException)
+            {
+               throw (IOException)ex;
+            }
+            else
+            {
+               throw new RepositoryException(ex.getMessage(), ex);
+            }
+         }
+      }else{
+         // simply run checkIndex, if not suspended
+         handler.checkIndex(itemMgr, isSystem, inspectionLog);
+      }
    }
 
    /**

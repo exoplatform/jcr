@@ -23,7 +23,6 @@ import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
@@ -38,13 +37,8 @@ import javax.jcr.RepositoryException;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "RepositorySuspendController"))
-public class RepositorySuspendController implements Startable
+public class RepositorySuspendController extends AbstractRepositorySuspender implements Startable
 {
-   /**
-    * The current repository.
-    */
-   private final ManageableRepository repository;
-
    /**
     * Logger.
     */
@@ -55,7 +49,7 @@ public class RepositorySuspendController implements Startable
     */
    public RepositorySuspendController(ManageableRepository repository)
    {
-      this.repository = repository;
+      super(repository);
    }
 
    /**
@@ -69,23 +63,15 @@ public class RepositorySuspendController implements Startable
             "All writing threads will wait until resume operations invoked.")
    public String suspend()
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
       try
       {
-         repository.setState(ManageableRepository.SUSPENDED);
+         suspendRepository();
       }
       catch (RepositoryException e)
       {
          log.error(e);
       }
-
-      return getState();
+      return getRepositoryStateTitle();
    }
 
    /**
@@ -97,23 +83,15 @@ public class RepositorySuspendController implements Startable
    @ManagedDescription("Resume repository. All previously suspended threads continue working.")
    public String resume()
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
       try
       {
-         repository.setState(ManageableRepository.ONLINE);
+         resumeRepository();
       }
       catch (RepositoryException e)
       {
          log.error(e);
       }
-
-      return getState();
+      return getRepositoryStateTitle();
    }
 
    /**
@@ -123,7 +101,7 @@ public class RepositorySuspendController implements Startable
    @ManagedDescription("Returns repository state.")
    public String getState()
    {
-      return repository.getStateTitle();
+      return getRepositoryStateTitle();
    }
 
    /**

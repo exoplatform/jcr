@@ -44,12 +44,15 @@ import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.InspectionLog;
+import org.exoplatform.services.jcr.impl.InspectionLog.InspectionStatus;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
@@ -859,6 +862,127 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          catch (Exception e)
          {
             log.warn("Failed to run consistency check on index: " + e);
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, final InspectionLog inspectionLog)
+      throws RepositoryException, IOException
+   {
+
+      // The visitor, that performs item enumeration and checks if all nodes present in 
+      // persistent layer are indexed. Also collects the list of all indexed nodes
+      // to optimize the process of backward check, when index is traversed to find
+      // references to already deleted nodes
+      class ItemDataIndexConsistencyVisitor extends ItemDataTraversingVisitor
+      {
+         private final IndexReader indexReader;
+
+         private final Set<String> indexedNodes = new HashSet<String>();
+
+         /**
+          * @param dataManager
+          */
+         public ItemDataIndexConsistencyVisitor(ItemDataConsumer dataManager, IndexReader indexReader)
+         {
+            super(dataManager);
+            this.indexReader = indexReader;
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         @Override
+         protected void entering(PropertyData property, int level) throws RepositoryException
+         {
+            // ignore properties;
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         @Override
+         protected void entering(NodeData node, int level) throws RepositoryException
+         {
+            // process node uuids one-by-one
+            try
+            {
+               String uuid = node.getIdentifier();
+               TermDocs docs = indexReader.termDocs(new Term(FieldNames.UUID, uuid));
+
+               if (docs.next())
+               {
+                  indexedNodes.add(uuid);
+                  docs.doc();
+                  if (docs.next())
+                  {
+                     //multiple entries
+                     inspectionLog.logBrokenObjectInfo("ID=" + uuid, "Multiple entires.", InspectionStatus.REINDEX);
+                  }
+               }
+               else
+               {
+                  inspectionLog.logBrokenObjectInfo("ID=" + uuid, "Not indexed.", InspectionStatus.REINDEX);
+               }
+            }
+            catch (IOException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+         }
+
+         @Override
+         protected void leaving(PropertyData property, int level) throws RepositoryException
+         {
+            // ignore properties
+         }
+
+         @Override
+         protected void leaving(NodeData node, int level) throws RepositoryException
+         {
+            // do nothing
+         }
+
+         @Override
+         protected void visitChildProperties(NodeData node) throws RepositoryException
+         {
+            //do nothing
+         }
+
+         public Set<String> getIndexedNodes()
+         {
+            return indexedNodes;
+         }
+      }
+
+      // check relation Persistent Layer -> Index
+      // If current workspace is system, then need to invoke reader correspondent to system index
+      IndexReader indexReader = getIndexReader(isSystem);
+      ItemData root = itemStateManager.getItemData(Constants.ROOT_UUID);
+      ItemDataIndexConsistencyVisitor visitor = new ItemDataIndexConsistencyVisitor(itemStateManager, indexReader);
+      root.accept(visitor);
+
+      Set<String> documentUUIDs = visitor.getIndexedNodes();
+
+      // check relation Index -> Persistent Layer
+      // find document that do not corresponds to real node
+      // iterate on documents one-by-one
+      for (int i = 0; i < indexReader.maxDoc(); i++)
+      {
+         if (indexReader.isDeleted(i))
+         {
+            continue;
+         }
+         final int currentIndex = i;
+         Document d = indexReader.document(currentIndex, FieldSelectors.UUID);
+         String uuid = d.get(FieldNames.UUID);
+         if (!documentUUIDs.contains(uuid))
+         {
+            inspectionLog.logBrokenObjectInfo("ID=" + uuid, "Document corresponds to removed node.",
+               InspectionStatus.REINDEX);
          }
       }
    }
