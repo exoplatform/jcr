@@ -73,7 +73,6 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testDB()
    {
       String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
-      System.out.println("\n\n\n\n\n\n"+result+"\n\n\n\n\n\n");
       assertEquals("Repository data is consistent. See full report by path "
          + checkController.getLastLogFile().getAbsolutePath(), result);
    }
@@ -112,7 +111,6 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       String result =
          checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE,
             DataStorage.LUCENE_INDEX});
-      System.out.println("\n\n\n\n\n\n"+result+"\n\n\n\n\n\n");
       assertEquals("Repository data is consistent. See full report by path "
          + checkController.getLastLogFile().getAbsolutePath(), result);
    }
