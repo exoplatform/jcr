@@ -152,7 +152,9 @@ public class FileSystemLockPersister implements LockPersister
          return;
       }
       if (!lockFile.delete())
+      {
          throw new LockException("Fail to remove lock information");
+      }
 
    }
 
@@ -197,9 +199,11 @@ public class FileSystemLockPersister implements LockPersister
                   (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKOWNER, 0),
                      ItemType.PROPERTY);
                if (dataLockOwner != null)
+               {
                   plainChangesLog.add(ItemState.createDeletedState(new TransientPropertyData(QPath.makeChildPath(
                      lockedNodeData.getQPath(), Constants.JCR_LOCKOWNER), dataLockOwner.getIdentifier(), 0,
                      dataLockOwner.getType(), dataLockOwner.getParentIdentifier(), dataLockOwner.isMultiValued())));
+               }
 
                if (plainChangesLog.getSize() > 0)
                {
@@ -222,7 +226,9 @@ public class FileSystemLockPersister implements LockPersister
                log.warn("Persistent lock information for node id " + list[i] + " doesn't exists");
             }
             if (!lockFile.delete())
+            {
                throw new LockException("Fail to remove lock information");
+            }
          }
       }
       catch (RepositoryException e)
@@ -288,8 +294,10 @@ public class FileSystemLockPersister implements LockPersister
       String root = config.getParameterValue(PARAM_ROOT_DIR);
 
       if (root == null)
+      {
          throw new RepositoryConfigurationException("Repository service configuration." + " Source name ("
             + PARAM_ROOT_DIR + ") is expected");
+      }
       rootDir = new File(root);
       if (rootDir.exists())
       {
@@ -301,7 +309,9 @@ public class FileSystemLockPersister implements LockPersister
       else
       {
          if (!rootDir.mkdirs())
+         {
             throw new RepositoryException("Can't create dir" + root);
+         }
       }
    }
 }

@@ -219,19 +219,18 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
                // we have pair of logs for system and non-system (this) workspaces
                final String pairId = IdGenerator.generate();
 
-               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType(),
-                  pairId));
-               nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType(),
-                  pairId));
+               versionLogs.addLog(PlainChangesLogImpl.createCopy(vstates, pairId, changes));
+               nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, pairId, changes));
             }
             else
             {
-               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType()));
+               versionLogs.addLog(PlainChangesLogImpl.createCopy(vstates, changes));
+               nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
             }
          }
          else if (nvstates.size() > 0)
          {
-            nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType()));
+            nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
          }
       }
 

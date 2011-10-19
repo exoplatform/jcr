@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
+import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -84,9 +85,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     * 
     * @param sessionId
     */
-   public SessionChangesLog(String sessionId)
+   public SessionChangesLog(ExtendedSession session)
    {
-      super(sessionId);
+      super(session);
    }
 
    /**
@@ -95,14 +96,14 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     * @param items
     * @param sessionId
     */
-   public SessionChangesLog(List<ItemState> items, String sessionId)
+   public SessionChangesLog(List<ItemState> items, ExtendedSession session)
    {
-      super(items, sessionId);
+      super(items, session);
       for (int i = 0, length = items.size(); i < length; i++)
       {
          ItemState change = items.get(i);
          addItem(change);
-      }     
+      }
    }
 
    /**
@@ -192,13 +193,17 @@ public final class SessionChangesLog extends PlainChangesLogImpl
             {
                Map<String, ItemState> children = lastChildNodeStates.get(item.getData().getParentIdentifier());
                if (children != null)
+               {
                   children.remove(item.getData().getIdentifier());
+               }
             }
             else
             {
                Map<String, ItemState> children = lastChildPropertyStates.get(item.getData().getParentIdentifier());
                if (children != null)
+               {
                   children.remove(item.getData().getIdentifier());
+               }
             }
          }
       }
@@ -324,7 +329,8 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     */
    public PlainChangesLog pushLog(QPath rootPath)
    {
-      PlainChangesLog cLog = new PlainChangesLogImpl(sessionId);
+      // session instance is always present in SessionChangesLog
+      PlainChangesLog cLog = new PlainChangesLogImpl(session);
 
       if (rootPath.equals(Constants.ROOT_PATH))
       {
@@ -422,7 +428,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       {
          ItemData item = items.get(i).getData();
          if (item.getParentIdentifier().equals(rootIdentifier) || item.getIdentifier().equals(rootIdentifier))
+         {
             list.add(items.get(i));
+         }
       }
       return list;
    }
@@ -478,11 +486,15 @@ public final class SessionChangesLog extends PlainChangesLogImpl
          {
             // the node
             if (items.get(i).isAdded())
+            {
                // if a new item - no modify changes can be
                return new ArrayList<ItemState>();
+            }
 
             if (!items.get(i).isDeleted())
+            {
                changes.put(item.getIdentifier(), items.get(i));
+            }
          }
          else if (item.getParentIdentifier().equals(rootData.getIdentifier()))
          {
@@ -538,7 +550,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
                         rename = state;
                         delete = allStates.get(i - 1); // try the fresh delete state
                         if (delete.getData().getIdentifier().equals(rename.getData().getIdentifier()))
+                        {
                            return new ItemState[]{delete, rename}; // 3. ok, got it
+                        }
                      }
                   }
 
@@ -594,7 +608,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
             }
          }
          else
+         {
             byState = true;
+         }
          if (byState
             && (isPersisted != null ? istate.isPersisted() == isPersisted : true)
             && ((orAncestor != null && orAncestor ? rootPath.isDescendantOf(istate.getData().getQPath()) : true) || rootPath
@@ -641,7 +657,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
             }
          }
          else
+         {
             byState = true;
+         }
          if (byState && (isPersisted != null ? istate.isPersisted() == isPersisted : true)
             && istate.getData().getIdentifier().equals(id))
          {
@@ -757,22 +775,34 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       public boolean equals(Object obj)
       {
          if (this == obj)
+         {
             return true;
+         }
          if (obj == null)
+         {
             return false;
+         }
          if (getClass() != obj.getClass())
+         {
             return false;
+         }
          IDStateBasedKey other = (IDStateBasedKey)obj;
 
          if (identifier == null)
          {
             if (other.identifier != null)
+            {
                return false;
+            }
          }
          else if (!identifier.equals(other.identifier))
+         {
             return false;
+         }
          if (state != other.state)
+         {
             return false;
+         }
          return true;
       }
    }
@@ -846,37 +876,55 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       public boolean equals(Object obj)
       {
          if (this == obj)
+         {
             return true;
+         }
          if (obj == null)
+         {
             return false;
+         }
          if (getClass() != obj.getClass())
+         {
             return false;
+         }
          ParentIDQPathBasedKey other = (ParentIDQPathBasedKey)obj;
 
          if (name == null)
          {
             if (other.name != null)
+            {
                return false;
+            }
          }
          else if (!name.getName().equals(other.name.getName())
             || !name.getNamespace().equals(other.name.getNamespace()) || name.getIndex() != other.name.getIndex())
+         {
             return false;
+         }
 
          if (parentIdentifier == null)
          {
             if (other.parentIdentifier != null)
+            {
                return false;
+            }
          }
          else if (!parentIdentifier.equals(other.parentIdentifier))
+         {
             return false;
+         }
 
          if (itemType == null)
          {
             if (other.itemType != null)
+            {
                return false;
+            }
          }
          else if (!itemType.equals(other.itemType))
+         {
             return false;
+         }
 
          return true;
       }

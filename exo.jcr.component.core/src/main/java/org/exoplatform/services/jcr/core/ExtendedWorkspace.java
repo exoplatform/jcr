@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.core;
 
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -57,5 +59,13 @@ public interface ExtendedWorkspace extends Workspace
    void importXML(String parentAbsPath, InputStream in, int uuidBehavior, Map<String, Object> context)
       throws IOException, PathNotFoundException, ItemExistsException, ConstraintViolationException,
       InvalidSerializedDataException, RepositoryException;
+
+   /**
+    * Returns {@link NodeTypeDataManager} instance
+    * 
+    * @return NodeTypeDataManager
+    * @throws RepositoryException
+    */
+   NodeTypeDataManager getNodeTypesHolder() throws RepositoryException;
 
 }

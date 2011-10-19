@@ -174,7 +174,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       this.bestEffort = bestEffort;
       this.failed = failed;
 
-      this.changes = new SessionChangesLog(mergeSession.getId());
+      this.changes = new SessionChangesLog(mergeSession);
    }
 
    @Override
@@ -530,6 +530,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
             ItemType.PROPERTY);
 
       if (predecessorsProperty != null)
+      {
          for (ValueData pv : predecessorsProperty.getValues())
          {
             try
@@ -537,7 +538,9 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
                String pidentifier = new String(pv.getAsByteArray());
 
                if (pidentifier.equals(corrVersion.getIdentifier()))
+               {
                   return true; // got it
+               }
 
                // search in predecessors of the predecessor
                NodeData predecessor = (NodeData)mergeDataManager.getItemData(pidentifier);
@@ -560,6 +563,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
             }
          }
       // else it's a root version
+      }
 
       return false;
    }
@@ -576,6 +580,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
             ItemType.PROPERTY);
 
       if (successorsProperty != null)
+      {
          for (ValueData sv : successorsProperty.getValues())
          {
             try
@@ -583,7 +588,9 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
                String sidentifier = new String(sv.getAsByteArray());
 
                if (sidentifier.equals(corrVersion.getIdentifier()))
+               {
                   return true; // got it
+               }
 
                // search in successors of the successor
                NodeData successor = (NodeData)mergeDataManager.getItemData(sidentifier);
@@ -606,6 +613,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
             }
          }
       // else it's a end of version graph node
+      }
 
       return false;
    }

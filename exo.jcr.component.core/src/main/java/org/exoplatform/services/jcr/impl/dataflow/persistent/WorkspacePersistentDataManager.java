@@ -270,9 +270,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          RepositoryException, IOException
       {
          // copy state
-         PlainChangesLogImpl newLog =
-            new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSessionId(), changesLog.getEventType(),
-               changesLog.getPairId());
+         PlainChangesLogImpl newLog = PlainChangesLogImpl.createCopy(new ArrayList<ItemState>(), changesLog);
 
          for (Iterator<ItemState> iter = changesLog.getAllStates().iterator(); iter.hasNext();)
          {

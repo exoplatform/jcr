@@ -328,7 +328,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
          throw new ReferentialIntegrityException("There are Reference property pointed to this Version "
             + refs.get(0).getQPath().getAsString());
 
-      PlainChangesLog changes = new PlainChangesLogImpl(session.getId());
+      PlainChangesLog changes = new PlainChangesLogImpl(session);
 
       // remove labels first
       try
@@ -506,7 +506,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
 
       NodeData versionData = getVersionData(versionName);
 
-      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
+      SessionChangesLog changesLog = new SessionChangesLog(session);
 
       PropertyData labelData =
          TransientPropertyData.createPropertyData(labels, labelQName, PropertyType.REFERENCE, false,
@@ -532,7 +532,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
 
       if (vldata != null)
       {
-         PlainChangesLog changes = new PlainChangesLogImpl(session.getId());
+         PlainChangesLog changes = new PlainChangesLogImpl(session);
          changes.add(ItemState.createDeletedState(vldata));
          dataManager.getTransactManager().save(changes);
       }

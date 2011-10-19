@@ -94,7 +94,7 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
                .getAncestorToSave(), change.isInternallyCreated(), change.isPersisted()));
          }
 
-         newLog.addLog(new PlainChangesLogImpl(states, changes.getSessionId(), changes.getEventType()));
+         newLog.addLog(PlainChangesLogImpl.createCopy(states, changes));
       }
 
       storageDataManager.save(newLog);
@@ -139,7 +139,7 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    {
       return storageDataManager.getLastOrderNumber(parent);
    }
-   
+
    /**
     * {@inheritDoc}
     */
