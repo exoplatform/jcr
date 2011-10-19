@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.RepositoryCheckController">
+  <?dbhtml filename="ch-repo-check-controller.html"?>
+
+  <title>Checking repository integrity and consistency</title>
+
+  <section>
+    <title>JMX-based consistency tool</title>
+
+    <para>Production and any other system may have faults some day. They may
+    be caused by hardware problems, human faults, software errors during
+    updates and many other circumstances. It is important to check integrity
+    and consistency of the system if there is no backup or it is stale, or
+    recovery process takes much. Exo JCR implementation offers an innovative
+    JMX-based complex checking tool. Running inspection, tool check every
+    major JCR component, such as persistent data layer and index. Persistent
+    layer includes JDBC Data Container and Value-Storages if they are
+    configured. Database verified using the set of complex specialized
+    domain-specific queries. Value Storage tool checks existence and access to
+    each file. Index verification contains two-way pass cycle, existence of
+    each node in index checks on persistent layer along with opposite
+    direction, when each node from Data Container validated in index. Access
+    to check tool is exposed via JMX interface, with the following operation
+    available: </para>
+
+    <table>
+      <title>Available methods</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>checkRepositoryDataConsistency()</entry>
+
+            <entry>Inspect full repository data (db, value storage and search
+            index)</entry>
+          </row>
+
+          <row>
+            <entry>checkRepositoryDataBaseConsistency()</entry>
+
+            <entry>Inspect only DB</entry>
+          </row>
+
+          <row>
+            <entry>checkRepositoryValueStorageConsistency()</entry>
+
+            <entry>Inspect only ValueStorage</entry>
+          </row>
+
+          <row>
+            <entry>checkRepositorySearchIndexConsistency()</entry>
+
+            <entry>Inspect only SearchIndex</entry>
+          </row>
+
+          <row>
+            <entry>getStatus()</entry>
+
+            <entry>Get inspection process status. If process is finished, it
+            will return inspection result.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>Operations are launched in a separate thread without blocking JMX
+    connection and the status of background job can be accessed by getStatus()
+    operation. All inspection activities and corrupted data identifier are
+    stored in file, which can be found in app directory by name
+    <code>report-&lt;repository name&gt;-dd-MMM-yy-HH-mm.txt</code>. Path to
+    file will be returned in result message also. Please, take in account
+    thare is three types of inconsistency and two of them are critical. They
+    are Errors and Index faults. Index faults are marked as "Reindex" and can
+    be fixed by reindexing the workspace, but the Errors can only be fixed
+    manually. Warnings found by tool can be a normal situation in some cases
+    and usually production system will still remain fully functional.</para>
+  </section>
+</chapter>
