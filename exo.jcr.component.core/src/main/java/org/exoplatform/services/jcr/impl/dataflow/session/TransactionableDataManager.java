@@ -254,6 +254,15 @@ public class TransactionableDataManager implements TransactionResource, DataMana
     */
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
+      return getItemData(parentData, name, itemType, true);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
+      throws RepositoryException
+   {
       ItemData data = null;
       if (txStarted())
       {
@@ -269,7 +278,7 @@ public class TransactionableDataManager implements TransactionResource, DataMana
       }
       else
       {
-         return storageDataManager.getItemData(parentData, name, itemType);
+         return storageDataManager.getItemData(parentData, name, itemType, createNullItemData);
       }
    }
 

@@ -118,7 +118,7 @@ public class ItemAutocreator
          {
             final ItemData pdata =
                avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
-                  ndef.getName(), 0), ItemType.NODE);
+                  ndef.getName(), 0), ItemType.NODE, false);
             if (pdata == null && !addedNodes.contains(ndef.getName()) || pdata != null && !pdata.isNode())
             {
 
@@ -163,7 +163,7 @@ public class ItemAutocreator
 
             final ItemData pdata =
                avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
-                  pdef.getName(), 0), ItemType.PROPERTY);
+                  pdef.getName(), 0), ItemType.PROPERTY, false);
             if (pdata == null && !addedProperties.contains(pdef.getName()) || pdata != null && pdata.isNode())
             {
 

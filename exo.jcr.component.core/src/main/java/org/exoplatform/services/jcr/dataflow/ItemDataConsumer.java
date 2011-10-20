@@ -70,6 +70,24 @@ public interface ItemDataConsumer
    ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException;
 
    /**
+    * Find Item by parent (id) and name (with path index) of defined type and create 
+    * or not (defined by createNullItemData) null item data.
+    * 
+    * @param parent 
+    *          NodeData
+    * @param name 
+    *          item name
+    * @param itemType 
+    *          itemType
+    * @param createNullItemData 
+    *          defines if NullItemData should be created          
+    * @return ItemData, data by parent and name
+    * @throws RepositoryException
+    */
+   ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
+      throws RepositoryException;
+
+   /**
     * Find Item by identifier.
     * 
     * @param String identifier

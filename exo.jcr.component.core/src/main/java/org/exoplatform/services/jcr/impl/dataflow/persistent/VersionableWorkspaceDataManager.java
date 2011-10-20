@@ -139,15 +139,24 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
    @Override
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
+      return getItemData(parentData, name, itemType, true);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
+      throws RepositoryException
+   {
       if (parentData != null)
       {
          final QPath ipath = QPath.makeChildPath(parentData.getQPath(), name);
          if (isSystemDescendant(ipath) && !this.equals(versionDataManager))
          {
-            return versionDataManager.getItemData(parentData, name, itemType);
+            return versionDataManager.getItemData(parentData, name, itemType, createNullItemData);
          }
       }
-      return super.getItemData(parentData, name, itemType);
+      return super.getItemData(parentData, name, itemType, createNullItemData);
    }
 
    /**

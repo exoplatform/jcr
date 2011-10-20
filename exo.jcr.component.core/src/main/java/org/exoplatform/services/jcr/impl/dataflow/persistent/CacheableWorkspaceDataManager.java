@@ -402,6 +402,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @Override
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
+      return getItemData(parentData, name, itemType, true);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
+      throws RepositoryException
+   {
 
       // 1. Try from cache
       ItemData data = getCachedItemData(parentData, name, itemType);
@@ -419,7 +428,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             data = getCachedItemData(parentData, name, itemType);
             if (data == null)
             {
-               data = getPersistedItemData(parentData, name, itemType);
+               data = getPersistedItemData(parentData, name, itemType, createNullItemData);
             }
          }
          finally
@@ -755,10 +764,35 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name, ItemType itemType)
       throws RepositoryException
    {
+      return getPersistedItemData(parentData, name, itemType, true);
+   }
+
+   /**
+    * Get persisted ItemData.
+    * 
+    * @param parentData
+    *          parent
+    * @param name
+    *          Item name
+    * @param itemType
+    *          item type
+    * @param createNullItemData
+    *          indicates if we need to create NullItemData  
+    * @return ItemData
+    * @throws RepositoryException
+    *           error
+    */
+   protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name, ItemType itemType,
+      boolean createNullItemData) throws RepositoryException
+   {
       ItemData data = super.getItemData(parentData, name, itemType);
       if (cache.isEnabled())
       {
-         if (data == null)
+         if (data != null)
+         {
+            cache.put(data);
+         }
+         else if (createNullItemData)
          {
             if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
             {
@@ -768,10 +802,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                cache.put(new NullPropertyData(parentData, name));
             }
-         }
-         else
-         {
-            cache.put(data);
          }
       }
       return data;

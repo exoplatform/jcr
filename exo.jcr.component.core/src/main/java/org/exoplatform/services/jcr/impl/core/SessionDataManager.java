@@ -224,6 +224,12 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
    {
+      return getItemData(parent, name, itemType, true);
+   }
+
+   public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
+      throws RepositoryException
+   {
       if (name.getName().equals(JCRPath.PARENT_RELPATH) && name.getNamespace().equals(Constants.NS_DEFAULT_URI))
       {
          if (parent.getIdentifier().equals(Constants.ROOT_UUID))
@@ -249,7 +255,7 @@ public class SessionDataManager implements ItemDataConsumer
             return null;
          }
          // 2. Try from txdatamanager
-         data = transactionableManager.getItemData(parent, name, itemType);
+         data = transactionableManager.getItemData(parent, name, itemType, createNullItemData);
       }
       else if (!state.isDeleted())
       {
@@ -328,6 +334,31 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType, boolean apiRead)
       throws RepositoryException
    {
+      return getItem(parent, name, pool, itemType, apiRead, true);
+   }
+
+   /**
+    * For internal use. Return Item by parent NodeDada and the name of searched item.
+    * 
+    * @param parent
+    *          - parent of the searched item
+    * @param name
+    *          - item name
+    * @param itemType
+    *          - item type
+    * @param pool
+    *          - indicates does the item fall in pool
+    * @param apiRead 
+    *          - if true will call postRead Action and check permissions              
+    * @param createNullItemData
+    *          - defines if there is a need to create NullItemData  
+    *          
+    * @return existed item or null if not found
+    * @throws RepositoryException
+    */
+   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType, boolean apiRead,
+      boolean createNullItemData) throws RepositoryException
+   {
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
       {
@@ -337,7 +368,7 @@ public class SessionDataManager implements ItemDataConsumer
       ItemImpl item = null;
       try
       {
-         return item = readItem(getItemData(parent, name, itemType), parent, pool, apiRead);
+         return item = readItem(getItemData(parent, name, itemType, createNullItemData), parent, pool, apiRead);
       }
       finally
       {
