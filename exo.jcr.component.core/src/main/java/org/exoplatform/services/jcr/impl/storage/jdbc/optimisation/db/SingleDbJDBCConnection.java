@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -946,4 +947,59 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       return findACLHolders.executeQuery();
    }   
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void deleteLockProperties() throws SQLException
+   {
+      PreparedStatement removeValuesStatement = null;
+      PreparedStatement removeItemsStatement = null;
+
+      try
+      {
+         removeValuesStatement =
+            dbConnection
+               .prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND (NAME = ? OR NAME = ?))");
+         removeValuesStatement.setString(1, containerName);
+         removeValuesStatement.setString(2, Constants.JCR_LOCKISDEEP.getAsString());
+         removeValuesStatement.setString(3, Constants.JCR_LOCKOWNER.getAsString());
+
+         removeItemsStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND (NAME = ? OR NAME = ?)");
+         removeItemsStatement.setString(1, containerName);
+         removeItemsStatement.setString(2, Constants.JCR_LOCKISDEEP.getAsString());
+         removeItemsStatement.setString(3, Constants.JCR_LOCKOWNER.getAsString());
+
+         removeValuesStatement.executeUpdate();
+         removeItemsStatement.executeUpdate();
+      }
+      finally
+      {
+         if (removeValuesStatement != null)
+         {
+            try
+            {
+               removeValuesStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+
+         if (removeItemsStatement != null)
+         {
+            try
+            {
+               removeItemsStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+      }
+   }
 }

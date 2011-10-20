@@ -31,9 +31,9 @@ import java.io.ObjectOutput;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: LockData.java 787 2009-11-20 11:36:15Z nzamosenchuk $
  */
-
 public class LockData implements Externalizable
 {
+
    /**
     * The time of birth. From this time we start count the time of death. death = birthday+TIME_OUT;
     */
@@ -96,7 +96,7 @@ public class LockData implements Externalizable
    {
       this(nodeIdentifier, lockTokenHash, deep, sessionScoped, owner, timeOut, System.currentTimeMillis());
    }
-   
+
    /**
     * @param nodeIdentifier
     * @param lockToken

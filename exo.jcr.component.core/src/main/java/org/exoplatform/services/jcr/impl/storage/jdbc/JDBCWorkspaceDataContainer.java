@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.ExceptionManagementHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
@@ -44,6 +45,7 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
 import org.exoplatform.services.jcr.impl.backup.rdbms.SybaseDBRestore;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.core.query.Reindexable;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
@@ -369,8 +371,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          catch (RepositoryConfigurationException e)
          {
-            sn = wsConfig.getContainer().getParameterValue("sourceName"); // TODO for backward comp,
-            // remove in rel.2.0
+            // for backward comp remove in rel.2.0
+            sn = wsConfig.getContainer().getParameterValue("sourceName");
          }
          this.dbSourceName = sn;
          if (dsProvider == null)
@@ -913,6 +915,37 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             }
          }
       }
+      
+      // Remove lock properties from DB. It is an issue of migration locks from 1.12.x to 1.14.x in case when we use
+      // shareable cache. The lock tables will be new but still remaining lock properties in JCR tables.
+      boolean deleteLocks =
+         "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
+            "false"));
+
+      try
+      {
+         if (deleteLocks)
+         {
+            JDBCStorageConnection conn = (JDBCStorageConnection)openConnection();
+            try
+            {
+               conn.deleteLockProperties();
+            }
+            finally
+            {
+               conn.close();
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         LOG.error(
+            "Can't remove lock properties because of " + ExceptionManagementHelper.getFullSQLExceptionMessage(e), e);
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error("Can't remove lock properties because of " + e.getMessage(), e);
+      }
    }
 
    /**
@@ -920,27 +953,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void stop()
    {
-
-      // TODO HSQLDB Stop (debug)
-      // if (dbDialect.equals(DB_DIALECT_GENERIC) ||
-      // dbDialect.equals(DB_DIALECT_HSQLDB)) {
-      // // shutdown in-process HSQLDB database
-      // System.out.println("Shutdown in-process HSQLDB database...");
-      // try {
-      // JDBCStorageConnection conn = (JDBCStorageConnection) openConnection();
-      // Connection jdbcConn = conn.getJdbcConnection();
-      // String dbUrl = jdbcConn.getMetaData().getURL();
-      // if (dbUrl.startsWith("jdbc:hsqldb:file") ||
-      // dbUrl.startsWith("jdbc:hsqldb:mem")) {
-      // // yeah, there is in-process hsqldb, shutdown it now
-      // jdbcConn.createStatement().execute("SHUTDOWN");
-      // System.out.println("Shutdown in-process HSQLDB database... done.");
-      // }
-      // } catch (Throwable e) {
-      // log.error("JDBC Data container stop error " + e);
-      // e.printStackTrace();
-      // }
-      // }
    }
 
    /**

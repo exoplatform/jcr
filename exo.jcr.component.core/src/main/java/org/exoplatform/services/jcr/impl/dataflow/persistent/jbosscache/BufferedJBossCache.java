@@ -1115,7 +1115,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                continue;
             }
             QPathEntryFilter nameFilter = (QPathEntryFilter)patternObject;
-            if (nameFilter.accept((ItemData)value))
+            if (nameFilter.accept(value))
             {
                cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
                Object setObject = cache.get(patternFqn, listKey);
@@ -1230,7 +1230,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                continue;
             }
             QPathEntryFilter nameFilter = (QPathEntryFilter)patternObject;
-            if (nameFilter.accept((ItemData)value))
+            if (nameFilter.accept(value))
             {
                cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
                Object setObject = cache.get(patternFqn, listKey);

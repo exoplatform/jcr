@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -127,6 +128,8 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
     * The current Transaction Manager
     */
    protected TransactionManager tm;
+
+   public static final String LOCKS_FORCE_REMOVE = "org.exoplatform.jcr.locks.force.remove";
 
    /**
     * Logger
@@ -524,6 +527,20 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    public void start()
    {
       lockRemover.start();
+
+      // Remove all locks records directly from DB. 
+      boolean deleteLocks = "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(LOCKS_FORCE_REMOVE, "false"));
+
+      if (deleteLocks)
+      {
+         doClean();
+      }
+
+      // remove all locks at the start up time EXOJCR-1592
+      //      if (isCoordinator())
+      //      {
+      //         removeAll();
+      //      }
    }
 
    /**
@@ -774,11 +791,24 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    }
 
    /**
+    * Remove all locks.
+    */
+   protected void removeAll()
+   {
+      List<LockData> locks = getLockList();
+      for (LockData lockData : locks)
+      {
+         removeLock(lockData.getNodeIdentifier());
+         doRemove(lockData);
+      }
+   }
+
+   /**
     * {@inheritDoc}
     */
    public void clean() throws BackupException
    {
-      cleanCacheDirectly();
+      doClean();
    }
 
    /**
@@ -906,7 +936,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       public void clean() throws BackupException
       {
          actualLocks.addAll(getLockList());
-         cleanCacheDirectly();
+         doClean();
       }
 
       /**
@@ -916,7 +946,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       {
          for (LockData lockData : backupLocks)
          {
-            putDirectly(lockData);
+            doPut(lockData);
          }
       }
 
@@ -932,10 +962,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
        */
       public void rollback() throws BackupException
       {
-         cleanCacheDirectly();
+         doClean();
          for (LockData lockData : actualLocks)
          {
-            putDirectly(lockData);
+            doPut(lockData);
          }
       }
 
@@ -950,16 +980,30 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    }
 
    /**
+    * Indicates if we are the only node in cluster.
+    */
+   protected abstract boolean isAloneInCluster();
+
+   /**
     * Puts lock data directly into cache.
     * 
     * @param lockData
     *          the lock data to put
+    * @return the old lock data previously added into cache         
     */
-   protected abstract void putDirectly(LockData lockData);
+   protected abstract LockData doPut(LockData lockData);
+
+   /**
+    * Removes lock data directly from cache.
+    * 
+    * @param lockData
+    *          the lock data to remove
+    */
+   protected abstract void doRemove(LockData lockData);
 
    /**
     * Clean cache directly.
     */
-   protected abstract void cleanCacheDirectly();
+   protected abstract void doClean();
 
 }

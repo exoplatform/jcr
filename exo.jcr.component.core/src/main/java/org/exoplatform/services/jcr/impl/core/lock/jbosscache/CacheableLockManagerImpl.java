@@ -46,6 +46,7 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
+import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.jboss.cache.loader.CacheLoader;
 import org.jboss.cache.loader.CacheLoaderManager;
@@ -185,11 +186,11 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
         
          Fqn<String> rootFqn = Fqn.fromElements(config.getUniqueName());
 
-         lockRoot = Fqn.fromRelativeElements(rootFqn, LOCKS);
-
          shareable =
             config.getLockManager().getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT)
                .booleanValue();
+         lockRoot = shareable ? Fqn.fromRelativeElements(rootFqn, LOCKS) : Fqn.fromElements(LOCKS);
+
          cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.LOCK_CACHE, rootFqn, cache, shareable);
          this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(ctx, cache, CacheType.LOCK_CACHE);
          if (jmxManager != null)
@@ -491,8 +492,8 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    }
 
    /**
-   * {@inheritDoc}
-   */
+    * {@inheritDoc}
+    */
    @Override
    public void stop()
    {
@@ -529,13 +530,9 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       if (session != null && session.containsPendingLock(nodeIdentifier))
       {
          LockData lockData = session.getPendingLock(nodeIdentifier);
-         Fqn<String> lockPath = makeLockFqn(lockData.getNodeIdentifier());
-
-         // addChild will add if absent or return old if present
-         Node<Serializable, Object> node = cache.getRoot().addChild(lockPath);
 
          // this will return null if success. And old data if something exists...
-         LockData oldLockData = (LockData)node.putIfAbsent(LOCK_DATA, lockData);
+         LockData oldLockData = doPut(lockData);
 
          if (oldLockData != null)
          {
@@ -561,7 +558,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
 
       if (lData != null)
       {
-         cache.removeNode(makeLockFqn(nodeIdentifier));
+         doRemove(lData);
 
          CacheableSessionLockManager sessMgr = sessionLockManagers.get(sessionId);
          if (sessMgr != null)
@@ -607,24 +604,47 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
     * {@inheritDoc}
     */
    @Override
-   protected void putDirectly(LockData lockData)
+   protected LockData doPut(LockData lockData)
    {
       Fqn<String> lockPath = makeLockFqn(lockData.getNodeIdentifier());
 
+      // addChild will add if absent or return old if present
       Node<Serializable, Object> node = cache.getRoot().addChild(lockPath);
-      node.putIfAbsent(LOCK_DATA, lockData);
+
+      // this will return null if success. And old data if something exists...
+      return (LockData)node.putIfAbsent(LOCK_DATA, lockData);
    }
    
    /**
     * {@inheritDoc}
     */
    @Override
-   protected void cleanCacheDirectly()
+   protected void doRemove(LockData lockData)
    {
-      if (cache.getCacheStatus() != CacheStatus.STARTED)
+      cache.removeNode(makeLockFqn(lockData.getNodeIdentifier()));
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected boolean isAloneInCluster()
+   {
+      return cache.getConfiguration().getCacheMode() == CacheMode.LOCAL || cache.getMembers().size() == 1;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void doClean()
+   {
+      if (cache.getCacheStatus() == CacheStatus.STARTED)
       {
-         cache.removeNode(lockRoot);
-         createStructuredNode(lockRoot);
+         for (LockData lockData : getLockList())
+         {
+            doRemove(lockData);
+         }
       }
    }
 }

@@ -39,6 +39,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
+import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.Serializable;
@@ -366,7 +367,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          LockData lockData = session.getPendingLock(nodeIdentifier);
 
          // this will return null if success. And old data if something exists...
-         LockData oldLockData = (LockData)PrivilegedISPNCacheHelper.putIfAbsent(cache, nodeIdentifier, lockData);
+         LockData oldLockData = doPut(lockData);
 
          if (oldLockData != null)
          {
@@ -392,7 +393,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
 
       if (lData != null)
       {
-         cache.remove(nodeIdentifier);
+         doRemove(lData);
 
          CacheableSessionLockManager sessMgr = sessionLockManagers.get(sessionId);
          if (sessMgr != null)
@@ -403,23 +404,45 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    }
 
    /**
-   * {@inheritDoc}
-   */
+    * {@inheritDoc}
+    */
    @Override
-   protected void putDirectly(LockData lockData)
+   protected LockData doPut(LockData lockData)
    {
-      PrivilegedISPNCacheHelper.putIfAbsent(cache, lockData.getNodeIdentifier(), lockData);
+      return (LockData)PrivilegedISPNCacheHelper.putIfAbsent(cache, lockData.getNodeIdentifier(), lockData);
    }
 
    /**
     * {@inheritDoc}
     */
    @Override
-   protected void cleanCacheDirectly()
+   protected void doRemove(LockData lockData)
+   {
+      cache.remove(lockData.getNodeIdentifier());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected boolean isAloneInCluster()
+   {
+      return cache.getConfiguration().getCacheMode() == CacheMode.LOCAL
+         || cache.getCacheManager().getMembers().size() == 1;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void doClean()
    {
       if (cache.getStatus() == ComponentStatus.RUNNING)
       {
-         cache.clear();
+         for (LockData lockData : getLockList())
+         {
+            doRemove(lockData);
+         }
       }
    }
 }
