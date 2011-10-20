@@ -799,7 +799,6 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       for (LockData lockData : locks)
       {
          removeLock(lockData.getNodeIdentifier());
-         doRemove(lockData);
       }
    }
 
