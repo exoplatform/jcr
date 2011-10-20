@@ -249,7 +249,7 @@ public class WebdavQueryTest extends BaseClusteringFunctionalTest
                List<String> found;
                assertEquals(207, response.getStatusCode());
                found = parseNodeNames(response.getData());
-               assertTrue("Lists are not equals:\n*found:\t" + found + "\n*expected:\t" + entry.getValue(),
+               assertTrue("Lists are not equals:\n*found:\t" + found + "\n*expected:\t" + Arrays.asList(entry.getValue()),
                   compareLists(Arrays.asList(entry.getValue()), found));
             }
          }
