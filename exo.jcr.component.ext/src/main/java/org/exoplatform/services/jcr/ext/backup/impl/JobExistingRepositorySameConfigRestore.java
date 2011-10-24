@@ -35,8 +35,6 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DummyDBCleaner;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 
@@ -115,10 +113,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             });
             jdbcConn.setAutoCommit(false);
 
-            if (!(DialectDetecter.detect(jdbcConn.getMetaData()).equals(DBConstants.DB_DIALECT_SYBASE)))
-            {
-               dbCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
-            }
+            dbCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
          }
 
          repositoryService.getRepository(this.repositoryEntry.getName()).setState(ManageableRepository.SUSPENDED);

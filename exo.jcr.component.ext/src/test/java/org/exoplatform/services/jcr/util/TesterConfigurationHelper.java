@@ -199,6 +199,35 @@ public class TesterConfigurationHelper
    }
 
    /**
+    * Create copy of repository entry. 
+    */
+   public RepositoryEntry copyRepositoryEntry(RepositoryEntry baseRepositoryEntry) throws Exception
+   {
+      ArrayList<WorkspaceEntry> wsEntries = new ArrayList<WorkspaceEntry>();
+
+      for (WorkspaceEntry wsEntry : baseRepositoryEntry.getWorkspaceEntries())
+      {
+         WorkspaceEntry newWSEntry = copyWorkspaceEntry(wsEntry);
+
+         wsEntries.add(newWSEntry);
+      }
+
+      RepositoryEntry newRepositoryEntry = new RepositoryEntry();
+
+      newRepositoryEntry.setSystemWorkspaceName(baseRepositoryEntry.getSystemWorkspaceName());
+      newRepositoryEntry.setAccessControl(baseRepositoryEntry.getAccessControl());
+      newRepositoryEntry.setAuthenticationPolicy(baseRepositoryEntry.getAuthenticationPolicy());
+      newRepositoryEntry.setDefaultWorkspaceName(baseRepositoryEntry.getDefaultWorkspaceName());
+      newRepositoryEntry.setName(baseRepositoryEntry.getName());
+      newRepositoryEntry.setSecurityDomain(baseRepositoryEntry.getSecurityDomain());
+      newRepositoryEntry.setSessionTimeOut(baseRepositoryEntry.getSessionTimeOut());
+
+      newRepositoryEntry.setWorkspaceEntries(wsEntries);
+      return newRepositoryEntry;
+
+   }
+
+   /**
     * Create copy of list with SimpleParameterEntry-s
     */
    private List<SimpleParameterEntry> copyList(List<SimpleParameterEntry> baseArrayList)
