@@ -125,4 +125,40 @@ public class PrivilegedJBossCacheHelper
          }
       }
    }
+
+   /**
+    * Revemo node in JBoss cache in privileged mode.
+    * 
+    * @param cache
+    */
+   public static boolean removeNode(final Cache<Serializable, Object> cache, final Fqn fqn) throws CacheException
+   {
+      PrivilegedExceptionAction<Boolean> action = new PrivilegedExceptionAction<Boolean>()
+      {
+         public Boolean run() throws Exception
+         {
+            return cache.removeNode(fqn);
+         }
+      };
+      try
+      {
+         return SecurityHelper.doPrivilegedExceptionAction(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof CacheException)
+         {
+            throw (CacheException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
 }

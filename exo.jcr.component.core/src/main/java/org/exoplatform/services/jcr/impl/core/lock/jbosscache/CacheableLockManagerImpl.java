@@ -621,7 +621,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected void doRemove(LockData lockData)
    {
-      cache.removeNode(makeLockFqn(lockData.getNodeIdentifier()));
+      PrivilegedJBossCacheHelper.removeNode(cache, makeLockFqn(lockData.getNodeIdentifier()));
    }
    
    /**
