@@ -153,7 +153,7 @@ public class DBCleaner
     */
    public void executeCleanScripts() throws SQLException
    {
-      executeScripts(cleanScripts);
+      executeScripts(cleanScripts, false);
 
       if (dbCleanHelper != null)
       {
@@ -169,7 +169,7 @@ public class DBCleaner
     */
    public void executeRollbackScripts() throws SQLException
    {
-      executeScripts(rollbackScripts);
+      executeScripts(rollbackScripts, true);
    }
 
    /**
@@ -180,7 +180,7 @@ public class DBCleaner
     */
    public void executeCommitScripts() throws SQLException
    {
-      executeScripts(commitScripts);
+      executeScripts(commitScripts, false);
    }
 
    /**
@@ -188,10 +188,12 @@ public class DBCleaner
     * 
     * @param scripts
     *          the scripts for execution 
+    * @param  isSkipSQLExceprion
+    *          boolean, skipping SQLException on rollback.  
     * @throws SQLException
     *          if any exception occurred
     */
-   protected void executeScripts(List<String> scripts) throws SQLException
+   protected void executeScripts(List<String> scripts, boolean isSkipSQLExceprion) throws SQLException
    {
       SecurityManager security = System.getSecurityManager();
       if (security != null)
@@ -211,7 +213,23 @@ public class DBCleaner
                {
                   LOG.debug("Execute script: \n[" + sql + "]");
                }
-               executeQuery(st, sql);
+               
+               try
+               {
+                  executeQuery(st, sql);
+               } 
+               catch (SQLException e)
+               {
+                  if (isSkipSQLExceprion)
+                  {
+                     LOG.warn("Execute script fail: \n[" + sql + "]");
+                     continue;
+                  }
+                  else
+                  {
+                     throw e;
+                  }
+               }
             }
          }
       }

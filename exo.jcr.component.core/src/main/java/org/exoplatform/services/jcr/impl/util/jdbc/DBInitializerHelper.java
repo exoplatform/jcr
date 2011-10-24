@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.log.ExoLogger;
@@ -267,5 +268,35 @@ public class DBInitializerHelper
          return new String(cc);
       }
       return string;
+   }
+
+   /**
+    * Get script for creating object (index, etc...)
+    * @throws RepositoryConfigurationException 
+    */
+   public static String getObjectScript(String objectName, boolean multiDb, String dialect)
+      throws RepositoryConfigurationException
+   {
+      String scriptsPath = DBInitializerHelper.scriptPath(dialect, multiDb);
+      String script;
+      try
+      {
+         script = DBInitializerHelper.readScriptResource(scriptsPath);
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryConfigurationException("Can not read script file " + scriptsPath, e);
+      }
+
+      for (String query : DBInitializerHelper.scripts(script))
+      {
+         String q = DBInitializerHelper.cleanWhitespaces(query);
+         if (q.contains(objectName))
+         {
+            return q;
+         }
+      }
+
+      return null;
    }
 }

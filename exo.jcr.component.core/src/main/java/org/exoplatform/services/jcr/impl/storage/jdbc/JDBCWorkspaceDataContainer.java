@@ -33,14 +33,10 @@ import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.ComplexDataRestore;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
-import org.exoplatform.services.jcr.impl.backup.rdbms.DB2DBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
-import org.exoplatform.services.jcr.impl.backup.rdbms.H2DBRestore;
-import org.exoplatform.services.jcr.impl.backup.rdbms.MySQLDBRestore;
-import org.exoplatform.services.jcr.impl.backup.rdbms.OracleDBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
 import org.exoplatform.services.jcr.impl.backup.rdbms.SybaseDBRestore;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
@@ -1309,25 +1305,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             dbCleaner = DBCleanService.getWorkspaceDBCleaner(jdbcConn, wsConfig);
          }
 
-         if (dbDialect == DBConstants.DB_DIALECT_DB2 || dbDialect == DBConstants.DB_DIALECT_DB2V8)
-         {
-            restorers.add(new DB2DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
-         }
-         else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
-         {
-            restorers.add(new MySQLDBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
-         }
-         else if (dbDialect == DBConstants.DB_DIALECT_H2)
-         {
-            restorers.add(new H2DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
-         }
-         else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
+         if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
          {
             restorers.add(new SybaseDBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
-         }
-         else if (dbDialect == DBConstants.DB_DIALECT_ORACLE || dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
-         {
-            restorers.add(new OracleDBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
          }
          else
          {

@@ -26,7 +26,6 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Map;
 
 import javax.naming.NamingException;
@@ -62,10 +61,12 @@ public class SybaseDBRestore extends DBRestore
       try
       {
          // the Sybase is not allowed DDL query (CREATE TABLE, DROP TABLE, etc. ) within a multi-statement transaction
-         jdbcConn.setAutoCommit(true);
+         if (!jdbcConn.getAutoCommit())
+         {
+            jdbcConn.setAutoCommit(true);
+         }
 
-         super.prepareQueries(isMultiDb);
-         super.executeQueries(dropQueries);
+         super.clean();
       }
       catch (SQLException e)
       {
@@ -82,8 +83,6 @@ public class SybaseDBRestore extends DBRestore
             LOG.warn("Can't set auto commit to \"false\"", e);
          }
       }
-
-      super.clean();
    }
 
    /**
@@ -91,82 +90,19 @@ public class SybaseDBRestore extends DBRestore
     */
    public void commit() throws BackupException
    {
-      super.commit();
-      
-      restoreConstraint();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void rollback() throws BackupException
-   {
-      BackupException rollbackException = null;
-
       try
       {
-         super.rollback();
-      }
-      catch (BackupException e)
-      {
-         rollbackException = e;
-         throw rollbackException;
-      }
-      finally
-      {
-         try
+         // the Sybase is not allowed DDL query (CREATE TABLE, DROP TABLE, etc. ) within a multi-statement transaction
+         if (!jdbcConn.getAutoCommit())
          {
-            restoreConstraint();
+            jdbcConn.setAutoCommit(true);
          }
-         catch (BackupException e)
-         {
-            if (rollbackException != null)
-            {
-               LOG.error("Can not restore constraint", e);
-               throw rollbackException;
-            }
-            else
-            {
-               throw e;
-            }
-         }
-      }
-   }
 
-   /**
-    * Restore constraint.
-    * 
-    * @throws BackupException
-    *           Will throw BackupException if fail.
-    */
-   private void restoreConstraint() throws BackupException
-   {
-      try
-      {
-         // restore constraint
-         jdbcConn.setAutoCommit(true);
-
-         if (successfulExecuted.size() == addQueries.size())
-         {
-            executeQueries(addQueries);
-         }
-         else
-         {
-            ArrayList<String> notDeletedConstraints = new ArrayList<String>();
-            notDeletedConstraints.addAll(addQueries.keySet());
-            notDeletedConstraints.removeAll(successfulExecuted);
-
-            for (String notDeletedConstraint : notDeletedConstraints)
-            {
-               addQueries.remove(notDeletedConstraint);
-            }
-
-            executeQueries(addQueries);
-         }
+         super.commit();
       }
       catch (SQLException e)
       {
-         throw new BackupException(e);
+         throw new BackupException(ExceptionManagementHelper.getFullSQLExceptionMessage(e), e);
       }
       finally
       {
@@ -184,27 +120,41 @@ public class SybaseDBRestore extends DBRestore
    /**
     * {@inheritDoc}
     */
-   public void preRestoreTables(boolean isMultiDb) throws SQLException
+   public void rollback() throws BackupException
    {
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void postRestoreTables(boolean isMultiDb) throws SQLException
-   {
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected String validateConstraintName(String string)
-   {
-      if (string.equals("JCR_PK_SCONTAINER"))
+      try
       {
-         return "JCR_PK_MCONTAINER";
+         // the Sybase is not allowed DDL query (CREATE TABLE, DROP TABLE, etc. ) within a multi-statement transaction
+         if (!jdbcConn.getAutoCommit())
+         {
+            jdbcConn.setAutoCommit(true);
+         }
+
+         super.rollback();
       }
-      
-      return super.validateConstraintName(string);
+      catch (SQLException e)
+      {
+         throw new BackupException(ExceptionManagementHelper.getFullSQLExceptionMessage(e), e);
+      }
+      finally
+      {
+         try
+         {
+            jdbcConn.setAutoCommit(false);
+         }
+         catch (SQLException e)
+         {
+            LOG.warn("Can't set auto commit to \"false\"", e);
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected void commitBatch() throws SQLException
+   {
+      jdbcConn.commit();
    }
 }
+
