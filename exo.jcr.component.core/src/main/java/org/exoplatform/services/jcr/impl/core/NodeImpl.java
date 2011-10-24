@@ -3061,8 +3061,14 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          def =
             session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(nameToAdd, primaryTypeName,
                parentNode.getPrimaryTypeName(), parentNode.getMixinTypeNames());
+         
+         if (def == null)
+         {
+            throw new ConstraintViolationException("Can't find child node definition for " + nameToAdd + " in parent "
+               + parentNode.getQPath().getAsString());
+         }
       }
-
+      
       boolean allowSns = def.isAllowsSameNameSiblings();
 
       int ind = 1;
