@@ -133,14 +133,17 @@ public class JDBCWorkspaceDataContainerChecker
                ? "select * from JCR_MITEM as N where N.I_CLASS=1 and NOT EXISTS (select * from JCR_MITEM AS P where P.I_CLASS=2 and P.PARENT_ID=N.ID)"
                : "select * from JCR_SITEM as N where N.CONTAINER_NAME='"
                   + jdbcDataContainer.containerName
-                  + "' and N.I_CLASS=1 and NOT EXISTS (select * from JCR_SITEM AS P where P.I_CLASS=2 and P.PARENT_ID=N.ID)",
+                  + "' and N.I_CLASS=1 and NOT EXISTS (select * from JCR_SITEM AS P where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.CONTAINER_NAME='"
+                  + jdbcDataContainer.containerName + "')",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
             "Nodes that do not have at least one property", InspectionStatus.ERR));
       queries
          .add(new InspectionQuery(
             jdbcDataContainer.multiDb
                ? "select * from JCR_MVALUE as V where NOT EXISTS(select * from JCR_MITEM as P where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
-               : "select * from JCR_SVALUE as V where NOT EXISTS(select * from JCR_SITEM as P where P.CONTAINER_NAME='"
+               : "select V.* from JCR_SVALUE as V, JCR_SITEM as I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
+                  + jdbcDataContainer.containerName
+                  + "' and NOT EXISTS(select * from JCR_SITEM as P where P.CONTAINER_NAME='"
                   + jdbcDataContainer.containerName + "' and V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{
                DBConstants.COLUMN_ID, DBConstants.COLUMN_VPROPERTY_ID},
             "All value records that has not owner-property record", InspectionStatus.ERR));
@@ -156,7 +159,9 @@ public class JDBCWorkspaceDataContainerChecker
          .add(new InspectionQuery(
             jdbcDataContainer.multiDb
                ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null)"
-               : "select * from JCR_SVALUE where (STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null)",
+               : "select V.* from JCR_SVALUE as V, JCR_SITEM as I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
+                  + jdbcDataContainer.containerName
+                  + "'  AND ((STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null))",
             new String[]{DBConstants.COLUMN_ID}, "Incorrect JCR_VALUE records", InspectionStatus.ERR));
       queries
          .add(new InspectionQuery(
@@ -170,7 +175,9 @@ public class JDBCWorkspaceDataContainerChecker
       // properties can refer to missing node. It is possible to perform this usecase via JCR API with no exceptions 
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MREF AS R where NOT EXISTS(select * from JCR_MITEM AS N where R.NODE_ID=N.ID)"
-         : "select * from JCR_SREF AS R where NOT EXISTS(select * from JCR_SITEM AS N where N.CONTAINER_NAME='"
+         : "select * from JCR_SREF AS R, JCR_SITEM as I where R.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
+            + jdbcDataContainer.containerName
+            + "'  and NOT EXISTS(select * from JCR_SITEM AS N where N.CONTAINER_NAME='"
             + jdbcDataContainer.containerName + "' and R.NODE_ID=N.ID)", new String[]{"NODE_ID", "PROPERTY_ID",
          DBConstants.COLUMN_VORDERNUM},
          "Reference records that linked to unexisted nodes. Can be normal for some usecases.", InspectionStatus.WARN));
@@ -284,7 +291,7 @@ public class JDBCWorkspaceDataContainerChecker
     * @throws RepositoryException
     * @throws IOException
     */
-   public static void checkValueStorage(JDBCWorkspaceDataContainer jdbcDataContainer,
+   public static void checkValueStorage(final JDBCWorkspaceDataContainer jdbcDataContainer,
       ValueStoragePluginProvider vsPlugin, InspectionLog inspectionLog) throws RepositoryException, IOException
    {
       final String valueRecordFormat = "ValueData[PROPERTY_ID=%s ORDER_NUM=%d STORAGE_DESC=%s]";
@@ -295,9 +302,11 @@ public class JDBCWorkspaceDataContainerChecker
       try
       {
          st =
-            connection.prepareStatement(jdbcDataContainer.multiDb
-               ? "SELECT PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_MVALUE where STORAGE_DESC is not null"
-               : "SELECT PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_SVALUE where STORAGE_DESC is not null");
+            connection
+               .prepareStatement(jdbcDataContainer.multiDb
+                  ? "SELECT PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_MVALUE where STORAGE_DESC is not null"
+                  : "SELECT V.PROPERTY_ID, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE as V, JCR_SITEM as I where I.CONTAINER_NAME='"
+                     + jdbcDataContainer.containerName + "' and V.PROPERTY_ID = I.ID and STORAGE_DESC is not null");
 
          resultSet = st.executeQuery();
          // traverse all values, written to value storage
@@ -338,7 +347,9 @@ public class JDBCWorkspaceDataContainerChecker
                   {
                      public Object run() throws ValueDataNotFoundException, IOException
                      {
-                        vdChannel.checkValueData(propertyId, orderNumber);
+                        vdChannel.checkValueData(
+                           jdbcDataContainer.multiDb ? propertyId : propertyId
+                              .substring(jdbcDataContainer.containerName.length()), orderNumber);
                         return null;
                      }
                   });

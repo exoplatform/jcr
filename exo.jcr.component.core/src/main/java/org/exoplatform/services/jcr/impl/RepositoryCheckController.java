@@ -23,6 +23,7 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -350,7 +351,8 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       }
    }
 
-   private void checkDB(InspectionLog inspectionLog) throws RepositoryException, IOException
+   private void checkDB(InspectionLog inspectionLog) throws RepositoryException, IOException,
+      RepositoryConfigurationException
    {
       String[] wsNames = repository.getWorkspaceNames();
       for (String wsName : wsNames)

@@ -73,8 +73,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testDB()
    {
       String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
-      assertEquals("Repository data is consistent. See full report by path "
-         + checkController.getLastLogFile().getAbsolutePath(), result);
+      assertTrue(result.equals("Repository data is consistent. See full report by path "
+         + checkController.getLastLogFile().getAbsolutePath())
+         || result.equals("Repository data is consistent, except some warnings. See full report by path "
+            + checkController.getLastLogFile().getAbsolutePath()));
    }
 
    public void testValueStorage() throws Exception
@@ -111,7 +113,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       String result =
          checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE,
             DataStorage.LUCENE_INDEX});
-      assertEquals("Repository data is consistent. See full report by path "
-         + checkController.getLastLogFile().getAbsolutePath(), result);
+      assertTrue(result.equals("Repository data is consistent. See full report by path "
+         + checkController.getLastLogFile().getAbsolutePath())
+         || result.equals("Repository data is consistent, except some warnings. See full report by path "
+            + checkController.getLastLogFile().getAbsolutePath()));
    }
 }
