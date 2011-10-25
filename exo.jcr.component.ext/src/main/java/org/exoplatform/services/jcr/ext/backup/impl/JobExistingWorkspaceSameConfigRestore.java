@@ -17,9 +17,9 @@
 package org.exoplatform.services.jcr.ext.backup.impl;
 
 import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
@@ -73,18 +73,27 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
       // list of data restorers
       List<DataRestore> dataRestorer = new ArrayList<DataRestore>();
 
+      List<WorkspaceContainerFacade> workspacesWaits4Resume = new ArrayList<WorkspaceContainerFacade>();
       try
       {
          ManageableRepository repository = repositoryService.getRepository(repositoryName);
 
          if (wEntry.getContainer().getParameterBoolean("multi-db") == false)
          {
-            repository.setState(ManageableRepository.SUSPENDED);
+            for (String wsName : repository.getWorkspaceNames())
+            {
+               WorkspaceContainerFacade wsContainer = repository.getWorkspaceContainer(wsName);
+               wsContainer.setState(ManageableRepository.SUSPENDED);
+
+               workspacesWaits4Resume.add(wsContainer);
+            }
          }
          else
          {
-            repository.getWorkspaceContainer(wEntry.getName()).setState(
-                     ManageableRepository.SUSPENDED);
+            WorkspaceContainerFacade wsContainer = repository.getWorkspaceContainer(wEntry.getName());
+
+            wsContainer.setState(ManageableRepository.SUSPENDED);
+            workspacesWaits4Resume.add(wsContainer);
          }
 
          // get all restorers
@@ -119,14 +128,9 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
             restorer.commit();
          }
 
-         if (wEntry.getContainer().getParameterBoolean("multi-db") == false)
+         for (WorkspaceContainerFacade wsContainer : workspacesWaits4Resume)
          {
-            repository.setState(ManageableRepository.ONLINE);
-         }
-         else
-         {
-            repository.getWorkspaceContainer(wEntry.getName()).setState(
-                     ManageableRepository.ONLINE);
+            wsContainer.setState(ManageableRepository.ONLINE);
          }
 
          // incremental restore
@@ -178,28 +182,12 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
 
          try
          {
-            ManageableRepository repository = repositoryService.getRepository(repositoryName);
-
-            if (wEntry.getContainer().getParameterBoolean("multi-db") == false)
+            for (WorkspaceContainerFacade wsContainer : workspacesWaits4Resume)
             {
-               if (repository.getState() != ManageableRepository.ONLINE)
-               {
-                  repository.setState(ManageableRepository.ONLINE);
-               }
-            }
-            else
-            {
-               if (repository.getWorkspaceContainer(wEntry.getName()).getState() != ManageableRepository.ONLINE)
-               {
-                  repository.getWorkspaceContainer(wEntry.getName()).setState(ManageableRepository.ONLINE);
-               }
+               wsContainer.setState(ManageableRepository.ONLINE);
             }
          }
          catch (RepositoryException e)
-         {
-            log.error("Can't resume component", e);
-         }
-         catch (RepositoryConfigurationException e)
          {
             log.error("Can't resume component", e);
          }

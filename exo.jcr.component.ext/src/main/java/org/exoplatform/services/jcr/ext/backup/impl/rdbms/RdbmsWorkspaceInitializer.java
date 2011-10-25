@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
@@ -155,17 +156,23 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       List<Backupable> backupableComponents =
          repository.getWorkspaceContainer(workspaceName).getComponentInstancesOfType(Backupable.class);
       
-      boolean isRepositorySuspended = false;
+      List<WorkspaceContainerFacade> workspacesWaits4Resume = new ArrayList<WorkspaceContainerFacade>();
+      
       Throwable throwable = null;
       try
       {
          // set state SUSPENDED to other workspaces if singledb
          if (workspaceEntry.getContainer().getParameterBoolean("multi-db") == false)
          {
-            if (repositoryEntry.getWorkspaceEntries().size() != 1)
+            for (WorkspaceEntry we : repositoryEntry.getWorkspaceEntries())
             {
-               repository.setState(ManageableRepository.SUSPENDED);
-               isRepositorySuspended = true;
+               if (!we.getName().equals(workspaceEntry.getName()))
+               {
+                  WorkspaceContainerFacade wsContainer = repository.getWorkspaceContainer(we.getName());
+                  wsContainer.setState(ManageableRepository.SUSPENDED);
+
+                  workspacesWaits4Resume.add(wsContainer);
+               }
             }
          }
 
@@ -228,9 +235,9 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
          try
          {
-            if (isRepositorySuspended)
+            for (WorkspaceContainerFacade wsContainer : workspacesWaits4Resume)
             {
-               repository.setState(ManageableRepository.ONLINE);
+               wsContainer.setState(ManageableRepository.ONLINE);
             }
          }
          catch (RepositoryException e)

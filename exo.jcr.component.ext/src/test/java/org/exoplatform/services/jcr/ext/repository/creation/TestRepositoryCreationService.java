@@ -29,6 +29,8 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jcr.RepositoryException;
 
@@ -119,7 +121,6 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       }
    }
 
-   /* TODO
    public void testCreateRepositorySingleDB() throws Exception
    {
       // prepare
@@ -283,7 +284,7 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       {
          // expected behavior, repository should be missing 
       }
-   }*/
+   }
 
    public void testReserveRepositoryNameException() throws Exception
    {

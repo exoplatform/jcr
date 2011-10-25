@@ -18,10 +18,10 @@ package org.exoplatform.services.jcr.ext.backup.impl;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
@@ -80,6 +80,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
       // list of data restorers
       List<DataRestore> dataRestorer = new ArrayList<DataRestore>();
 
+      List<WorkspaceContainerFacade> workspacesWaits4Resume = new ArrayList<WorkspaceContainerFacade>();
       try
       {
          WorkspaceEntry wsEntry = repositoryEntry.getWorkspaceEntries().get(0);
@@ -116,7 +117,14 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             dbCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
          }
 
-         repositoryService.getRepository(this.repositoryEntry.getName()).setState(ManageableRepository.SUSPENDED);
+         ManageableRepository repository = repositoryService.getRepository(this.repositoryEntry.getName());
+         for (String wsName : repository.getWorkspaceNames())
+         {
+            WorkspaceContainerFacade wsContainer = repository.getWorkspaceContainer(wsName);
+            wsContainer.setState(ManageableRepository.SUSPENDED);
+
+            workspacesWaits4Resume.add(wsContainer);
+         }
 
          boolean isSharedDbCleaner = false;
 
@@ -204,7 +212,10 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          }
          
          // resume components
-         repositoryService.getRepository(this.repositoryEntry.getName()).setState(ManageableRepository.ONLINE);
+         for (WorkspaceContainerFacade wsContainer : workspacesWaits4Resume)
+         {
+            wsContainer.setState(ManageableRepository.ONLINE);
+         }
 
          // incremental restore
          for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
@@ -264,13 +275,12 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
 
          try
          {
-            repositoryService.getRepository(this.repositoryEntry.getName()).setState(ManageableRepository.ONLINE);
+            for (WorkspaceContainerFacade wsContainer : workspacesWaits4Resume)
+            {
+               wsContainer.setState(ManageableRepository.ONLINE);
+            }
          }
          catch (RepositoryException e)
-         {
-            log.error("Can't resume repository", e);
-         }
-         catch (RepositoryConfigurationException e)
          {
             log.error("Can't resume repository", e);
          }
