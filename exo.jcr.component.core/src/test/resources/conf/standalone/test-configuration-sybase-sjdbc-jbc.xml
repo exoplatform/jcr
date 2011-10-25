@@ -248,10 +248,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.sybase.jdbc3.jdbc.SybDriver" /> 
-          <property name="url" value="jdbc:sybase:Tds:dbs-jcr.exoplatform.com.ua:5000/db1" /> 
-          <property name="username" value="exoadmin" /> 
-          <property name="password" value="exo12321" />
+          <property name="driverClassName" value="com.sybase.jdbc4.jdbc.SybDriver" /> 
+          <property name="url" value="jdbc:sybase:Tds:localhost:5003/db1" /> 
+          <property name="username" value="sa" /> 
+          <property name="password" value="" />
           <property name="maxActive" value="20" />
         </properties-param>
       </init-params>
@@ -304,10 +304,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.sybase.jdbc3.jdbc.SybDriver" /> 
-          <property name="url" value="jdbc:sybase:Tds:dbs-jcr.exoplatform.com.ua:5000/db2" /> 
-          <property name="username" value="exoadmin" /> 
-          <property name="password" value="exo12321" />
+          <property name="driverClassName" value="com.sybase.jdbc4.jdbc.SybDriver" /> 
+          <property name="url" value="jdbc:sybase:Tds:localhost:5003/db2" /> 
+          <property name="username" value="sa" /> 
+          <property name="password" value="" />
         </properties-param>
       </init-params>
     </component-plugin>
@@ -331,10 +331,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.sybase.jdbc3.jdbc.SybDriver" /> 
-          <property name="url" value="jdbc:sybase:Tds:dbs-jcr.exoplatform.com.ua:5000/db1_tck" /> 
-          <property name="username" value="exoadmin" /> 
-          <property name="password" value="exo12321" />
+          <property name="driverClassName" value="com.sybase.jdbc4.jdbc.SybDriver" /> 
+          <property name="url" value="jdbc:sybase:Tds:localhost:5003/db1_tck" /> 
+          <property name="username" value="sa" /> 
+          <property name="password" value="" />
         </properties-param>
       </init-params>
     </component-plugin>
@@ -439,10 +439,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.sybase.jdbc3.jdbc.SybDriver" /> 
-          <property name="url" value="jdbc:sybase:Tds:dbs-jcr.exoplatform.com.ua:5000/testdbcleaner_sjdbc" /> 
-          <property name="username" value="exoadmin" /> 
-          <property name="password" value="exo12321" />
+          <property name="driverClassName" value="com.sybase.jdbc4.jdbc.SybDriver" /> 
+          <property name="url" value="jdbc:sybase:Tds:localhost:5003/testdbcleaner_sjdbc" /> 
+          <property name="username" value="sa" /> 
+          <property name="password" value="" />
           <property name="maxActive" value="20" />
         </properties-param>
       </init-params>

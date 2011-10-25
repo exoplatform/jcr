@@ -892,9 +892,9 @@
          </properties>
          <dependencies>
             <dependency>
-               <groupId>com.sybase.jdbc3.jdbc</groupId>
-               <artifactId>jconn3</artifactId>
-               <version>6.05</version>
+               <groupId>com.sybase.jdbc4.jdbc</groupId>
+               <artifactId>jconn4</artifactId>
+               <version>26502</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -906,9 +906,9 @@
          </properties>
          <dependencies>
             <dependency>
-               <groupId>com.sybase.jdbc3.jdbc</groupId>
-               <artifactId>jconn3</artifactId>
-               <version>6.05</version>
+               <groupId>com.sybase.jdbc4.jdbc</groupId>
+               <artifactId>jconn4</artifactId>
+               <version>26502</version>
                <scope>test</scope>
             </dependency>
          </dependencies>

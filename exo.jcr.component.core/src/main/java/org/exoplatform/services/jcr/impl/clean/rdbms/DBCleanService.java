@@ -93,7 +93,6 @@ public class DBCleanService
 
          }
       });
-      jdbcConn.setAutoCommit(false);
 
       DBCleaner dbCleaner = getWorkspaceDBCleaner(jdbcConn, wsEntry);
       try
@@ -169,6 +168,19 @@ public class DBCleanService
          || dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8)
          || dialect.equals(DBConstants.DB_DIALECT_SYBASE) || dialect.equals(DBConstants.DB_DIALECT_HSQLDB))
       {
+         // Sybase doesn't allow DDL scripts inside transaction
+         if (dialect.equals(DBConstants.DB_DIALECT_SYBASE))
+         {
+            if (!jdbcConn.getAutoCommit())
+            {
+               jdbcConn.setAutoCommit(true);
+            }
+         }
+         else
+         {
+            jdbcConn.setAutoCommit(false);
+         }
+
          ArrayList<String> dbCleanerScripts = new ArrayList<String>();
          dbCleanerScripts.addAll(getRenameScripts(isMultiDB, dialect));
          dbCleanerScripts.addAll(prepareInirializationScript(getInitializationDBScript(isMultiDB, dialect), isMultiDB,
@@ -848,13 +860,25 @@ public class DBCleanService
       boolean isMultiDB =
          Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
 
-      String containerName = wsEntry.getName();
       String dialect = DialectDetecter.detect(jdbcConn.getMetaData());
 
       if (dialect.equals(DBConstants.DB_DIALECT_ORACLE) || dialect.equals(DBConstants.DB_DIALECT_ORACLEOCI)
          || dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8)
          || dialect.equals(DBConstants.DB_DIALECT_SYBASE))
       {
+         // Sybase doesn't allow DDL scripts inside transaction
+         if (dialect.equals(DBConstants.DB_DIALECT_SYBASE))
+         {
+            if (!jdbcConn.getAutoCommit())
+            {
+               jdbcConn.setAutoCommit(true);
+            }
+         }
+         else
+         {
+            jdbcConn.setAutoCommit(false);
+         }
+
          ArrayList<String> dbCleanerScripts = new ArrayList<String>();
          dbCleanerScripts.addAll(getRenameScripts(isMultiDB, dialect));
          dbCleanerScripts.addAll(prepareInirializationScript(getInitializationDBScript(isMultiDB, dialect), isMultiDB,

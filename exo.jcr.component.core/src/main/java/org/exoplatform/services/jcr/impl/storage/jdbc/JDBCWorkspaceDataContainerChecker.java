@@ -157,11 +157,17 @@ public class JDBCWorkspaceDataContainerChecker
             "All properties that have not value record.", InspectionStatus.WARN));
       queries
          .add(new InspectionQuery(
-            jdbcDataContainer.multiDb
-               ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null)"
-               : "select V.* from JCR_SVALUE as V, JCR_SITEM as I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName
-                  + "'  AND ((STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null))",
+            jdbcDataContainer.dbDialect.equals(DBConstants.DB_DIALECT_SYBASE)
+               ? jdbcDataContainer.multiDb
+                  ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA like null) or (STORAGE_DESC is not null and not DATA like null)"
+                  : "select V.* from JCR_SVALUE as V, JCR_SITEM as I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
+                     + jdbcDataContainer.containerName
+                     + "'  AND ((STORAGE_DESC is null and DATA like null) or (STORAGE_DESC is not null and not DATA like null))"
+               : jdbcDataContainer.multiDb
+                  ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null)"
+                  : "select V.* from JCR_SVALUE as V, JCR_SITEM as I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
+                     + jdbcDataContainer.containerName
+                     + "'  AND ((STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null))",
             new String[]{DBConstants.COLUMN_ID}, "Incorrect JCR_VALUE records", InspectionStatus.ERR));
       queries
          .add(new InspectionQuery(

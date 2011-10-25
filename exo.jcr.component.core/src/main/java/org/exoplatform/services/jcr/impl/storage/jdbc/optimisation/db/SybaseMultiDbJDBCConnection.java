@@ -146,8 +146,8 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
     */
    protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
    {
-      String tempTableAName = "#a" + IdGenerator.generate();
-      String tempTableBName = "#b" + IdGenerator.generate();
+      String tempTableAName = "tempdb..a" + IdGenerator.generate();
+      String tempTableBName = "tempdb..b" + IdGenerator.generate();
 
       boolean tempTableACreated = false;
       boolean tempTableBCreated = false;

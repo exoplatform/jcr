@@ -247,7 +247,6 @@ public class TestDBCleaner extends JcrImplBaseTest
 
       // remove content
       Connection jdbcConn = ds.getConnection();
-      jdbcConn.setAutoCommit(false);
       DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
 
       repositoryDBCleaner.executeCleanScripts();
@@ -294,7 +293,6 @@ public class TestDBCleaner extends JcrImplBaseTest
 
       // remove content
       Connection jdbcConn = ds.getConnection();
-      jdbcConn.setAutoCommit(false);
       DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
 
       repositoryDBCleaner.executeCleanScripts();
