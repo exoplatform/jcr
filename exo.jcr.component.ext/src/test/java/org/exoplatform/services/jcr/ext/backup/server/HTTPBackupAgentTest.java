@@ -251,9 +251,8 @@ public class HTTPBackupAgentTest
       ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
       List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-      assertEquals(1, list.size());
-
-      ShortInfo info = list.get(0);
+      ShortInfo info = getBackupInfo(list);
+      assertNotNull(info);
 
       assertNotNull(info);
       assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
@@ -282,11 +281,9 @@ public class HTTPBackupAgentTest
       ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
       List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-      assertEquals(1, list.size());
-
-      ShortInfo info = list.get(0);
-
+      ShortInfo info = getBackupInfo(list);
       assertNotNull(info);
+
       assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
@@ -314,11 +311,9 @@ public class HTTPBackupAgentTest
       ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
       List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-      assertEquals(1, list.size());
-
-      ShortInfo info = list.get(0);
-
+      ShortInfo info = getBackupInfo(list);
       assertNotNull(info);
+
       assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
@@ -345,11 +340,9 @@ public class HTTPBackupAgentTest
       ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
       List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-      assertEquals(1, list.size());
-
-      ShortInfo info = list.get(0);
-
+      ShortInfo info = getBackupInfo(list);
       assertNotNull(info);
+
       assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
@@ -375,11 +368,9 @@ public class HTTPBackupAgentTest
       ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
       List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-      assertEquals(1, list.size());
-
-      ShortInfo info = list.get(0);
-
+      ShortInfo info = getBackupInfo(list);
       assertNotNull(info);
+
       assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
@@ -406,11 +397,9 @@ public class HTTPBackupAgentTest
       ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
       List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-      assertEquals(1, list.size());
-
-      ShortInfo info = list.get(0);
-
+      ShortInfo info = getBackupInfo(list);
       assertNotNull(info);
+
       assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
@@ -441,9 +430,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
          assertEquals(info.getWorkspaceName(), "ws2");
@@ -497,9 +485,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -552,9 +539,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
          assertEquals(info.getWorkspaceName(), "ws2");
@@ -595,9 +581,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -634,11 +619,9 @@ public class HTTPBackupAgentTest
       ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
       List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-      assertEquals(1, list.size());
-
-      ShortInfo info = list.get(0);
-
+      ShortInfo info = getBackupInfo(list);
       assertNotNull(info);
+
       assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
@@ -665,11 +648,9 @@ public class HTTPBackupAgentTest
       ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
       List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-      assertEquals(1, list.size());
-
-      ShortInfo info = list.get(0);
-
+      ShortInfo info = getBackupInfo(list);
       assertNotNull(info);
+
       assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
@@ -990,9 +971,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
          assertEquals(info.getWorkspaceName(), "ws2");
@@ -1874,9 +1854,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -2043,9 +2022,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -2179,9 +2157,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -2316,9 +2293,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -2408,9 +2384,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -2501,9 +2476,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -2648,9 +2622,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -2795,9 +2768,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -2896,9 +2868,8 @@ public class HTTPBackupAgentTest
          ShortInfoList infoList = (ShortInfoList) getObject(ShortInfoList.class, responseWriter.getBody());
          List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
 
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
+         ShortInfo info = getBackupInfo(list);
+         assertNotNull(info);
 
          assertEquals(info.getRepositoryName(), "db6");
 
@@ -3160,5 +3131,18 @@ public class HTTPBackupAgentTest
             Thread.sleep(500);
          }
       }
+   }
+
+   private ShortInfo getBackupInfo(List<ShortInfo> list)
+   {
+      for (ShortInfo info : list)
+      {
+         if (info.getRepositoryName().equals("db6"))
+         {
+            return info;
+         }
+      }
+
+      return null;
    }
 }
