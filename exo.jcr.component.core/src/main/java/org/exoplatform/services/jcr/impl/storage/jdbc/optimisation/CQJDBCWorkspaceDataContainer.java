@@ -47,9 +47,7 @@ import org.picocontainer.Startable;
 import java.io.IOException;
 
 import javax.jcr.RepositoryException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -136,17 +134,11 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       }
       else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
       {
-         this.connFactory = defaultConnectionFactory();
-
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new PostgreConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new PostgreConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider,
+                  maxBufferSize, swapDirectory, swapCleaner);
          }
          else
             this.connFactory =
