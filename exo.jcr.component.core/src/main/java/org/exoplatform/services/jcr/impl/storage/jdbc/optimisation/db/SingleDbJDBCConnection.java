@@ -951,7 +951,6 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   @Override
    protected void deleteLockProperties() throws SQLException
    {
       PreparedStatement removeValuesStatement = null;

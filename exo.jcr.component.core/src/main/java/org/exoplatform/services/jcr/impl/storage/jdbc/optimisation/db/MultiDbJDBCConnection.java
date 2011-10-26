@@ -1033,7 +1033,6 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   @Override
    protected void deleteLockProperties() throws SQLException
    {
       PreparedStatement removeValuesStatement = null;
