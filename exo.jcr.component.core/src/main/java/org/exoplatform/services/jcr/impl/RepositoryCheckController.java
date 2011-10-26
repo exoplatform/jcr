@@ -65,33 +65,9 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
 
    protected static final String FILE_NAME = "report";
 
-   protected class InspectorThread extends Thread
-   {
-      private final DataStorage[] checkData;
-
-      InspectorThread(DataStorage[] checkData)
-      {
-         super();
-         this.checkData = checkData;
-         this.setDaemon(true);
-      }
-
-      /**
-       * @see java.lang.Runnable#run()
-       */
-      @Override
-      public void run()
-      {
-         String result = checkRepositoryDataConsistency(checkData);
-         inspectionFinished(result);
-      }
-   }
-
    protected enum DataStorage {
       DB, VALUE_STORAGE, LUCENE_INDEX
    };
-
-   private InspectorThread inspectorThread = null;
 
    private File inspectionLogFile = null;
 
@@ -124,71 +100,32 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
     * @return String check consistency report
     */
    @Managed
-   @ManagedDescription("Check repository data consistency. DB data, value storage and lucene index will be checked."
-      + "All writing threads will wait until check become finished.")
+   @ManagedDescription("Check repository data consistency. DB data, value storage and lucene index will be checked.")
    public String checkRepositoryDataConsistency()
    {
-      return startInspectionInThread(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE,
+      return checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE,
          DataStorage.LUCENE_INDEX});
    }
 
    @Managed
-   @ManagedDescription("Check repository database consistency."
-      + "All writing threads will wait until check become finished.")
+   @ManagedDescription("Check repository database consistency.")
    public String checkRepositoryDataBaseConsistency()
    {
-      return startInspectionInThread(new DataStorage[]{DataStorage.DB});
+      return checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
    }
 
    @Managed
-   @ManagedDescription("Check repository value storage consistency."
-      + "All writing threads will wait until check become finished.")
+   @ManagedDescription("Check repository value storage consistency.")
    public String checkRepositoryValueStorageConsistency()
    {
-      return startInspectionInThread(new DataStorage[]{DataStorage.VALUE_STORAGE});
+      return checkRepositoryDataConsistency(new DataStorage[]{DataStorage.VALUE_STORAGE});
    }
 
    @Managed
-   @ManagedDescription("Check repository search index consistency."
-      + "All writing threads will wait until check become finished.")
+   @ManagedDescription("Check repository search index consistency.")
    public String checkRepositorySearchIndexConsistency()
    {
-      return startInspectionInThread(new DataStorage[]{DataStorage.LUCENE_INDEX});
-   }
-
-   @Managed
-   @ManagedDescription("Get inspection status.")
-   public String getStatus()
-   {
-      if (inspectorThread != null)
-      {
-         return "Data consistency inspection in progress..";
-      }
-      else
-      {
-         return lastResult;
-      }
-   }
-
-   protected void inspectionFinished(String resultMessage)
-   {
-      this.lastResult = resultMessage;
-      inspectorThread = null;
-   }
-
-   protected synchronized String startInspectionInThread(DataStorage[] checkData)
-   {
-      if (inspectorThread == null)
-      {
-         inspectorThread = new InspectorThread(checkData);
-         inspectorThread.start();
-
-         return "Data consistency inspection started.";
-      }
-      else
-      {
-         return "Current inspection process is not finished.";
-      }
+      return checkRepositoryDataConsistency(new DataStorage[]{DataStorage.LUCENE_INDEX});
    }
 
    protected String checkRepositoryDataConsistency(DataStorage[] checkData)
@@ -418,9 +355,5 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
     */
    public void stop()
    {
-      if (inspectorThread != null)
-      {
-         inspectorThread.interrupt();
-      }
    }
 }
