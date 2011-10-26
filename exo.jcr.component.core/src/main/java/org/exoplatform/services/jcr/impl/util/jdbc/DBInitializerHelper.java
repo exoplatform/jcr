@@ -288,15 +288,27 @@ public class DBInitializerHelper
          throw new RepositoryConfigurationException("Can not read script file " + scriptsPath, e);
       }
 
+      String sql = null;
       for (String query : DBInitializerHelper.scripts(script))
       {
          String q = DBInitializerHelper.cleanWhitespaces(query);
          if (q.contains(objectName))
          {
-            return q;
+            if (sql != null)
+            {
+               throw new RepositoryConfigurationException("Can't find unique script for object creation. Object name: "
+                  + objectName);
+            }
+
+            sql = q;
          }
       }
 
-      return null;
+      if (sql != null)
+      {
+         return sql;
+      }
+
+      throw new RepositoryConfigurationException("Script for object creation is not found. Object name: " + objectName);
    }
 }

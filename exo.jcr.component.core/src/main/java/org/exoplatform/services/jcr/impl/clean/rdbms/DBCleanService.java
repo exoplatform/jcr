@@ -352,7 +352,7 @@ public class DBCleanService
          addScript.add("ALTER TABLE JCR_" + multiDb + "VALUE ADD CONSTRAINT JCR_FK_" + multiDb
             + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)");
 
-         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT", isMultiDB, dialect));
+         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT ", isMultiDB, dialect));
          addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT_NAME", isMultiDB,
             dialect));
          addScript
@@ -363,10 +363,6 @@ public class DBCleanService
 
          return addScript;
       }
-
-      constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
-      constraint = "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
-      addScript.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
 
       if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL))
       {
@@ -391,7 +387,6 @@ public class DBCleanService
             "CONSTRAINT " + constraintName + " FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
          addScript.add("ALTER TABLE JCR_" + multiDb + "VALUE ADD " + constraint);
 
-
          constraintName = validateConstraintName("JCR_PK_" + multiDb + "REF", dialect);
          constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)";
          addScript.add("ALTER TABLE JCR_" + multiDb + "REF ADD " + constraint);
@@ -401,13 +396,17 @@ public class DBCleanService
          addScript.add("ALTER TABLE JCR_" + multiDb + "CONTAINER ADD " + constraint);
 
          addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT_FK", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT", isMultiDB, dialect));
+         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT ", isMultiDB, dialect));
          addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT_NAME", isMultiDB, dialect));
          addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT_ID", isMultiDB, dialect));
          addScript
             .add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "VALUE_PROPERTY", isMultiDB, dialect));
          addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "REF_PROPERTY", isMultiDB, dialect));
       }
+
+      constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
+      constraint = "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
+      addScript.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
 
       return addScript;
    }
