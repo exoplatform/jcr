@@ -47,6 +47,8 @@ public class DBInitializer
 
    static public String SQL_CREATETABLE = "^(CREATE(\\s)+TABLE(\\s)+(IF(\\s)+NOT(\\s)+EXISTS(\\s)+)*){1}";
 
+   static public String SQL_ALTERTABLE = "^(ALTER(\\s)+TABLE(\\s)+(IF(\\s)+NOT(\\s)+EXISTS(\\s)+)*){1}";
+
    static public String SQL_CREATEVIEW = "^(CREATE(\\s)+VIEW(\\s)+(IF(\\s)+NOT(\\s)+EXISTS(\\s)+)*){1}";
 
    static public String SQL_OBJECTNAME = "((JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+)+?";
@@ -71,6 +73,8 @@ public class DBInitializer
 
    protected final Pattern creatTablePattern;
 
+   protected final Pattern alterTablePattern;
+
    protected final Pattern creatViewPattern;
 
    protected final Pattern dbObjectNamePattern;
@@ -92,6 +96,7 @@ public class DBInitializer
       this.script = script(scriptPath);
 
       this.creatTablePattern = Pattern.compile(SQL_CREATETABLE, Pattern.CASE_INSENSITIVE);
+      this.alterTablePattern = Pattern.compile(SQL_ALTERTABLE, Pattern.CASE_INSENSITIVE);
       this.creatViewPattern = Pattern.compile(SQL_CREATEVIEW, Pattern.CASE_INSENSITIVE);
       this.dbObjectNamePattern = Pattern.compile(SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
       this.creatIndexPattern = Pattern.compile(SQL_CREATEINDEX, Pattern.CASE_INSENSITIVE);
@@ -126,6 +131,25 @@ public class DBInitializer
    {
       Matcher tMatcher = creatTablePattern.matcher(sql);
       if (tMatcher.find())
+      {
+         // CREATE TABLE
+         tMatcher = dbObjectNamePattern.matcher(sql);
+         if (tMatcher.find())
+         {
+            // got table name
+            String tableName = sql.substring(tMatcher.start(), tMatcher.end());
+            if (isTableExists(conn, tableName))
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("Table is already exists " + tableName);
+               }
+               existingTables.add(tableName);
+               return true;
+            }
+         }
+      }
+      else if ((tMatcher = alterTablePattern.matcher(sql)).find())
       {
          // CREATE TABLE
          tMatcher = dbObjectNamePattern.matcher(sql);
