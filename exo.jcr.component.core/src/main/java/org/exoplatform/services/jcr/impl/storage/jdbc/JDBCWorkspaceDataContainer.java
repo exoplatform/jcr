@@ -922,14 +922,20 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          if (deleteLocks)
          {
+            boolean failed = true;
             JDBCStorageConnection conn = (JDBCStorageConnection)openConnection();
             try
             {
                conn.deleteLockProperties();
+               conn.commit();
+               failed = false;
             }
             finally
             {
-               conn.close();
+               if (failed)
+               {
+                  conn.rollback();
+               }
             }
          }
       }

@@ -961,16 +961,13 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       {
          removeValuesStatement =
             dbConnection
-               .prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND (NAME = ? OR NAME = ?))");
+               .prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
          removeValuesStatement.setString(1, containerName);
-         removeValuesStatement.setString(2, Constants.JCR_LOCKISDEEP.getAsString());
-         removeValuesStatement.setString(3, Constants.JCR_LOCKOWNER.getAsString());
 
          removeItemsStatement =
-            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND (NAME = ? OR NAME = ?)");
+            dbConnection
+               .prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
          removeItemsStatement.setString(1, containerName);
-         removeItemsStatement.setString(2, Constants.JCR_LOCKISDEEP.getAsString());
-         removeItemsStatement.setString(3, Constants.JCR_LOCKOWNER.getAsString());
 
          removeValuesStatement.executeUpdate();
          removeItemsStatement.executeUpdate();
