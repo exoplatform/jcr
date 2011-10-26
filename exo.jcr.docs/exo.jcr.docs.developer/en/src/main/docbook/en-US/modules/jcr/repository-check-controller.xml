@@ -23,7 +23,7 @@
     each node in index checks on persistent layer along with opposite
     direction, when each node from Data Container validated in index. Access
     to check tool is exposed via JMX interface, with the following operation
-    available: </para>
+    available:</para>
 
     <table>
       <title>Available methods</title>
@@ -54,21 +54,12 @@
 
             <entry>Inspect only SearchIndex</entry>
           </row>
-
-          <row>
-            <entry>getStatus()</entry>
-
-            <entry>Get inspection process status. If process is finished, it
-            will return inspection result.</entry>
-          </row>
         </tbody>
       </tgroup>
     </table>
 
-    <para>Operations are launched in a separate thread without blocking JMX
-    connection and the status of background job can be accessed by getStatus()
-    operation. All inspection activities and corrupted data identifier are
-    stored in file, which can be found in app directory by name
+    <para>All inspection activities and corrupted data identifier are stored
+    in file, which can be found in app directory by name
     <code>report-&lt;repository name&gt;-dd-MMM-yy-HH-mm.txt</code>. Path to
     file will be returned in result message also. Please, take in account
     thare is three types of inconsistency and two of them are critical. They
