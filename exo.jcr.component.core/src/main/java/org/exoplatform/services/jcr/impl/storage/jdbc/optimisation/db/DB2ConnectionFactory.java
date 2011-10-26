@@ -149,23 +149,54 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
          {
             con = getJdbcConnection();
             DatabaseMetaData metaData = con.getMetaData();
+            if (log.isDebugEnabled())
+            {
+               log.debug("DB Major version = " + metaData.getDatabaseMajorVersion() + ", DB Minor version = "
+                  + metaData.getDatabaseMinorVersion() + ", DB Product version = "
+                  + metaData.getDatabaseProductVersion());
+            }
             if (metaData.getDatabaseMajorVersion() > 9)
             {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("RDBMS indexing enabled as the major version is greater than 9.");
+               }
                isReindexingSupport = true;
             }
             else if (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() > 7)
             {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("RDBMS indexing enabled as the major version is 9 and the minor version is greater than 7.");
+               }
                isReindexingSupport = true;
             }
             else if (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() == 7)
             {
                // returned string like 'SQL09074'
-               char maintenanceVersion =
-                  metaData.getDatabaseProductVersion().charAt(metaData.getDatabaseProductVersion().length() - 1);
-               isReindexingSupport = new Integer(maintenanceVersion) >= 2;
+               String value = metaData.getDatabaseProductVersion();
+               int maintenanceVersion = Integer.parseInt(value.substring(value.length() - 1));
+               isReindexingSupport = maintenanceVersion >= 2;
+               if (log.isDebugEnabled())
+               {
+                  if (isReindexingSupport)
+                  {
+                     log.debug("RDBMS indexing enabled as the major version is 9, the minor version is 7 and the maintenance version is greater or equals to 2 knowing that the extracted value is "
+                        + maintenanceVersion + ".");
+                  }
+                  else
+                  {
+                     log.debug("RDBMS indexing disabled as the major version is 9, the minor version is 7 and the maintenance version is lower than 2 knowing that the extracted value is "
+                        + maintenanceVersion + ".");
+                  }
+               }
             }
             else
             {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("RDBMS indexing disabled as the major version is lower than 9 or the minor version is lower than 7.");
+               }
                isReindexingSupport = false;
             }
          }
