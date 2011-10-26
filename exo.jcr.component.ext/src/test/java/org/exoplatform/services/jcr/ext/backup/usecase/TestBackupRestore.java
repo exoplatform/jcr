@@ -46,10 +46,12 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    public void testBackupRestoreExistingRepositorySingleDB() throws Exception
    {
       repositoryBackupRestore("db1");
+      repositoryBackupRestore("db1");
    }
 
    public void testBackupRestoreExistingRepositoryMultiDB() throws Exception
    {
+      repositoryBackupRestore("db2");
       repositoryBackupRestore("db2");
    }
 
