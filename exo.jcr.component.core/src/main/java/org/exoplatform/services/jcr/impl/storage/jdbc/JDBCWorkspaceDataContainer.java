@@ -924,7 +924,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          if (deleteLocks)
          {
             boolean failed = true;
-            JDBCStorageConnection conn = (JDBCStorageConnection)openConnection();
+            WorkspaceStorageConnection wsc = openConnection(false);
+            if (wsc instanceof StatisticsJDBCStorageConnection)
+            {
+               wsc = ((StatisticsJDBCStorageConnection)wsc).getNestedWorkspaceStorageConnection();
+            }
+            JDBCStorageConnection conn = (JDBCStorageConnection)wsc;
             try
             {
                conn.deleteLockProperties();
