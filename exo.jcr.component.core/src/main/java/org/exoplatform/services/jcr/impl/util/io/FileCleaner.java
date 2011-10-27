@@ -46,6 +46,22 @@ public class FileCleaner extends WorkerThread
 
    protected final ConcurrentLinkedQueue<File> files = new ConcurrentLinkedQueue<File>();
 
+   /**
+    * The shutdown hook
+    */
+   private final Thread hook = new Thread()
+   {
+      @Override
+      public void run()
+      {
+         File file = null;
+         while ((file = files.poll()) != null)
+         {
+            PrivilegedFileHelper.delete(file);
+         }
+      }
+   };
+   
    public FileCleaner()
    {
       this(DEFAULT_TIMEOUT);
@@ -123,7 +139,24 @@ public class FileCleaner extends WorkerThread
       catch (Exception e)
       {
       }
-
+      // Remove the hook for final cleaning up
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+      {
+         public Void run()
+         {
+            try
+            {
+               Runtime.getRuntime().removeShutdownHook(hook);
+            }
+            catch (IllegalStateException e)
+            {
+               // can't register shutdown hook because
+               // jvm shutdown sequence has already begun,
+               // silently ignore...
+            }
+            return null;
+         }
+      });
       if (files != null && files.size() > 0)
          log.warn("There are uncleared files: " + files.size());
 
@@ -170,22 +203,11 @@ public class FileCleaner extends WorkerThread
       // register shutdown hook for final cleaning up
       try
       {
-         Runtime.getRuntime().addShutdownHook(new Thread()
-         {
-            @Override
-            public void run()
-            {
-               File file = null;
-               while ((file = files.poll()) != null)
-               {
-                  PrivilegedFileHelper.delete(file);
-               }
-            }
-         });
+         Runtime.getRuntime().addShutdownHook(hook);
       }
       catch (IllegalStateException e)
       {
-         // can't register shutdownhook because
+         // can't register shutdown hook because
          // jvm shutdown sequence has already begun,
          // silently ignore...
       }

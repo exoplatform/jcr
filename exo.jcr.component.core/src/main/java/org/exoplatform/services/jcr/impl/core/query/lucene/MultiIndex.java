@@ -259,6 +259,18 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private final IndexerIoModeHandler modeHandler;
 
    /**
+    * The shutdown hook
+    */
+   private final Thread hook = new Thread()
+   {
+      @Override
+      public void run()
+      {
+         stopped = true;
+      }
+   };
+   
+   /**
     * The unique id of the workspace corresponding to this multi index
     */
    final String workspaceId;
@@ -367,14 +379,16 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          public Void run()
          {
-            Runtime.getRuntime().addShutdownHook(new Thread()
+            try
             {
-               @Override
-               public void run()
-               {
-                  stopped = true;
-               }
-            });
+               Runtime.getRuntime().addShutdownHook(hook);
+            }
+            catch (IllegalStateException e)
+            {
+               // can't register shutdown hook because
+               // jvm shutdown sequence has already begun,
+               // silently ignore...
+            }            
             return null;
          }
       });
@@ -1340,7 +1354,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void close()
    {
-
       // stop index merger
       // when calling this method we must not lock this MultiIndex, otherwise
       // a deadlock might occur
@@ -1395,6 +1408,24 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          modeHandler.removeIndexerIoModeListener(this);
          indexUpdateMonitor.removeIndexUpdateMonitorListener(this);
          this.stopped = true;
+         // Remove the hook that will stop the threads if they are still running
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+         {
+            public Void run()
+            {
+               try
+               {
+                  Runtime.getRuntime().removeShutdownHook(hook);
+               }
+               catch (IllegalStateException e)
+               {
+                  // can't register shutdown hook because
+                  // jvm shutdown sequence has already begun,
+                  // silently ignore...
+               }
+               return null;
+            }
+         });
       }
    }
 
