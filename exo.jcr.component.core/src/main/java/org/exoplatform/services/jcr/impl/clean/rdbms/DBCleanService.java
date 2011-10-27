@@ -183,13 +183,13 @@ public class DBCleanService
 
          ArrayList<String> dbCleanerScripts = new ArrayList<String>();
          dbCleanerScripts.addAll(getRenameScripts(isMultiDB, dialect));
-         dbCleanerScripts.addAll(prepareInirializationScript(getInitializationDBScript(isMultiDB, dialect), isMultiDB,
+         dbCleanerScripts.addAll(getTableCreationScript(getInitializationDBScript(isMultiDB, dialect), isMultiDB,
             dialect));
-         dbCleanerScripts.addAll(getPreTablesRestoreScript(isMultiDB, dialect));
+         dbCleanerScripts.addAll(getRemoveIndexesScript(isMultiDB, dialect));
 
          ArrayList<String> afterRestoreScript = new ArrayList<String>();
-         afterRestoreScript.addAll(getAfterRestoreScript(isMultiDB, dialect));
-         afterRestoreScript.addAll(getPostTablesRestoreScript(isMultiDB, dialect));
+         afterRestoreScript.addAll(getRemoveOldObjectsScript(isMultiDB, dialect));
+         afterRestoreScript.addAll(getRestoreIndexesScript(isMultiDB, dialect));
 
          return new DBCleaner(jdbcConn, dbCleanerScripts, getRollbackRenamedScript(isMultiDB, dialect),
             afterRestoreScript);
@@ -198,9 +198,9 @@ public class DBCleanService
       ArrayList<String> dbCleanerScripts = new ArrayList<String>();
       dbCleanerScripts.addAll(getDropTableScripts(isMultiDB, dialect));
       dbCleanerScripts.addAll(getInitializationDBScript(isMultiDB, dialect));
-      dbCleanerScripts.addAll(getPreTablesRestoreScript(isMultiDB, dialect));
+      dbCleanerScripts.addAll(getRemoveIndexesScript(isMultiDB, dialect));
 
-      return new DBCleaner(jdbcConn, dbCleanerScripts, new ArrayList<String>(), getPostTablesRestoreScript(isMultiDB,
+      return new DBCleaner(jdbcConn, dbCleanerScripts, new ArrayList<String>(), getRestoreIndexesScript(isMultiDB,
          dialect));
 
    }
@@ -216,7 +216,7 @@ public class DBCleanService
     *          string, dialect of DB
     * @return List with database initialization scripts
     */
-   private static Collection<? extends String> prepareInirializationScript(List<String> initializationDBScript,
+   private static Collection<? extends String> getTableCreationScript(List<String> initializationDBScript,
       boolean isMultiDB, String dialect)
    {
       if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8))
@@ -226,11 +226,25 @@ public class DBCleanService
          for (int i = 0; i < initializationDBScript.size(); i++)
          {
             String query = initializationDBScript.get(i);
-            if (query.contains("JCR_FK_" + multiDb + "ITEM_PARENT")
-               || query.contains("JCR_FK_" + multiDb + "VALUE_PROPERTY"))
+            if (query.contains("JCR_PK_" + multiDb + "ITEM PRIMARY KEY(ID),"))
             {
-               initializationDBScript.remove(i);
-               i--;
+               query =
+                  query.replace("JCR_PK_" + multiDb + "ITEM PRIMARY KEY(ID),", "JCR_PK_" + multiDb
+                  + "ITEM PRIMARY KEY(ID)");
+               query =
+                  query.replace("CONSTRAINT JCR_FK_" + multiDb + "ITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_"
+                  + multiDb + "ITEM(ID)", "");
+               initializationDBScript.set(i, query);
+            }
+            else if (query.contains("CONSTRAINT JCR_PK_" + multiDb + "VALUE PRIMARY KEY(ID),"))
+            {
+               query =
+                  query.replace("CONSTRAINT JCR_PK_" + multiDb + "VALUE PRIMARY KEY(ID),", "CONSTRAINT JCR_PK_"
+                     + multiDb + "VALUE PRIMARY KEY(ID)");
+               query =
+                  query.replace("CONSTRAINT JCR_FK_" + multiDb
+                     + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)", "");
+               initializationDBScript.set(i, query);
             }
          }
       }
@@ -264,13 +278,12 @@ public class DBCleanService
     * @param dialect
     *          String, dialect of DB
     */
-   private static List<String> getPreTablesRestoreScript(boolean isMultiDB, String dialect)
+   private static List<String> getRemoveIndexesScript(boolean isMultiDB, String dialect)
    {
       ArrayList<String> dropScript = new ArrayList<String>();
 
       String multiDb = isMultiDB ? "M" : "S";
       String constraintName;
-      String constraint;
 
       if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL))
       {
@@ -278,29 +291,23 @@ public class DBCleanService
       }
 
       constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
-      constraint = "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
       dropScript.add("ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(false, constraintName, dialect));
 
       if (dialect.equals(DBConstants.DB_DIALECT_ORACLE) || dialect.equals(DBConstants.DB_DIALECT_ORACLEOCI))
       {
          constraintName = validateConstraintName("JCR_PK_" + multiDb + "VALUE", dialect);
-         constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(ID)";
          dropScript.add("ALTER TABLE JCR_" + multiDb + "VALUE " + dropCommand(true, constraintName, dialect));
 
          constraintName = validateConstraintName("JCR_FK_" + multiDb + "VALUE_PROPERTY", dialect);
-         constraint =
-            "CONSTRAINT " + constraintName + " FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
          dropScript.add("ALTER TABLE JCR_" + multiDb + "VALUE " + dropCommand(false, constraintName, dialect));
 
          constraintName = validateConstraintName("JCR_PK_" + multiDb + "ITEM", dialect);
          dropScript.add("ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(true, constraintName, dialect));
 
          constraintName = validateConstraintName("JCR_PK_" + multiDb + "REF", dialect);
-         constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)";
          dropScript.add("ALTER TABLE JCR_" + multiDb + "REF " + dropCommand(true, constraintName, dialect));
 
          constraintName = validateConstraintName("JCR_PK_" + multiDb + "CONTAINER", dialect);
-         constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(VERSION)";
          dropScript.add("ALTER TABLE JCR_" + multiDb + "CONTAINER " + dropCommand(true, constraintName, dialect));
 
          dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "ITEM_PARENT_FK");
@@ -328,7 +335,7 @@ public class DBCleanService
     * @param dialect
     *          String, dialect of DB
     */
-   private static List<String> getPostTablesRestoreScript(boolean isMultiDB, String dialect)
+   private static List<String> getRestoreIndexesScript(boolean isMultiDB, String dialect)
       throws RepositoryConfigurationException
    {
       ArrayList<String> addScript = new ArrayList<String>();
@@ -707,17 +714,10 @@ public class DBCleanService
          rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_"
             + isMultiDB + "ITEM");
 
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM ADD CONSTRAINT JCR_FK_" + isMultiDB
-            + "ITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + isMultiDB + "ITEM(ID)");
-
          rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_"
             + isMultiDB + "VALUE");
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE ADD CONSTRAINT JCR_FK_" + isMultiDB
-            + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + isMultiDB + "ITEM(ID)");
-
          rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "CONTAINER" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_"
             + isMultiDB + "CONTAINER");
-
          rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_" + isMultiDB
             + "REF");
       }
@@ -794,7 +794,7 @@ public class DBCleanService
     * @return List 
     *           return list with query
     */
-   protected static List<String> getAfterRestoreScript(boolean multiDb, String dialect)
+   protected static List<String> getRemoveOldObjectsScript(boolean multiDb, String dialect)
    {
       List<String> afterRetoreScripts = new ArrayList<String>();
 
@@ -878,18 +878,18 @@ public class DBCleanService
             jdbcConn.setAutoCommit(false);
          }
 
-         ArrayList<String> dbCleanerScripts = new ArrayList<String>();
-         dbCleanerScripts.addAll(getRenameScripts(isMultiDB, dialect));
-         dbCleanerScripts.addAll(prepareInirializationScript(getInitializationDBScript(isMultiDB, dialect), isMultiDB,
+         ArrayList<String> cleanScripts = new ArrayList<String>();
+         cleanScripts.addAll(getRenameScripts(isMultiDB, dialect));
+         cleanScripts.addAll(getTableCreationScript(getInitializationDBScript(isMultiDB, dialect), isMultiDB,
             dialect));
-         dbCleanerScripts.addAll(getPreTablesRestoreScript(isMultiDB, dialect));
+         cleanScripts.addAll(getRemoveIndexesScript(isMultiDB, dialect));
 
-         ArrayList<String> afterRestoreScript = new ArrayList<String>();
-         afterRestoreScript.addAll(getAfterRestoreScript(isMultiDB, dialect));
-         afterRestoreScript.addAll(getPostTablesRestoreScript(isMultiDB, dialect));
+         ArrayList<String> commitScript = new ArrayList<String>();
+         commitScript.addAll(getRemoveOldObjectsScript(isMultiDB, dialect));
+         commitScript.addAll(getRestoreIndexesScript(isMultiDB, dialect));
 
-         return new DBCleaner(jdbcConn, dbCleanerScripts, getRollbackRenamedScript(isMultiDB, dialect),
-            afterRestoreScript);
+         return new DBCleaner(jdbcConn, cleanScripts, getRollbackRenamedScript(isMultiDB, dialect),
+            commitScript);
       }
       else
       {
@@ -897,9 +897,9 @@ public class DBCleanService
          
          cleanScripts.addAll(getDropTableScripts(isMultiDB, dialect));
          cleanScripts.addAll(getInitializationDBScript(isMultiDB, dialect));
-         cleanScripts.addAll(getPreTablesRestoreScript(isMultiDB, dialect));
+         cleanScripts.addAll(getRemoveIndexesScript(isMultiDB, dialect));
 
-         return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), getPostTablesRestoreScript(
+         return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), getRestoreIndexesScript(
             isMultiDB, dialect));
       }
    }
