@@ -747,17 +747,17 @@ public class DBCleanService
          rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_" + isMultiDB
             + "REF");
 
+         rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "ITEM ADD CONSTRAINT JCR_PK_" + isMultiDB
+            + "ITEM PRIMARY KEY(ID)");
+
          rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "VALUE ADD CONSTRAINT JCR_FK_" + isMultiDB
-            + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + isMultiDB + "ITEM(ID");
+            + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + isMultiDB + "ITEM(ID)");
 
          rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "ITEM ADD CONSTRAINT JCR_FK_" + isMultiDB
             + "ITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + isMultiDB + "ITEM(ID)");
 
          rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "CONTAINER ADD CONSTRAINT JCR_PK_" + isMultiDB
             + "CONTAINER PRIMARY KEY(VERSION)");
-
-         rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "ITEM ADD CONSTRAINT JCR_PK_" + isMultiDB
-            + "ITEM PRIMARY KEY(ID)");
 
          rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "VALUE ADD CONSTRAINT JCR_PK_" + isMultiDB
             + "VALUE PRIMARY KEY(ID)");
