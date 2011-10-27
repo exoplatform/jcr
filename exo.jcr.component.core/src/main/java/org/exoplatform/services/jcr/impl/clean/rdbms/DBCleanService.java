@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
@@ -152,8 +153,8 @@ public class DBCleanService
       RepositoryConfigurationException
    {
       final boolean isMultiDB =
-         Boolean.parseBoolean(repoEntry.getWorkspaceEntries().get(0).getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.MULTIDB));
+         Boolean.parseBoolean(repoEntry.getWorkspaceEntries().get(0).getContainer()
+            .getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
 
       if (isMultiDB)
       {
@@ -161,7 +162,12 @@ public class DBCleanService
       }
 
       String dialect =
-         repoEntry.getWorkspaceEntries().get(0).getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT);
+         repoEntry.getWorkspaceEntries().get(0).getContainer()
+            .getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
+      if (DBConstants.DB_DIALECT_GENERIC.equals(dialect) || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
+      {
+         dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+      }
 
       if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
@@ -816,7 +822,12 @@ public class DBCleanService
       boolean isMultiDB =
          Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
 
-      String dialect = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT);
+      String dialect =
+         wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
+      if (DBConstants.DB_DIALECT_GENERIC.equals(dialect) || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
+      {
+         dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+      }
 
       if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
