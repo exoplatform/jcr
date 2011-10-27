@@ -30,7 +30,9 @@ import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -806,7 +808,7 @@ public class DBCleanService
    }
 
    /**
-    * Returns database cleaner for manual cleaning for workspace.  
+    * Returns database cleaner for manual cleaning of workspace.  
     * 
     * @param jdbcConn
     *          database connection which need to use
@@ -829,47 +831,111 @@ public class DBCleanService
          dialect = DialectDetecter.detect(jdbcConn.getMetaData());
       }
 
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+      // Sybase doesn't allow DDL scripts inside transaction
+      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
       {
-         // Sybase doesn't allow DDL scripts inside transaction
-         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+         if (!jdbcConn.getAutoCommit())
          {
-            if (!jdbcConn.getAutoCommit())
-            {
-               jdbcConn.setAutoCommit(true);
-            }
+            jdbcConn.setAutoCommit(true);
          }
-         else
-         {
-            jdbcConn.setAutoCommit(false);
-         }
-
-         ArrayList<String> cleanScripts = new ArrayList<String>();
-         cleanScripts.addAll(getRenameScripts(isMultiDB, dialect));
-         cleanScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
-         cleanScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
-
-         ArrayList<String> commitScript = new ArrayList<String>();
-         commitScript.addAll(getRemoveOldObjectsScripts(isMultiDB, dialect));
-         commitScript.addAll(getRestoreIndexesScripts(isMultiDB, dialect));
-
-         return new DBCleaner(jdbcConn, cleanScripts, getRollbackScripts(isMultiDB, dialect),
-            commitScript);
       }
       else
       {
-         List<String> cleanScripts = new ArrayList<String>();
-         
-         cleanScripts.addAll(getDropTableScripts(isMultiDB, dialect));
-         cleanScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
-         cleanScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
+         jdbcConn.setAutoCommit(false);
+      }
 
-         return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), getRestoreIndexesScripts(
-            isMultiDB, dialect));
+      if (!isMultiDB)
+      {
+         boolean cleanWithHelper = false;
+         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
+         {
+            cleanWithHelper = true;
+         }
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
+         {
+            cleanWithHelper = true;
+
+            Statement st = jdbcConn.createStatement();
+            st.execute("SELECT ENGINE FROM information_schema.TABLES where TABLE_SCHEMA='" + jdbcConn.getCatalog()
+               + "' and (TABLE_NAME='JCR_SITEM' or TABLE_NAME='JCR_MITEM')");
+            ResultSet result = st.getResultSet();
+            if (result.next())
+            {
+               String engine = result.getString("ENGINE");
+               if (engine.equalsIgnoreCase("MyISAM"))
+               {
+                  cleanWithHelper = false;
+               }
+            }
+         }
+
+         String containerName = wsEntry.getName();
+         String multiDb = isMultiDB ? "M" : "S";
+
+         List<String> cleanScripts = new ArrayList<String>();
+         List<String> commitScripts = new ArrayList<String>();
+
+         String constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
+         cleanScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(false, constraintName, dialect));
+
+         constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
+         String constraint =
+            "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
+         commitScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
+
+         cleanScripts
+            .add("delete from JCR_SVALUE where PROPERTY_ID IN (select ID from JCR_SITEM where CONTAINER_NAME='"
+               + containerName + "')");
+         cleanScripts.add("delete from JCR_SREF where PROPERTY_ID IN (select ID from JCR_SITEM where CONTAINER_NAME='"
+            + containerName + "')");
+
+         if (cleanWithHelper)
+         {
+            cleanScripts.add("delete from JCR_SITEM where I_CLASS=2 and CONTAINER_NAME='" + containerName + "'");
+
+            String selectItems =
+               "select ID from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME='" + containerName + "' and PARENT_ID=?";
+            String deleteItems =
+               "delete from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME='" + containerName + "' and PARENT_ID=?";
+
+            return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), commitScripts,
+               new RecursiveDBCleanHelper(jdbcConn, selectItems, deleteItems));
+         }
+
+         cleanScripts.add("delete from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
+         return new DBCleaner(jdbcConn, new ArrayList<String>(), commitScripts, cleanScripts);
+      }
+      else
+      {
+         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+         {
+            ArrayList<String> cleanScripts = new ArrayList<String>();
+            cleanScripts.addAll(getRenameScripts(isMultiDB, dialect));
+            cleanScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
+            cleanScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
+
+            ArrayList<String> commitScript = new ArrayList<String>();
+            commitScript.addAll(getRemoveOldObjectsScripts(isMultiDB, dialect));
+            commitScript.addAll(getRestoreIndexesScripts(isMultiDB, dialect));
+
+            return new DBCleaner(jdbcConn, cleanScripts, getRollbackScripts(isMultiDB, dialect), commitScript);
+         }
+         else
+         {
+            List<String> cleanScripts = new ArrayList<String>();
+
+            cleanScripts.addAll(getDropTableScripts(isMultiDB, dialect));
+            cleanScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
+            cleanScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
+
+            return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), getRestoreIndexesScripts(isMultiDB,
+               dialect));
+         }
       }
    }
 }
