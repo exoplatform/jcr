@@ -497,7 +497,8 @@ public abstract class ItemImpl implements Item
 
       if (defs == null || defs.getAnyDefinition() == null)
       {
-         throw new RepositoryException("Property definition '" + propertyName.getAsString() + "' is not found.");
+         throw new ConstraintViolationException("Property definition '" + propertyName.getAsString()
+            + "' is not found.");
       }
 
       PropertyDefinitionData def = defs.getDefinition(isMultiValue);
