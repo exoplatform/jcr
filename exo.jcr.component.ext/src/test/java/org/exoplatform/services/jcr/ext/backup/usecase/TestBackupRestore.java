@@ -18,7 +18,11 @@ package org.exoplatform.services.jcr.ext.backup.usecase;
 
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.ext.backup.BackupChain;
+import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.BackupJob;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
@@ -27,6 +31,7 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
+import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.io.File;
@@ -45,19 +50,103 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 {
    public void testBackupRestoreExistingRepositorySingleDB() throws Exception
    {
-      repositoryBackupRestore("db1");
-      repositoryBackupRestore("db1");
+      repositoryBackupRestore("db1", 1);
+      repositoryBackupRestore("db1", 2);
    }
 
    public void testBackupRestoreExistingRepositoryMultiDB() throws Exception
    {
-      repositoryBackupRestore("db2");
-      repositoryBackupRestore("db2");
+      repositoryBackupRestore("db2", 3);
+      repositoryBackupRestore("db2", 4);
    }
 
-   protected void repositoryBackupRestore(String repositoryName) throws Exception
+   public void testBackupRestoreExistingWorkspaceSingleDB() throws Exception
    {
-      addConent(repositoryName);
+      workspaceBackupRestore("db1", 5);
+      workspaceBackupRestore("db1", 6);
+   }
+
+   public void testBackupRestoreExistingWorkspaceMultiDB() throws Exception
+   {
+      workspaceBackupRestore("db2", 7);
+      workspaceBackupRestore("db2", 8);
+   }
+
+   protected void workspaceBackupRestore(String repositoryName, int number) throws Exception
+   {
+      addConent(repositoryName, number);
+      String workspaceName =
+         repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName();
+
+      WorkspaceEntry wsEntry = null;
+      for (WorkspaceEntry entry : repositoryService.getRepository(repositoryName).getConfiguration()
+         .getWorkspaceEntries())
+      {
+         if (entry.getName().equals(workspaceName))
+         {
+            wsEntry = entry;
+            break;
+         }
+      }
+
+      BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
+      backupManagerImpl.start();
+
+      File backDir = new File("target/backup/" + repositoryName);
+      backDir.mkdirs();
+
+      BackupConfig config = new BackupConfig();
+      config.setRepository(repositoryName);
+      config.setWorkspace(workspaceName);
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      BackupChain bch = backupManagerImpl.startBackup(config);
+
+      // wait till full backup will stop
+      while (bch.getFullBackupState() != BackupChain.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(30);
+      }
+
+      if (bch != null)
+      {
+         backupManagerImpl.stopBackup(bch);
+      }
+
+      // restore
+      File backLog = new File(bch.getLogFilePath());
+      if (backLog.exists())
+      {
+         BackupChainLog bchLog = new BackupChainLog(backLog);
+
+         assertNotNull(bchLog.getStartedTime());
+         assertNotNull(bchLog.getFinishedTime());
+
+         backupManagerImpl.restoreExistingWorkspace(bchLog, repositoryName, wsEntry, false);
+
+         JobWorkspaceRestore restore = backupManagerImpl.getLastRestore(repositoryName, workspaceName);
+         assertNotNull(restore);
+         //         if (restore != null)
+         //         {
+         //            if (restore.getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL)
+         //            {
+         //               fail(restore.getRestoreException().getMessage());
+         //            }
+         //         }
+      }
+      else
+      {
+         fail("There are no backup files in " + backDir.getAbsolutePath());
+      }
+
+      checkConent(repositoryName, number);
+   }
+
+   protected void repositoryBackupRestore(String repositoryName, int number) throws Exception
+   {
+      addConent(repositoryName, number);
 
       BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
       backupManagerImpl.start();
@@ -110,7 +199,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          fail("There are no backup files in " + backDir.getAbsolutePath());
       }
 
-      checkConent(repositoryName);
+      checkConent(repositoryName, number);
    }
 
    protected ExtendedBackupManager getBackupManager()
@@ -126,39 +215,41 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       return new BackupManagerImpl(initParams, repositoryService);
    }
 
-   protected void addConent(String repositoryName) throws Exception
+   protected void addConent(String repositoryName, int number) throws Exception
    {
       ManageableRepository repository = repositoryService.getRepository(repositoryName);
-      String wsName = repository.getConfiguration().getSystemWorkspaceName();
-
-      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
-      try
+      for (String wsName : repository.getWorkspaceNames())
       {
-         Node rootNode = session.getRootNode().addNode("test");
+         SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
+         try
+         {
+            Node rootNode = session.getRootNode().addNode("test" + number);
 
-         rootNode.addNode("node1").setProperty("prop1", "value1");
-         session.save();
-      }
-      finally
-      {
-         session.logout();
+            rootNode.addNode("node1").setProperty("prop1", "value1");
+            session.save();
+         }
+         finally
+         {
+            session.logout();
+         }
       }
    }
 
-   protected void checkConent(String repositoryName) throws Exception
+   protected void checkConent(String repositoryName, int number) throws Exception
    {
       ManageableRepository repository = repositoryService.getRepository(repositoryName);
-      String wsName = repository.getConfiguration().getSystemWorkspaceName();
-
-      SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
-      try
+      for (String wsName : repository.getWorkspaceNames())
       {
-         Node rootNode = session.getRootNode().getNode("test");
-         assertEquals(rootNode.getNode("node1").getProperty("prop1").getString(), "value1");
-      }
-      finally
-      {
-         session.logout();
+         SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
+         try
+         {
+            Node rootNode = session.getRootNode().getNode("test" + number);
+            assertEquals(rootNode.getNode("node1").getProperty("prop1").getString(), "value1");
+         }
+         finally
+         {
+            session.logout();
+         }
       }
    }
 }

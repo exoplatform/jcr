@@ -196,7 +196,6 @@
               <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>
               <exclude>**/backup/TestBackupScheduler.java</exclude>
               <exclude>**/backup/TestBackupRestart.java</exclude>
-              <exclude>**/backup/usecase/TestLoadBackup.java*</exclude>
               <exclude>**/replication/**</exclude>
               <exclude>**/repository/creation/cluster/**</exclude>
             </excludes>
