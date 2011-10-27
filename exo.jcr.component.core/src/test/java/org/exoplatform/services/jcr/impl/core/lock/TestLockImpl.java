@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
-import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 
 import javax.jcr.Node;
@@ -146,7 +145,7 @@ public class TestLockImpl extends JcrImplBaseTest
          node.unlock();
          fail("Exception should be thrown");
       }
-      catch (JCRInvalidItemStateException e)
+      catch (Exception e)
       {
       }
 
