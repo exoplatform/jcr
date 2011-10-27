@@ -66,51 +66,51 @@ public class DBInitializerHelper
    public static String scriptPath(String dbDialect, boolean multiDb)
    {
       String sqlPath = null;
-      if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
+      if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_ORACLE)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.pgsql.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-utf8.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_MSSQL)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mssql.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_DERBY)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DERBY))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.derby.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_DB2)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2v8.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sybase.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_INGRES))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ingres.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_HSQLDB)
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
       }
