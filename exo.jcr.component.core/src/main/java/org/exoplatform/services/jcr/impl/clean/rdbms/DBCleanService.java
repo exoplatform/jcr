@@ -99,6 +99,7 @@ public class DBCleanService
       try
       {
          dbCleaner.executeCleanScripts();
+
          try
          {
             dbCleaner.executeCommitScripts();
@@ -107,6 +108,7 @@ public class DBCleanService
          {
             LOG.error("Can't remove temporary objects", e);
          }
+
          jdbcConn.commit();
       }
       catch (SQLException e)
@@ -171,6 +173,19 @@ public class DBCleanService
          dialect = DialectDetecter.detect(jdbcConn.getMetaData());
       }
 
+      // Sybase doesn't allow DDL scripts inside transaction
+      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+      {
+         if (!jdbcConn.getAutoCommit())
+         {
+            jdbcConn.setAutoCommit(true);
+         }
+      }
+      else
+      {
+         jdbcConn.setAutoCommit(false);
+      }
+
       if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
@@ -178,19 +193,6 @@ public class DBCleanService
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
       {
-         // Sybase doesn't allow DDL scripts inside transaction
-         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
-         {
-            if (!jdbcConn.getAutoCommit())
-            {
-               jdbcConn.setAutoCommit(true);
-            }
-         }
-         else
-         {
-            jdbcConn.setAutoCommit(false);
-         }
-
          ArrayList<String> dbCleanerScripts = new ArrayList<String>();
          dbCleanerScripts.addAll(getRenameScripts(isMultiDB, dialect));
          dbCleanerScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
@@ -875,6 +877,7 @@ public class DBCleanService
 
          List<String> cleanScripts = new ArrayList<String>();
          List<String> commitScripts = new ArrayList<String>();
+         List<String> rollbackScripts = new ArrayList<String>();
 
          String constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
          cleanScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(false, constraintName, dialect));
@@ -883,6 +886,7 @@ public class DBCleanService
          String constraint =
             "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
          commitScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
+         rollbackScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
 
          cleanScripts
             .add("delete from JCR_SVALUE where PROPERTY_ID IN (select ID from JCR_SITEM where CONTAINER_NAME='"
@@ -899,12 +903,12 @@ public class DBCleanService
             String deleteItems =
                "delete from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME='" + containerName + "' and PARENT_ID=?";
 
-            return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), commitScripts,
+            return new DBCleaner(jdbcConn, cleanScripts, rollbackScripts, commitScripts,
                new RecursiveDBCleanHelper(jdbcConn, selectItems, deleteItems));
          }
 
          cleanScripts.add("delete from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
-         return new DBCleaner(jdbcConn, new ArrayList<String>(), commitScripts, cleanScripts);
+         return new DBCleaner(jdbcConn, cleanScripts, rollbackScripts, commitScripts);
       }
       else
       {

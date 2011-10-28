@@ -250,8 +250,8 @@ public class TestDBCleaner extends JcrImplBaseTest
       DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
 
       repositoryDBCleaner.executeCleanScripts();
-      jdbcConn.commit();
       repositoryDBCleaner.executeCommitScripts();
+      jdbcConn.commit();
 
       // check - does JCR_SITEM become empty
       res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
@@ -297,7 +297,9 @@ public class TestDBCleaner extends JcrImplBaseTest
 
       repositoryDBCleaner.executeCleanScripts();
       jdbcConn.rollback();
+
       repositoryDBCleaner.executeRollbackScripts();
+      jdbcConn.commit();
 
       // check - does JCR_SITEM become empty
       res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
