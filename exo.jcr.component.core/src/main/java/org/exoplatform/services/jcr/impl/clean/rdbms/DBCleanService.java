@@ -96,6 +96,8 @@ public class DBCleanService
       });
 
       DBCleaner dbCleaner = getWorkspaceDBCleaner(jdbcConn, wsEntry);
+      jdbcConn.setAutoCommit(false);
+
       try
       {
          dbCleaner.executeCleanScripts();
@@ -180,10 +182,6 @@ public class DBCleanService
          {
             jdbcConn.setAutoCommit(true);
          }
-      }
-      else
-      {
-         jdbcConn.setAutoCommit(false);
       }
 
       if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
@@ -840,10 +838,6 @@ public class DBCleanService
          {
             jdbcConn.setAutoCommit(true);
          }
-      }
-      else
-      {
-         jdbcConn.setAutoCommit(false);
       }
 
       if (!isMultiDB)

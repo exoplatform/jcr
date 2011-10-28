@@ -149,7 +149,7 @@ public class TestDBCleaner extends JcrImplBaseTest
 
    public void testRemoveRepositoryMultiDB() throws Exception
    {
-      String repositoryName = "repoTestRemoveMulti";
+      String repositoryName = "repom";
 
       RepositoryEntry repositoryEntry = createMultiDB(repositoryName);
 
@@ -186,7 +186,7 @@ public class TestDBCleaner extends JcrImplBaseTest
 
    public void testRemoveRepositorySingleDB() throws Exception
    {
-      String repositoryName = "repoTestRemoveSingle";
+      String repositoryName = "repos";
 
       RepositoryEntry repositoryEntry = createSingleDB(repositoryName);
 
@@ -247,6 +247,8 @@ public class TestDBCleaner extends JcrImplBaseTest
 
       // remove content
       Connection jdbcConn = ds.getConnection();
+      jdbcConn.setAutoCommit(false);
+
       DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
 
       repositoryDBCleaner.executeCleanScripts();
@@ -293,6 +295,8 @@ public class TestDBCleaner extends JcrImplBaseTest
 
       // remove content
       Connection jdbcConn = ds.getConnection();
+      jdbcConn.setAutoCommit(false);
+
       DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
 
       repositoryDBCleaner.executeCleanScripts();
