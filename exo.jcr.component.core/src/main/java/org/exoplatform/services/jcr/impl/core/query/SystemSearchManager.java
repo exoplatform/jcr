@@ -136,4 +136,5 @@ public class SystemSearchManager extends SearchManager
    {
       return super.getStorageName() + "_" + INDEX_DIR_SUFFIX;
    }
+   
 }

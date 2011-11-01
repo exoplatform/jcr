@@ -2519,6 +2519,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_HIGH;
+   }
 
    /**
     * Defines what we are really looking for

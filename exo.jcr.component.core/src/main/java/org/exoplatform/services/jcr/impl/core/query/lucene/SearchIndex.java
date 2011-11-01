@@ -3388,4 +3388,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          }
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_NORMAL;
+   }
 }

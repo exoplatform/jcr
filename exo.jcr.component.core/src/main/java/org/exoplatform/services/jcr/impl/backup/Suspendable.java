@@ -24,6 +24,22 @@ package org.exoplatform.services.jcr.impl.backup;
  */
 public interface Suspendable
 {
+
+   /**
+    * Priority high constant.
+    */
+   public static final int PRIORITY_HIGH = 5;
+
+   /**
+    * Priority normal constant.
+    */
+   public static final int PRIORITY_NORMAL = 0;
+
+   /**
+    * Priority low constant.
+    */
+   public static final int PRIORITY_LOW = -5;
+
    /**
     * Suspend component.
     *  
@@ -44,5 +60,14 @@ public interface Suspendable
     * @return
     */
    boolean isSuspended();
+
+   /**
+    * Priority of the component.
+    * Uses for suspend/resume comparator order.
+    * The higher number gives higher priority.
+    * 
+    * @return
+    */
+   int getPriority();
 
 }

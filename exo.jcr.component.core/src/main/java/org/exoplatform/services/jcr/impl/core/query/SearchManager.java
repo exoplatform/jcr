@@ -1714,4 +1714,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new BackupException(e);
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_NORMAL;
+   }
 }

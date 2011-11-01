@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
@@ -174,7 +175,7 @@ public final class WorkspaceContainerFacade
       {
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
-      
+
       try
       {
          SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
@@ -235,6 +236,14 @@ public final class WorkspaceContainerFacade
    private void suspend() throws RepositoryException
    {
       List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
+      Comparator<Suspendable> c = new Comparator<Suspendable>()
+      {
+         public int compare(Suspendable s1, Suspendable s2)
+         {
+            return s2.getPriority() - s1.getPriority();
+         };
+      };
+      Collections.sort(components, c);
       for (Suspendable component : components)
       {
          try
@@ -256,8 +265,14 @@ public final class WorkspaceContainerFacade
    private void resume() throws RepositoryException
    {
       List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
-      Collections.reverse(components);
-
+      Comparator<Suspendable> c = new Comparator<Suspendable>()
+      {
+         public int compare(Suspendable s1, Suspendable s2)
+         {
+            return s1.getPriority() - s2.getPriority();
+         };
+      };
+      Collections.sort(components, c);
       for (Suspendable component : components)
       {
          try
