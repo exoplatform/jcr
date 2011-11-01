@@ -244,6 +244,7 @@ public final class WorkspaceContainerFacade
          };
       };
       Collections.sort(components, c);
+
       for (Suspendable component : components)
       {
          try
@@ -264,6 +265,7 @@ public final class WorkspaceContainerFacade
     */
    private void resume() throws RepositoryException
    {
+      // components should be resumed in reverse order
       List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
       Comparator<Suspendable> c = new Comparator<Suspendable>()
       {
@@ -273,6 +275,7 @@ public final class WorkspaceContainerFacade
          };
       };
       Collections.sort(components, c);
+
       for (Suspendable component : components)
       {
          try
