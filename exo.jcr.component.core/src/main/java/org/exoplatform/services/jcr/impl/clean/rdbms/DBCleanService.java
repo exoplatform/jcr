@@ -926,6 +926,8 @@ public class DBCleanService
             || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
             || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
             || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
             || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
          {
             ArrayList<String> cleanScripts = new ArrayList<String>();

@@ -86,6 +86,16 @@ public class DBBackup
    public static final int DB_DIALECT_MYSQL_UTF8 = DBConstants.DB_DIALECT_MYSQL_UTF8.hashCode();
 
    /**
+    * MySQL-MYISAM dialect.
+    */
+   public static final int DB_DIALECT_MYSQL_MYISAM = DBConstants.DB_DIALECT_MYSQL_MYISAM.hashCode();
+
+   /**
+    * MySQL-MYISAM-UTF8 dialect.
+    */
+   public static final int DB_DIALECT_MYSQL_MYISAM_UTF8 = DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8.hashCode();
+
+   /**
     * DB2 dialect.
     */
    public static final int DB_DIALECT_DB2 = DBConstants.DB_DIALECT_DB2.hashCode();
