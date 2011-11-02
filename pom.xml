@@ -394,6 +394,11 @@
         <artifactId>infinispan-cachestore-jdbc</artifactId>
         <version>5.0.1.FINAL</version>
       </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>1.3</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>

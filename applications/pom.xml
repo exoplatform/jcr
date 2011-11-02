@@ -28,7 +28,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>jcr-applications-parent</artifactId>
    <version>1.14.4-GA-SNAPSHOT</version>
-    
+
    <name>eXo JCR :: Applications :: Reactor</name>
    <packaging>pom</packaging>
    <description>eXo JCR Applications Reactor</description>
@@ -38,10 +38,10 @@
       <module>exo.jcr.applications.backupconsole</module>
       <module>exo.jcr.applications.backupconsole.dist</module>
       <module>exo.jcr.applications.browser</module>
-      <module>exo.jcr.applications.config</module>                  
+      <module>exo.jcr.applications.config</module>
       <module>exo.jcr.applications.fckeditor</module>
       <module>exo.jcr.applications.rest</module>
-      <module>exo.jcr.ear</module>      
+      <module>exo.jcr.ear</module>
       <module>exo.jcr.applications.jboss</module>
       <module>exo.jcr.applications.jonas</module>
       <module>exo.jcr.applications.tomcat</module>
