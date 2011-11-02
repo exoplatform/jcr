@@ -28,32 +28,54 @@
     with eXo JCR implementation.</para>
 
     <para>Currently the data container is tested with the following
-    RDBMS:<itemizedlist>
+    configurations:<itemizedlist>
         <listitem>
-          <para>MySQL 5.1 MYSQL Connector/J 5.1.8</para>
+          <para>MySQL 5.0.18 MYSQL Connector/J 5.0.8</para>
         </listitem>
 
         <listitem>
-          <para>PostgresSQL 8.3.7 JDBC4 Driver, Version 8.3-605</para>
+          <para>MySQL 5.1.36 MYSQL Connector/J 5.1.14</para>
         </listitem>
 
         <listitem>
-          <para>Oracle DB 11g (11.0.1.6), JDBC Driver Oracle 11g R1
+          <para>PostgresSQL 8.2.4 JDBC4 Driver, Version 8.2-507</para>
+        </listitem>
+
+        <listitem>
+          <para>PostgresSQL 8.3.7 JDBC4 Driver, Version 8.3-606</para>
+        </listitem>
+
+        <listitem>
+          <para>Oracle DB 10g R2 (10.2.0.4), JDBC Driver Oracle 10g R2
+          (10.2.0.4)</para>
+        </listitem>
+
+        <listitem>
+          <para>Oracle DB 11g R1 (11.1.0.6.0), JDBC Driver Oracle 11g R1
           (11.1.0.6.0)</para>
         </listitem>
 
         <listitem>
-          <para>DB2 9,7 IBM Data Server Driver for JDBC and SQLJ (JCC Driver)
-          v.9.1 (fixpack 3a)</para>
+          <para>Oracle DB 11g R2 (11.2.0.1.0), JDBC Driver Oracle 11g R2
+          (11.2.0.1.0)</para>
         </listitem>
 
         <listitem>
-          <para>MS SQL Server 2005 SP3 JDBC Driver 2.0</para>
+          <para>DB2 9.7.4 IBM Data Server Driver for JDBC and SQLJ (JCC
+          Driver) v.9.7</para>
         </listitem>
 
         <listitem>
-          <para>Sybase 15.0.3 Driver: Sybase jConnect JDBC driver v7 (Build
-          26502)</para>
+          <para>MS SQL Server 2005 SP3 JDBC Driver 3.0</para>
+        </listitem>
+
+        <listitem>
+          <para>MS SQL Server 2008 JDBC Driver 3.0</para>
+        </listitem>
+
+        <listitem>
+          <para>Sybase 15.0.3 ASE Driver: Sybase jConnect JDBC driver v7
+          (Build 26502)</para>
         </listitem>
 
         <listitem>
@@ -73,16 +95,14 @@
         personal needs and requirements, but obligatorily case sensitive. For
         more information please refer to Microsoft SQL Server documentation
         page "Selecting a SQL Server Collation" <ulink
-        url="http://msdn.microsoft.com/en-us/library/ms144250.aspx">here.</ulink>
-        </para>
-      </note>
-      <note>
-        <para>
-        Be aware that JCR does not support MyISAM storage engine for the MySQL 
-        relational database management system.
-        </para>
-      </note>
-    Each database software supports ANSI SQL standards but also has
+        url="http://msdn.microsoft.com/en-us/library/ms144250.aspx">here.</ulink></para>
+      </note><note>
+        <para>Be aware that MyISAM is not supported due to its lack of
+        transaction support and integrity check, so use it only if you don't
+        expect any support and if performances in read accesses are more
+        important than the consistency in your use-case. This dialect is only
+        dedicated to the community.</para>
+      </note> Each database software supports ANSI SQL standards but also has
     its own specifics. So, each database has its own configuration in eXo JCR
     as a database dialect parameter. If you need a more detailed configuration
     of the database, it's possible to do that by editing the metadata
@@ -112,6 +132,18 @@
       </tr>
 
       <tr>
+        <td>MySQL DB with MyISAM*</td>
+
+        <td>jcr-sjdbc.mysql-myisam.sql</td>
+      </tr>
+
+      <tr>
+        <td>MySQL DB with MyISAM and utf-8*</td>
+
+        <td>jcr-sjdbc.mysql-myisam-utf8.sql</td>
+      </tr>
+
+      <tr>
         <td>PostgresSQL</td>
 
         <td>jcr-sjdbc.pqsql.sql</td>
@@ -124,7 +156,7 @@
       </tr>
 
       <tr>
-        <td>DB2 9.7</td>
+        <td>DB2</td>
 
         <td>jcr-sjdbc.db2.sql</td>
       </tr>
@@ -164,6 +196,18 @@
       </tr>
 
       <tr>
+        <td>MySQL DB with MyISAM*</td>
+
+        <td>jcr-mjdbc.mysql-myisam.sql</td>
+      </tr>
+
+      <tr>
+        <td>MySQL DB with MyISAM and utf-8*</td>
+
+        <td>jcr-mjdbc.mysql-myisam-utf8.sql</td>
+      </tr>
+
+      <tr>
         <td>PostgresSQL</td>
 
         <td>jcr-mjdbc.pqsql.sql</td>
@@ -176,7 +220,7 @@
       </tr>
 
       <tr>
-        <td>DB2 9.7</td>
+        <td>DB2</td>
 
         <td>jcr-mjdbc.db2.sql</td>
       </tr>
@@ -199,6 +243,14 @@
         <td>jcr-mjdbc.sql</td>
       </tr>
     </table>
+
+    <note>
+      <para>* MyISAM is not supported due to its lack of transaction support
+      and integrity check, so use it only if you don't expect any support and
+      if performances in read accesses are more important than the consistency
+      in your use-case. This dialect is only dedicated to the
+      community.</para>
+    </note>
 
     <para>In case the non-ANSI node name is used, it's necessary to use a
     database with MultiLanguage support[TODO link to MultiLanguage]. Some JDBC
