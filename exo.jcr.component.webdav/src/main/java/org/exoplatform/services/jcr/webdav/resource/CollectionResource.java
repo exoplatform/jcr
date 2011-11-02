@@ -86,6 +86,11 @@ public class CollectionResource extends GenericResource
    final String XML_HREF = "xlink:href";
 
    /**
+    * XML parent href constant.
+    */
+   final static String XML_PARENT_HREF = "xlink:parent-href";
+
+   /**
     * XML namespace prefix.
     */
    final String PREFIX_XMLNS = "xmlns:sv";
@@ -418,6 +423,20 @@ public class CollectionResource extends GenericResource
                writer.writeAttribute(XLINK_XMLNS, XLINK_LINK);
                writer.writeAttribute(XML_NAME, node.getName());
                writer.writeAttribute(XML_HREF, rootHref + TextUtil.escape(node.getPath(), '%', true));
+
+
+               if (!node.getPath().equals("/"))
+               {
+                  // this is added to fix EXOJCR-1379
+                  // XSLT string operations with actual node href, (which are used during XSLT transformation
+                  // to receive parent href) produce wrong parent-href if node path containes non-latin symbols, 
+                  // so instead we simply add one more attribute which already contains parent-href
+                  // as result: no XLST processor string manipulation is needed
+                  String nodeParentHref = rootHref + TextUtil.escape(node.getParent().getPath(), '%', true);
+                  writer.writeAttribute(XML_PARENT_HREF, nodeParentHref);
+               }
+
+
                // add properties
                for (PropertyIterator pi = node.getProperties(); pi.hasNext();)
                {

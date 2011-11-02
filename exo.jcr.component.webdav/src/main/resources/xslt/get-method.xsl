@@ -26,7 +26,7 @@
             <!-- Parent node link -->
             <a>
               <xsl:attribute name="href">
-                <xsl:value-of select="substring(./@xlink:href, 1, string-length(./@xlink:href) - string-length(./@sv:name))" />
+                <xsl:value-of select="./@xlink:parent-href" />
               </xsl:attribute>
               <xsl:if test="$folder-icon-path!=''">
                 <img src="{$folder-icon-path}" alt="" />
