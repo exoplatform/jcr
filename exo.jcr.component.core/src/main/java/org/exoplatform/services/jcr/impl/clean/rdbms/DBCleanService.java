@@ -188,6 +188,8 @@ public class DBCleanService
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
       {
@@ -230,7 +232,9 @@ public class DBCleanService
       String constraintName;
 
       if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL))
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
       {
          return dropScript;
       }
@@ -318,7 +322,9 @@ public class DBCleanService
       }
 
       if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL))
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
       {
          constraintName = validateConstraintName("JCR_FK_" + multiDb + "VALUE_PROPERTY", dialect);
          constraint =
@@ -401,7 +407,9 @@ public class DBCleanService
    protected static String dropCommand(boolean isPrimaryKey, String constraintName, String dialect)
    {
       if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
       {
          return isPrimaryKey == true ? "DROP PRIMARY KEY" : "DROP FOREIGN KEY " + constraintName;
       }
@@ -503,7 +511,9 @@ public class DBCleanService
             + "REF_PROPERTY" + OLD_OBJECT_SUFFIX);
       }
       else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
       {
          renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE RENAME TO JCR_" + isMultiDB + "VALUE"
             + OLD_OBJECT_SUFFIX);
@@ -634,7 +644,9 @@ public class DBCleanService
             + " RENAME TO JCR_IDX_" + isMultiDB + "REF_PROPERTY");
       }
       else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
       {
          rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_"
             + isMultiDB + "ITEM");
@@ -760,7 +772,9 @@ public class DBCleanService
 
       // Filter scripts
       if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
       {
          for (int i = 0; i < scripts.size(); i++)
          {
@@ -848,7 +862,9 @@ public class DBCleanService
             cleanWithHelper = true;
          }
          else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
          {
             cleanWithHelper = true;
 

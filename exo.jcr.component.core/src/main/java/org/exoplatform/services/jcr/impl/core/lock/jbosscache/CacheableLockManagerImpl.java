@@ -384,7 +384,8 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
             blobType = "VARBINARY(65535)";
          }
          // MYSQL
-         else if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8))
+         else if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8) ||
+                  dialect.equals(DBConstants.DB_DIALECT_MYSQL_MYISAM) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
          {
             blobType = "LONGBLOB";
          }

@@ -82,9 +82,17 @@ public class DBInitializerHelper
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql.sql";
       }
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM))
+      {
+         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-myisam.sql";
+      }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-utf8.sql";
+      }
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
+      {
+         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-myisam-utf8.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
       {

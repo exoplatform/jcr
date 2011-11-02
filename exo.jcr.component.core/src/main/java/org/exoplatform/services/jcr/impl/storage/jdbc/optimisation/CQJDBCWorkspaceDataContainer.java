@@ -39,6 +39,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.PostgreCon
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseConnectionFactory;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.jdbc.DataSourceProvider;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -93,8 +94,8 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
    protected void initDatabase() throws NamingException, RepositoryException, IOException
    {
 
-      StorageDBInitializer dbInitilizer = null;
-      String sqlPath = null;
+      StorageDBInitializer dbInitializer = null;
+      String sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
       if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
       {
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
@@ -110,10 +111,8 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
                new OracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner, useQueryHints);
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
-
          // a particular db initializer may be configured here too
-         dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_ORACLE)
       {
@@ -128,8 +127,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
             this.connFactory =
                new DefaultOracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner, useQueryHints);
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
-         dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
 
       }
       else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
@@ -145,15 +143,17 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
                new PostgreConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
-
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.pgsql.sql";
-         dbInitilizer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL)
+      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8 ||
+               dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
       {
-         // [PN] 28.06.07
+         if (dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+         {
+            LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only" +
+            		" if you don't expect any support and performances in read accesses are more important than the consistency" +
+            		" in your use-case. This dialect is only dedicated to the community.");
+         }
          if (dbSourceName != null)
          {
             this.connFactory =
@@ -165,25 +165,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
                new MySQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
-      }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
-      {
-         // [PN] 13.07.08
-         if (dbSourceName != null)
-         {
-            this.connFactory =
-               new MySQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
-         }
-         else
-            this.connFactory =
-               new MySQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-utf8.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_MSSQL)
       {
@@ -200,14 +182,12 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mssql.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DERBY)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.derby.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2)
       {
@@ -224,8 +204,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
@@ -242,8 +221,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2v8.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
       {
@@ -260,15 +238,13 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sybase.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ingres.sql";
          // using Postgres initializer
-         dbInitilizer =
+         dbInitializer =
             new IngresSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_HSQLDB)
@@ -283,21 +259,19 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
             this.connFactory =
                new HSQLDBConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else
       {
          // generic, DB_HSQLDB
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
 
       // database type
       try
       {
-         dbInitilizer.init();
+         dbInitializer.init();
       }
       catch (DBInitializerException e)
       {

@@ -185,7 +185,9 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
          binType = "LONG BYTE";
       }
       else if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect))
+         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_MYISAM.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8.equalsIgnoreCase(dialect))
       {
          binType = "LONGBLOB";
       }

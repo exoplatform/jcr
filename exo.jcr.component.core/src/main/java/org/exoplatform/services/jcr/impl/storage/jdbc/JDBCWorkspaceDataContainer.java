@@ -630,8 +630,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected void initDatabase() throws NamingException, RepositoryException, IOException
    {
 
-      StorageDBInitializer dbInitilizer = null;
-      String sqlPath = null;
+      StorageDBInitializer dbInitializer = null;
+      String sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
       if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
       {
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
@@ -646,27 +646,28 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                new OracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
-
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-
          // a particular db initializer may be configured here too
-         dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_ORACLE)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL)
+      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8 ||
+               dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
       {
-         // [PN] 28.06.07
+         if (dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+         {
+            LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only" +
+                  " if you don't expect any support and performances in read accesses are more important than the consistency" +
+                  " in your use-case. This dialect is only dedicated to the community.");
+         }
          if (dbSourceName != null)
          {
             this.connFactory =
@@ -680,64 +681,38 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = defaultDBInitializer(sqlPath);
-      }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
-      {
-         // [PN] 13.07.08
-         if (dbSourceName != null)
-         {
-            this.connFactory =
-               new MySQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
-         }
-         else
-         {
-            this.connFactory =
-               new MySQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-         }
-
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_MSSQL)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DERBY)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
          // using Postgres initializer
-         dbInitilizer =
+         dbInitializer =
             new IngresSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_HSQLDB)
@@ -754,21 +729,19 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                new HSQLDBConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else
       {
          // generic, DB_HSQLDB
          this.connFactory = defaultConnectionFactory();
-         sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
 
       // database type
       try
       {
-         dbInitilizer.init();
+         dbInitializer.init();
       }
       catch (DBInitializerException e)
       {

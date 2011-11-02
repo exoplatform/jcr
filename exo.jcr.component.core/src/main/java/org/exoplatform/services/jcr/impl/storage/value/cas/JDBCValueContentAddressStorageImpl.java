@@ -346,7 +346,9 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       //
       String err = e.toString();
       if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect))
+         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_MYISAM.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8.equalsIgnoreCase(dialect))
       {
          // for MySQL will search
          return MYSQL_PK_CONSTRAINT_DETECT.matcher(err).find();
