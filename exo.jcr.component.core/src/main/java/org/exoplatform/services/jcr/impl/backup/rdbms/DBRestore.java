@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderImpl;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -269,7 +270,7 @@ public class DBRestore implements DataRestore
       ResultSet tableMetaData = null;
 
       // switch table name to lower case
-      if (dialect.equals(DBBackup.DB_DIALECT_PGSQL))
+      if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
       {
          tableName = tableName.toLowerCase();
       }
@@ -327,7 +328,8 @@ public class DBRestore implements DataRestore
             columnType.add(restoreRule.getNewColumnIndex(), restoreRule.getNewColumnType());
 
             String newColumnName =
-               dialect.equals(DBBackup.DB_DIALECT_PGSQL) ? restoreRule.getNewColumnName().toLowerCase() : restoreRule
+               dialect.equals(DBConstants.DB_DIALECT_PGSQL) ? restoreRule.getNewColumnName().toLowerCase()
+                  : restoreRule
                   .getNewColumnName();
             columnName.add(restoreRule.getNewColumnIndex(), newColumnName);
          }
@@ -468,9 +470,9 @@ public class DBRestore implements DataRestore
                      ba.read(readBuffer);
 
                      String value = new String(readBuffer);
-                     if (dialect.equals(DBBackup.DB_DIALECT_PGSQL))
+                     if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
                      {
-                        insertNode.setBoolean(targetIndex + 1, value.equals("t"));
+                        insertNode.setBoolean(targetIndex + 1, value.equalsIgnoreCase("t"));
                      }
                      else
                      {

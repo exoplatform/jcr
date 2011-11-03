@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipWriterImpl;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -74,46 +73,6 @@ public class DBBackup
     * Suffix for content length file.
     */
    public static final String CONTENT_LEN_ZIP_FILE = "dump-len.zip";
-
-   /**
-    * MySQL dialect.
-    */
-   public static final int DB_DIALECT_MYSQL = DBConstants.DB_DIALECT_MYSQL.hashCode();
-
-   /**
-    * MySQL-UTF8 dialect.
-    */
-   public static final int DB_DIALECT_MYSQL_UTF8 = DBConstants.DB_DIALECT_MYSQL_UTF8.hashCode();
-
-   /**
-    * MySQL-MYISAM dialect.
-    */
-   public static final int DB_DIALECT_MYSQL_MYISAM = DBConstants.DB_DIALECT_MYSQL_MYISAM.hashCode();
-
-   /**
-    * MySQL-MYISAM-UTF8 dialect.
-    */
-   public static final int DB_DIALECT_MYSQL_MYISAM_UTF8 = DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8.hashCode();
-
-   /**
-    * DB2 dialect.
-    */
-   public static final int DB_DIALECT_DB2 = DBConstants.DB_DIALECT_DB2.hashCode();
-
-   /**
-    * DB2V8 dialect.
-    */
-   public static final int DB_DIALECT_DB2V8 = DBConstants.DB_DIALECT_DB2V8.hashCode();
-
-   /**
-    * PGSQL dialect.
-    */
-   public static final int DB_DIALECT_PGSQL = DBConstants.DB_DIALECT_PGSQL.hashCode();
-
-   /**
-    * SYBASE dialect.
-    */
-   public static final int DB_DIALECT_SYBASE = DBConstants.DB_DIALECT_SYBASE.hashCode();
 
    /**
     * Backup tables.
