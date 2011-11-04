@@ -46,6 +46,19 @@ public class StringNumberParserTest extends TestCase
       assertEquals(1 * 1024 * 1024 * 1024, StringNumberParser.parseInt("1g"));
    }
 
+   public void testSerializeInt()
+   {
+      assertEquals("1000", StringNumberParser.serializeInt(1000));
+
+      assertEquals("1KB", StringNumberParser.serializeInt(1024));
+
+      assertEquals("5KB", StringNumberParser.serializeInt(5 * 1024));
+
+      assertEquals("127MB", StringNumberParser.serializeInt(127 * 1024 * 1024));
+
+      assertEquals("1GB", StringNumberParser.serializeInt(1 * 1024 * 1024 * 1024));
+   }
+
    public void testParseLong()
    {
       assertEquals(1000l, StringNumberParser.parseLong("1000"));
@@ -59,6 +72,21 @@ public class StringNumberParserTest extends TestCase
       assertEquals(4l * 1024 * 1024 * 1024, StringNumberParser.parseLong("4g"));
 
       assertEquals(5l * 1024 * 1024 * 1024 * 1024, StringNumberParser.parseLong("5TB"));
+   }
+
+   public void testSerializeLong()
+   {
+      assertEquals("1000", StringNumberParser.serializeLong(1000l));
+
+      assertEquals("1KB", StringNumberParser.serializeLong(1024l));
+
+      assertEquals("5KB", StringNumberParser.serializeLong(5l * 1024));
+
+      assertEquals("127MB", StringNumberParser.serializeLong(127l * 1024 * 1024));
+
+      assertEquals("4GB", StringNumberParser.serializeLong(4l * 1024 * 1024 * 1024));
+
+      assertEquals("5TB", StringNumberParser.serializeLong(5l * 1024 * 1024 * 1024 * 1024));
    }
 
    public void testParseNumber()
@@ -81,6 +109,21 @@ public class StringNumberParserTest extends TestCase
       assertEquals(5l * 7 * 24 * 60 * 60 * 1000, StringNumberParser.parseTime("5w"));
 
       assertEquals(12l, StringNumberParser.parseTime("12ms"));
+   }
+
+   public void testSerialiseTime()
+   {
+      assertEquals("63s", StringNumberParser.serializeTime(63l * 1000));
+
+      assertEquals("2m", StringNumberParser.serializeTime(2l * 60 * 1000));
+
+      assertEquals("15h", StringNumberParser.serializeTime(15l * 60 * 60 * 1000));
+
+      assertEquals("3d", StringNumberParser.serializeTime(3l * 24 * 60 * 60 * 1000));
+
+      assertEquals("5w", StringNumberParser.serializeTime(5l * 7 * 24 * 60 * 60 * 1000));
+
+      assertEquals("12ms", StringNumberParser.serializeTime(12l));
    }
 
 }

@@ -20,16 +20,18 @@
     <value name="session-max-age" field="sessionTimeOut"  usage="optional"
           serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeTime"
           deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" />
-    <value name="lock-remover-max-threads" field="lockRemoverMaxThreadCount" 
-		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" usage="optional" />
+    <value name="lock-remover-max-threads" field="lockRemoverMaxThreadCount" usage="optional"
+          serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeInt"
+		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt"  />
     <value name="authentication-policy" field="authenticationPolicy" />
     <collection name="workspaces" field="workspaces" item-type="org.exoplatform.services.jcr.config.WorkspaceEntry" />
   </mapping>
 
   <mapping name="workspace" class="org.exoplatform.services.jcr.config.WorkspaceEntry">
     <value name="name" field="name" style="attribute" />
-    <value name="lazy-read-threshold" field="lazyReadThreshold"  
-        deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" style="attribute" usage="optional" />
+    <value name="lazy-read-threshold" field="lazyReadThreshold" style="attribute" usage="optional"
+        serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeInt"
+        deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" />
     <value name="auto-init-root-nodetype" field="autoInitializedRootNt" style="attribute" usage="optional" />
     <value name="auto-init-permissions" field="autoInitPermissions" style="attribute" usage="optional" />
     <structure name="container" field="container">
@@ -104,8 +106,9 @@
   </mapping>
   <mapping name="filter" class="org.exoplatform.services.jcr.config.ValueStorageFilterEntry">
     <value name="property-type" field="propertyType" style="attribute" usage="optional" />
-    <value name="min-value-size" field="minValueSize" style="attribute" 
-		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseLong" usage="optional" />
+    <value name="min-value-size" field="minValueSize" style="attribute" usage="optional"
+          serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeLong" 
+		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseLong" />
     <value name="ancestor-path" field="ancestorPath" style="attribute" usage="optional" />
     <value name="property-name" field="propertyName" style="attribute" usage="optional" />
   </mapping>

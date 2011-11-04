@@ -101,7 +101,35 @@ public class ConfigurationFormat
       }
       catch (Throwable e)
       {
-         LOG.warn("Unserialable time (as formated time) '" + time + "'. Check StringNumberParser.serializeTime for details.", e);
+         LOG.warn("Unserialable time '" + time + "'. Check StringNumberParser.serializeTime for details.", e);
+         return "";
+      }
+   }
+
+   public static String serializeInt(int integerValue)
+   {
+      try
+      {
+         return StringNumberParser.serializeInt(integerValue);
+      }
+      catch (Throwable e)
+      {
+         LOG.warn("Unserialable integer value '" + integerValue
+            + "'. Check StringNumberParser.serializeInt for details.", e);
+         return "";
+      }
+   }
+
+   public static String serializeLong(long longValue)
+   {
+      try
+      {
+         return StringNumberParser.serializeLong(longValue);
+      }
+      catch (Throwable e)
+      {
+         LOG.warn("Unserialable long value '" + longValue
+            + "'. Check StringNumberParser.serializeLong for details.", e);
          return "";
       }
    }
