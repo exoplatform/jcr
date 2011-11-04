@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -1929,9 +1930,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       for (PropertyDefinitionData pd : ntmanager.getAllPropertyDefinitions(removedName))
       {
-         // to skip remove propertyDefinition with existed another nodeType property definition  
-         if (ntmanager.getPropertyDefinitions(pd.getName(), nodeData().getPrimaryTypeName(), newMixin
-            .toArray(new InternalQName[]{})) == null)
+         // to skip remove propertyDefinition with existed another nodeType property definition
+         PropertyDefinitionDatas propertyDefinitions =
+            ntmanager.getPropertyDefinitions(pd.getName(), nodeData().getPrimaryTypeName(), newMixin
+               .toArray(new InternalQName[]{}));
+         if (propertyDefinitions == null || propertyDefinitions.getDefinition(pd.isMultiple()).isResidualSet())
          {
             ItemData p = dataManager.getItemData(nodeData(), new QPathEntry(pd.getName(), 1), ItemType.PROPERTY, false);
             if (p != null && !p.isNode())
