@@ -410,6 +410,18 @@ public abstract class ItemImpl implements Item
       ConstraintViolationException, RepositoryException
    {
 
+      // Check if checked-in (versionable)
+      if (!parentNode.checkedOut())
+      {
+         throw new VersionException("Node " + parentNode.getPath() + " or its nearest ancestor is checked-in");
+      }
+
+      // Check is locked
+      if (!parentNode.checkLocking())
+      {
+         throw new LockException("Node " + parentNode.getPath() + " is locked ");
+      }
+
       QPath qpath = QPath.makeChildPath(parentNode.getInternalPath(), propertyName);
 
       int state;
@@ -484,18 +496,6 @@ public abstract class ItemImpl implements Item
       {
          throw new ValueFormatException("Can not assign single-value Value to a multiple-valued property "
             + locationFactory.createJCRPath(qpath).getAsString(false));
-      }
-
-      // Check if checked-in (versionable)
-      if (!parentNode.checkedOut())
-      {
-         throw new VersionException("Node " + parentNode.getPath() + " or its nearest ancestor is checked-in");
-      }
-
-      // Check is locked
-      if (!parentNode.checkLocking())
-      {
-         throw new LockException("Node " + parentNode.getPath() + " is locked ");
       }
 
       List<ValueData> valueDataList = new ArrayList<ValueData>();
