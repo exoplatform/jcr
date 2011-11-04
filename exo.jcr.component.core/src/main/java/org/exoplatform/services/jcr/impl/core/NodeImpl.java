@@ -1930,7 +1930,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       for (PropertyDefinitionData pd : ntmanager.getAllPropertyDefinitions(removedName))
       {
          // to skip remove propertyDefinition with existed another nodeType property definition  
-         if (ntmanager.getPropertyDefinitions(pd.getName(), nodeData().getPrimaryTypeName(), newMixin.toArray(new InternalQName[]{})) == null) {
+         if (ntmanager.getPropertyDefinitions(pd.getName(), nodeData().getPrimaryTypeName(), newMixin.toArray(new InternalQName[]{})) == null) 
+         {
             ItemData p = dataManager.getItemData(nodeData(), new QPathEntry(pd.getName(), 1), ItemType.PROPERTY, false);
             if (p != null && !p.isNode())
             {

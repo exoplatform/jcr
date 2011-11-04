@@ -88,10 +88,14 @@ public class TestMixin extends BaseUsecasesTest
       folder.addMixin("test:my");
       session.save();
       folder.removeMixin("test:my");
-      try {
+      try
+      {
          session.save();
-      } catch (Exception e) {
-         fail("Shouldn't be removed a property definition, there is existed another node type (primary or mixin) which has the property definition. \n" + e.getMessage());
+      }
+      catch (Exception e)
+      {
+         fail("Shouldn't be removed a property definition, there is existed another node type (primary or mixin) which has the property definition. \n"
+            + e.getMessage());
       }
    }
 }
