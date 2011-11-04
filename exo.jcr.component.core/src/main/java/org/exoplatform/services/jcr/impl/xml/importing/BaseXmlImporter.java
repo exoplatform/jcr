@@ -347,10 +347,10 @@ public abstract class BaseXmlImporter implements ContentImporter
 
       PlainChangesLogImpl changes = new PlainChangesLogImpl();
       // using VH helper as for one new VH, all changes in changes log
-      new VersionHistoryDataHelper(nodeData, changes, dataConsumer, nodeTypeDataManager, nodeData
-         .getVersionHistoryIdentifier(), nodeData.getBaseVersionIdentifier());
+      new VersionHistoryDataHelper(nodeData, changes, dataConsumer, nodeTypeDataManager,
+         nodeData.getVersionHistoryIdentifier(), nodeData.getBaseVersionIdentifier());
 
-      if (uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING && !newVersionHistory)
+      if (!newVersionHistory)
       {
          for (ItemState state : changes.getAllStates())
          {
@@ -544,7 +544,7 @@ public abstract class BaseXmlImporter implements ContentImporter
     * <li>IMPORT_UUID_COLLISION_REMOVE_EXISTING - Remove same uuid item and his
     * subtree. Also if item MIX_VERSIONABLE, remove version history</li>
     * <li>IMPORT_UUID_COLLISION_REPLACE_EXISTING - Remove same uuid item and his
-    * subtree.</li>
+    * subtree. Also if item MIX_VERSIONABLE, remove version history</li>
     * <li>IMPORT_UUID_COLLISION_THROW - throw new ItemExistsException</li>
     * </ol>
     * 
@@ -587,6 +587,11 @@ public abstract class BaseXmlImporter implements ContentImporter
                      removeExisted(sameUuidItem);
                      break;
                   case ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING :
+                     // remove version history before removing item
+                     if (isMixVersionable)
+                     {
+                        removeVersionHistory(sameUuidItem);
+                     }
                      removeExisted(sameUuidItem);
                      ItemData parentOfsameUuidItem = dataConsumer.getItemData(sameUuidItem.getParentIdentifier());
                      tree.push(ImportNodeData.createCopy((NodeData)parentOfsameUuidItem));
@@ -644,7 +649,7 @@ public abstract class BaseXmlImporter implements ContentImporter
     * @param identifer
     * @return
     */
-   private ItemState getLastItemState(String identifer)
+   protected ItemState getLastItemState(String identifer)
    {
       List<ItemState> allStates = changesLog.getAllStates();
       for (int i = allStates.size() - 1; i >= 0; i--)

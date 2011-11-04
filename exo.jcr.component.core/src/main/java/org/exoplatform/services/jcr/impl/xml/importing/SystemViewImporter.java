@@ -588,15 +588,23 @@ public class SystemViewImporter extends BaseXmlImporter
    {
       try
       {
-
          if (propertyInfo.getName().equals(Constants.JCR_VERSIONHISTORY))
          {
             String versionHistoryIdentifier = null;
             versionHistoryIdentifier = ValueDataConvertor.readString(values.get(0));
 
             currentNodeInfo.setVersionHistoryIdentifier(versionHistoryIdentifier);
-            currentNodeInfo.setContainsVersionhistory(dataConsumer.getItemData(versionHistoryIdentifier) != null);
 
+            // check if node contains VH
+            if (dataConsumer.getItemData(versionHistoryIdentifier) != null)
+            {
+               ItemState vhLastState = getLastItemState(versionHistoryIdentifier);
+               currentNodeInfo.setContainsVersionhistory(vhLastState == null || !vhLastState.isDeleted());
+            }
+            else
+            {
+               currentNodeInfo.setContainsVersionhistory(false);
+            }
          }
          else if (propertyInfo.getName().equals(Constants.JCR_BASEVERSION))
          {

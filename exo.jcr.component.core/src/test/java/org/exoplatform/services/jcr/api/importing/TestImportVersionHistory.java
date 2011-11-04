@@ -26,6 +26,7 @@ import java.util.Calendar;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
+import javax.jcr.Property;
 import javax.jcr.Value;
 
 /**
@@ -125,6 +126,84 @@ public class TestImportVersionHistory extends JcrAPIBaseTest
 
       parent = (NodeImpl)session.getItem("/parent/child");
       VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)parent, new ByteArrayInputStream(vhout.toByteArray()), baseVersion,
+            predecessorsHistory, versionHistory);
+      versionHistoryImporter.doImport();
+      session.save();
+
+      // try to restore first version
+      parent.restore("1", true);
+   }
+
+   public void testImportVersionHistoryWithReferenceableProperty() throws Exception
+   {
+      Node parent = session.getRootNode().addNode("testRoot");
+      parent.addMixin("mix:versionable");
+      session.save();
+
+      parent.checkin();
+      parent.checkout();
+
+      Property prop = parent.getProperty("jcr:versionHistory");
+      Node vh = session.getNodeByUUID(prop.getValue().getString());
+
+      // add ref property to VH
+      parent.setProperty("ref", vh);
+      parent.save();
+
+      // export import version history and node
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      session.exportSystemView("/testRoot", out, false, false);
+
+      ByteArrayOutputStream vhout = new ByteArrayOutputStream();
+      session.exportSystemView(parent.getVersionHistory().getPath(), vhout, false, false);
+
+      // prepare data for version import
+      String versionHistory = parent.getProperty("jcr:versionHistory").getValue().getString();
+      String baseVersion = parent.getProperty("jcr:baseVersion").getValue().getString();
+      Value[] jcrPredecessors = parent.getProperty("jcr:predecessors").getValues();
+      StringBuilder jcrPredecessorsBuilder = new StringBuilder();
+      String[] predecessorsHistory;
+      for (Value value : jcrPredecessors)
+      {
+         if (jcrPredecessorsBuilder.length() > 0)
+            jcrPredecessorsBuilder.append(",");
+         jcrPredecessorsBuilder.append(value.getString());
+      }
+      if (jcrPredecessorsBuilder.toString().indexOf(",") > -1)
+      {
+         predecessorsHistory = jcrPredecessorsBuilder.toString().split(",");
+      }
+      else
+      {
+         predecessorsHistory = new String[]{jcrPredecessorsBuilder.toString()};
+      }
+
+      // remove node
+      parent.remove();
+      session.save();
+
+      // import
+      session.importXML("/", new ByteArrayInputStream(out.toByteArray()),
+         ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true);
+
+      session.save();
+
+      parent = (NodeImpl)session.getItem("/testRoot");
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)parent, new ByteArrayInputStream(vhout.toByteArray()), baseVersion,
+            predecessorsHistory, versionHistory);
+      versionHistoryImporter.doImport();
+      session.save();
+
+      // import second time with replace existing flag
+      session.importXML("/", new ByteArrayInputStream(out.toByteArray()),
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING, true);
+
+      session.save();
+
+      parent = (NodeImpl)session.getItem("/testRoot");
+      versionHistoryImporter =
          new VersionHistoryImporter((NodeImpl)parent, new ByteArrayInputStream(vhout.toByteArray()), baseVersion,
             predecessorsHistory, versionHistory);
       versionHistoryImporter.doImport();

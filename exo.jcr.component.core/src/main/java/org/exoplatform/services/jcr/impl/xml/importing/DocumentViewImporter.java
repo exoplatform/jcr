@@ -590,8 +590,16 @@ public class DocumentViewImporter extends BaseXmlImporter
                throw new RepositoryException(e);
             }
 
-            nodeData
-               .setContainsVersionhistory(dataConsumer.getItemData(nodeData.getVersionHistoryIdentifier()) != null);
+            // check if node contains VH
+            if (dataConsumer.getItemData(nodeData.getVersionHistoryIdentifier()) != null)
+            {
+               ItemState vhLastState = getLastItemState(nodeData.getVersionHistoryIdentifier());
+               nodeData.setContainsVersionhistory(vhLastState == null || !vhLastState.isDeleted());
+            }
+            else
+            {
+               nodeData.setContainsVersionhistory(false);
+            }
          }
          else if (propName.equals(Constants.JCR_BASEVERSION))
          {
