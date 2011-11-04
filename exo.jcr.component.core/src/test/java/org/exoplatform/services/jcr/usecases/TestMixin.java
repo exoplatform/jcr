@@ -16,8 +16,14 @@
  */
 package org.exoplatform.services.jcr.usecases;
 
+import java.io.ByteArrayInputStream;
+
 import javax.jcr.Node;
 import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 
 /**
  * Created by The eXo Platform SAS.
@@ -38,7 +44,7 @@ public class TestMixin extends BaseUsecasesTest
     */
    public void testMixin() throws Exception
    {
-      Node a = session.getRootNode().addNode("a");
+      Node a = root.addNode("a");
       a.addMixin("mix:referenceable");
 
       Property p = a.setProperty("prop", "string");
@@ -49,9 +55,43 @@ public class TestMixin extends BaseUsecasesTest
       session.save();
 
       //check result
-      Node a2 = session.getRootNode().getNode("a");
+      Node a2 = root.getNode("a");
       assertTrue(a2.isNodeType("mix:referenceable"));
       assertTrue(a2.isNodeType("mix:versionable"));
       assertTrue(a2.isNodeType("mix:lockable"));
+   }
+
+   /**
+    * This usecase is checking correctness of remove mixin which is declared
+    * extend another node type (primary or mixin one).
+    * 
+    * @throws RepositoryException
+    */
+   public void testMixinExtendedNtBase() throws RepositoryException
+   {
+      ExtendedNodeTypeManager manager = (ExtendedNodeTypeManager)workspace.getNodeTypeManager();
+
+      String cnd = "<nodeTypes>" //
+         + "<nodeType name=\"test:my\" isMixin=\"true\" hasOrderableChildNodes=\"false\" primaryItemName=\"\">" //
+         + "   <supertypes>" //
+         + "     <supertype>nt:base</supertype>" // main configuration part for the test
+         + "   </supertypes>" //
+         + "   <propertyDefinitions>" //
+         + "   </propertyDefinitions>" //
+         + "</nodeType>" //
+         + "</nodeTypes>";
+
+      manager.registerNodeTypes(new ByteArrayInputStream(cnd.getBytes()), ExtendedNodeTypeManager.IGNORE_IF_EXISTS,
+         NodeTypeDataManager.TEXT_XML);
+
+      Node folder = root.addNode("testRemoveMixin", "nt:folder");
+      folder.addMixin("test:my");
+      session.save();
+      folder.removeMixin("test:my");
+      try {
+         session.save();
+      } catch (Exception e) {
+         fail("Shouldn't be removed a property definition, there is existed another node type (primary or mixin) which has the property definition. \n" + e.getMessage());
+      }
    }
 }
