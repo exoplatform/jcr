@@ -241,7 +241,6 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
          getSession(sessionProvider, currentRepo, currentRepo.getConfiguration().getDefaultWorkspaceName());
       Node rootNode = session.getRootNode();
       String publicApplication = getJcrPath(PUBLIC_APPLICATION);
-      session.logout();
       return rootNode.getNode(publicApplication.substring(1, publicApplication.length()));
    }
 
@@ -261,10 +260,6 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       {
          userNode = usersNode.addNode(userName);
          usersNode.save();
-      }
-      finally
-      {
-         session.logout();
       }
       return userNode;
    }
