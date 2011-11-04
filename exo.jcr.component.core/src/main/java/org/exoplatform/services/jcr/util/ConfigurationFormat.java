@@ -93,4 +93,17 @@ public class ConfigurationFormat
       }
    }
 
+   public static String serializeTime(long time)
+   {
+      try
+      {
+         return StringNumberParser.serializeTime(time);
+      }
+      catch (Throwable e)
+      {
+         LOG.warn("Unserialable time (as formated time) '" + time + "'. Check StringNumberParser.serializeTime for details.", e);
+         return "";
+      }
+   }
+
 }

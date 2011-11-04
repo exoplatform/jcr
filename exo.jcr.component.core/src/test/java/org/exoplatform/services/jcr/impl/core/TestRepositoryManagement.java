@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -29,8 +30,12 @@ import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
+import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -62,6 +67,68 @@ public class TestRepositoryManagement extends JcrImplBaseTest
    {
       ManageableRepository repository = helper.createRepository(container, false, null);
       assertNotNull(repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName()).getRootNode());
+   }
+
+   public void testMarshalUnmarshalRepositoryConfiguration() throws Exception
+   {
+      ManageableRepository newRepository = helper.createRepository(container, false, null);
+      final long lockManagerTimeOut =
+         newRepository.getConfiguration().getWorkspaceEntries().get(0).getLockManager().getTimeout();
+
+      // 1st marshal configuration
+      File tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
+      PrivilegedFileHelper.deleteOnExit(tempFile);
+
+      IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+      IMarshallingContext mctx = factory.createMarshallingContext();
+
+      FileOutputStream saveStream = new FileOutputStream(tempFile);
+      ArrayList<RepositoryEntry> repositoryEntries = new ArrayList<RepositoryEntry>();
+      repositoryEntries.add(newRepository.getConfiguration());
+
+      RepositoryServiceConfiguration newRepositoryServiceConfiguration =
+         new RepositoryServiceConfiguration(repositoryService.getConfig().getDefaultRepositoryName(), repositoryEntries);
+      mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
+      saveStream.close();
+
+      // 1st unmarshal
+      factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+      IUnmarshallingContext uctx = factory.createUnmarshallingContext();
+      RepositoryServiceConfiguration conf =
+         (RepositoryServiceConfiguration)uctx.unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
+
+      // 1st check
+      RepositoryEntry unmarshledRepositoryEntry =
+         conf.getRepositoryConfiguration(newRepository.getConfiguration().getName());
+      assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
+         .getTimeout());
+
+      
+      // 2nd marshal configuration
+      tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
+      PrivilegedFileHelper.deleteOnExit(tempFile);
+
+      factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+      mctx = factory.createMarshallingContext();
+      saveStream = new FileOutputStream(tempFile);
+      repositoryEntries = new ArrayList<RepositoryEntry>();
+      repositoryEntries.add(newRepository.getConfiguration());
+
+      newRepositoryServiceConfiguration =
+         new RepositoryServiceConfiguration(repositoryService.getConfig().getDefaultRepositoryName(), repositoryEntries);
+      mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
+      saveStream.close();
+      
+      // 2nd unmarshal
+      factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+      uctx = factory.createUnmarshallingContext();
+      conf = (RepositoryServiceConfiguration)uctx.unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
+
+      // 2nd check
+      unmarshledRepositoryEntry =
+         conf.getRepositoryConfiguration(newRepository.getConfiguration().getName());
+      assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
+         .getTimeout());
    }
 
    public void testAddNewRepositoryWithSameName() throws Exception

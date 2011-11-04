@@ -224,10 +224,21 @@ public class TesterConfigurationHelper
       CacheEntry cacheEntry = new CacheEntry(cacheParams);
       cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
 
+      // Lock
+      LockManagerEntry lockManagerEntry = new LockManagerEntry();
+      lockManagerEntry.setTimeout(900000);
+      LockPersisterEntry lockPersisterEntry = new LockPersisterEntry();
+      lockPersisterEntry.setType("org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister");
+      ArrayList<SimpleParameterEntry> lockPersisterParameters = new ArrayList<SimpleParameterEntry>();
+      lockPersisterParameters.add(new SimpleParameterEntry("path", "target/temp/lock/" + wsName));
+      lockPersisterEntry.setParameters(lockPersisterParameters);
+      lockManagerEntry.setPersister(lockPersisterEntry);
+
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
       workspaceEntry.setContainer(containerEntry);
       workspaceEntry.setCache(cacheEntry);
       workspaceEntry.setQueryHandler(qEntry);
+      workspaceEntry.setLockManager(lockManagerEntry);
       workspaceEntry.setName(wsName);
       workspaceEntry.setUniqueName(wsName);
 

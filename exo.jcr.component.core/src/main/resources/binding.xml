@@ -17,8 +17,9 @@
     <value name="default-workspace" field="defaultWorkspaceName" style="attribute" />
     <value name="security-domain" field="securityDomain" />
     <value name="access-control" field="accessControl" usage="optional" />
-    <value name="session-max-age" field="sessionTimeOut" 
-		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" usage="optional" />
+    <value name="session-max-age" field="sessionTimeOut"  usage="optional"
+          serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeTime"
+          deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" />
     <value name="lock-remover-max-threads" field="lockRemoverMaxThreadCount" 
 		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" usage="optional" />
     <value name="authentication-policy" field="authenticationPolicy" />
@@ -75,9 +76,10 @@
       <collection name="properties" field="parameters" usage="optional"
         item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
         factory="org.jibx.runtime.Utility.arrayListFactory" />
-      <value name="time-out" field="timeout" usage="optional" 
-			  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" />
-      
+      <value name="time-out" field="timeout" usage="optional"
+              serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeTime" 
+			  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" /> 
+              
       <structure name="persister" field="persister" usage="optional">
         <value name="class" field="type" style="attribute" />
         <collection name="properties" field="parameters" usage="optional"

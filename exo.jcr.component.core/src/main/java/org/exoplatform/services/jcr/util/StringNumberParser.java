@@ -186,4 +186,18 @@ public class StringNumberParser
          return Long.valueOf(text) * 1000;
       }
    }
+
+   /**
+    * Serialize given time in milliseconds and return a time as formated time in milliseconds (ms).
+    * 
+    * @param millisecondTime
+    *          - time in milliseconds
+    * @return String
+    *          - time as formated time in milliseconds
+    * @throws NumberFormatException
+    */
+   static public String serializeTime(final long millisecondTime) throws NumberFormatException
+   {
+      return String.valueOf(millisecondTime) + "ms";
+   }
 }
