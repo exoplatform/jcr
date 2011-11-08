@@ -73,10 +73,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testDB()
    {
       String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
-      assertTrue(result.equals("Repository data is consistent. See full report by path "
-         + checkController.getLastLogFile().getAbsolutePath())
-         || result.equals("Repository data is consistent, except some warnings. See full report by path "
-            + checkController.getLastLogFile().getAbsolutePath()));
+      assertNotNull(result);
+      assertTrue("Repository data is not consistent, result: " + result, result
+         .startsWith("Repository data is consistent"));
    }
 
    public void testValueStorage() throws Exception
@@ -91,8 +90,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
          root.save();
 
          String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.VALUE_STORAGE});
-         assertEquals("Repository data is consistent. See full report by path "
-            + checkController.getLastLogFile().getAbsolutePath(), result);
+         assertNotNull(result);
+         assertTrue("Repository data is not consistent, result: " + result, result
+            .startsWith("Repository data is consistent"));
       }
       finally
       {
@@ -104,8 +104,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testSearchIndex()
    {
       String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.LUCENE_INDEX});
-      assertEquals("Repository data is consistent. See full report by path "
-         + checkController.getLastLogFile().getAbsolutePath(), result);
+      assertNotNull(result);
+      assertTrue("Repository data is not consistent, result: " + result, result
+         .startsWith("Repository data is consistent"));
    }
 
    public void testAll()
@@ -113,9 +114,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       String result =
          checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE,
             DataStorage.LUCENE_INDEX});
-      assertTrue(result.equals("Repository data is consistent. See full report by path "
-         + checkController.getLastLogFile().getAbsolutePath())
-         || result.equals("Repository data is consistent, except some warnings. See full report by path "
-            + checkController.getLastLogFile().getAbsolutePath()));
+      assertNotNull(result);
+      assertTrue("Repository data is not consistent, result: " + result, result
+         .startsWith("Repository data is consistent"));
    }
 }
