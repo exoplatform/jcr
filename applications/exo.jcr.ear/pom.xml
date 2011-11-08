@@ -125,6 +125,11 @@
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-cachestore-jdbc</artifactId>
     </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <scope>runtime</scope>
+    </dependency>
     <!-- Excludes jboss-logging-spi since it is in conflict with the
         latest version that is required by infinispan -->
     <dependency>
