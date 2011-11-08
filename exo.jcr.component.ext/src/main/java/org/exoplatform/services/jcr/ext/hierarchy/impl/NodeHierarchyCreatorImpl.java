@@ -379,10 +379,8 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
    {
       if (!oldDistribution && autoMigrate)
       {
-
          ManageableRepository repo = jcrService_.getCurrentRepository();
-         Session session = repo.login();
-
+         Session session = repo.getSystemSession(repo.getConfiguration().getDefaultWorkspaceName());
          try
          {
             String userPath = getJcrPath(USERS_PATH);
