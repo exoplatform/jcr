@@ -269,7 +269,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          stopped = true;
       }
    };
-   
+
    /**
     * The unique id of the workspace corresponding to this multi index
     */
@@ -315,12 +315,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // as of 1.5 deletable file is not used anymore
       removeDeletable();
 
-      // initialize IndexMerger
-      merger = new IndexMerger(this);
-      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
-      merger.setMergeFactor(handler.getMergeFactor());
-      merger.setMinMergeDocs(handler.getMinMergeDocs());
-
       // copy current index names
       Set<String> currentNames = new HashSet<String>(indexNames.getNames());
 
@@ -344,7 +338,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          index.setUseCompoundFile(handler.getUseCompoundFile());
          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
          indexes.add(index);
-         merger.indexAdded(index.getName(), index.getNumDocuments());
       }
 
       // this method is run in privileged mode internally
@@ -370,6 +363,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       indexingQueue.initialize(this);
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
+         // will also initialize IndexMerger
          setReadWrite();
       }
       this.indexNames.setMultiIndex(this);
@@ -388,7 +382,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                // can't register shutdown hook because
                // jvm shutdown sequence has already begun,
                // silently ignore...
-            }            
+            }
             return null;
          }
       });
@@ -1357,7 +1351,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // stop index merger
       // when calling this method we must not lock this MultiIndex, otherwise
       // a deadlock might occur
-      merger.dispose();
+      if (merger != null)
+      {
+         merger.dispose();
+         merger = null;
+      }
 
       synchronized (this)
       {
@@ -1625,8 +1623,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * Initialize IndexMerger.
     */
-   private void doInitIndexMerger() throws IOException
+   private void initMerger() throws IOException
    {
+      if (merger != null)
+      {
+         log.info("IndexMerger initialization called twice.");
+      }
       merger = new IndexMerger(this);
       merger.setMaxMergeDocs(handler.getMaxMergeDocs());
       merger.setMergeFactor(handler.getMergeFactor());
@@ -1636,6 +1638,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          merger.indexAdded(((PersistentIndex)index).getName(), ((PersistentIndex)index).getNumDocuments());
       }
+      merger.start();
    }
 
    /**
@@ -2512,7 +2515,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             index.indexNames.addName(indexName);
             // now that the index is in the active list let the merger know
             // about it
-            index.merger.indexAdded(indexName, idx.getNumDocuments());
+            if (index.merger != null)
+            {
+               index.merger.indexAdded(indexName, idx.getNumDocuments());
+            }
          }
       }
 
@@ -3251,7 +3257,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    protected void setReadOny()
    {
       // try to stop merger in safe way
-      merger.dispose();
+      if (merger != null)
+      {
+         merger.dispose();
+         merger = null;
+      }
 
       flushTask.cancel();
       FLUSH_TIMER.purge();
@@ -3284,8 +3294,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       attemptDelete();
 
       // now that we are ready, start index merger
-      doInitIndexMerger();
-      merger.start();
+      initMerger();
 
       if (redoLogApplied)
       {
@@ -3430,8 +3439,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                //invoking offline index
                invokeOfflineIndex();
                staleIndexes.clear();
-               doInitIndexMerger();
-               merger.start();
+               initMerger();
             }
             else
             {
@@ -3443,7 +3451,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          else
          {
             log.info("Setting index OFFLINE ({})", handler.getContext().getWorkspacePath(true));
-            merger.dispose();
+            if (merger != null)
+            {
+               merger.dispose();
+               merger = null;
+            }
             offlineIndex =
                new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
                   directoryManager);
