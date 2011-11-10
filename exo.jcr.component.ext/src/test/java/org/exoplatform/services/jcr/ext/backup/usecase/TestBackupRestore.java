@@ -86,7 +86,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       workspaceBackupRestore("db2", 8);
    }
 
-   public void testJobExistingRepositorySameConfigRestoreSingleDB() throws Exception
+   /*public void testJobExistingRepositorySameConfigRestoreSingleDB() throws Exception
    {
       repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db1", 9);
       repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db1", 10);
@@ -156,7 +156,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db2", 31);
       workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db2", 32);
-   }
+   }*/
 
    protected void repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore(String repositoryName,
       int number) throws Exception
