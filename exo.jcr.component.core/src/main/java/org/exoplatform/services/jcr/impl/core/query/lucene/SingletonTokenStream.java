@@ -19,16 +19,19 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.Payload;
+import org.exoplatform.services.jcr.impl.Constants;
 
+import java.io.Externalizable;
 import java.io.IOException;
-import java.io.Serializable;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * <code>SingletonTokenStream</code> implements a token stream that wraps a
  * single value with a given property type. The property type is stored as a
  * payload on the single returned token.
  */
-public final class SingletonTokenStream extends TokenStream implements Serializable
+public final class SingletonTokenStream extends TokenStream implements Externalizable
 {
 
    /**
@@ -41,12 +44,13 @@ public final class SingletonTokenStream extends TokenStream implements Serializa
     */
    private Payload payload;
 
+   private boolean hasNext = true;
+
    /**
     * for serialization 
     */
    public SingletonTokenStream()
    {
-      // TODO Auto-generated constructor stub
    }
 
    /**
@@ -78,16 +82,40 @@ public final class SingletonTokenStream extends TokenStream implements Serializa
     */
    public Token next(Token reusableToken) throws IOException
    {
-      if (value == null)
+      if (hasNext)
       {
-         return null;
+         reusableToken.clear();
+         reusableToken.setTermBuffer(value);
+         reusableToken.setPayload(payload);
+         reusableToken.setStartOffset(0);
+         reusableToken.setEndOffset(value.length());
+         hasNext = false;
+         return reusableToken;
       }
-      reusableToken.clear();
-      reusableToken.setTermBuffer(value);
-      reusableToken.setPayload(payload);
-      reusableToken.setStartOffset(0);
-      reusableToken.setEndOffset(value.length());
-      value = null;
-      return reusableToken;
+      return null;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      payload = (Payload)in.readObject();
+      int length = in.readInt();
+      byte[] binValue = new byte[length];
+      in.read(binValue);
+      value = new String(binValue, Constants.DEFAULT_ENCODING);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      // skip writing hasNext field
+      out.writeObject(payload);
+      byte[] binValue = value.getBytes(Constants.DEFAULT_ENCODING);
+      out.writeInt(binValue.length);
+      out.write(binValue);
    }
 }
