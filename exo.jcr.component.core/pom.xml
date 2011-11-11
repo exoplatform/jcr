@@ -631,7 +631,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <!-- TAKE CARE TO UPDATE ALSO run-tck PROFILE -->
-                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</argLine>
+                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
