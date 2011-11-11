@@ -34,6 +34,9 @@
       <jbosscache.shareable>true</jbosscache.shareable>
       <cache.enabled>true</cache.enabled>
       <value.storage.enabled>true</value.storage.enabled>
+      <statistics.enabled>false</statistics.enabled>
+      <properties.url.suffix>.properties</properties.url.suffix>
+      <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <jbc.specific.1>**/jbc/**</jbc.specific.1>
       <jbc.specific.2>**/jbosscache/**</jbc.specific.2>
       <ispn.specific.1>**/ispn/**</ispn.specific.1>
@@ -324,11 +327,14 @@
                      <name>value-storage-enabled</name>
                      <value>${value.storage.enabled}</value>
                   </property>                  
-                  <!-- Uncomment the line below if you want to enable the statistics -->
-                  <!--property>
+                  <property>
                       <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                      <value>true</value>
-                  </property-->
+                      <value>${statistics.enabled}</value>
+                  </property>
+                  <property>
+                      <name>exo.properties.url</name>
+                      <value>${properties.url.prefix}${properties.url.suffix}</value>
+                  </property>
                   <!-- We add this system property due to some incompatibility between IPv6 and 
 						some JVM of Linux distributions such as Ubuntu and Fedora-->
                   <property>
@@ -561,11 +567,14 @@
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersionable
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion</value>
                         </property>
-                     <!-- Uncomment the line below if you want to enable the statistics -->
-                     <!--property>
-                     <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                     <value>true</value>
-                     </property-->
+                        <property>
+                           <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                           <value>${statistics.enabled}</value>
+                        </property>
+                        <property>
+                           <name>exo.properties.url</name>
+                           <value>${properties.url.prefix}${properties.url.suffix}</value>
+                        </property>
                      <!-- We add this system property due to some incompatibility between IPv6 and 
 						some JVM of Linux distributions such as Ubuntu and Fedora-->
                         <property>
@@ -622,7 +631,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <!-- TAKE CARE TO UPDATE ALSO run-tck PROFILE -->
-                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
@@ -652,11 +661,14 @@
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersionable
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion</value>
                         </property>
-                     <!-- Uncomment the line below if you want to enable the statistics -->
-                     <!--property>
-                     <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                     <value>true</value>
-                     </property-->
+                        <property>
+                           <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                           <value>${statistics.enabled}</value>
+                        </property>
+                        <property>
+                           <name>exo.properties.url</name>
+                           <value>${properties.url.prefix}${properties.url.suffix}</value>
+                        </property>
                      <!-- We add this system property due to some incompatibility between IPv6 and 
 						some JVM of Linux distributions such as Ubuntu and Fedora-->
                         <property>
@@ -737,6 +749,14 @@
                            <name>value-storage-enabled</name>
                            <value>${value.storage.enabled}</value>
                         </property>                  
+                        <property>
+                           <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                           <value>${statistics.enabled}</value>
+                        </property>
+                        <property>
+                           <name>exo.properties.url</name>
+                           <value>${properties.url.prefix}${properties.url.suffix}</value>
+                        </property>
                         <!-- We add this system property due to some incompatibility between IPv6 and 
 						some JVM of Linux distributions such as Ubuntu and Fedora-->
                         <property>
@@ -769,30 +789,85 @@
             </plugins>
          </build>
       </profile>
+      <!-- We define one profile per driver -->
       <profile>
-         <id>oracle</id>
+         <id>oracle-10G-R2</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-oracle-sjdbc-jbc.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
                <groupId>ojdbc</groupId>
                <artifactId>ojdbc</artifactId>
-               <version>14</version>
+               <version>10.2.0.4</version>
                <scope>test</scope>
             </dependency>
             <dependency>
                <groupId>ojdbc</groupId>
                <artifactId>orai18n</artifactId>
-               <version>14</version>
+               <version>10.2.0.4</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
       </profile>
       <profile>
-         <id>mysql</id>
+         <id>oracle-11G-R1</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-mysql-jbc.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>ojdbc</artifactId>
+               <version>11.1.0.6.0</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>orai18n</artifactId>
+               <version>11.1.0.6.0</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>oracle-11G-R2</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>ojdbc</artifactId>
+               <version>11.2.0.1.0</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>orai18n</artifactId>
+               <version>11.2.0.1.0</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>            
+      <profile>
+         <id>mysql-5.0</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>mysql</groupId>
+               <artifactId>mysql-connector-java</artifactId>
+               <version>5.0.8</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>mysql-5.1</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
@@ -804,15 +879,15 @@
          </dependencies>
       </profile>
       <profile>
-         <id>mysql-sjdbc</id>
+         <id>mysql-5.5</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-mysql-sjdbc-jbc.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
                <groupId>mysql</groupId>
                <artifactId>mysql-connector-java</artifactId>
-               <version>5.1.14</version>
+               <version>5.1.18</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -820,21 +895,7 @@
       <profile>
          <id>mssql</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-mssql-jbc.xml</jcr.test.configuration.file>
-         </properties>
-         <dependencies>
-            <dependency>
-               <groupId>com.microsoft</groupId>
-               <artifactId>sqljdbc</artifactId>
-               <version>3.0.1301.101</version>
-               <scope>test</scope>
-            </dependency>
-         </dependencies>
-      </profile>
-      <profile>
-         <id>mssql-sjdbc</id>
-         <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-mssql-sjdbc-jbc.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/mssql</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
@@ -848,27 +909,7 @@
       <profile>
          <id>db2</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-db2-jbc.xml</jcr.test.configuration.file>
-         </properties>
-         <dependencies>
-            <dependency>
-               <groupId>com.ibm.db2</groupId>
-               <artifactId>db2jcc</artifactId>
-               <version>9.7</version>
-               <scope>test</scope>
-            </dependency>
-            <dependency>
-               <groupId>com.ibm.db2</groupId>
-               <artifactId>db2jcc_license_cu</artifactId>
-               <version>9.7</version>
-               <scope>test</scope>
-            </dependency>            
-         </dependencies>
-      </profile>
-      <profile>
-         <id>db2-sjdbc</id>
-         <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-db2-sjdbc-jbc.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/db2</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
@@ -888,7 +929,7 @@
       <profile>
          <id>sybase</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-sybase-jbc.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/sybase</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
@@ -900,43 +941,43 @@
          </dependencies>
       </profile>
       <profile>
-         <id>sybase-sjdbc</id>
+         <id>pgsql-8.2</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-sybase-sjdbc-jbc.xml</jcr.test.configuration.file>
-         </properties>
-         <dependencies>
-            <dependency>
-               <groupId>com.sybase.jdbc4.jdbc</groupId>
-               <artifactId>jconn4</artifactId>
-               <version>26502</version>
-               <scope>test</scope>
-            </dependency>
-         </dependencies>
-      </profile>
-      <profile>
-         <id>pgsql</id>
-         <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-pgsql-jbc.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
                <groupId>postgresql</groupId>
                <artifactId>postgresql</artifactId>
-               <version>8.3-606.jdbc3</version>
+               <version>8.2-507.jdbc4</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
       </profile>
       <profile>
-         <id>pgsql-sjdbc</id>
+         <id>pgsql-8.3</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-pgsql-sjdbc-jbc.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
                <groupId>postgresql</groupId>
                <artifactId>postgresql</artifactId>
-               <version>8.3-606.jdbc3</version>
+               <version>8.3-606.jdbc4</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>pgsql-8.4</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>8.4-702.jdbc4</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -957,6 +998,7 @@
          <id>sjdbc</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc-jbc.xml</jcr.test.configuration.file>
+            <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
          </properties>
       </profile>      
       <profile>
@@ -998,6 +1040,7 @@
             <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc.xml</jcr.test.configuration.file>
             <impl.specific.exclude.1>${jbc.specific.1}</impl.specific.exclude.1>
             <impl.specific.exclude.2>${jbc.specific.2}</impl.specific.exclude.2>
+            <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
          </properties>
          <dependencies>
             <dependency>

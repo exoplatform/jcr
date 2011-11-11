@@ -54,7 +54,7 @@
         <property name="log4j.appender.file.layout.ConversionPattern"
           value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n"/>
         
-        <property name="log4j.category.jcr.FileCleaner" value="DEBUG"/>
+        <!-- property name="log4j.category.jcr.FileCleaner" value="DEBUG"/ -->
         
         <!-- property name="log4j.category.jcr.JDBCStorageConnection" value="DEBUG"/>
         <property name="log4j.category.jcr.NodeImpl" value="DEBUG"/ -->
@@ -140,7 +140,6 @@
             <value>jar:/conf/test/publication-plugins-nodetypes-config.xml</value>          
           </values-param>
 
-          
           <values-param>
             <name>testInitNodeTypesRepository</name>
             <description>
@@ -180,6 +179,7 @@
       <properties-param>
         <name>working-conf</name>
         <description>working-conf</description>
+        <property name="dialect" value="auto" />
         <property name="source-name" value="jdbcjcr"/>
         <property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister"/>
       </properties-param>
@@ -266,11 +266,11 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
           <!-- MVCC configured to prevent possible deadlocks when a global Tx is active -->
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="url" value="${jdbcjcr.url:jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc}"/>
+          <property name="username" value="${jdbcjcr.username:sa}"/>
+          <property name="password" value="${jdbcjcr.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -294,10 +294,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr1.url:jdbc:hsqldb:file:target/temp/data/jcr}"/>
+          <property name="username" value="${jdbcjcr1.username:sa}"/>
+          <property name="password" value="${jdbcjcr1.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -321,10 +321,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr2"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr2.url:jdbc:hsqldb:file:target/temp/data/jcr2}"/>
+          <property name="username" value="${jdbcjcr2.username:sa}"/>
+          <property name="password" value="${jdbcjcr2.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -348,10 +348,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr3"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr3.url:jdbc:hsqldb:file:target/temp/data/jcr3}"/>
+          <property name="username" value="${jdbcjcr3.username:sa}"/>
+          <property name="password" value="${jdbcjcr3.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -403,10 +403,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portaldb2"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcrdb2.url:jdbc:hsqldb:file:target/temp/data/portaldb2}"/>
+          <property name="username" value="${jdbcjcrdb2.username:sa}"/>
+          <property name="password" value="${jdbcjcrdb2.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -430,10 +430,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcrdb2"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr1db2.url:jdbc:hsqldb:file:target/temp/data/jcrdb2}"/>
+          <property name="username" value="${jdbcjcr1db2.username:sa}"/>
+          <property name="password" value="${jdbcjcr1db2.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -457,10 +457,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portaltck"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcrtck.url:jdbc:hsqldb:file:target/temp/data/portaltck}"/>
+          <property name="username" value="${jdbcjcrtck.username:sa}"/>
+          <property name="password" value="${jdbcjcrtck.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -484,10 +484,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcrtck"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr1tck.url:jdbc:hsqldb:file:target/temp/data/jcrtck}"/>
+          <property name="username" value="${jdbcjcr1tck.username:sa}"/>
+          <property name="password" value="${jdbcjcr1tck.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -511,10 +511,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr2tck"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr2tck.url:jdbc:hsqldb:file:target/temp/data/jcr2tck}"/>
+          <property name="username" value="${jdbcjcr2tck.username:sa}"/>
+          <property name="password" value="${jdbcjcr2tck.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -619,10 +619,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/testdbcleaner"/>
-          <property name="username" value="sa"/>
-          <property name="password" value=""/>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${testdbcleaner.url:jdbc:hsqldb:file:target/temp/data/testdbcleaner}"/>
+          <property name="username" value="${testdbcleaner.username:sa}"/>
+          <property name="password" value="${testdbcleaner.password:}"/>
           <property name="maxActive" value="20" />
         </properties-param>
       </init-params>
