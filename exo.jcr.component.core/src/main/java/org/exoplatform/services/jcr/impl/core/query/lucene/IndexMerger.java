@@ -366,6 +366,8 @@ class IndexMerger extends Thread implements IndexListener
                if (!indexReplacement.attempt(0))
                {
                   log.debug("index merging canceled");
+                  // if index not passed to multiIndex, then it will never be closed
+                  index.close();
                   break;
                }
                try
