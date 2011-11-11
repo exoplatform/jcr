@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.usecase;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -40,16 +39,24 @@ import org.exoplatform.services.jcr.ext.backup.impl.JobExistingWorkspaceSameConf
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -62,106 +69,108 @@ import javax.jcr.RepositoryException;
 public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 {
 
+   public int index = 0;
+
    public void testBackupRestoreExistingRepositorySingleDB() throws Exception
    {
-      repositoryBackupRestore("db1", 1);
-      repositoryBackupRestore("db1", 2);
+      repositoryBackupRestore("db1");
+      repositoryBackupRestore("db1");
    }
 
    public void testBackupRestoreExistingRepositoryMultiDB() throws Exception
    {
-      repositoryBackupRestore("db2", 3);
-      repositoryBackupRestore("db2", 4);
+      repositoryBackupRestore("db2");
+      repositoryBackupRestore("db2");
    }
 
    public void testBackupRestoreExistingWorkspaceSingleDB() throws Exception
    {
-      workspaceBackupRestore("db1", 5);
-      workspaceBackupRestore("db1", 6);
+      workspaceBackupRestore("db1");
+      workspaceBackupRestore("db1");
    }
 
    public void testBackupRestoreExistingWorkspaceMultiDB() throws Exception
    {
-      workspaceBackupRestore("db2", 7);
-      workspaceBackupRestore("db2", 8);
+      workspaceBackupRestore("db2");
+      workspaceBackupRestore("db2");
    }
 
-   /*public void testJobExistingRepositorySameConfigRestoreSingleDB() throws Exception
-   {
-      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db1", 9);
-      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db1", 10);
-   }
+   //   public void testJobExistingRepositorySameConfigRestoreSingleDB() throws Exception
+   //   {
+   //      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db1");
+   //      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db1");
+   //   }
+   //
+   //   public void testJobExistingRepositorySameConfigRestoreMultiDB() throws Exception
+   //   {
+   //      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db2");
+   //      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db2");
+   //   }
+   //
+   //   public void testJobExistingRepositoryRestoreSingleDB() throws Exception
+   //   {
+   //      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db1");
+   //      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db1");
+   //   }
+   //
+   //   public void testJobExistingRepositoryRestoreMultiDB() throws Exception
+   //   {
+   //      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db2");
+   //      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db2");
+   //   }
+   //
+   //   public void testJobRepositoryRestoreSingleDB() throws Exception
+   //   {
+   //      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db1");
+   //      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db1");
+   //   }
+   //
+   //   public void testJobRepositoryRestoreMultiDB() throws Exception
+   //   {
+   //      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db2");
+   //      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db2");
+   //   }
+   //
+   //   public void testJobExistingWorkspaceSameConfigRestoreSingleDB() throws Exception
+   //   {
+   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db1");
+   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db1");
+   //   }
+   //
+   //   public void testJobExistingWorkspaceSameConfigRestoreMultiDB() throws Exception
+   //   {
+   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db2");
+   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db2");
+   //   }
+   //
+   //   public void testJobExistingWorkspaceRestoreSingleDB() throws Exception
+   //   {
+   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db1");
+   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db1");
+   //   }
+   //
+   //   public void testJobExistingWorkspaceRestoreMultiDB() throws Exception
+   //   {
+   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db2");
+   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db2");
+   //   }
+   //
+   //   public void testJobWorkspaceRestoreSingleDB() throws Exception
+   //   {
+   //      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db1");
+   //      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db1");
+   //   }
+   //
+   //   public void testJobWorkspaceRestoreMultiDB() throws Exception
+   //   {
+   //      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db2");
+   //      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db2");
+   //   }
 
-   public void testJobExistingRepositorySameConfigRestoreMultiDB() throws Exception
+   protected void repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore(String repositoryName)
+      throws Exception
    {
-      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db2", 10);
-      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db2", 11);
-   }
-
-   public void testJobExistingRepositoryRestoreSingleDB() throws Exception
-   {
-      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db1", 12);
-      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db1", 13);
-   }
-
-   public void testJobExistingRepositoryRestoreMultiDB() throws Exception
-   {
-      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db2", 14);
-      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db2", 15);
-   }
-
-   public void testJobRepositoryRestoreSingleDB() throws Exception
-   {
-      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db1", 17);
-      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db1", 18);
-   }
-
-   public void testJobRepositoryRestoreMultiDB() throws Exception
-   {
-      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db2", 19);
-      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db2", 20);
-   }
-
-   public void testJobExistingWorkspaceSameConfigRestoreSingleDB() throws Exception
-   {
-      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db1", 21);
-      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db1", 22);
-   }
-
-   public void testJobExistingWorkspaceSameConfigRestoreMultiDB() throws Exception
-   {
-      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db2", 23);
-      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db2", 24);
-   }
-
-   public void testJobExistingWorkspaceRestoreSingleDB() throws Exception
-   {
-      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db1", 25);
-      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db1", 26);
-   }
-
-   public void testJobExistingWorkspaceRestoreMultiDB() throws Exception
-   {
-      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db2", 27);
-      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db2", 28);
-   }
-
-   public void testJobWorkspaceRestoreSingleDB() throws Exception
-   {
-      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db1", 29);
-      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db1", 30);
-   }
-
-   public void testJobWorkspaceRestoreMultiDB() throws Exception
-   {
-      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db2", 31);
-      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db2", 32);
-   }*/
-
-   protected void repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore(String repositoryName,
-      int number) throws Exception
-   {
-      addConent(repositoryName, number);
+      addConent(repositoryName);
 
       BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
       backupManagerImpl.start();
@@ -191,8 +200,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       // restore
       RepositoryBackupChainLog rblog = new RepositoryBackupChainLog(new File(bch.getLogFilePath()));
 
-      Map<String, BackupChainLog> workspacesMapping = new HashedMap();
-      Map<String, BackupChainLog> backups = new HashedMap();
+      Map<String, BackupChainLog> workspacesMapping = new HashMap<String, BackupChainLog>();
+      Map<String, BackupChainLog> backups = new HashMap<String, BackupChainLog>();
 
       for (String path : rblog.getWorkspaceBackupsInfo())
       {
@@ -212,13 +221,13 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       job.run();
       assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, job.getStateRestore());
 
-      checkConent(repositoryName, number);
+      checkConent(repositoryName);
    }
 
-   protected void repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore(String repositoryName, int number)
+   protected void repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore(String repositoryName)
       throws Exception
    {
-      addConent(repositoryName, number);
+      addConent(repositoryName);
 
       BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
       backupManagerImpl.start();
@@ -248,8 +257,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       // restore
       RepositoryBackupChainLog rblog = new RepositoryBackupChainLog(new File(bch.getLogFilePath()));
 
-      Map<String, BackupChainLog> workspacesMapping = new HashedMap();
-      Map<String, BackupChainLog> backups = new HashedMap();
+      Map<String, BackupChainLog> workspacesMapping = new HashMap<String, BackupChainLog>();
+      Map<String, BackupChainLog> backups = new HashMap<String, BackupChainLog>();
 
       for (String path : rblog.getWorkspaceBackupsInfo())
       {
@@ -262,34 +271,15 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
       }
 
-      //TODO 
-      /*List<WorkspaceContainerFacade> workspacesWaits4Resume = new ArrayList<WorkspaceContainerFacade>();
-      ManageableRepository repository = repositoryService.getRepository(repositoryName);
-      for (String wsName : repository.getWorkspaceNames())
-      {
-         WorkspaceContainerFacade wsContainer = repository.getWorkspaceContainer(wsName);
-         wsContainer.setState(ManageableRepository.SUSPENDED);
-
-         workspacesWaits4Resume.add(wsContainer);
-      }*/
-      //
-
       JobExistingRepositoryRestore job =
          new JobExistingRepositoryRestore(repositoryService, backupManagerImpl, rblog.getOriginalRepositoryEntry(),
             workspacesMapping, rblog);
 
       job.run();
 
-      //TODO resume components
-      /*for (WorkspaceContainerFacade wsContainer : workspacesWaits4Resume)
-      {
-         wsContainer.setState(ManageableRepository.ONLINE);
-      }
-      //
-      */
       assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, job.getStateRestore());
 
-      checkConent(repositoryName, number);
+      checkConent(repositoryName);
    }
 
    private int forceCloseSession(String repositoryName, String workspaceName) throws RepositoryException,
@@ -303,10 +293,10 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       return sessionRegistry.closeSessions(workspaceName);
    }
 
-   protected void repositoryBackupRestoreDirectlyOverJobRepositoryRestore(String repositoryName, int number)
+   protected void repositoryBackupRestoreDirectlyOverJobRepositoryRestore(String repositoryName)
       throws Exception
    {
-      addConent(repositoryName, number);
+      addConent(repositoryName);
 
       BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
       backupManagerImpl.start();
@@ -366,8 +356,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          component.clean();
       }
 
-      Map<String, BackupChainLog> workspacesMapping = new HashedMap();
-      Map<String, BackupChainLog> backups = new HashedMap();
+      Map<String, BackupChainLog> workspacesMapping = new HashMap<String, BackupChainLog>();
+      Map<String, BackupChainLog> backups = new HashMap<String, BackupChainLog>();
 
       for (String path : rblog.getWorkspaceBackupsInfo())
       {
@@ -387,12 +377,12 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       job.run();
       assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, job.getStateRestore());
 
-      checkConent(repositoryName, number);
+      checkConent(repositoryName);
    }
 
-   protected void workspaceBackupRestore(String repositoryName, int number) throws Exception
+   protected void workspaceBackupRestore(String repositoryName) throws Exception
    {
-      addConent(repositoryName, number);
+      addConent(repositoryName);
       String workspaceName =
          repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName();
 
@@ -446,26 +436,19 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
          JobWorkspaceRestore restore = backupManagerImpl.getLastRestore(repositoryName, workspaceName);
          assertNotNull(restore);
-         //         if (restore != null)
-         //         {
-         //            if (restore.getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL)
-         //            {
-         //               fail(restore.getRestoreException().getMessage());
-         //            }
-         //         }
       }
       else
       {
          fail("There are no backup files in " + backDir.getAbsolutePath());
       }
 
-      checkConent(repositoryName, number);
+      checkConent(repositoryName);
    }
 
-   protected void workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore(String repositoryName,
-      int number) throws Exception
+   protected void workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore(String repositoryName)
+      throws Exception
    {
-      addConent(repositoryName, number);
+      addConent(repositoryName);
       String workspaceName =
          repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName();
 
@@ -516,17 +499,16 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       job.run();
       assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, job.getStateRestore());
 
-      checkConent(repositoryName, number);
+      checkConent(repositoryName);
    }
 
    /**
     * JobExistingWorkspaseRrestore is not support restore system workspace, 
     * because repository is not allowed removing system workspace.  
     */
-   protected void workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore(String repositoryName,
-      int number) throws Exception
+   protected void workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore(String repositoryName) throws Exception
    {
-      addConent(repositoryName, number);
+      addConent(repositoryName);
 
       WorkspaceEntry wsEntry = null;
       for (WorkspaceEntry entry : repositoryService.getRepository(repositoryName).getConfiguration()
@@ -576,17 +558,17 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       job.run();
       assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, job.getStateRestore());
 
-      checkConent(repositoryName, number);
+      checkConent(repositoryName);
    }
 
    /**
     * JobWorkspaseRrestore is not support restore system workspace, 
     * because repository is not allowed removing system workspace.  
     */
-   protected void workspaceBackupRestoreDirectlyOverJobWorkspaceRestore(String repositoryName, int number)
+   protected void workspaceBackupRestoreDirectlyOverJobWorkspaceRestore(String repositoryName)
       throws Exception
    {
-      addConent(repositoryName, number);
+      addConent(repositoryName);
 
       WorkspaceEntry wsEntry = null;
       for (WorkspaceEntry entry : repositoryService.getRepository(repositoryName).getConfiguration()
@@ -655,16 +637,19 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       job.run();
       assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, job.getStateRestore());
 
-      checkConent(repositoryName, number);
+      checkConent(repositoryName);
    }
 
-   protected void repositoryBackupRestore(String repositoryName, int number) throws Exception
+   protected void repositoryBackupRestore(String repositoryName) throws Exception
    {
-      addConent(repositoryName, number);
+      // prepare content
+      addConent(repositoryName);
 
+      // prepare backupManager
       BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
       backupManagerImpl.start();
 
+      // backup
       File backDir = new File("target/backup/" + repositoryName);
       backDir.mkdirs();
 
@@ -675,7 +660,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
       RepositoryBackupChain bch = backupManagerImpl.startBackup(config);
 
-      // wait till full backup will stop
+      // wait end of backup
       while (bch.getState() != BackupJob.FINISHED)
       {
          Thread.yield();
@@ -687,33 +672,115 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          backupManagerImpl.stopBackup(bch);
       }
 
+      // clean repository via DBCleanService
+      DBCleanService.cleanRepositoryData(repositoryService.getRepository(repositoryName).getConfiguration());
+      checkEmptyTables(repositoryName);
+
       // restore
-      File backLog = new File(bch.getLogFilePath());
-      if (backLog.exists())
+      restore(repositoryName, bch, backupManagerImpl);
+      checkConent(repositoryName);
+
+      // clean every workspace via DBCleanService
+      ManageableRepository repository = repositoryService.getRepository(repositoryName);
+      for (WorkspaceEntry wsEntry : repository.getConfiguration().getWorkspaceEntries())
       {
-         RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+         DBCleanService.cleanWorkspaceData(wsEntry);
+      }
+      checkEmptyTables(repositoryName);
 
-         assertNotNull(bchLog.getStartedTime());
-         assertNotNull(bchLog.getFinishedTime());
+      // restore
+      restore(repositoryName, bch, backupManagerImpl);
+      checkConent(repositoryName);
 
-         backupManagerImpl.restoreExistingRepository(bchLog, repositoryService.getRepository(repositoryName)
-            .getConfiguration(), false);
+      // clean again via DBCleaner
+      repository = repositoryService.getRepository(repositoryName);
 
-         JobRepositoryRestore restore = backupManagerImpl.getLastRepositoryRestore(repositoryName);
-         if (restore != null)
+      WorkspaceEntry entry = repository.getConfiguration().getWorkspaceEntries().get(0);
+      DataSource ds =
+         (DataSource)new InitialContext().lookup(entry.getContainer().getParameterValue(
+            JDBCWorkspaceDataContainer.SOURCE_NAME));
+
+      Connection conn = ds.getConnection();
+      conn.setAutoCommit(false);
+
+      DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(conn, repository.getConfiguration());
+      try
+      {
+         if (repositoryName.equals("db1"))
          {
-            if (restore.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL)
-            {
-               fail(restore.getRestoreException().getMessage());
-            }
+            // clean and rollback first
+            repositoryDBCleaner.executeCleanScripts();
+            conn.rollback();
+
+            repositoryDBCleaner.executeRollbackScripts();
+            conn.commit();
+
+            checkConent(repositoryName);
+
+            // clean
+            repositoryDBCleaner.executeCleanScripts();
+            repositoryDBCleaner.executeCommitScripts();
+            conn.commit();
+         }
+         else
+         {
+            assertNull(repositoryDBCleaner);
          }
       }
-      else
+      finally
       {
-         fail("There are no backup files in " + backDir.getAbsolutePath());
+         conn.close();
       }
 
-      checkConent(repositoryName, number);
+      if (repositoryName.equals("db1"))
+      {
+         checkEmptyTables(repositoryName);
+      }
+
+      // restore
+      restore(repositoryName, bch, backupManagerImpl);
+      checkConent(repositoryName);
+
+      // clean every workspace again via DBCleaner
+      repository = repositoryService.getRepository(repositoryName);
+      for (WorkspaceEntry wsEntry : repository.getConfiguration().getWorkspaceEntries())
+      {
+         ds =
+            (DataSource)new InitialContext().lookup(wsEntry.getContainer().getParameterValue(
+               JDBCWorkspaceDataContainer.SOURCE_NAME));
+
+         conn = ds.getConnection();
+         conn.setAutoCommit(false);
+
+         DBCleaner workspaceDBCleaner = DBCleanService.getWorkspaceDBCleaner(conn, wsEntry);
+
+         try
+         {
+            // clean and rollback first
+            workspaceDBCleaner.executeCleanScripts();
+            conn.rollback();
+
+            workspaceDBCleaner.executeRollbackScripts();
+            conn.commit();
+
+            checkConent(repositoryName);
+
+            // clean
+            workspaceDBCleaner.executeCleanScripts();
+            workspaceDBCleaner.executeCommitScripts();
+            conn.commit();
+         }
+         finally
+         {
+            conn.close();
+         }
+      }
+
+      checkEmptyTables(repositoryName);
+
+      // restore
+      restore(repositoryName, bch, backupManagerImpl);
+      checkConent(repositoryName);
    }
 
    protected ExtendedBackupManager getBackupManager()
@@ -729,15 +796,17 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       return new BackupManagerImpl(initParams, repositoryService);
    }
 
-   protected void addConent(String repositoryName, int number) throws Exception
+   protected void addConent(String repositoryName) throws Exception
    {
+      index++;
+
       ManageableRepository repository = repositoryService.getRepository(repositoryName);
       for (String wsName : repository.getWorkspaceNames())
       {
          SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
          try
          {
-            Node rootNode = session.getRootNode().addNode("test" + number);
+            Node rootNode = session.getRootNode().addNode("test" + index);
 
             rootNode.addNode("node1").setProperty("prop1", "value1");
             session.save();
@@ -749,7 +818,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       }
    }
 
-   protected void checkConent(String repositoryName, int number) throws Exception
+   protected void checkConent(String repositoryName) throws Exception
    {
       ManageableRepository repository = repositoryService.getRepository(repositoryName);
       for (String wsName : repository.getWorkspaceNames())
@@ -757,12 +826,90 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          SessionImpl session = (SessionImpl)repository.login(credentials, wsName);
          try
          {
-            Node rootNode = session.getRootNode().getNode("test" + number);
+            Node rootNode = session.getRootNode().getNode("test" + index);
             assertEquals(rootNode.getNode("node1").getProperty("prop1").getString(), "value1");
          }
          finally
          {
             session.logout();
+         }
+      }
+   }
+
+   private void restore(String repositoryName, RepositoryBackupChain bch, BackupManagerImpl backupManagerImpl)
+      throws Exception
+   {
+      // restore
+      File backLog = new File(bch.getLogFilePath());
+      assertTrue(backLog.exists());
+
+      RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+
+      assertNotNull(bchLog.getStartedTime());
+      assertNotNull(bchLog.getFinishedTime());
+
+      backupManagerImpl.restoreExistingRepository(bchLog, repositoryService.getRepository(repositoryName)
+         .getConfiguration(), false);
+
+      JobRepositoryRestore restore = backupManagerImpl.getLastRepositoryRestore(repositoryName);
+      if (restore != null)
+      {
+         if (restore.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL)
+         {
+            fail(restore.getRestoreException().getMessage());
+         }
+      }
+   }
+
+   private void checkEmptyTables(String repositoryName) throws Exception
+   {
+      ManageableRepository repository = repositoryService.getRepository(repositoryName);
+      for (WorkspaceEntry wsEntry : repository.getConfiguration().getWorkspaceEntries())
+      {
+         String multiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB) ? "M" : "S";
+
+         DataSource ds =
+            (DataSource)new InitialContext().lookup(wsEntry.getContainer().getParameterValue(
+               JDBCWorkspaceDataContainer.SOURCE_NAME));
+         Connection conn = ds.getConnection();
+         try
+         {
+            ResultSet result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM JCR_" + multiDb + "ITEM");
+            try
+            {
+               assertTrue(result.next());
+               assertEquals(1, result.getInt(1));
+            }
+            finally
+            {
+               result.close();
+            }
+
+            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM JCR_" + multiDb + "VALUE");
+            try
+            {
+               assertTrue(result.next());
+               assertEquals(0, result.getInt(1));
+            }
+            finally
+            {
+               result.close();
+            }
+
+            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM JCR_" + multiDb + "REF");
+            try
+            {
+               assertTrue(result.next());
+               assertEquals(0, result.getInt(1));
+            }
+            finally
+            {
+               result.close();
+            }
+         }
+         finally
+         {
+            conn.close();
          }
       }
    }

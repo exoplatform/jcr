@@ -95,8 +95,8 @@ public class DBCleanService
          }
       });
 
-      DBCleaner dbCleaner = getWorkspaceDBCleaner(jdbcConn, wsEntry);
       jdbcConn.setAutoCommit(false);
+      DBCleaner dbCleaner = getWorkspaceDBCleaner(jdbcConn, wsEntry);
 
       try
       {
