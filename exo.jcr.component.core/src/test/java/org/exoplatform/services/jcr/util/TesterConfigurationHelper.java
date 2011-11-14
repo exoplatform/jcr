@@ -110,6 +110,17 @@ public class TesterConfigurationHelper
       return service.getRepository(repoEntry.getName());
    }
 
+   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb)
+      throws Exception
+   {
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, null);
+      service.createRepository(repoEntry);
+      service.getConfig().retain();
+
+      return service.getRepository(repoEntry.getName());
+   }
+
    public ManageableRepository createRepository(ExoContainer container, RepositoryEntry repoEntry) throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);

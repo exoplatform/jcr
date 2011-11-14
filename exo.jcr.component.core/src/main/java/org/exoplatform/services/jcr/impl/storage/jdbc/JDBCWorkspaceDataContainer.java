@@ -112,6 +112,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public static final boolean STATISTICS_ENABLED =
       Boolean.valueOf(PrivilegedSystemHelper.getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
+
    static
    {
       if (STATISTICS_ENABLED)

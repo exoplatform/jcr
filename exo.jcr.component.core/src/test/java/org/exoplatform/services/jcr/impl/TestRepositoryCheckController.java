@@ -19,7 +19,12 @@
 package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.services.jcr.BaseStandaloneTest;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.RepositoryCheckController.DataStorage;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +41,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 {
 
    private RepositoryCheckController checkController;
+
+   private final TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
 
    /**
     * @see org.exoplatform.services.jcr.BaseStandaloneTest#getRepositoryName()
@@ -57,21 +64,25 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void setUp() throws Exception
    {
       super.setUp();
-      checkController = new RepositoryCheckController(repositoryService.getRepository("db1"));
    }
 
    public void tearDown() throws Exception
    {
-      File f = checkController.getLastLogFile();
-      if (f != null)
+      if (checkController != null)
       {
-         f.delete();
+         File f = checkController.getLastLogFile();
+         if (f != null)
+         {
+            f.delete();
+         }
       }
       super.tearDown();
    }
 
-   public void testDB()
+   public void testDB() throws Exception
    {
+      checkController = new RepositoryCheckController(repositoryService.getRepository("db1"));
+
       String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
       assertNotNull(result);
       assertTrue("Repository data is not consistent, result: " + result, result
@@ -80,6 +91,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    public void testValueStorage() throws Exception
    {
+      checkController = new RepositoryCheckController(repositoryService.getRepository("db1"));
+
       File f = this.createBLOBTempFile(20);
       InputStream is = new FileInputStream(f);
       try
@@ -101,21 +114,72 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       }
    }
 
-   public void testSearchIndex()
+   public void testSearchIndex() throws Exception
    {
+      checkController = new RepositoryCheckController(repositoryService.getRepository("db1"));
+
       String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.LUCENE_INDEX});
       assertNotNull(result);
       assertTrue("Repository data is not consistent, result: " + result, result
          .startsWith("Repository data is consistent"));
    }
 
-   public void testAll()
+   public void testAll() throws Exception
    {
+      checkController = new RepositoryCheckController(repositoryService.getRepository("db1"));
+
       String result =
          checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE,
             DataStorage.LUCENE_INDEX});
       assertNotNull(result);
       assertTrue("Repository data is not consistent, result: " + result, result
          .startsWith("Repository data is consistent"));
+   }
+
+   /**
+    * Usescase when STORAGE_DESC field in JCR_SVALUE table is not empty but there is no file in the value storage.
+    */
+   public void testValueStorageUsecasesSingleDb() throws Exception
+   {
+      checkValueStorageUsecases(helper.createRepository(container, false));
+   }
+
+   /**
+    * Usescase when STORAGE_DESC field in JCR_MVALUE table is not empty but there is no file in the value storage.
+    */
+   public void testValueStorageUsecasesMultiDb() throws Exception
+   {
+      checkValueStorageUsecases(helper.createRepository(container, true));
+   }
+
+   private void checkValueStorageUsecases(ManageableRepository repository) throws Exception
+   {
+      // create repository and add property
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      InputStream in = new FileInputStream(createBLOBTempFile(300));
+      PropertyImpl prop = (PropertyImpl)session.getRootNode().addNode("testNode").setProperty("testProperty", in);
+      session.save();
+      in.close();
+
+      session.logout();
+
+      // repository is consistent
+      checkController = new RepositoryCheckController(repository);
+      assertTrue(checkController.checkRepositoryValueStorageConsistency().startsWith(
+         "Repository data is consistent"));
+
+      // remove the file from the value storage
+      String vsPath =
+         repository.getConfiguration().getWorkspaceEntries().get(0).getContainer().getValueStorages().get(0)
+            .getParameterValue(FileValueStorage.PATH);
+
+      File vsFile = new File(vsPath, prop.getInternalIdentifier() + "0");
+      assertTrue(vsFile.exists());
+      assertTrue(vsFile.delete());
+
+      // repository is inconsistent
+      assertTrue(checkController .checkRepositoryValueStorageConsistency().startsWith(
+         "Repository data is inconsistent"));
    }
 }
