@@ -103,18 +103,18 @@ public class TesterConfigurationHelper
       throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, dsName);
+      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, dsName, true);
       service.createRepository(repoEntry);
       service.getConfig().retain();
 
       return service.getRepository(repoEntry.getName());
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb)
+   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled)
       throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, null);
+      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, null, cacheEnabled);
       service.createRepository(repoEntry);
       service.getConfig().retain();
 
@@ -132,12 +132,13 @@ public class TesterConfigurationHelper
    /**
    * Create workspace entry. 
    */
-   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName) throws Exception
+   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName,
+      boolean cacheEnabled) throws Exception
    {
       // create system workspace entry
       List<String> ids = new ArrayList<String>();
       ids.add("id");
-      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids);
+      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids, cacheEnabled);
 
       if (systemWSName != null)
       {
@@ -164,14 +165,14 @@ public class TesterConfigurationHelper
       List<String> ids = new ArrayList<String>();
       ids.add("id");
 
-      return createWorkspaceEntry(isMultiDb, dsName, ids);
+      return createWorkspaceEntry(isMultiDb, dsName, ids, true);
    }
 
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds)
-      throws Exception
+   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds,
+      boolean cacheEnabled) throws Exception
    {
       if (dsName == null)
       {
@@ -233,6 +234,7 @@ public class TesterConfigurationHelper
       cacheParams.add(new SimpleParameterEntry("maxSize", "2000"));
       cacheParams.add(new SimpleParameterEntry("liveTime", "20m"));
       CacheEntry cacheEntry = new CacheEntry(cacheParams);
+      cacheEntry.setEnabled(cacheEnabled);
       cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
 
       // Lock

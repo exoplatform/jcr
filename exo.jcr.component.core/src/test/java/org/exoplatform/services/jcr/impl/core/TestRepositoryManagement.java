@@ -137,7 +137,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
       try
       {
-         RepositoryEntry rEntry = helper.createRepositoryEntry(false, null, null);
+         RepositoryEntry rEntry = helper.createRepositoryEntry(false, null, null, true);
          rEntry.setName(repository.getConfiguration().getName());
 
          helper.createRepository(container, rEntry);

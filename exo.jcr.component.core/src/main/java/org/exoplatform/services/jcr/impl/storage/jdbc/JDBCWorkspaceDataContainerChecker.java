@@ -154,7 +154,7 @@ public class JDBCWorkspaceDataContainerChecker
                : "select * from JCR_SITEM P where P.CONTAINER_NAME='" + jdbcDataContainer.containerName
                   + "' and P.I_CLASS=2 and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-            "All properties that have not value record.", InspectionStatus.WARN));
+            "All properties that have not value record.", InspectionStatus.ERR));
       
       // The differences in the queries by DB dialect.
       // Oracle doesn't work correct with default query because empty value stored as null value.
@@ -212,7 +212,7 @@ public class JDBCWorkspaceDataContainerChecker
             try
             {
                st = jdbcConn.prepareStatement(query.getStatement());
-               // the result of query is expected to be empty
+               // the result of query is expected to be empty 
                resultSet = st.executeQuery();
                if (resultSet.next())
                {

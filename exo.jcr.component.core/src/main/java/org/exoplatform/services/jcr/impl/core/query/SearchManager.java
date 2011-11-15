@@ -460,7 +460,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                throw new RepositoryException(ex.getMessage(), ex);
             }
          }
-      }else{
+      }
+      else
+      {
          // simply run checkIndex, if not suspended
          handler.checkIndex(itemMgr, isSystem, inspectionLog);
       }

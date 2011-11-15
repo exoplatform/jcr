@@ -71,8 +71,6 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
 
    private File inspectionLogFile = null;
 
-   private String lastResult = null;
-
    /**
     * The current repository.
     */
