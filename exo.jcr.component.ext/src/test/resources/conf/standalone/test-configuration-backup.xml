@@ -105,7 +105,7 @@
             <description>working-conf</description>
             <property name="persister-class-name"
                value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister" />
-            <property name="source-name" value="jdbcjcr" />
+            <property name="source-name" value="jdbcjcr6" />
          </properties-param>
       </init-params>
    </component>
@@ -189,7 +189,7 @@
          <init-params>
             <value-param>
                <name>bind-name</name>
-               <value>jdbcjcr</value>
+               <value>jdbcjcr6</value>
             </value-param>
             <value-param>
                <name>class-name</name>
@@ -203,7 +203,7 @@
                <name>ref-addresses</name>
                <description>ref-addresses</description>
                <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/db1" />
+               <property name="url" value="jdbc:hsqldb:file:target/temp/data/db3" />
                <property name="username" value="sa" />
                <property name="password" value="" />
             </properties-param>
@@ -216,7 +216,7 @@
          <init-params>
             <value-param>
                <name>bind-name</name>
-               <value>jdbcjcr1</value>
+               <value>jdbcjcr7</value>
             </value-param>
             <value-param>
                <name>class-name</name>
@@ -230,7 +230,7 @@
                <name>ref-addresses</name>
                <description>ref-addresses</description>
                <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/db2ws" />
+               <property name="url" value="jdbc:hsqldb:file:target/temp/data/db4ws" />
                <property name="username" value="sa" />
                <property name="password" value="" />
             </properties-param>
@@ -243,7 +243,7 @@
          <init-params>
             <value-param>
                <name>bind-name</name>
-               <value>jdbcjcr2</value>
+               <value>jdbcjcr8</value>
             </value-param>
             <value-param>
                <name>class-name</name>
@@ -257,7 +257,7 @@
                <name>ref-addresses</name>
                <description>ref-addresses</description>
                <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/db2ws2" />
+               <property name="url" value="jdbc:hsqldb:file:target/temp/data/db4ws2" />
                <property name="username" value="sa" />
                <property name="password" value="" />
             </properties-param>

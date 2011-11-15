@@ -18,9 +18,9 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<repository-service default-repository="db1">
+<repository-service default-repository="db3">
    <repositories>
-      <repository name="db1" system-workspace="ws" default-workspace="ws">
+      <repository name="db3" system-workspace="ws" default-workspace="ws">
          <security-domain>exo-domain</security-domain>
          <access-control>optional</access-control>
          <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
@@ -28,16 +28,16 @@
             <workspace name="ws">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr" />
+                     <property name="source-name" value="jdbcjcr6" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db1ws" />
+                     <property name="swap-directory" value="target/temp/swap/db3ws" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="target/temp/values/db1ws" />
+                           <property name="path" value="target/temp/values/db3ws" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -58,7 +58,7 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="target/temp/jcrlucenedb/db1ws" />
+                     <property name="index-dir" value="target/temp/jcrlucenedb/db3ws" />
                   </properties>
                </query-handler>
                <lock-manager>
@@ -69,16 +69,16 @@
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr" />
+                     <property name="source-name" value="jdbcjcr6" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db1ws1" />
+                     <property name="swap-directory" value="target/temp/swap/db3ws1" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="target/temp/values/db1ws1" />
+                           <property name="path" value="target/temp/values/db3ws1" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -99,7 +99,7 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="target/temp/jcrlucenedb/db1ws1" />
+                     <property name="index-dir" value="target/temp/jcrlucenedb/db3ws1" />
                   </properties>
                </query-handler>
                <lock-manager>
@@ -109,7 +109,7 @@
          </workspaces>
       </repository>
 
-      <repository name="db2" system-workspace="ws" default-workspace="ws">
+      <repository name="db4" system-workspace="ws" default-workspace="ws">
          <security-domain>exo-domain</security-domain>
          <access-control>optional</access-control>
          <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
@@ -117,16 +117,16 @@
             <workspace name="ws">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr1" />
+                     <property name="source-name" value="jdbcjcr7" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db2ws" />
+                     <property name="swap-directory" value="target/temp/swap/db4ws" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="target/temp/values/db2ws" />
+                           <property name="path" value="target/temp/values/db4ws" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -147,7 +147,7 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="target/temp/jcrlucenedb/db2ws" />
+                     <property name="index-dir" value="target/temp/jcrlucenedb/db4ws" />
                   </properties>
                </query-handler>
                <lock-manager>
@@ -158,16 +158,16 @@
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr2" />
+                     <property name="source-name" value="jdbcjcr8" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db2ws1" />
+                     <property name="swap-directory" value="target/temp/swap/db4ws1" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="target/temp/values/db2ws1" />
+                           <property name="path" value="target/temp/values/db4ws1" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -188,7 +188,7 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="target/temp/jcrlucenedb/db2ws1" />
+                     <property name="index-dir" value="target/temp/jcrlucenedb/db4ws1" />
                   </properties>
                </query-handler>
                <lock-manager>
@@ -196,6 +196,6 @@
                </lock-manager>               
             </workspace>
          </workspaces>
-      </repository>
+      </repository>    
    </repositories>
 </repository-service>

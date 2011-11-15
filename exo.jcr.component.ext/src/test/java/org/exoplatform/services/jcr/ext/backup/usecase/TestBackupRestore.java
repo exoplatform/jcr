@@ -73,99 +73,99 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
    public void testBackupRestoreExistingRepositorySingleDB() throws Exception
    {
-      repositoryBackupRestore("db1");
-      repositoryBackupRestore("db1");
+      repositoryBackupRestore("db3");
+      repositoryBackupRestore("db3");
    }
 
    public void testBackupRestoreExistingRepositoryMultiDB() throws Exception
    {
-      repositoryBackupRestore("db2");
-      repositoryBackupRestore("db2");
+      repositoryBackupRestore("db4");
+      repositoryBackupRestore("db4");
    }
 
    public void testBackupRestoreExistingWorkspaceSingleDB() throws Exception
    {
-      workspaceBackupRestore("db1");
-      workspaceBackupRestore("db1");
+      workspaceBackupRestore("db3");
+      workspaceBackupRestore("db3");
    }
 
    public void testBackupRestoreExistingWorkspaceMultiDB() throws Exception
    {
-      workspaceBackupRestore("db2");
-      workspaceBackupRestore("db2");
+      workspaceBackupRestore("db4");
+      workspaceBackupRestore("db4");
    }
 
-   //   public void testJobExistingRepositorySameConfigRestoreSingleDB() throws Exception
-   //   {
-   //      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db1");
-   //      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db1");
-   //   }
-   //
-   //   public void testJobExistingRepositorySameConfigRestoreMultiDB() throws Exception
-   //   {
-   //      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db2");
-   //      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db2");
-   //   }
-   //
-   //   public void testJobExistingRepositoryRestoreSingleDB() throws Exception
-   //   {
-   //      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db1");
-   //      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db1");
-   //   }
-   //
-   //   public void testJobExistingRepositoryRestoreMultiDB() throws Exception
-   //   {
-   //      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db2");
-   //      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db2");
-   //   }
-   //
-   //   public void testJobRepositoryRestoreSingleDB() throws Exception
-   //   {
-   //      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db1");
-   //      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db1");
-   //   }
-   //
-   //   public void testJobRepositoryRestoreMultiDB() throws Exception
-   //   {
-   //      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db2");
-   //      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db2");
-   //   }
-   //
-   //   public void testJobExistingWorkspaceSameConfigRestoreSingleDB() throws Exception
-   //   {
-   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db1");
-   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db1");
-   //   }
-   //
-   //   public void testJobExistingWorkspaceSameConfigRestoreMultiDB() throws Exception
-   //   {
-   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db2");
-   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db2");
-   //   }
-   //
-   //   public void testJobExistingWorkspaceRestoreSingleDB() throws Exception
-   //   {
-   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db1");
-   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db1");
-   //   }
-   //
-   //   public void testJobExistingWorkspaceRestoreMultiDB() throws Exception
-   //   {
-   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db2");
-   //      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db2");
-   //   }
-   //
-   //   public void testJobWorkspaceRestoreSingleDB() throws Exception
-   //   {
-   //      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db1");
-   //      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db1");
-   //   }
-   //
-   //   public void testJobWorkspaceRestoreMultiDB() throws Exception
-   //   {
-   //      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db2");
-   //      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db2");
-   //   }
+   public void testJobExistingRepositorySameConfigRestoreSingleDB() throws Exception
+   {
+      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db3");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db3");
+   }
+
+   public void testJobExistingRepositorySameConfigRestoreMultiDB() throws Exception
+   {
+      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db4");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db4");
+   }
+
+   public void testJobExistingRepositoryRestoreSingleDB() throws Exception
+   {
+      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db3");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db3");
+   }
+
+   public void testJobExistingRepositoryRestoreMultiDB() throws Exception
+   {
+      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db4");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db4");
+   }
+
+   public void testJobRepositoryRestoreSingleDB() throws Exception
+   {
+      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db3");
+      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db3");
+   }
+
+   public void testJobRepositoryRestoreMultiDB() throws Exception
+   {
+      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db4");
+      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db4");
+   }
+
+   public void testJobExistingWorkspaceSameConfigRestoreSingleDB() throws Exception
+   {
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db3");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db3");
+   }
+
+   public void testJobExistingWorkspaceSameConfigRestoreMultiDB() throws Exception
+   {
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db4");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db4");
+   }
+
+   public void testJobExistingWorkspaceRestoreSingleDB() throws Exception
+   {
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db3");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db3");
+   }
+
+   public void testJobExistingWorkspaceRestoreMultiDB() throws Exception
+   {
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db4");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db4");
+   }
+
+   public void testJobWorkspaceRestoreSingleDB() throws Exception
+   {
+      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db3");
+      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db3");
+   }
+
+   public void testJobWorkspaceRestoreMultiDB() throws Exception
+   {
+      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db4");
+      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db4");
+   }
 
    protected void repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore(String repositoryName)
       throws Exception
@@ -706,7 +706,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(conn, repository.getConfiguration());
       try
       {
-         if (repositoryName.equals("db1"))
+         if (repositoryName.equals("db3"))
          {
             // clean and rollback first
             repositoryDBCleaner.executeCleanScripts();
@@ -732,7 +732,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          conn.close();
       }
 
-      if (repositoryName.equals("db1"))
+      if (repositoryName.equals("db3"))
       {
          checkEmptyTables(repositoryName);
       }
