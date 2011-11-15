@@ -203,6 +203,8 @@ public class DBBackup
             contentWriter.writeString(metaData.getColumnName(i + 1));
          }
 
+         byte[] tmpBuff = new byte[2048];
+
          // Now we can output the actual data
          while (rs.next())
          {
@@ -228,7 +230,6 @@ public class DBBackup
                {
                   long len = 0;
                   int read = 0;
-                  byte[] tmpBuff = new byte[2048];
 
                   while ((read = value.read(tmpBuff)) >= 0)
                   {
