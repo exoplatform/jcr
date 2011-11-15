@@ -16,12 +16,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
+package org.exoplatform.services.jcr.impl.dataflow.persistent.cache.jbosscache;
 
 import java.util.HashMap;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.CompressedChangesBuffer;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesContainer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.PutObjectContainer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.RemoveNodeContainer;

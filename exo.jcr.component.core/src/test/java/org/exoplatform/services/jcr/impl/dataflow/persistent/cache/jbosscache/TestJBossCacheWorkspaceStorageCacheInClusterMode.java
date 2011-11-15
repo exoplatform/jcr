@@ -16,13 +16,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
+package org.exoplatform.services.jcr.impl.dataflow.persistent.cache.jbosscache;
 
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.TestWorkspaceStorageCacheInClusterMode;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.TesterJBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.transaction.TransactionService;
 
 import java.util.ArrayList;
@@ -57,6 +59,6 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends TestWorksp
 
    protected void finalize(JBossCacheWorkspaceStorageCache cache)
    {
-      cache.cache.stop();
+      TesterJBossCacheWorkspaceStorageCache.stop(cache);
    }
 }

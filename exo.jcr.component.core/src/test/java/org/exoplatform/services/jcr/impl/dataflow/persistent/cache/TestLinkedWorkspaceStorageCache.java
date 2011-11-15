@@ -16,10 +16,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.dataflow.persistent;
+package org.exoplatform.services.jcr.impl.dataflow.persistent.cache;
 
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspaceStorageCacheBaseCase;
 
 /**
  * Created by The eXo Platform SAS.

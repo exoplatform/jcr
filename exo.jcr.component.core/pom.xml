@@ -37,12 +37,11 @@
       <statistics.enabled>false</statistics.enabled>
       <properties.url.suffix>.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
-      <jbc.specific.1>**/jbc/**</jbc.specific.1>
-      <jbc.specific.2>**/jbosscache/**</jbc.specific.2>
-      <ispn.specific.1>**/ispn/**</ispn.specific.1>
-      <ispn.specific.2>**/infinispan/**</ispn.specific.2>
-      <impl.specific.exclude.1>${ispn.specific.1}</impl.specific.exclude.1>
-      <impl.specific.exclude.2>${ispn.specific.2}</impl.specific.exclude.2>
+      <test.cache.jbc>**/persistent/cache/jbosscache/**</test.cache.jbc>
+      <test.cache.ispn>**/persistent/cache/infinispan/**</test.cache.ispn>
+      <test.cache.all>**/persistent/cache/**</test.cache.all>
+      <!-- ispn specific exclude by default -->
+      <test.cache.exclude>${test.cache.ispn}</test.cache.exclude>
    </properties>
    <dependencies>
       <dependency>
@@ -364,8 +363,7 @@
                   <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                   <!-- Implementation Specific Excludes -->
-                  <exclude>${impl.specific.exclude.1}</exclude>
-                  <exclude>${impl.specific.exclude.2}</exclude>
+                  <exclude>${test.cache.exclude}</exclude>
                </excludes>
             </configuration>
          </plugin>
@@ -710,8 +708,7 @@
                         <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
                         <!-- Implementation Specific Excludes -->
-                        <exclude>${impl.specific.exclude.1}</exclude>
-                        <exclude>${impl.specific.exclude.2}</exclude>
+                        <exclude>${test.cache.exclude}</exclude>
                      </excludes>
                   </configuration>
                </plugin>
@@ -986,6 +983,7 @@
          <id>cache-disabled</id>
          <properties>
             <cache.enabled>false</cache.enabled>
+            <test.cache.exclude>${test.cache.all}</test.cache.exclude>
          </properties>
       </profile>
       <profile>
@@ -1011,8 +1009,7 @@
          <id>ispn</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
-            <impl.specific.exclude.1>${jbc.specific.1}</impl.specific.exclude.1>
-            <impl.specific.exclude.2>${jbc.specific.2}</impl.specific.exclude.2>
+            <test.cache.exclude>${test.cache.jbc}</test.cache.exclude>
          </properties>
          <dependencies>
             <dependency>
@@ -1038,8 +1035,7 @@
          <id>ispn-sjdbc</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc.xml</jcr.test.configuration.file>
-            <impl.specific.exclude.1>${jbc.specific.1}</impl.specific.exclude.1>
-            <impl.specific.exclude.2>${jbc.specific.2}</impl.specific.exclude.2>
+            <test.cache.exclude>${test.cache.jbc}</test.cache.exclude>
             <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
          </properties>
          <dependencies>
@@ -1066,8 +1062,7 @@
          <id>ispn-cluster</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration.xml</jcr.test.configuration.file>
-            <impl.specific.exclude.1>${jbc.specific.1}</impl.specific.exclude.1>
-            <impl.specific.exclude.2>${jbc.specific.2}</impl.specific.exclude.2>
+            <test.cache.exclude>${test.cache.jbc}</test.cache.exclude>
          </properties>
          <dependencies>
             <dependency>

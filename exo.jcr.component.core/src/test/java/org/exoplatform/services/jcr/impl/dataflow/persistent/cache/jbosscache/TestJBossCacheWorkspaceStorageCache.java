@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
+package org.exoplatform.services.jcr.impl.dataflow.persistent.cache.jbosscache;
 
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.exoplatform.services.jcr.config.CacheEntry;
@@ -39,6 +39,7 @@ import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspaceStorageCacheBaseCase;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;

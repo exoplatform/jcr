@@ -14,15 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
+package org.exoplatform.services.jcr.impl.dataflow.persistent.cache.infinispan;
 
 import org.exoplatform.container.configuration.ConfigurationManagerImpl;
 import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.cache.jbosscache.TestJBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.TestJBossCacheWorkspaceStorageCache;
 
 import java.util.ArrayList;
 
