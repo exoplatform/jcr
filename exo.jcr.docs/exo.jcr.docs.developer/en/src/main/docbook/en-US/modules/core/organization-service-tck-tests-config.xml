@@ -38,7 +38,7 @@
     artifact, so the first thing you need to do is to add this artifact as a
     dependency to your pom.xml file</para>
 
-    <programlisting>      &lt;dependency&gt;
+    <programlisting language="xml">      &lt;dependency&gt;
         &lt;groupId&gt;org.exoplatform.core&lt;/groupId&gt;
         &lt;artifactId&gt;exo.core.component.organization.tests&lt;/artifactId&gt;
         &lt;version&gt;2.4.3-GA&lt;/version&gt;
@@ -50,7 +50,7 @@
     file. For this purpose you may use <ulink
     url="http://maven.apache.org/plugins/maven-dependency-plugin/">maven-dependency-plugin</ulink></para>
 
-    <programlisting>     &lt;plugin&gt;
+    <programlisting language="xml">     &lt;plugin&gt;
          &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
          &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
          &lt;executions&gt;
@@ -84,7 +84,7 @@
     sources and resources, use <ulink
     url="http://mojo.codehaus.org/build-helper-maven-plugin/">build-helper-maven-plugin</ulink></para>
 
-    <programlisting>      &lt;plugin&gt;
+    <programlisting language="xml">      &lt;plugin&gt;
          &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
          &lt;artifactId&gt;build-helper-maven-plugin&lt;/artifactId&gt;
          &lt;version&gt;1.3&lt;/version&gt;
@@ -126,7 +126,7 @@
       </note>You also need to include all TCK tests using <ulink
     url="http://maven.apache.org/plugins/maven-surefire-plugin/">maven-surefire-plugin</ulink></para>
 
-    <programlisting>      &lt;plugin&gt;
+    <programlisting language="xml">      &lt;plugin&gt;
         &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
         &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
         &lt;configuration&gt;
@@ -160,7 +160,7 @@
     <para>In addition you need to populate your Organization Service with
     organization data (TCK tests are designed to use this data):</para>
 
-    <programlisting>      &lt;external-component-plugins&gt;
+    <programlisting language="xml">      &lt;external-component-plugins&gt;
         &lt;target-component&gt;org.exoplatform.services.organization.OrganizationService&lt;/target-component&gt;
         &lt;component-plugin&gt;
           &lt;name&gt;init.service.listener&lt;/name&gt;
