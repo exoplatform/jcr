@@ -123,8 +123,7 @@
         role="bold">source</emphasis> parameter should point to the location
         you've specified in <emphasis role="bold">outputDirectory</emphasis>
         parameter just above.</para>
-      </note>You may also need to include and exclude specific tests using
-    <ulink
+      </note>You also need to include all TCK tests using <ulink
     url="http://maven.apache.org/plugins/maven-surefire-plugin/">maven-surefire-plugin</ulink></para>
 
     <programlisting>      &lt;plugin&gt;
@@ -134,10 +133,7 @@
           ...
           &lt;includes&gt;
               &lt;include&gt;org/exoplatform/services/tck/organization/Test*.java&lt;/include&gt;
-          &lt;/includes&gt;                 
-          &lt;excludes&gt;
-             &lt;exclude&gt;org/exoplatform/services/tck/organization/AbstractOrganizationServiceTest.java&lt;/exclude&gt;
-          &lt;/excludes&gt;   
+          &lt;/includes&gt;                   
           ...
         &lt;/configuration&gt;
       &lt;/plugin&gt;</programlisting>
