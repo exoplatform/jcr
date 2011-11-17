@@ -896,7 +896,12 @@ public class DBCleanService
          String constraint =
             "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
          commitScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
-         rollbackScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
+
+         // PostgreSQL on connection.rollback() restores all removed constrains
+         if (!dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
+         {
+            rollbackScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
+         }
 
          cleanScripts
             .add("delete from JCR_SVALUE where PROPERTY_ID IN (select ID from JCR_SITEM where CONTAINER_NAME='"
