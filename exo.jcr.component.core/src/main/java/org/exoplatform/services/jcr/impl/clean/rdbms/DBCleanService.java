@@ -897,8 +897,10 @@ public class DBCleanService
             "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
          commitScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
 
-         // PostgreSQL on connection.rollback() restores all removed constrains
-         if (!dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
+         // PostgreSQL, DB2 on connection.rollback() restore all removed constrains
+         if (!dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
+            && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
+            && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8))
          {
             rollbackScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
          }
