@@ -1,0 +1,2393 @@
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/default.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/default.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/default.properties	(revision 0)
+@@ -0,0 +1,52 @@
++# Global Properties
++all.driverClassName=org.hsqldb.jdbcDriver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc
++jdbcjcr.username=sa
++jdbcjcr.password=
++
++# Properties for jdbcjcr1
++jdbcjcr1.url=jdbc:hsqldb:file:target/temp/data/jcr
++jdbcjcr1.username=sa
++jdbcjcr1.password=
++
++# Properties for jdbcjcr2
++jdbcjcr2.url=jdbc:hsqldb:file:target/temp/data/jcr2
++jdbcjcr2.username=sa
++jdbcjcr2.password=
++
++# Properties for jdbcjcr3
++jdbcjcr3.url=jdbc:hsqldb:file:target/temp/data/jcr3
++jdbcjcr3.username=sa
++jdbcjcr3.password=
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:hsqldb:file:target/temp/data/portaldb2
++jdbcjcrdb2.username=sa
++jdbcjcrdb2.password=
++
++# Properties for jdbcjcr1db2
++jdbcjcr1db2.url=jdbc:hsqldb:file:target/temp/data/jcrdb2
++jdbcjcr1db2.username=sa
++jdbcjcr1db2.password=
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:hsqldb:file:target/temp/data/portaltck
++jdbcjcrtck.username=sa
++jdbcjcrtck.password=
++
++# Properties for jdbcjcr1tck
++jdbcjcr1tck.url=jdbc:hsqldb:file:target/temp/data/jcrtck
++jdbcjcr1tck.username=sa
++jdbcjcr1tck.password=
++
++# Properties for jdbcjcr2tck
++jdbcjcr2tck.url=jdbc:hsqldb:file:target/temp/data/jcr2tck
++jdbcjcr2tck.username=sa
++jdbcjcr2tck.password=
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:hsqldb:file:target/temp/data/testdbcleaner
++testdbcleaner.username=sa
++testdbcleaner.password=
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/test-jcr-config-sjdbc.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/test-jcr-config-sjdbc.xml	(revision 5186)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/test-jcr-config-sjdbc.xml	(working copy)
+@@ -47,6 +47,7 @@
+                            <property name="vcas-type" value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
+                            <property name="jdbc-source-name" value="jdbcjcr" />
+                            <property name="jdbc-dialect" value="auto" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -65,7 +66,7 @@
+                      <property name="restore-path" value="./src/test/resources/import-export/restore_db1_ws1.xml" />
+                   </properties>
+                </initializer -->
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -108,6 +109,7 @@
+                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/ws1" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -115,7 +117,7 @@
+                      </value-storage>
+                   </value-storages>
+                </container>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -161,6 +163,7 @@
+                      <value-storage id="ws2" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/ws2" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -168,7 +171,7 @@
+                      </value-storage>
+                   </value-storages>
+                </container>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -199,91 +202,81 @@
+                   </properties>
+                </lock-manager>               
+             </workspace>
+-            
++         
+             <workspace name="ws3">
+-					<!-- for system storage -->
+-					<container
+-						class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
+-						<properties>
+-							<property name="source-name" value="jdbcjcr" />
+-                            <property name="dialect" value="auto" />
+-							<property name="multi-db" value="false" />
+-							<property name="update-storage" value="false" />
+-							<property name="max-buffer-size" value="200k" />
+-							<property name="swap-directory" value="target/temp/swap/ws3" />
+-						</properties>
+-						<value-storages>
+-							<!--
+-								This storage is used to check whether properties are removed
+-								correctly from each value-storage
+-								(TestRemoveFromValueStorage.java)
+-							-->
+-							<value-storage id="ws3_big"
+-								class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+-								<properties>
+-									<property name="path" value="target/temp/values/ws3_big" />
+-								</properties>
+-								<filters>
+-									<filter property-type="Binary" min-value-size="1024K" />
+-								</filters>
+-							</value-storage>
+-							<value-storage id="ws3"
+-								class="org.exoplatform.services.jcr.impl.storage.value.fs.CASableTreeFileValueStorage">
+-								<properties>
+-									<property name="path" value="target/temp/values/ws3" />
+-									<property name="digest-algo" value="MD5" />
+-									<property name="vcas-type"
+-										value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
+-									<property name="jdbc-source-name" value="jdbcjcr" />
+-								</properties>
+-								<filters>
+-									<filter property-type="Binary" />
+-								</filters>
+-							</value-storage>
+-						</value-storages>
+-					</container>
+-					<initializer
+-						class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
+-						<properties>
+-							<property name="root-nodetype" value="nt:unstructured" />
+-						</properties>
+-					</initializer>
+-					<cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+-                       <properties>
+-                          <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+-                       </properties>
+-                    </cache>
+-					<query-handler
+-						class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+-						<properties>
+-							<property name="index-dir" value="target/temp/index/db1/ws3" />
+-							<property name="synonymprovider-class"
+-								value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
+-							<property name="synonymprovider-config-path" value="../../synonyms.properties" />
+-							<property name="support-highlighting" value="true" />
+-							<property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+-							<property name="query-class"
+-								value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
+-							<property name="spellchecker-class"
+-								value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+-						</properties>
+-					</query-handler>
+-	               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+-	                  <properties>
+-	                     <property name="time-out" value="15m" />
+-	                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-	                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
+-	                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+-	                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-	                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws3_pk" />
+-	                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+-	                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+-	                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+-	                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+-	                  </properties>
+-	               </lock-manager>               
+-
+-				</workspace>
++               <!-- for system storage -->
++               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
++                  <properties>
++                     <property name="source-name" value="jdbcjcr" />
++                     <property name="dialect" value="auto" />
++                     <property name="multi-db" value="false" />
++                     <property name="update-storage" value="false" />
++                     <property name="max-buffer-size" value="200k" />
++                     <property name="swap-directory" value="target/temp/swap/ws3" />
++                  </properties>
++                  <value-storages>
++                     <!--
++                        This storage is used to check whether properties are removed correctly from each value-storage (TestRemoveFromValueStorage.java)
++                     -->
++                     <value-storage id="ws3_big" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
++                        <properties>
++                           <property name="path" value="target/temp/values/ws3_big" />
++                           <property name="enabled" value="${value-storage-enabled}" />
++                        </properties>
++                        <filters>
++                           <filter property-type="Binary" min-value-size="1024K" />
++                        </filters>
++                     </value-storage>
++                     <value-storage id="ws3" class="org.exoplatform.services.jcr.impl.storage.value.fs.CASableTreeFileValueStorage">
++                        <properties>
++                           <property name="path" value="target/temp/values/ws3" />
++                           <property name="digest-algo" value="MD5" />
++                           <property name="vcas-type" value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
++                           <property name="jdbc-source-name" value="jdbcjcr" />
++                           <property name="enabled" value="${value-storage-enabled}" />
++                        </properties>
++                        <filters>
++                           <filter property-type="Binary" />
++                        </filters>
++                     </value-storage>
++                  </value-storages>
++               </container>
++               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
++                  <properties>
++                     <property name="root-nodetype" value="nt:unstructured" />
++                  </properties>
++               </initializer>
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++                  <properties>
++                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
++                  </properties>
++               </cache>
++               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
++                  <properties>
++                     <property name="index-dir" value="target/temp/index/db1/ws3" />
++                     <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
++                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
++                     <property name="support-highlighting" value="true" />
++                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
++                     <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
++                     <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
++                  </properties>
++               </query-handler>
++               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
++                  <properties>
++                     <property name="time-out" value="15m" />
++                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
++                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
++                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws3_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
++                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
++                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
++                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
++                  </properties>
++               </lock-manager>
++            </workspace>
+          </workspaces>
+       </repository>
+ 
+@@ -309,6 +302,7 @@
+                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/wsdb2" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="100K" />
+@@ -322,7 +316,7 @@
+                      <property name="root-permissions" value="*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+@@ -364,6 +358,7 @@
+                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/ws1db2" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="100K" />
+@@ -377,7 +372,7 @@
+                      <property name="root-permissions" value="any read;any add_node;any set_property;any remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+@@ -429,6 +424,7 @@
+                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/wstck" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="100K" />
+@@ -442,7 +438,7 @@
+                      <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -489,6 +485,7 @@
+                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/ws1tck" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="100K" />
+@@ -502,7 +499,7 @@
+                      <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -548,6 +545,7 @@
+                      <value-storage id="ws2" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/ws2tck" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="100K" />
+@@ -561,7 +559,7 @@
+                      <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-configuration.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-configuration.xml	(revision 5186)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-configuration.xml	(working copy)
+@@ -247,10 +247,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr.url}"/>
++          <property name="username" value="${jdbcjcr.username}"/>
++          <property name="password" value="${jdbcjcr.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -274,10 +274,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr1.url}"/>
++          <property name="username" value="${jdbcjcr1.username}"/>
++          <property name="password" value="${jdbcjcr1.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -301,10 +301,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr2"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr2.url}"/>
++          <property name="username" value="${jdbcjcr2.username}"/>
++          <property name="password" value="${jdbcjcr2.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -328,10 +328,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr3"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr3.url}"/>
++          <property name="username" value="${jdbcjcr3.username}"/>
++          <property name="password" value="${jdbcjcr3.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -382,10 +382,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portaldb2"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcrdb2.url}"/>
++          <property name="username" value="${jdbcjcrdb2.username}"/>
++          <property name="password" value="${jdbcjcrdb2.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -409,10 +409,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcrdb2"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr1db2.url}"/>
++          <property name="username" value="${jdbcjcr1db2.username}"/>
++          <property name="password" value="${jdbcjcr1db2.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -436,10 +436,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portaltck"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcrtck.url}"/>
++          <property name="username" value="${jdbcjcrtck.username}"/>
++          <property name="password" value="${jdbcjcrtck.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -463,10 +463,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcrtck"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr1tck.url}"/>
++          <property name="username" value="${jdbcjcr1tck.username}"/>
++          <property name="password" value="${jdbcjcr1tck.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -490,10 +490,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr2tck"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr2tck.url}"/>
++          <property name="username" value="${jdbcjcr2tck.username}"/>
++          <property name="password" value="${jdbcjcr2tck.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -598,10 +598,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/testdbcleaner"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${testdbcleaner.url}"/>
++          <property name="username" value="${testdbcleaner.username}"/>
++          <property name="password" value="${testdbcleaner.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jcr-config.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jcr-config.xml	(revision 5186)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jcr-config.xml	(working copy)
+@@ -33,6 +33,7 @@
+                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/ws" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -45,7 +46,7 @@
+                      <property name="root-nodetype" value="nt:unstructured" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true"
++               <cache enabled="${cache-enabled}"
+                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+@@ -99,6 +100,7 @@
+                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/ws1" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -106,7 +108,7 @@
+                      </value-storage>
+                   </value-storages>
+                </container>
+-               <cache enabled="true"
++               <cache enabled="${cache-enabled}"
+                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+@@ -170,6 +172,7 @@
+                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/ws2" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -177,7 +180,7 @@
+                      </value-storage>
+                   </value-storages>
+                </container>
+-               <cache enabled="true"
++               <cache enabled="${cache-enabled}"
+                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+@@ -242,6 +245,7 @@
+                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/ws3_big" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="1024K" />
+@@ -255,6 +259,7 @@
+                            <property name="vcas-type"
+                               value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
+                            <property name="jdbc-source-name" value="jdbcjcr" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -262,7 +267,7 @@
+                      </value-storage>
+                   </value-storages>
+                </container>
+-               <cache enabled="true"
++               <cache enabled="${cache-enabled}"
+                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+@@ -336,6 +341,7 @@
+                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+                            <property name="path" value="target/temp/values/wsdb2" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="100K" />
+@@ -349,7 +355,7 @@
+                      <property name="root-permissions" value="*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+                      <property name="jgroups-configuration" value="udp-mux.xml" />
+@@ -413,7 +419,7 @@
+                      <property name="root-permissions" value="any read;any add_node;any set_property;any remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true"
++               <cache enabled="${cache-enabled}"
+                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+@@ -489,7 +495,7 @@
+                         value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true"
++               <cache enabled="${cache-enabled}"
+                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+@@ -567,7 +573,7 @@
+                         value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true"
++               <cache enabled="${cache-enabled}"
+                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+@@ -643,7 +649,7 @@
+                         value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true"
++               <cache enabled="${cache-enabled}"
+                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/pgsql.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/pgsql.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/pgsql.properties	(revision 0)
+@@ -0,0 +1,52 @@
++# Global Properties
++all.driverClassName=org.postgresql.Driver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:postgresql://localhost:5433/db1_ws
++jdbcjcr.username=root
++jdbcjcr.password=eXoAdmin
++
++# Properties for jdbcjcr1
++jdbcjcr1.url=jdbc:postgresql://localhost:5433/db1_ws1
++jdbcjcr1.username=root
++jdbcjcr1.password=eXoAdmin
++
++# Properties for jdbcjcr2
++jdbcjcr2.url=jdbc:postgresql://localhost:5433/db1_ws2
++jdbcjcr2.username=root
++jdbcjcr2.password=eXoAdmin
++
++# Properties for jdbcjcr3
++jdbcjcr3.url=jdbc:postgresql://localhost:5433/db1_ws3
++jdbcjcr3.username=root
++jdbcjcr3.password=eXoAdmin
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:postgresql://localhost:5433/db2_ws
++jdbcjcrdb2.username=root
++jdbcjcrdb2.password=eXoAdmin
++
++# Properties for jdbcjcr1db2
++jdbcjcr1db2.url=jdbc:postgresql://localhost:5433/db2_ws1
++jdbcjcr1db2.username=root
++jdbcjcr1db2.password=eXoAdmin
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:postgresql://localhost:5433/db1tck_ws
++jdbcjcrtck.username=root
++jdbcjcrtck.password=eXoAdmin
++
++# Properties for jdbcjcr1tck
++jdbcjcr1tck.url=jdbc:postgresql://localhost:5433/db1tck_ws1
++jdbcjcr1tck.username=root
++jdbcjcr1tck.password=eXoAdmin
++
++# Properties for jdbcjcr2tck
++jdbcjcr2tck.url=jdbc:postgresql://localhost:5433/db1tck_ws2
++jdbcjcr2tck.username=root
++jdbcjcr2tck.password=eXoAdmin
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:postgresql://localhost:5433/testdbcleaner_sjdbc
++testdbcleaner.username=root
++testdbcleaner.password=eXoAdmin
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/sybase.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/sybase.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/sybase.properties	(revision 0)
+@@ -0,0 +1,52 @@
++# Global Properties
++all.driverClassName=com.sybase.jdbc4.jdbc.SybDriver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:sybase:Tds:localhost:5003/db1_ws
++jdbcjcr.username=sa
++jdbcjcr.password=
++
++# Properties for jdbcjcr1
++jdbcjcr1.url=jdbc:sybase:Tds:localhost:5003/db1_ws1
++jdbcjcr1.username=sa
++jdbcjcr1.password=
++
++# Properties for jdbcjcr2
++jdbcjcr2.url=jdbc:sybase:Tds:localhost:5003/db1_ws2
++jdbcjcr2.username=sa
++jdbcjcr2.password=
++
++# Properties for jdbcjcr3
++jdbcjcr3.url=jdbc:sybase:Tds:localhost:5003/db1_ws3
++jdbcjcr3.username=sa
++jdbcjcr3.password=
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:sybase:Tds:localhost:5003/db2_ws
++jdbcjcrdb2.username=sa
++jdbcjcrdb2.password=
++
++# Properties for jdbcjcr1db2
++jdbcjcr1db2.url=jdbc:sybase:Tds:localhost:5003/db2_ws1
++jdbcjcr1db2.username=sa
++jdbcjcr1db2.password=
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:sybase:Tds:localhost:5003/db1tck_ws
++jdbcjcrtck.username=sa
++jdbcjcrtck.password=
++
++# Properties for jdbcjcr1tck
++jdbcjcr1tck.url=jdbc:sybase:Tds:localhost:5003/db1tck_ws1
++jdbcjcr1tck.username=sa
++jdbcjcr1tck.password=
++
++# Properties for jdbcjcr2tck
++jdbcjcr2tck.url=jdbc:sybase:Tds:localhost:5003/db1tck_ws2
++jdbcjcr2tck.username=sa
++jdbcjcr2tck.password=
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:sybase:Tds:localhost:5003/testdbcleaner
++testdbcleaner.username=sa
++testdbcleaner.password=
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/oracle-sjdbc.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/oracle-sjdbc.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/oracle-sjdbc.properties	(revision 0)
+@@ -0,0 +1,22 @@
++# Global Properties
++all.driverClassName=oracle.jdbc.OracleDriver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcr.username=exoperf
++jdbcjcr.password=exo12321
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcrdb2.username=exoperf1
++jdbcjcrdb2.password=exo12321
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcrtck.username=exoperf2
++jdbcjcrtck.password=exo12321
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++testdbcleaner.username=exoperf3
++testdbcleaner.password=exo12321
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/mysql-sjdbc.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/mysql-sjdbc.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/mysql-sjdbc.properties	(revision 0)
+@@ -0,0 +1,22 @@
++# Global Properties
++all.driverClassName=com.mysql.jdbc.Driver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:mysql://localhost/db1
++jdbcjcr.username=root
++jdbcjcr.password=eXoAdmin
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:mysql://localhost/db2
++jdbcjcrdb2.username=root
++jdbcjcrdb2.password=eXoAdmin
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:mysql://localhost/db1tck
++jdbcjcrtck.username=root
++jdbcjcrtck.password=eXoAdmin
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:mysql://localhost/testdbcleaner_sjdbc
++testdbcleaner.username=root
++testdbcleaner.password=eXoAdmin
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/test-configuration.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/test-configuration.xml	(revision 5186)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/test-configuration.xml	(working copy)
+@@ -248,10 +248,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr.url}"/>
++          <property name="username" value="${jdbcjcr.username}"/>
++          <property name="password" value="${jdbcjcr.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -275,10 +275,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr1.url}"/>
++          <property name="username" value="${jdbcjcr1.username}"/>
++          <property name="password" value="${jdbcjcr1.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -302,10 +302,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr2"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr2.url}"/>
++          <property name="username" value="${jdbcjcr2.username}"/>
++          <property name="password" value="${jdbcjcr2.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -329,10 +329,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr3"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr3.url}"/>
++          <property name="username" value="${jdbcjcr3.username}"/>
++          <property name="password" value="${jdbcjcr3.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -383,10 +383,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portaldb2"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcrdb2.url}"/>
++          <property name="username" value="${jdbcjcrdb2.username}"/>
++          <property name="password" value="${jdbcjcrdb2.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -410,10 +410,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcrdb2"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr1db2.url}"/>
++          <property name="username" value="${jdbcjcr1db2.username}"/>
++          <property name="password" value="${jdbcjcr1db2.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -437,10 +437,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portaltck"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcrtck.url}"/>
++          <property name="username" value="${jdbcjcrtck.username}"/>
++          <property name="password" value="${jdbcjcrtck.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -464,10 +464,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcrtck"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr1tck.url}"/>
++          <property name="username" value="${jdbcjcr1tck.username}"/>
++          <property name="password" value="${jdbcjcr1tck.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -491,10 +491,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr2tck"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr2tck.url}"/>
++          <property name="username" value="${jdbcjcr2tck.username}"/>
++          <property name="password" value="${jdbcjcr2tck.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -599,10 +599,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/testdbcleaner"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${testdbcleaner.url}"/>
++          <property name="username" value="${testdbcleaner.username}"/>
++          <property name="password" value="${testdbcleaner.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/db2-sjdbc.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/db2-sjdbc.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/db2-sjdbc.properties	(revision 0)
+@@ -0,0 +1,22 @@
++# Global Properties
++all.driverClassName=com.ibm.db2.jcc.DB2Driver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/db1
++jdbcjcr.username=db2inst1
++jdbcjcr.password=eXoAdmin
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/db2
++jdbcjcrdb2.username=db2inst1
++jdbcjcrdb2.password=eXoAdmin
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/db1tck
++jdbcjcrtck.username=db2inst1
++jdbcjcrtck.password=eXoAdmin
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/dbclns
++testdbcleaner.username=db2inst1
++testdbcleaner.password=eXoAdmin
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/mssql.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/mssql.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/mssql.properties	(revision 0)
+@@ -0,0 +1,52 @@
++# Global Properties
++all.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver"
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:sqlserver://localhost:1433;databaseName=db1_ws;
++jdbcjcr.username=tester
++jdbcjcr.password=tester
++
++# Properties for jdbcjcr1
++jdbcjcr1.url=jdbc:sqlserver://localhost:1433;databaseName=db1_ws1;
++jdbcjcr1.username=tester
++jdbcjcr1.password=tester
++
++# Properties for jdbcjcr2
++jdbcjcr2.url=jdbc:sqlserver://localhost:1433;databaseName=db1_ws2;
++jdbcjcr2.username=tester
++jdbcjcr2.password=tester
++
++# Properties for jdbcjcr3
++jdbcjcr3.url=jdbc:sqlserver://localhost:1433;databaseName=db1_ws3;
++jdbcjcr3.username=tester
++jdbcjcr3.password=tester
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:sqlserver://localhost:1433;databaseName=db2_ws;
++jdbcjcrdb2.username=tester
++jdbcjcrdb2.password=tester
++
++# Properties for jdbcjcr1db2
++jdbcjcr1db2.url=jdbc:sqlserver://localhost:1433;databaseName=db2_ws1;
++jdbcjcr1db2.username=tester
++jdbcjcr1db2.password=tester
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:sqlserver://localhost:1433;databaseName=db1tck_ws;
++jdbcjcrtck.username=tester
++jdbcjcrtck.password=tester
++
++# Properties for jdbcjcr1tck
++jdbcjcr1tck.url=jdbc:sqlserver://localhost:1433;databaseName=db1tck_ws1;
++jdbcjcr1tck.username=tester
++jdbcjcr1tck.password=tester
++
++# Properties for jdbcjcr2tck
++jdbcjcr2tck.url=jdbc:sqlserver://localhost:1433;databaseName=db1tck_ws2;
++jdbcjcr2tck.username=tester
++jdbcjcr2tck.password=tester
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:sqlserver://localhost:1433;databaseName=testdbcleaner;
++testdbcleaner.username=tester
++testdbcleaner.password=tester
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/test-jcr-config.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/test-jcr-config.xml	(revision 5186)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/test-jcr-config.xml	(working copy)
+@@ -46,7 +46,8 @@
+                            <property name="digest-algo" value="MD5" />
+                            <property name="vcas-type" value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
+                            <property name="jdbc-source-name" value="jdbcjcr" />
+-                           <property name="jdbc-dialect" value="auto" />
++                           <property name="jdbc-dialect" value="auto" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -65,7 +66,7 @@
+                      <property name="restore-path" value="./src/test/resources/import-export/restore_db1_ws1.xml" />
+                   </properties>
+                </initializer -->
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -107,7 +108,8 @@
+                   <value-storages>
+                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+-                           <property name="path" value="target/temp/values/ws1" />
++                           <property name="path" value="target/temp/values/ws1" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -115,7 +117,7 @@
+                      </value-storage>
+                   </value-storages>
+                </container>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -160,7 +162,8 @@
+                   <value-storages>
+                      <value-storage id="ws2" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+-                           <property name="path" value="target/temp/values/ws2" />
++                           <property name="path" value="target/temp/values/ws2" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" />
+@@ -168,7 +171,7 @@
+                      </value-storage>
+                   </value-storages>
+                </container>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -199,91 +202,81 @@
+                   </properties>
+                </lock-manager>               
+             </workspace>
+-            
+-            <workspace name="ws3">
+-					<!-- for system storage -->
+-					<container
+-						class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
+-						<properties>
+-							<property name="source-name" value="jdbcjcr3" />
+-                            <property name="dialect" value="auto" />
+-							<property name="multi-db" value="true" />
+-							<property name="update-storage" value="false" />
+-							<property name="max-buffer-size" value="200k" />
+-							<property name="swap-directory" value="target/temp/swap/ws3" />
+-						</properties>
+-						<value-storages>
+-							<!--
+-								This storage is used to check whether properties are removed
+-								correctly from each value-storage
+-								(TestRemoveFromValueStorage.java)
+-							-->
+-							<value-storage id="ws3_big"
+-								class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+-								<properties>
+-									<property name="path" value="target/temp/values/ws3_big" />
+-								</properties>
+-								<filters>
+-									<filter property-type="Binary" min-value-size="1024K" />
+-								</filters>
+-							</value-storage>
+-							<value-storage id="ws3"
+-								class="org.exoplatform.services.jcr.impl.storage.value.fs.CASableTreeFileValueStorage">
+-								<properties>
+-									<property name="path" value="target/temp/values/ws3" />
+-									<property name="digest-algo" value="MD5" />
+-									<property name="vcas-type"
+-										value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
+-									<property name="jdbc-source-name" value="jdbcjcr" />
+-								</properties>
+-								<filters>
+-									<filter property-type="Binary" />
+-								</filters>
+-							</value-storage>
+-						</value-storages>
+-					</container>
+-					<initializer
+-						class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
+-						<properties>
+-							<property name="root-nodetype" value="nt:unstructured" />
+-						</properties>
+-					</initializer>
+-					<cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+-                       <properties>
+-                          <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+-                       </properties>
+-                    </cache>
+-					<query-handler
+-						class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+-						<properties>
+-							<property name="index-dir" value="target/temp/index/db1/ws3" />
+-							<property name="synonymprovider-class"
+-								value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
+-							<property name="synonymprovider-config-path" value="../../synonyms.properties" />
+-							<property name="support-highlighting" value="true" />
+-							<property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+-							<property name="query-class"
+-								value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
+-							<property name="spellchecker-class"
+-								value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+-						</properties>
+-					</query-handler>
+-	               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+-	                  <properties>
+-	                     <property name="time-out" value="15m" />
+-	                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-	                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
+-	                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+-	                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-	                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws3_pk" />
+-	                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+-	                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+-	                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+-	                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr3" />
+-	                  </properties>
+-	               </lock-manager>               
+ 
+-				</workspace>
++            <workspace name="ws3">
++               <!-- for system storage -->
++               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
++                  <properties>
++                     <property name="source-name" value="jdbcjcr3" />
++                     <property name="dialect" value="auto" />
++                     <property name="multi-db" value="true" />
++                     <property name="update-storage" value="false" />
++                     <property name="max-buffer-size" value="200k" />
++                     <property name="swap-directory" value="target/temp/swap/ws3" />
++                  </properties>
++                  <value-storages>
++                     <!--
++                        This storage is used to check whether properties are removed correctly from each value-storage (TestRemoveFromValueStorage.java)
++                     -->
++                     <value-storage id="ws3_big" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
++                        <properties>
++                           <property name="path" value="target/temp/values/ws3_big" />
++                           <property name="enabled" value="${value-storage-enabled}" />
++                        </properties>
++                        <filters>
++                           <filter property-type="Binary" min-value-size="1024K" />
++                        </filters>
++                     </value-storage>
++                     <value-storage id="ws3" class="org.exoplatform.services.jcr.impl.storage.value.fs.CASableTreeFileValueStorage">
++                        <properties>
++                           <property name="path" value="target/temp/values/ws3" />
++                           <property name="digest-algo" value="MD5" />
++                           <property name="vcas-type" value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
++                           <property name="jdbc-source-name" value="jdbcjcr" />
++                           <property name="enabled" value="${value-storage-enabled}" />
++                        </properties>
++                        <filters>
++                           <filter property-type="Binary" />
++                        </filters>
++                     </value-storage>
++                  </value-storages>
++               </container>
++               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
++                  <properties>
++                     <property name="root-nodetype" value="nt:unstructured" />
++                  </properties>
++               </initializer>
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++                  <properties>
++                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
++                  </properties>
++               </cache>
++               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
++                  <properties>
++                     <property name="index-dir" value="target/temp/index/db1/ws3" />
++                     <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
++                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
++                     <property name="support-highlighting" value="true" />
++                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
++                     <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
++                     <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
++                  </properties>
++               </query-handler>
++               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
++                  <properties>
++                     <property name="time-out" value="15m" />
++                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
++                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
++                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws3_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
++                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
++                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
++                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr3" />
++                  </properties>
++               </lock-manager>
++            </workspace>
+          </workspaces>
+       </repository>
+ 
+@@ -308,7 +301,8 @@
+                    <value-storages>
+                       <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                          <properties>
+-                            <property name="path" value="target/temp/values/wsdb2" />
++                            <property name="path" value="target/temp/values/wsdb2" />
++                            <property name="enabled" value="${value-storage-enabled}" />
+                          </properties>
+                          <filters>
+                             <filter property-type="Binary" min-value-size="100K" />
+@@ -322,7 +316,7 @@
+                       <property name="root-permissions" value="*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                    </properties>
+                 </initializer>
+-                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++                <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                    <properties>
+                       <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                       <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+@@ -363,7 +357,8 @@
+                    <value-storages>
+                       <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                          <properties>
+-                            <property name="path" value="target/temp/values/ws1db2" />
++                            <property name="path" value="target/temp/values/ws1db2" />
++                            <property name="enabled" value="${value-storage-enabled}" />
+                          </properties>
+                          <filters>
+                             <filter property-type="Binary" min-value-size="100K" />
+@@ -377,7 +372,7 @@
+                       <property name="root-permissions" value="any read;any add_node;any set_property;any remove" />
+                    </properties>
+                 </initializer>
+-                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++                <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                    <properties>
+                       <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                       <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+@@ -429,7 +424,8 @@
+                   <value-storages>
+                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+-                           <property name="path" value="target/temp/values/wstck" />
++                           <property name="path" value="target/temp/values/wstck" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="100K" />
+@@ -443,7 +439,7 @@
+                      <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -489,7 +485,8 @@
+                   <value-storages>
+                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+-                           <property name="path" value="target/temp/values/ws1tck" />
++                           <property name="path" value="target/temp/values/ws1tck" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="100K" />
+@@ -503,7 +500,7 @@
+                      <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+@@ -548,7 +545,8 @@
+                   <value-storages>
+                      <value-storage id="ws2" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                         <properties>
+-                           <property name="path" value="target/temp/values/ws2tck" />
++                           <property name="path" value="target/temp/values/ws2tck" />
++                           <property name="enabled" value="${value-storage-enabled}" />
+                         </properties>
+                         <filters>
+                            <filter property-type="Binary" min-value-size="100K" />
+@@ -562,7 +560,7 @@
+                      <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                   </properties>
+                </initializer>
+-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
++               <cache enabled="${cache-enabled}" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                   <properties>
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                   </properties>
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/mysql.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/mysql.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/mysql.properties	(revision 0)
+@@ -0,0 +1,52 @@
++# Global Properties
++all.driverClassName=com.mysql.jdbc.Driver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:mysql://localhost/db1_ws
++jdbcjcr.username=root
++jdbcjcr.password=eXoAdmin
++
++# Properties for jdbcjcr1
++jdbcjcr1.url=jdbc:mysql://localhost/db1_ws1
++jdbcjcr1.username=root
++jdbcjcr1.password=eXoAdmin
++
++# Properties for jdbcjcr2
++jdbcjcr2.url=jdbc:mysql://localhost/db1_ws2
++jdbcjcr2.username=root
++jdbcjcr2.password=eXoAdmin
++
++# Properties for jdbcjcr3
++jdbcjcr3.url=jdbc:mysql://localhost/db1_ws3
++jdbcjcr3.username=root
++jdbcjcr3.password=eXoAdmin
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:mysql://localhost/db2_ws
++jdbcjcrdb2.username=root
++jdbcjcrdb2.password=eXoAdmin
++
++# Properties for jdbcjcr1db2
++jdbcjcr1db2.url=jdbc:mysql://localhost/db2_ws1
++jdbcjcr1db2.username=root
++jdbcjcr1db2.password=eXoAdmin
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:mysql://localhost/db1tck_ws
++jdbcjcrtck.username=root
++jdbcjcrtck.password=eXoAdmin
++
++# Properties for jdbcjcr1tck
++jdbcjcr1tck.url=jdbc:mysql://localhost/db1tck_ws1
++jdbcjcr1tck.username=root
++jdbcjcr1tck.password=eXoAdmin
++
++# Properties for jdbcjcr2tck
++jdbcjcr2tck.url=jdbc:mysql://localhost/db1tck_ws2
++jdbcjcr2tck.username=root
++jdbcjcr2tck.password=eXoAdmin
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:mysql://localhost/testdbcleaner
++testdbcleaner.username=root
++testdbcleaner.password=eXoAdmin
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/oracle.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/oracle.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/oracle.properties	(revision 0)
+@@ -0,0 +1,52 @@
++# Global Properties
++all.driverClassName=oracle.jdbc.OracleDriver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcr.username=exoperfdb1_ws
++jdbcjcr.password=exo12321
++
++# Properties for jdbcjcr1
++jdbcjcr1.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcr1.username=exoperfdb1_ws1
++jdbcjcr1.password=exo12321
++
++# Properties for jdbcjcr2
++jdbcjcr2.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcr2.username=exoperfdb1_ws2
++jdbcjcr2.password=exo12321
++
++# Properties for jdbcjcr3
++jdbcjcr3.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcr3.username=exoperfdb1_ws3
++jdbcjcr3.password=exo12321
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcrdb2.username=exoperfdb2_ws
++jdbcjcrdb2.password=exo12321
++
++# Properties for jdbcjcr1db2
++jdbcjcr1db2.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcr1db2.username=exoperfdb2_ws1
++jdbcjcr1db2.password=exo12321
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcrtck.username=exoperfdb1tck_ws
++jdbcjcrtck.password=exo12321
++
++# Properties for jdbcjcr1tck
++jdbcjcr1tck.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcr1tck.username=exoperfdb1tck_ws1
++jdbcjcr1tck.password=exo12321
++
++# Properties for jdbcjcr2tck
++jdbcjcr2tck.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++jdbcjcr2tck.username=exoperfdb1tck_ws2
++jdbcjcr2tck.password=exo12321
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:oracle:thin:@v06.storm.exoplatform.com.ua:1521:orclvm
++testdbcleaner.username=exoperftestdbcleaner
++testdbcleaner.password=exo12321
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/db2.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/db2.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/db2.properties	(revision 0)
+@@ -0,0 +1,52 @@
++# Global Properties
++all.driverClassName=com.ibm.db2.jcc.DB2Driver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/db1_ws
++jdbcjcr.username=db2inst1
++jdbcjcr.password=eXoAdmin
++
++# Properties for jdbcjcr1
++jdbcjcr1.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/db1_ws1
++jdbcjcr1.username=db2inst1
++jdbcjcr1.password=eXoAdmin
++
++# Properties for jdbcjcr2
++jdbcjcr2.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/db1_ws2
++jdbcjcr2.username=db2inst1
++jdbcjcr2.password=eXoAdmin
++
++# Properties for jdbcjcr3
++jdbcjcr3.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/db1_ws3
++jdbcjcr3.username=db2inst1
++jdbcjcr3.password=eXoAdmin
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/db2_ws
++jdbcjcrdb2.username=db2inst1
++jdbcjcrdb2.password=eXoAdmin
++
++# Properties for jdbcjcr1db2
++jdbcjcr1db2.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/db2_ws1
++jdbcjcr1db2.username=db2inst1
++jdbcjcr1db2.password=eXoAdmin
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/dbtckws
++jdbcjcrtck.username=db2inst1
++jdbcjcrtck.password=eXoAdmin
++
++# Properties for jdbcjcr1tck
++jdbcjcr1tck.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/dbtckws1
++jdbcjcr1tck.username=db2inst1
++jdbcjcr1tck.password=eXoAdmin
++
++# Properties for jdbcjcr2tck
++jdbcjcr2tck.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/dbtckws2
++jdbcjcr2tck.username=db2inst1
++jdbcjcr2tck.password=eXoAdmin
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:db2://dbs-jcr.exoplatform.com.ua:50002/dbcln
++testdbcleaner.username=db2inst1
++testdbcleaner.password=eXoAdmin
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/default-sjdbc.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/default-sjdbc.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/default-sjdbc.properties	(revision 0)
+@@ -0,0 +1,22 @@
++# Global Properties
++all.driverClassName=org.hsqldb.jdbcDriver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc
++jdbcjcr.username=sa
++jdbcjcr.password=
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:hsqldb:file:target/temp/data/portaldb2
++jdbcjcrdb2.username=sa
++jdbcjcrdb2.password=
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:hsqldb:file:target/temp/data/portaltck
++jdbcjcrtck.username=sa
++jdbcjcrtck.password=
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:hsqldb:file:target/temp/data/testdbcleaner
++testdbcleaner.username=sa
++testdbcleaner.password=
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/pgsql-sjdbc.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/pgsql-sjdbc.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/pgsql-sjdbc.properties	(revision 0)
+@@ -0,0 +1,22 @@
++# Global Properties
++all.driverClassName=org.postgresql.Driver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:postgresql://localhost:5433/db1
++jdbcjcr.username=root
++jdbcjcr.password=eXoAdmin
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:postgresql://localhost:5433/db2
++jdbcjcrdb2.username=root
++jdbcjcrdb2.password=eXoAdmin
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:postgresql://localhost:5433/db1tck
++jdbcjcrtck.username=root
++jdbcjcrtck.password=eXoAdmin
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:postgresql://localhost:5433/testdbcleaner
++testdbcleaner.username=root
++testdbcleaner.password=eXoAdmin
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/sybase-sjdbc.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/sybase-sjdbc.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/sybase-sjdbc.properties	(revision 0)
+@@ -0,0 +1,22 @@
++# Global Properties
++all.driverClassName=com.sybase.jdbc4.jdbc.SybDriver
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:sybase:Tds:localhost:5003/db1
++jdbcjcr.username=sa
++jdbcjcr.password=
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:sybase:Tds:localhost:5003/db2
++jdbcjcrdb2.username=sa
++jdbcjcrdb2.password=
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:sybase:Tds:localhost:5003/db1_tck
++jdbcjcrtck.username=sa
++jdbcjcrtck.password=
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:sybase:Tds:localhost:5003/testdbcleaner_sjdbc
++testdbcleaner.username=sa
++testdbcleaner.password=
+\ No newline at end of file
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/test-configuration-sjdbc.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/test-configuration-sjdbc.xml	(revision 5186)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/test-configuration-sjdbc.xml	(working copy)
+@@ -248,10 +248,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcr.url}"/>
++          <property name="username" value="${jdbcjcr.username}"/>
++          <property name="password" value="${jdbcjcr.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -302,10 +302,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portaldb2"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${jdbcjcrdb2.url}"/>
++          <property name="username" value="${jdbcjcrdb2.username}"/>
++          <property name="password" value="${jdbcjcrdb2.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -329,10 +329,10 @@
+         <properties-param>
+           <name>ref-addresses</name>
+           <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portaltck"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <property name="driverClassName" value="${all.driverClassName}"/>^
++          <property name="url" value="${jdbcjcrtck.url}"/>^
++          <property name="username" value="${jdbcjcrtck.username}"/>^
++          <property name="password" value="${jdbcjcrtck.password}"/>^
+         </properties-param>
+       </init-params>
+     </component-plugin>
+@@ -436,11 +436,11 @@
+         </value-param>
+         <properties-param>
+           <name>ref-addresses</name>
+-          <description>ref-addresses</description>
+-          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+-          <property name="url" value="jdbc:hsqldb:file:target/temp/data/testdbcleaner"/>
+-          <property name="username" value="sa"/>
+-          <property name="password" value=""/>
++          <description>ref-addresses</description>
++          <property name="driverClassName" value="${all.driverClassName}"/>
++          <property name="url" value="${testdbcleaner.url}"/>
++          <property name="username" value="${testdbcleaner.username}"/>
++          <property name="password" value="${testdbcleaner.password}"/>
+         </properties-param>
+       </init-params>
+     </component-plugin>
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/mssql-sjdbc.properties
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/mssql-sjdbc.properties	(revision 0)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/mssql-sjdbc.properties	(revision 0)
+@@ -0,0 +1,22 @@
++# Global Properties
++all.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver"
++
++# Properties for jdbcjcr
++jdbcjcr.url=jdbc:sqlserver://localhost:1433;databaseName=db1;
++jdbcjcr.username=tester
++jdbcjcr.password=tester
++
++# Properties for jdbcjcrdb2
++jdbcjcrdb2.url=jdbc:sqlserver://localhost:1433;databaseName=db2;
++jdbcjcrdb2.username=tester
++jdbcjcrdb2.password=tester
++
++# Properties for jdbcjcrtck
++jdbcjcrtck.url=jdbc:sqlserver://localhost:1433;databaseName=db1tck;
++jdbcjcrtck.username=tester
++jdbcjcrtck.password=tester
++
++# Properties for testdbcleaner
++testdbcleaner.url=jdbc:sqlserver://localhost:1433;databaseName=testdbcleaner_sjdbc;
++testdbcleaner.username=tester
++testdbcleaner.password=tester
+\ No newline at end of file
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java	(revision 5186)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java	(working copy)
+@@ -58,6 +58,11 @@
+    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.StandaloneStoragePluginProvider");
+ 
+    /**
++    * Value storage enabling parameter. For interal usage only and testing purpose.
++    */
++   private static final String VALUE_STORAGE_ENABLED_PARAM = "enabled";
++
++   /**
+     * ValueData resorces holder (Files etc). It's singleton feature.
+     */
+    private final ValueDataResourceHolder resorcesHolder;
+@@ -73,60 +78,62 @@
+       if (storages != null)
+          for (ValueStorageEntry storageEntry : storages)
+          {
+-
+-            // can be only one storage with given id
+-            for (ValueStoragePlugin vsp : this)
++            if (storageEntry.getParameterBoolean(VALUE_STORAGE_ENABLED_PARAM, true))
+             {
+-               if (vsp.getId().equals(storageEntry.getId()))
+-                  throw new RepositoryConfigurationException("Value storage with ID '" + storageEntry.getId()
+-                     + "' already exists");
+-            }
++               // can be only one storage with given id
++               for (ValueStoragePlugin vsp : this)
++               {
++                  if (vsp.getId().equals(storageEntry.getId()))
++                     throw new RepositoryConfigurationException("Value storage with ID '" + storageEntry.getId()
++                        + "' already exists");
++               }
+ 
+-            Object o = null;
+-            try
+-            {
+-               o =
+-                  Class.forName(storageEntry.getType()).getConstructor(FileCleaner.class).newInstance(
+-                     holder.getFileCleaner());
++               Object o = null;
++               try
++               {
++                  o =
++                     Class.forName(storageEntry.getType()).getConstructor(FileCleaner.class).newInstance(
++                        holder.getFileCleaner());
+ 
+-            }
+-            catch (Exception e)
+-            {
+-               log.error("Value Storage Plugin instantiation FAILED. ", e);
+-               continue;
+-            }
+-            if (!(o instanceof ValueStoragePlugin))
+-            {
+-               log.error("Not a ValueStoragePlugin object IGNORED: " + o);
+-               continue;
+-            }
++               }
++               catch (Exception e)
++               {
++                  log.error("Value Storage Plugin instantiation FAILED. ", e);
++                  continue;
++               }
++               if (!(o instanceof ValueStoragePlugin))
++               {
++                  log.error("Not a ValueStoragePlugin object IGNORED: " + o);
++                  continue;
++               }
+ 
+-            ValueStoragePlugin plugin = (ValueStoragePlugin)o;
+-            // init filters
+-            ArrayList<ValuePluginFilter> filters = new ArrayList<ValuePluginFilter>();
+-            List<ValueStorageFilterEntry> filterEntries = storageEntry.getFilters();
+-            for (ValueStorageFilterEntry filterEntry : filterEntries)
+-            {
+-               ValuePluginFilter filter =
+-                  new ValuePluginFilter(PropertyType.valueFromName(filterEntry.getPropertyType()), null, null,
+-                     filterEntry.getMinValueSize());
+-               filters.add(filter);
+-            }
++               ValueStoragePlugin plugin = (ValueStoragePlugin)o;
++               // init filters
++               ArrayList<ValuePluginFilter> filters = new ArrayList<ValuePluginFilter>();
++               List<ValueStorageFilterEntry> filterEntries = storageEntry.getFilters();
++               for (ValueStorageFilterEntry filterEntry : filterEntries)
++               {
++                  ValuePluginFilter filter =
++                     new ValuePluginFilter(PropertyType.valueFromName(filterEntry.getPropertyType()), null, null,
++                        filterEntry.getMinValueSize());
++                  filters.add(filter);
++               }
+ 
+-            // init properties
+-            Properties props = new Properties();
+-            List<SimpleParameterEntry> paramEntries = storageEntry.getParameters();
+-            for (SimpleParameterEntry paramEntry : paramEntries)
+-            {
+-               props.setProperty(paramEntry.getName(), paramEntry.getValue());
+-            }
++               // init properties
++               Properties props = new Properties();
++               List<SimpleParameterEntry> paramEntries = storageEntry.getParameters();
++               for (SimpleParameterEntry paramEntry : paramEntries)
++               {
++                  props.setProperty(paramEntry.getName(), paramEntry.getValue());
++               }
+ 
+-            plugin.init(props, resorcesHolder);
+-            plugin.setId(storageEntry.getId());
+-            plugin.setFilters(filters);
++               plugin.init(props, resorcesHolder);
++               plugin.setId(storageEntry.getId());
++               plugin.setFilters(filters);
+ 
+-            add(plugin);
+-            log.info("Value Storage Plugin initialized " + plugin);
++               add(plugin);
++               log.info("Value Storage Plugin initialized " + plugin);
++            }
+          }
+    }
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/ConfigurationFormat.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/ConfigurationFormat.java	(revision 5186)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/util/ConfigurationFormat.java	(working copy)
+@@ -18,6 +18,7 @@
+  */
+ package org.exoplatform.services.jcr.util;
+ 
++import org.exoplatform.container.xml.Deserializer;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+ 
+@@ -36,6 +37,20 @@
+ 
+    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ConfigurationFormat");
+ 
++   public static boolean parseBoolean(String text)
++   {
++      try
++      {
++         text = Deserializer.resolveNClean(text);
++         return Boolean.valueOf(text).booleanValue();
++      }
++      catch (Throwable e)
++      {
++         LOG.warn("Unparseable boolean '" + text + "'.", e);
++         return false;
++      }
++   }
++
+    public static int parseInt(String text)
+    {
+       try
+Index: exo.jcr.component.core/src/main/resources/binding.xml
+===================================================================
+--- exo.jcr.component.core/src/main/resources/binding.xml	(revision 5186)
++++ exo.jcr.component.core/src/main/resources/binding.xml	(working copy)
+@@ -1,6 +1,8 @@
+ <binding>
+   <!-- the default deserializer to use for String -->
+   <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
++  <!-- the default deserializer to use for boolean -->
++  <format type="boolean" deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseBoolean"/>
+ 
+   <mapping name="repository-service" class="org.exoplatform.services.jcr.config.RepositoryServiceConfiguration">
+     <value name="default-repository" field="defaultRepositoryName" style="attribute" />
+Index: exo.jcr.component.core/pom.xml
+===================================================================
+--- exo.jcr.component.core/pom.xml	(revision 5186)
++++ exo.jcr.component.core/pom.xml	(working copy)
+@@ -31,6 +31,11 @@
+    <description>eXo JCR Service core component</description>
+    <properties>
+       <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
++      <cache.enabled>true</cache.enabled>
++      <value.storage.enabled>true</value.storage.enabled>
++      <statistics.enabled>false</statistics.enabled>
++      <properties.url.suffix>.properties</properties.url.suffix>
++      <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
+    </properties>
+    <dependencies>
+       <dependency>
+@@ -222,95 +227,7 @@
+          <groupId>hsqldb</groupId>
+          <artifactId>hsqldb</artifactId>
+          <scope>test</scope>
+-      </dependency>
+-      <!-- For MySQL support -->
+-      <dependency>
+-         <groupId>mysql</groupId>
+-         <artifactId>mysql-connector-java</artifactId>
+-         <version>5.1.8</version>
+-         <scope>test</scope>
+-      </dependency>
+-      <!-- For PostgresSQL support -->
+-      <dependency>
+-         <groupId>postgresql</groupId>
+-         <artifactId>postgresql</artifactId>
+-         <version>8.3-603.jdbc3</version>
+-         <scope>test</scope>
+-      </dependency>
+-      <!-- For Oracle 10g support (local-jcr repository) -->
+-      <!-- dependency>
+-         <groupId>ojdbc</groupId>
+-         <artifactId>ojdbc</artifactId>
+-         <version>14</version>
+-         <scope>test</scope>
+-      </dependency>
+-      <dependency>
+-         <groupId>ojdbc</groupId>
+-         <artifactId>orai18n</artifactId>
+-         <version>14</version>
+-         <scope>test</scope>
+-      </dependency -->
+-      <!-- For IBM DB2 support (local-jcr repository) -->
+-      <!-- dependency>
+-         <groupId>com.ibm.db2</groupId>
+-         <artifactId>db2jcc</artifactId>
+-         <version>9.1</version>
+-         <scope>test</scope>
+-      </dependency>
+-      <dependency>
+-         <groupId>com.ibm.db2</groupId>
+-         <artifactId>db2jcc_license_cu</artifactId>
+-         <version>9.1</version>
+-         <scope>test</scope>
+-      </dependency -->
+-      <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
+-      <!-- dependency>
+-         <groupId>net.sourceforge.jtds</groupId>
+-         <artifactId>jtds</artifactId>
+-         <version>1.2</version>
+-         <scope>test</scope>
+-      </dependency -->
+-      <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
+-      <!-- dependency>
+-         <groupId>com.microsoft.sqlserver</groupId>
+-         <artifactId>sqljdbc</artifactId>
+-         <version>9.0</version>
+-         <scope>test</scope>
+-      </dependency -->
+-      <!-- dependency>
+-         <groupId>com.microsoft</groupId>
+-         <artifactId>sqljdbc</artifactId>
+-         <version>2.0</version>
+-         <scope>test</scope>
+-      </dependency -->
+-      <!-- For Apache Derby support (aka JavaDB) -->
+-      <!-- dependency>
+-         <groupId>org.apache.derby</groupId>
+-         <artifactId>derby</artifactId>
+-         <version>10.2.2.0</version>
+-         <scope>test</scope>
+-      </dependency -->
+-      <!-- H2 Database (not supported now) -->
+-      <!-- dependency>
+-         <groupId>com.h2database</groupId>
+-         <artifactId>h2</artifactId>
+-         <version>1.0.74</version>
+-         <scope>test</scope>
+-      </dependency -->
+-      <!-- Ingres Database (local repository) -->
+-      <!-- dependency>
+-         <groupId>com.ingres.jdbc</groupId>
+-         <artifactId>iijdbc</artifactId>
+-         <version>9.2</version>
+-         <scope>test</scope>
+-      </dependency -->
+-      <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
+-      <!-- dependency>
+-         <groupId>com.sybase.jdbc3.jdbc</groupId>
+-         <artifactId>jconn3</artifactId>
+-         <version>6.05</version>
+-         <scope>test</scope>
+-      </dependency -->
++      </dependency>    
+    </dependencies>      
+   <!-- ======================================================================= -->
+    <build>
+@@ -383,11 +300,22 @@
+                      <name>emma.coverage.out.file</name>
+                      <value>target/emma/coverage.ec</value>
+                   </property>
+-                  <!-- Uncomment the line below if you want to enable the statistics -->
+-                  <!--property>
++                  <property>
++                     <name>cache-enabled</name>
++                     <value>${cache.enabled}</value>
++                  </property>                  
++                  <property>
++                     <name>value-storage-enabled</name>
++                     <value>${value.storage.enabled}</value>
++                  </property>
++                  <property>
+                       <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+-                      <value>true</value>
+-                  </property-->
++                      <value>${statistics.enabled}</value>
++                  </property>
++                  <property>
++                      <name>exo.properties.url</name>
++                      <value>${properties.url.prefix}${properties.url.suffix}</value>
++                  </property>
+                   <!-- We add this system property due to some incompatibility between IPv6 and 
+ 						some JVM of Linux distributions such as Ubuntu and Fedora-->
+                   <property>
+@@ -569,6 +497,22 @@
+                            <value>target/emma/coverage.ec</value>
+                         </property>
+                         <property>
++                           <name>cache-enabled</name>
++                           <value>${cache.enabled}</value>
++                        </property>                  
++                        <property>
++                           <name>value-storage-enabled</name>
++                           <value>${value.storage.enabled}</value>
++                        </property>
++                        <property>
++                           <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
++                           <value>${statistics.enabled}</value>
++                        </property>
++                        <property>
++                           <name>exo.properties.url</name>
++                           <value>${properties.url.prefix}${properties.url.suffix}</value>
++                        </property>                        
++                        <property>
+                            <name>known.issues</name>
+                            <value>org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
+                               org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
+@@ -585,11 +529,6 @@
+                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
+                               org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace</value>
+                         </property>
+-                     <!-- Uncomment the line below if you want to enable the statistics -->
+-                     <!--property>
+-                     <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+-                     <value>true</value>
+-                     </property-->
+                      <!-- We add this system property due to some incompatibility between IPv6 and 
+ 						some JVM of Linux distributions such as Ubuntu and Fedora-->
+                         <property>
+@@ -656,6 +595,22 @@
+                            <value>target/emma/coverage.ec</value>
+                         </property>
+                         <property>
++                            <name>cache-enabled</name>
++                            <value>${cache.enabled}</value>
++                        </property>                  
++                        <property>
++                            <name>value-storage-enabled</name>
++                            <value>${value.storage.enabled}</value>
++                        </property> 
++                        <property>
++                           <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
++                           <value>${statistics.enabled}</value>
++                        </property>
++                        <property>
++                           <name>exo.properties.url</name>
++                           <value>${properties.url.prefix}${properties.url.suffix}</value>
++                        </property>                        
++                        <property>
+                            <name>known.issues</name>
+                            <value>org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
+                               org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
+@@ -672,11 +627,6 @@
+                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
+                               org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace</value>
+                         </property>
+-                     <!-- Uncomment the line below if you want to enable the statistics -->
+-                     <!--property>
+-                     <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+-                     <value>true</value>
+-                     </property-->
+                      <!-- We add this system property due to some incompatibility between IPv6 and 
+ 						some JVM of Linux distributions such as Ubuntu and Fedora-->
+                         <property>
+@@ -746,58 +696,223 @@
+             </plugins>
+          </build>
+       </profile>
++      <!-- We define one profile per driver -->
+       <profile>
+-         <id>run-devtests</id>
+-         <build>
+-            <plugins>
+-               <plugin>
+-                  <groupId>org.apache.maven.plugins</groupId>
+-                  <artifactId>maven-surefire-plugin</artifactId>
+-                  <configuration>
+-                     <phase>test</phase>
+-                     <forkMode>never</forkMode>
+-                     <!-- argLine>${env.MAVEN_OPTS}</argLine -->
+-                     <goals>
+-                        <goal>test</goal>
+-                     </goals>
+-                     <systemProperties>
+-                        <property>
+-                           <name>jcr.test.configuration.file</name>
+-                           <value>${jcr.test.configuration.file}</value>
+-                        </property>
+-                        <!-- Uncomment the line below if you want to enable the statistics -->
+-                        <!--property>
+-                        <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+-                        <value>true</value>
+-                        </property-->
+-                        <!-- We add this system property due to some incompatibility between IPv6 and 
+-						some JVM of Linux distributions such as Ubuntu and Fedora-->
+-                        <property>
+-                           <name>java.net.preferIPv4Stack</name>
+-                           <value>true</value>
+-                        </property>
+-                        <!-- Avoid the firewall -->
+-                        <property>
+-                           <name>bind.address</name>
+-                           <value>127.0.0.1</value>
+-                        </property>
+-                        <property>
+-                           <name>jgroups.stack</name>
+-                           <value>udp</value>
+-                        </property>                        
+-                     </systemProperties>
+-                     <includes>
+-                        <include>**/**/reading_/Test*.java</include>
+-                        <include>**/**/writing_/Test*.java</include>
+-                        <include>**/**/TestJBossCacheWorkspaceStorageCache_.java</include>
+-                        <exclude>**/**/TestCleanableFileStreamValueData.java</exclude>
+-                        <include>**/**/TestSVNodeDataOptimization_.java</include>
+-                        <include>**/**/TestValueConstraints.java</include>
+-                     </includes>
+-                  </configuration>
+-               </plugin>
+-            </plugins>
+-         </build>
++         <id>oracle-10G-R2</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>ojdbc</groupId>
++               <artifactId>ojdbc</artifactId>
++               <version>10.2.0.4</version>
++               <scope>test</scope>
++            </dependency>
++            <dependency>
++               <groupId>ojdbc</groupId>
++               <artifactId>orai18n</artifactId>
++               <version>10.2.0.4</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
+       </profile>
++      <profile>
++         <id>oracle-11G-R1</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>ojdbc</groupId>
++               <artifactId>ojdbc</artifactId>
++               <version>11.1.0.6.0</version>
++               <scope>test</scope>
++            </dependency>
++            <dependency>
++               <groupId>ojdbc</groupId>
++               <artifactId>orai18n</artifactId>
++               <version>11.1.0.6.0</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>
++      <profile>
++         <id>oracle-11G-R2</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>ojdbc</groupId>
++               <artifactId>ojdbc</artifactId>
++               <version>11.2.0.1.0</version>
++               <scope>test</scope>
++            </dependency>
++            <dependency>
++               <groupId>ojdbc</groupId>
++               <artifactId>orai18n</artifactId>
++               <version>11.2.0.1.0</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>            
++      <profile>
++         <id>mysql-5.0</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>mysql</groupId>
++               <artifactId>mysql-connector-java</artifactId>
++               <version>5.0.8</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>
++      <profile>
++         <id>mysql-5.1</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>mysql</groupId>
++               <artifactId>mysql-connector-java</artifactId>
++               <version>5.1.14</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>
++      <profile>
++         <id>mysql-5.5</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>mysql</groupId>
++               <artifactId>mysql-connector-java</artifactId>
++               <version>5.1.18</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>
++      <profile>
++         <id>mssql</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/mssql</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>com.microsoft</groupId>
++               <artifactId>sqljdbc</artifactId>
++               <version>3.0.1301.101</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>
++      <profile>
++         <id>db2</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/db2</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>com.ibm.db2</groupId>
++               <artifactId>db2jcc</artifactId>
++               <version>9.7</version>
++               <scope>test</scope>
++            </dependency>
++            <dependency>
++               <groupId>com.ibm.db2</groupId>
++               <artifactId>db2jcc_license_cu</artifactId>
++               <version>9.7</version>
++               <scope>test</scope>
++            </dependency>            
++         </dependencies>
++      </profile>
++      <profile>
++         <id>sybase</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/sybase</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>com.sybase.jdbc4.jdbc</groupId>
++               <artifactId>jconn4</artifactId>
++               <version>26502</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>
++      <profile>
++         <id>pgsql-8.2</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>postgresql</groupId>
++               <artifactId>postgresql</artifactId>
++               <version>8.2-507.jdbc4</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>
++      <profile>
++         <id>pgsql-8.3</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>postgresql</groupId>
++               <artifactId>postgresql</artifactId>
++               <version>8.3-606.jdbc4</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>
++      <profile>
++         <id>pgsql-8.4</id>
++         <properties>
++            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
++         </properties>
++         <dependencies>
++            <dependency>
++               <groupId>postgresql</groupId>
++               <artifactId>postgresql</artifactId>
++               <version>8.4-702.jdbc4</version>
++               <scope>test</scope>
++            </dependency>
++         </dependencies>
++      </profile>
++      <profile>
++         <id>sjdbc</id>
++         <properties>
++            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc.xml</jcr.test.configuration.file>
++            <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
++         </properties>
++      </profile>
++      <profile>
++         <id>cluster</id>
++         <properties>
++            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration.xml</jcr.test.configuration.file>
++         </properties>
++      </profile>
++      <profile>
++         <id>cache-disabled</id>
++         <properties>
++            <cache.enabled>false</cache.enabled>
++         </properties>
++      </profile>
++      <profile>
++         <id>value-storage-disabled</id>
++         <properties>
++            <value.storage.enabled>false</value.storage.enabled>
++         </properties>
++      </profile>
+    </profiles>
+ </project>
