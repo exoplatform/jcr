@@ -1008,7 +1008,7 @@ Index: exo.jcr.component.core/src/test/resources/conf/standalone/mssql.propertie
 +++ exo.jcr.component.core/src/test/resources/conf/standalone/mssql.properties	(revision 0)
 @@ -0,0 +1,52 @@
 +# Global Properties
-+all.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver"
++all.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
 +
 +# Properties for jdbcjcr
 +jdbcjcr.url=jdbc:sqlserver://localhost:1433;databaseName=db1_ws;
@@ -1712,7 +1712,7 @@ Index: exo.jcr.component.core/src/test/resources/conf/standalone/mssql-sjdbc.pro
 +++ exo.jcr.component.core/src/test/resources/conf/standalone/mssql-sjdbc.properties	(revision 0)
 @@ -0,0 +1,22 @@
 +# Global Properties
-+all.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver"
++all.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
 +
 +# Properties for jdbcjcr
 +jdbcjcr.url=jdbc:sqlserver://localhost:1433;databaseName=db1;
