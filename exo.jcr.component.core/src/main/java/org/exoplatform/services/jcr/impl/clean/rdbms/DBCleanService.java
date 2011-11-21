@@ -900,7 +900,8 @@ public class DBCleanService
          // PostgreSQL, DB2 on connection.rollback() restore all removed constrains
          if (!dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
             && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
-            && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8))
+            && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8)
+            && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
          {
             rollbackScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
          }
