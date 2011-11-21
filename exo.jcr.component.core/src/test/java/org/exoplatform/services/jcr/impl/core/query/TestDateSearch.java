@@ -25,6 +25,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -78,6 +79,9 @@ public class TestDateSearch extends BaseQueryTest
       Query q = qman.createQuery("SELECT * FROM nt:resource " + " WHERE  CONTAINS(., '" + word + "')", Query.SQL);
       QueryResult res = q.execute();
       assertEquals(1, res.getNodes().getSize());
+      
+      is.close();
+      Util.closeOrRelease(reader);
    }
 
 }

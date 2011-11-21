@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.TraversingQueryNodeVisitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -466,7 +467,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
             {
                public Object run() throws Exception
                {
-                  reader.close();
+                  Util.closeOrRelease(reader);
                   return null;
                }
             });
@@ -516,7 +517,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                                  }
                                  finally
                                  {
-                                    reader.close();
+                                    Util.closeOrRelease(reader);
                                     synchronized (InternalSpellChecker.this)
                                     {
                                        refreshing = false;

@@ -70,6 +70,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableRes
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ScoreNode;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 import org.exoplatform.services.jcr.impl.core.value.NameValue;
 import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
@@ -397,10 +398,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Check index consistency. Iterator goes through index documents and check, does each document have
     * according jcr-node. If index is suspended then it will be temporary resumed, while check is running and suspended afterwards.
-	 */
-   public void checkIndex(final InspectionLog inspectionLog, final boolean isSystem) throws RepositoryException, IOException
-   { 
-	  
+    */
+   public void checkIndex(final InspectionLog inspectionLog, final boolean isSystem) throws RepositoryException,
+      IOException
+   {
+
       if (isSuspended)
       {
          try
@@ -417,7 +419,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                         parentSearchManager.resume();
                      }
                      resume();
-                     
+
                      handler.checkIndex(itemMgr, isSystem, inspectionLog);
                      return null;
                   }
@@ -496,7 +498,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             {
                if (reader != null)
                {
-                  reader.close();
+                  Util.closeOrRelease(reader);
                }
             }
             catch (IOException e)
@@ -599,7 +601,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       if (itemStates.getSize() > 0)
       {
          //Check if SearchManager started and filter configured
-         if (changesFilter != null && parentSearchManager!=null)
+         if (changesFilter != null && parentSearchManager != null)
          {
             changesFilter.onSaveItems(itemStates);
          }
@@ -1716,7 +1718,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new BackupException(e);
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */

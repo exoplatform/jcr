@@ -961,29 +961,36 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       // check relation Persistent Layer -> Index
       // If current workspace is system, then need to invoke reader correspondent to system index
       IndexReader indexReader = getIndexReader(isSystem);
-      ItemData root = itemStateManager.getItemData(Constants.ROOT_UUID);
-      ItemDataIndexConsistencyVisitor visitor = new ItemDataIndexConsistencyVisitor(itemStateManager, indexReader);
-      root.accept(visitor);
-
-      Set<String> documentUUIDs = visitor.getIndexedNodes();
-
-      // check relation Index -> Persistent Layer
-      // find document that do not corresponds to real node
-      // iterate on documents one-by-one
-      for (int i = 0; i < indexReader.maxDoc(); i++)
+      try
       {
-         if (indexReader.isDeleted(i))
+         ItemData root = itemStateManager.getItemData(Constants.ROOT_UUID);
+         ItemDataIndexConsistencyVisitor visitor = new ItemDataIndexConsistencyVisitor(itemStateManager, indexReader);
+         root.accept(visitor);
+
+         Set<String> documentUUIDs = visitor.getIndexedNodes();
+
+         // check relation Index -> Persistent Layer
+         // find document that do not corresponds to real node
+         // iterate on documents one-by-one
+         for (int i = 0; i < indexReader.maxDoc(); i++)
          {
-            continue;
+            if (indexReader.isDeleted(i))
+            {
+               continue;
+            }
+            final int currentIndex = i;
+            Document d = indexReader.document(currentIndex, FieldSelectors.UUID);
+            String uuid = d.get(FieldNames.UUID);
+            if (!documentUUIDs.contains(uuid))
+            {
+               inspectionLog.logBrokenObjectInfo("ID=" + uuid, "Document corresponds to removed node.",
+                  InspectionStatus.REINDEX);
+            }
          }
-         final int currentIndex = i;
-         Document d = indexReader.document(currentIndex, FieldSelectors.UUID);
-         String uuid = d.get(FieldNames.UUID);
-         if (!documentUUIDs.contains(uuid))
-         {
-            inspectionLog.logBrokenObjectInfo("ID=" + uuid, "Document corresponds to removed node.",
-               InspectionStatus.REINDEX);
-         }
+      }
+      finally
+      {
+         Util.closeOrRelease(indexReader);
       }
    }
 
@@ -3388,7 +3395,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          }
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */

@@ -25,6 +25,7 @@ import org.apache.lucene.search.TermQuery;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -59,12 +60,22 @@ public class BaseQueryTest extends JcrImplBaseTest
       TermQuery query = new TermQuery(new Term(FieldNames.UUID, nodeIdentifer));
 
       Hits result = is.search(query);
-
-      if (result.length() == 1)
-         return result.doc(0);
-      else if (result.length() > 1)
-         throw new RepositoryException("Results more then one");
-
+      try
+      {
+         if (result.length() == 1)
+         {
+            return result.doc(0);
+         }
+         else if (result.length() > 1)
+         {
+            throw new RepositoryException("Results more then one");
+         }
+      }
+      finally
+      {
+         is.close();
+         Util.closeOrRelease(reader);
+      }
       return null;
    }
 

@@ -24,6 +24,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 
 import java.util.Calendar;
 
@@ -71,6 +72,9 @@ public class TestRewriteNode extends BaseQueryTest
       result = is.search(query);
       assertEquals(0, result.length());
 
+      is.close();
+      Util.closeOrRelease(reader);
+      
    }
 
 }

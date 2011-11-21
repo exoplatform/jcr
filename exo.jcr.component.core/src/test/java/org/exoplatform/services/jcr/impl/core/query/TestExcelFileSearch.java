@@ -29,6 +29,7 @@ import org.exoplatform.services.document.impl.MSExcelDocumentReader;
 import org.exoplatform.services.document.impl.tika.TikaDocumentReader;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -100,6 +101,8 @@ public class TestExcelFileSearch extends BaseQueryTest
       TermQuery query = new TermQuery(new Term(FieldNames.FULLTEXT, word));
       Hits result = is.search(query);
       assertEquals(1, result.length());
+      is.close();
+      Util.closeOrRelease(reader);
    }
 
 }
