@@ -519,15 +519,14 @@ class ChildAxisQuery extends Query implements JcrQuery
       {
          if (position != LocationStepQueryNode.NONE)
          {
-            Document node = reader.document(i, FieldSelectors.UUID_AND_PARENT);
+            Document node = reader.document(i, FieldSelectors.UUID_AND_PARENT_AND_INDEX);
             String parentId = node.get(FieldNames.PARENT);
             String id = node.get(FieldNames.UUID);
             try
             {
-               //NodeState state = (NodeState) itemMgr.getItemState(parentId);
-               NodeData state = (NodeData)itemMgr.getItemData(parentId);
                if (nameTest == null)
                {
+                  NodeData state = (NodeData)itemMgr.getItemData(parentId);
                   // only select this node if it is the child at
                   // specified position
                   if (position == LocationStepQueryNode.LAST)
@@ -555,6 +554,7 @@ class ChildAxisQuery extends Query implements JcrQuery
                   // specified position
                   if (position == LocationStepQueryNode.LAST)
                   {
+                     NodeData state = (NodeData)itemMgr.getItemData(parentId);
                      // only select last
 
                      if (state == null)
@@ -571,6 +571,11 @@ class ChildAxisQuery extends Query implements JcrQuery
                            return false;
                         }
                      }
+                  }
+                  else if (version.getVersion() >= IndexFormatVersion.V4.getVersion())
+                  {
+                     if (Integer.valueOf(node.get(FieldNames.INDEX)) != position)
+                        return false;
                   }
                   else
                   {
@@ -693,41 +698,14 @@ class ChildAxisQuery extends Query implements JcrQuery
             //NodeId id = new NodeId(UUID.fromString(uuid));
             try
             {
-               long time = System.currentTimeMillis();
-               NodeData state = (NodeData)itemMgr.getItemData(uuid);
-               time = System.currentTimeMillis() - time;
-               log.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));
-               Iterator<NodeData> entries;
-               if (nameTest != null)
+               if (nameTest != null && version.getVersion() >= IndexFormatVersion.V4.getVersion())
                {
-                  //NodeData childNodeData = (NodeData)itemMgr.getItemData(state, new QPathEntry(nameTest, 1));//state.getChildNodeEntries(nameTest).iterator();
-                  List<NodeData> childs = itemMgr.getChildNodesData(state);
-
-                  List<NodeData> datas = new ArrayList<NodeData>();
-                  if (childs != null)
-                  {
-                     for (NodeData nodeData : childs)
-                     {
-                        if (nameTest.equals(nodeData.getQPath().getName()))
-                           datas.add(nodeData);
-                     }
-
-                  }
-                  entries = datas.iterator();//itemMgr.getChildNodesData(childNodeData).iterator();
-               }
-               else
-               {
-                  // get all children
-                  entries = itemMgr.getChildNodesData(state).iterator();
-               }
-               while (entries.hasNext())
-               {
-                  String childId = entries.next().getIdentifier();
-                  Term uuidTerm = new Term(FieldNames.UUID, childId);
-                  TermDocs docs = reader.termDocs(uuidTerm);
+                  StringBuilder path = new StringBuilder(256);
+                  path.append(uuid == null ? "" : uuid).append('/').append(nameTest.getAsString());
+                  TermDocs docs = reader.termDocs(new Term(FieldNames.PATH, path.toString()));
                   try
                   {
-                     if (docs.next())
+                     while (docs.next())
                      {
                         childrenHits.set(docs.doc());
                      }
@@ -735,6 +713,54 @@ class ChildAxisQuery extends Query implements JcrQuery
                   finally
                   {
                      docs.close();
+                  }
+               }
+               else
+               {
+                  long time = System.currentTimeMillis();
+                  NodeData state = (NodeData)itemMgr.getItemData(uuid);
+                  time = System.currentTimeMillis() - time;
+                  log.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));
+                  Iterator<NodeData> entries;
+                  if (nameTest != null)
+                  {
+                     List<NodeData> childs = itemMgr.getChildNodesData(state);
+
+                     List<NodeData> datas = new ArrayList<NodeData>();
+                     if (childs != null)
+                     {
+                        for (NodeData nodeData : childs)
+                        {
+                           if (nameTest.equals(nodeData.getQPath().getName()))
+                           {
+                              datas.add(nodeData);
+                           }
+                        }
+                     }
+                     entries = datas.iterator();
+                  }
+                  else
+                  {
+                     // get all children 
+                     entries = itemMgr.getChildNodesData(state).iterator();
+                  }
+                  while (entries.hasNext())
+                  {
+                     String childId = entries.next().getIdentifier();
+                     Term uuidTerm = new Term(FieldNames.UUID, childId);
+                     TermDocs docs = reader.termDocs(uuidTerm);
+                     try
+                     {
+                        if (docs.next())
+                        {
+                           childrenHits.set(docs.doc());
+                        }
+                     }
+                     finally
+
+                     {
+                        docs.close();
+                     }
                   }
                }
             }

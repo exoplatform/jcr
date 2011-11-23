@@ -215,6 +215,17 @@ public class NodeIndexer
          // unknown uri<->prefix mappings
       }
 
+      if (indexFormatVersion.getVersion() >= IndexFormatVersion.V4.getVersion())
+      {
+         doc.add(new Field(FieldNames.INDEX, Integer.toString(node.getQPath().getIndex()), Field.Store.YES,
+            Field.Index.NOT_ANALYZED_NO_NORMS));
+
+         StringBuilder path = new StringBuilder(256);
+         path.append(node.getParentIdentifier() == null ? "" : node.getParentIdentifier()).append('/')
+            .append(node.getQPath().getName().getAsString());
+         doc.add(new Field(FieldNames.PATH, path.toString(), Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
+      }
+
       for (PropertyData prop : stateProvider.listChildPropertiesData(node))
       {
 
