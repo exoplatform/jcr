@@ -1,6 +1,8 @@
 <binding>
   <!-- the default deserializer to use for String -->
   <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
+  <!-- the default deserializer to use for boolean -->
+  <format type="boolean" deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseBoolean"/>
 
   <mapping name="repository-service" class="org.exoplatform.services.jcr.config.RepositoryServiceConfiguration">
     <value name="default-repository" field="defaultRepositoryName" style="attribute" />

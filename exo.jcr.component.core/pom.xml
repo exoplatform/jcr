@@ -31,6 +31,11 @@
    <description>eXo JCR Service core component</description>
    <properties>
       <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
+      <cache.enabled>true</cache.enabled>
+      <value.storage.enabled>true</value.storage.enabled>
+      <statistics.enabled>false</statistics.enabled>
+      <properties.url.suffix>.properties</properties.url.suffix>
+      <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
    </properties>
    <dependencies>
       <dependency>
@@ -222,95 +227,7 @@
          <groupId>hsqldb</groupId>
          <artifactId>hsqldb</artifactId>
          <scope>test</scope>
-      </dependency>
-      <!-- For MySQL support -->
-      <dependency>
-         <groupId>mysql</groupId>
-         <artifactId>mysql-connector-java</artifactId>
-         <version>5.1.8</version>
-         <scope>test</scope>
-      </dependency>
-      <!-- For PostgresSQL support -->
-      <dependency>
-         <groupId>postgresql</groupId>
-         <artifactId>postgresql</artifactId>
-         <version>8.3-603.jdbc3</version>
-         <scope>test</scope>
-      </dependency>
-      <!-- For Oracle 10g support (local-jcr repository) -->
-      <!-- dependency>
-         <groupId>ojdbc</groupId>
-         <artifactId>ojdbc</artifactId>
-         <version>14</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>ojdbc</groupId>
-         <artifactId>orai18n</artifactId>
-         <version>14</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- For IBM DB2 support (local-jcr repository) -->
-      <!-- dependency>
-         <groupId>com.ibm.db2</groupId>
-         <artifactId>db2jcc</artifactId>
-         <version>9.1</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>com.ibm.db2</groupId>
-         <artifactId>db2jcc_license_cu</artifactId>
-         <version>9.1</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
-      <!-- dependency>
-         <groupId>net.sourceforge.jtds</groupId>
-         <artifactId>jtds</artifactId>
-         <version>1.2</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
-      <!-- dependency>
-         <groupId>com.microsoft.sqlserver</groupId>
-         <artifactId>sqljdbc</artifactId>
-         <version>9.0</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- dependency>
-         <groupId>com.microsoft</groupId>
-         <artifactId>sqljdbc</artifactId>
-         <version>2.0</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- For Apache Derby support (aka JavaDB) -->
-      <!-- dependency>
-         <groupId>org.apache.derby</groupId>
-         <artifactId>derby</artifactId>
-         <version>10.2.2.0</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- H2 Database (not supported now) -->
-      <!-- dependency>
-         <groupId>com.h2database</groupId>
-         <artifactId>h2</artifactId>
-         <version>1.0.74</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- Ingres Database (local repository) -->
-      <!-- dependency>
-         <groupId>com.ingres.jdbc</groupId>
-         <artifactId>iijdbc</artifactId>
-         <version>9.2</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
-      <!-- dependency>
-         <groupId>com.sybase.jdbc3.jdbc</groupId>
-         <artifactId>jconn3</artifactId>
-         <version>6.05</version>
-         <scope>test</scope>
-      </dependency -->
+      </dependency>    
    </dependencies>      
   <!-- ======================================================================= -->
    <build>
@@ -383,11 +300,22 @@
                      <name>emma.coverage.out.file</name>
                      <value>target/emma/coverage.ec</value>
                   </property>
-                  <!-- Uncomment the line below if you want to enable the statistics -->
-                  <!--property>
+                  <property>
+                     <name>cache-enabled</name>
+                     <value>${cache.enabled}</value>
+                  </property>                  
+                  <property>
+                     <name>value-storage-enabled</name>
+                     <value>${value.storage.enabled}</value>
+                  </property>
+                  <property>
                       <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                      <value>true</value>
-                  </property-->
+                      <value>${statistics.enabled}</value>
+                  </property>
+                  <property>
+                      <name>exo.properties.url</name>
+                      <value>${properties.url.prefix}${properties.url.suffix}</value>
+                  </property>
                   <!-- We add this system property due to some incompatibility between IPv6 and 
 						some JVM of Linux distributions such as Ubuntu and Fedora-->
                   <property>
@@ -569,6 +497,22 @@
                            <value>target/emma/coverage.ec</value>
                         </property>
                         <property>
+                           <name>cache-enabled</name>
+                           <value>${cache.enabled}</value>
+                        </property>                  
+                        <property>
+                           <name>value-storage-enabled</name>
+                           <value>${value.storage.enabled}</value>
+                        </property>
+                        <property>
+                           <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                           <value>${statistics.enabled}</value>
+                        </property>
+                        <property>
+                           <name>exo.properties.url</name>
+                           <value>${properties.url.prefix}${properties.url.suffix}</value>
+                        </property>                        
+                        <property>
                            <name>known.issues</name>
                            <value>org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
                               org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
@@ -585,11 +529,6 @@
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
                               org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace</value>
                         </property>
-                     <!-- Uncomment the line below if you want to enable the statistics -->
-                     <!--property>
-                     <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                     <value>true</value>
-                     </property-->
                      <!-- We add this system property due to some incompatibility between IPv6 and 
 						some JVM of Linux distributions such as Ubuntu and Fedora-->
                         <property>
@@ -656,6 +595,22 @@
                            <value>target/emma/coverage.ec</value>
                         </property>
                         <property>
+                            <name>cache-enabled</name>
+                            <value>${cache.enabled}</value>
+                        </property>                  
+                        <property>
+                            <name>value-storage-enabled</name>
+                            <value>${value.storage.enabled}</value>
+                        </property> 
+                        <property>
+                           <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                           <value>${statistics.enabled}</value>
+                        </property>
+                        <property>
+                           <name>exo.properties.url</name>
+                           <value>${properties.url.prefix}${properties.url.suffix}</value>
+                        </property>                        
+                        <property>
                            <name>known.issues</name>
                            <value>org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
                               org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
@@ -672,11 +627,6 @@
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
                               org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace</value>
                         </property>
-                     <!-- Uncomment the line below if you want to enable the statistics -->
-                     <!--property>
-                     <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                     <value>true</value>
-                     </property-->
                      <!-- We add this system property due to some incompatibility between IPv6 and 
 						some JVM of Linux distributions such as Ubuntu and Fedora-->
                         <property>
@@ -746,58 +696,223 @@
             </plugins>
          </build>
       </profile>
+      <!-- We define one profile per driver -->
       <profile>
-         <id>run-devtests</id>
-         <build>
-            <plugins>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-surefire-plugin</artifactId>
-                  <configuration>
-                     <phase>test</phase>
-                     <forkMode>never</forkMode>
-                     <!-- argLine>${env.MAVEN_OPTS}</argLine -->
-                     <goals>
-                        <goal>test</goal>
-                     </goals>
-                     <systemProperties>
-                        <property>
-                           <name>jcr.test.configuration.file</name>
-                           <value>${jcr.test.configuration.file}</value>
-                        </property>
-                        <!-- Uncomment the line below if you want to enable the statistics -->
-                        <!--property>
-                        <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                        <value>true</value>
-                        </property-->
-                        <!-- We add this system property due to some incompatibility between IPv6 and 
-						some JVM of Linux distributions such as Ubuntu and Fedora-->
-                        <property>
-                           <name>java.net.preferIPv4Stack</name>
-                           <value>true</value>
-                        </property>
-                        <!-- Avoid the firewall -->
-                        <property>
-                           <name>bind.address</name>
-                           <value>127.0.0.1</value>
-                        </property>
-                        <property>
-                           <name>jgroups.stack</name>
-                           <value>udp</value>
-                        </property>                        
-                     </systemProperties>
-                     <includes>
-                        <include>**/**/reading_/Test*.java</include>
-                        <include>**/**/writing_/Test*.java</include>
-                        <include>**/**/TestJBossCacheWorkspaceStorageCache_.java</include>
-                        <exclude>**/**/TestCleanableFileStreamValueData.java</exclude>
-                        <include>**/**/TestSVNodeDataOptimization_.java</include>
-                        <include>**/**/TestValueConstraints.java</include>
-                     </includes>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
+         <id>oracle-10G-R2</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>ojdbc</artifactId>
+               <version>10.2.0.4</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>orai18n</artifactId>
+               <version>10.2.0.4</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>oracle-11G-R1</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>ojdbc</artifactId>
+               <version>11.1.0.6.0</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>orai18n</artifactId>
+               <version>11.1.0.6.0</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>oracle-11G-R2</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>ojdbc</artifactId>
+               <version>11.2.0.1.0</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>orai18n</artifactId>
+               <version>11.2.0.1.0</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>            
+      <profile>
+         <id>mysql-5.0</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>mysql</groupId>
+               <artifactId>mysql-connector-java</artifactId>
+               <version>5.0.8</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>mysql-5.1</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>mysql</groupId>
+               <artifactId>mysql-connector-java</artifactId>
+               <version>5.1.14</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>mysql-5.5</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>mysql</groupId>
+               <artifactId>mysql-connector-java</artifactId>
+               <version>5.1.18</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>mssql</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/mssql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.microsoft</groupId>
+               <artifactId>sqljdbc</artifactId>
+               <version>3.0.1301.101</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>db2</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/db2</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.ibm.db2</groupId>
+               <artifactId>db2jcc</artifactId>
+               <version>9.7</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>com.ibm.db2</groupId>
+               <artifactId>db2jcc_license_cu</artifactId>
+               <version>9.7</version>
+               <scope>test</scope>
+            </dependency>            
+         </dependencies>
+      </profile>
+      <profile>
+         <id>sybase</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/sybase</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.sybase.jdbc4.jdbc</groupId>
+               <artifactId>jconn4</artifactId>
+               <version>26502</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>pgsql-8.2</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>8.2-507.jdbc4</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>pgsql-8.3</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>8.3-606.jdbc4</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>pgsql-8.4</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>8.4-702.jdbc4</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>sjdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc.xml</jcr.test.configuration.file>
+            <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
+         </properties>
+      </profile>
+      <profile>
+         <id>cluster</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration.xml</jcr.test.configuration.file>
+         </properties>
+      </profile>
+      <profile>
+         <id>cache-disabled</id>
+         <properties>
+            <cache.enabled>false</cache.enabled>
+         </properties>
+      </profile>
+      <profile>
+         <id>value-storage-disabled</id>
+         <properties>
+            <value.storage.enabled>false</value.storage.enabled>
+         </properties>
       </profile>
    </profiles>
 </project>

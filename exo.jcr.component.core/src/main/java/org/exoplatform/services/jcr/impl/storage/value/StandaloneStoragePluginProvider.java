@@ -58,6 +58,11 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.StandaloneStoragePluginProvider");
 
    /**
+    * Value storage enabling parameter. For interal usage only and testing purpose.
+    */
+   private static final String VALUE_STORAGE_ENABLED_PARAM = "enabled";
+
+   /**
     * ValueData resorces holder (Files etc). It's singleton feature.
     */
    private final ValueDataResourceHolder resorcesHolder;
@@ -73,60 +78,62 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
       if (storages != null)
          for (ValueStorageEntry storageEntry : storages)
          {
-
-            // can be only one storage with given id
-            for (ValueStoragePlugin vsp : this)
+            if (storageEntry.getParameterBoolean(VALUE_STORAGE_ENABLED_PARAM, true))
             {
-               if (vsp.getId().equals(storageEntry.getId()))
-                  throw new RepositoryConfigurationException("Value storage with ID '" + storageEntry.getId()
-                     + "' already exists");
-            }
+               // can be only one storage with given id
+               for (ValueStoragePlugin vsp : this)
+               {
+                  if (vsp.getId().equals(storageEntry.getId()))
+                     throw new RepositoryConfigurationException("Value storage with ID '" + storageEntry.getId()
+                        + "' already exists");
+               }
 
-            Object o = null;
-            try
-            {
-               o =
-                  Class.forName(storageEntry.getType()).getConstructor(FileCleaner.class).newInstance(
-                     holder.getFileCleaner());
+               Object o = null;
+               try
+               {
+                  o =
+                     Class.forName(storageEntry.getType()).getConstructor(FileCleaner.class).newInstance(
+                        holder.getFileCleaner());
 
-            }
-            catch (Exception e)
-            {
-               log.error("Value Storage Plugin instantiation FAILED. ", e);
-               continue;
-            }
-            if (!(o instanceof ValueStoragePlugin))
-            {
-               log.error("Not a ValueStoragePlugin object IGNORED: " + o);
-               continue;
-            }
+               }
+               catch (Exception e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               if (!(o instanceof ValueStoragePlugin))
+               {
+                  log.error("Not a ValueStoragePlugin object IGNORED: " + o);
+                  continue;
+               }
 
-            ValueStoragePlugin plugin = (ValueStoragePlugin)o;
-            // init filters
-            ArrayList<ValuePluginFilter> filters = new ArrayList<ValuePluginFilter>();
-            List<ValueStorageFilterEntry> filterEntries = storageEntry.getFilters();
-            for (ValueStorageFilterEntry filterEntry : filterEntries)
-            {
-               ValuePluginFilter filter =
-                  new ValuePluginFilter(PropertyType.valueFromName(filterEntry.getPropertyType()), null, null,
-                     filterEntry.getMinValueSize());
-               filters.add(filter);
+               ValueStoragePlugin plugin = (ValueStoragePlugin)o;
+               // init filters
+               ArrayList<ValuePluginFilter> filters = new ArrayList<ValuePluginFilter>();
+               List<ValueStorageFilterEntry> filterEntries = storageEntry.getFilters();
+               for (ValueStorageFilterEntry filterEntry : filterEntries)
+               {
+                  ValuePluginFilter filter =
+                     new ValuePluginFilter(PropertyType.valueFromName(filterEntry.getPropertyType()), null, null,
+                        filterEntry.getMinValueSize());
+                  filters.add(filter);
+               }
+
+               // init properties
+               Properties props = new Properties();
+               List<SimpleParameterEntry> paramEntries = storageEntry.getParameters();
+               for (SimpleParameterEntry paramEntry : paramEntries)
+               {
+                  props.setProperty(paramEntry.getName(), paramEntry.getValue());
+               }
+
+               plugin.init(props, resorcesHolder);
+               plugin.setId(storageEntry.getId());
+               plugin.setFilters(filters);
+
+               add(plugin);
+               log.info("Value Storage Plugin initialized " + plugin);
             }
-
-            // init properties
-            Properties props = new Properties();
-            List<SimpleParameterEntry> paramEntries = storageEntry.getParameters();
-            for (SimpleParameterEntry paramEntry : paramEntries)
-            {
-               props.setProperty(paramEntry.getName(), paramEntry.getValue());
-            }
-
-            plugin.init(props, resorcesHolder);
-            plugin.setId(storageEntry.getId());
-            plugin.setFilters(filters);
-
-            add(plugin);
-            log.info("Value Storage Plugin initialized " + plugin);
          }
    }
 
