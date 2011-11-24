@@ -98,6 +98,8 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " where I.CONTAINER_NAME=? and I.I_CLASS=1 order by I.ID"
             + " ) A where ROWNUM <= ?) where r__ > ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
+      
+      FIND_NODES_BY_PARENTID_LAZILY_CQ = FIND_NODES_BY_PARENTID_LAZILY_CQ.replaceFirst("select", "select /*+ INDEX(I JCR_FK_SITEM_PARENT) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/");
    }
     
    /**
