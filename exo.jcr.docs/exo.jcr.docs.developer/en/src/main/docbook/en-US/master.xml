@@ -25,7 +25,7 @@
 and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/main/docbook/master.xml -->
 <book lang="en">
   <bookinfo>
-    <title>eXo JCR Developer Guide</title>
+    <title>Reference Guide / eXo JCR</title>
 
     <!-- corpauthor>
 			<inlinemediaobject>
