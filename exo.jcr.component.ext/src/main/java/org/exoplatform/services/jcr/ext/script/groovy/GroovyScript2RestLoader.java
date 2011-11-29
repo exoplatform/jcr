@@ -277,7 +277,8 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
          try
          {
             // Deploy auto-load scripts and start Observation Listeners.
-            final String repositoryName = observationListenerConfiguration.getRepository();
+            final String repositoryName = getWorkingRepositoryName();
+
             List<String> workspaceNames = observationListenerConfiguration.getWorkspaces();
 
             final ManageableRepository repository = repositoryService.getRepository(repositoryName);
@@ -370,7 +371,7 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
    private void autoLoadScripts(Session session) throws RepositoryException
    {
       String workspaceName = session.getWorkspace().getName();
-      String repositoryName = observationListenerConfiguration.getRepository();
+      String repositoryName = getWorkingRepositoryName();
 
       String xpath = "//element(*, " + getNodeType() + ")[@exo:autoload='true']";
       Query query = session.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
@@ -570,8 +571,11 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
       observationListenerConfiguration.setWorkspaces(wsList);
 
       LOG.info("NodeType from RegistryService: " + getNodeType());
-      LOG.info("Repository from RegistryService: " + observationListenerConfiguration.getRepository());
-      LOG.info("Workspaces node from RegistryService: " + observationListenerConfiguration.getWorkspaces());
+      LOG.info("Repository name from RegistryService: "
+         + (observationListenerConfiguration.getRepository() != null ? observationListenerConfiguration.getRepository()
+            : "not configured, will be used the current one"));
+
+      LOG.info("List of workspaces from RegistryService: " + observationListenerConfiguration.getWorkspaces());
    }
 
    /**
@@ -688,8 +692,11 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
       LOG.info("NodeType from configuration file: " + getNodeType());
       if (observationListenerConfiguration != null)
       {
-         LOG.info("Repository from configuration file: " + observationListenerConfiguration.getRepository());
-         LOG.info("Workspaces node from configuration file: " + observationListenerConfiguration.getWorkspaces());
+         LOG.info("Repository name from configuration file: "
+            + (observationListenerConfiguration.getRepository() != null ? observationListenerConfiguration
+               .getRepository() : "not configured, will be used the current one"));
+
+         LOG.info("List of workspaces from configuration file: " + observationListenerConfiguration.getWorkspaces());
       }
    }
 
@@ -1522,6 +1529,26 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
          }
       }
       return srcFiles;
+   }
+
+   /**
+    * Get working repository name. Returns the repository name from configuration 
+    * if it previously configured and returns the name of current repository in other case.
+    *  
+    * @return String
+    *           repository name
+    * @throws RepositoryException
+    */
+   private String getWorkingRepositoryName() throws RepositoryException
+   {
+      if (observationListenerConfiguration.getRepository() == null)
+      {
+         return repositoryService.getCurrentRepository().getConfiguration().getName();
+      }
+      else
+      {
+         return observationListenerConfiguration.getRepository();
+      }
    }
 
    /**
