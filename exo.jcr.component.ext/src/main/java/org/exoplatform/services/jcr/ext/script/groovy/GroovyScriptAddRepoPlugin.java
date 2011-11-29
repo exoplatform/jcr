@@ -23,6 +23,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -37,6 +38,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.jcr.RepositoryException;
+
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id$
@@ -49,9 +52,12 @@ public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
 
    private final InitParams params;
 
-   public GroovyScriptAddRepoPlugin(InitParams params)
+   private final RepositoryService repositoryService;
+
+   public GroovyScriptAddRepoPlugin(InitParams params, RepositoryService repoService)
    {
       this.params = params;
+      this.repositoryService = repoService;
    }
 
    @SuppressWarnings("unchecked")
@@ -65,7 +71,8 @@ public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
       while (iterator.hasNext())
       {
          PropertiesParam p = iterator.next();
-         final String repository = p.getProperty("repository");
+         final String repository = getWorkingRepositoryName(p);
+
          final String workspace = p.getProperty("workspace");
          final String path = p.getProperty("path");
          try
@@ -86,5 +93,35 @@ public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
          }
       }
       return repos;
+   }
+
+   /**
+    * Get working repository name. Returns the repository name from configuration 
+    * if it previously configured and returns the name of current repository in other case.
+    *
+    * @props  PropertiesParam
+    *           the properties parameters 
+    * @return String
+    *           repository name
+    * @throws RepositoryException
+    */
+   private String getWorkingRepositoryName(PropertiesParam props)
+   {
+      
+      if (props.getProperty("repository") == null)
+      {
+         try
+         {
+            return repositoryService.getCurrentRepository().getConfiguration().getName();
+         }
+         catch (RepositoryException e)
+         {
+            throw new RuntimeException("Can not get current repository and repository name was not configured", e);
+         }
+      }
+      else
+      {
+         return props.getProperty("repository");
+      }
    }
 }
