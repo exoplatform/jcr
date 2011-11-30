@@ -422,7 +422,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int lastOrderNum, int limit)
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
       throws SQLException
    {
       throw new UnsupportedOperationException("findChildNodesByParentIdentifier is not supported for old queries");

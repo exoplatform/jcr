@@ -217,7 +217,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
          "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
             + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and "
-            + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+            + " I.N_ORDER_NUM <= ? and P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
             + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
             + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
@@ -500,7 +500,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int limit)
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
       throws SQLException
    {
       if (findNodesByParentIdLazilyCQ == null)
@@ -511,8 +511,8 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       findNodesByParentIdLazilyCQ.setString(1, containerName);
       findNodesByParentIdLazilyCQ.setString(2, parentCid);
       findNodesByParentIdLazilyCQ.setInt(3, fromOrderNum);
-      findNodesByParentIdLazilyCQ.setString(4, containerName);
-      findNodesByParentIdLazilyCQ.setMaxRows(limit);
+      findNodesByParentIdLazilyCQ.setInt(4, toOrderNum);
+      findNodesByParentIdLazilyCQ.setString(5, containerName);
 
       return findNodesByParentIdLazilyCQ.executeQuery();
    }

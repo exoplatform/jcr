@@ -594,7 +594,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(final NodeData nodeData, final int fromOrderNum, final int limit,
+   public boolean getChildNodesDataByPage(final NodeData nodeData, final int fromOrderNum, final int toOrderNum,
       final List<NodeData> childs) throws RepositoryException
    {
       // if child nodes lazy iteration feature not supported by cache
@@ -655,7 +655,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             public Boolean run() throws RepositoryException
             {
                boolean hasNext =
-                  CacheableWorkspaceDataManager.super.getChildNodesDataByPage(nodeData, fromOrderNum, limit, childs);
+                  CacheableWorkspaceDataManager.super.getChildNodesDataByPage(nodeData, fromOrderNum, toOrderNum,
+                     childs);
 
                if (cache.isEnabled())
                {

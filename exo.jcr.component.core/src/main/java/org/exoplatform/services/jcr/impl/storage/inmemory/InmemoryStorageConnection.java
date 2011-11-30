@@ -362,7 +362,7 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
       throws RepositoryException
    {
       throw new UnsupportedOperationException(

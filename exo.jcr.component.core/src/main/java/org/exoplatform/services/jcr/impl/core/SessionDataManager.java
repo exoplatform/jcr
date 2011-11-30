@@ -991,7 +991,7 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
       throws RepositoryException
    {
       long start = 0;
@@ -1006,7 +1006,7 @@ public class SessionDataManager implements ItemDataConsumer
          boolean hasNext = false;
          if (!isNew(parent.getIdentifier()))
          {
-            hasNext = transactionableManager.getChildNodesDataByPage(parent, fromOrderNum, limit, childs);
+            hasNext = transactionableManager.getChildNodesDataByPage(parent, fromOrderNum, toOrderNum, childs);
          }
 
          // merge data
@@ -1022,7 +1022,7 @@ public class SessionDataManager implements ItemDataConsumer
                descendants.put(childNode.getIdentifier(), childNode);
             }
             
-            int minOrderNum = childs.size() != 0 ? childs.get(0).getOrderNumber() :-1;
+            int minOrderNum = childs.size() != 0 ? childs.get(0).getOrderNumber() : -1;
             int maxOrderNum = childs.size() != 0 ? childs.get(childs.size() - 1).getOrderNumber() : -1;
 
             // merge data

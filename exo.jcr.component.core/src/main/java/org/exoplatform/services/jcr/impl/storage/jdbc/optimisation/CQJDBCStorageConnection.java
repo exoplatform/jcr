@@ -388,23 +388,17 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childNodes)
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childNodes)
       throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
       ResultSet resultSet = null;
       try
       {
-         // query will return nodes and properties in same result set
-         // last node can be incomplete, so reading one more ahead, to be sure returning 
-         // at least "limit" nodes.
-         int rowsLimit = (limit + 1) * 4;
-         resultSet = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()), fromOrderNum, rowsLimit);
+         resultSet = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()), fromOrderNum, toOrderNum);
          TempNodeData data = null;
-         int resultSetSize = 0;
          while (resultSet.next())
          {
-            resultSetSize++;
             if (data == null)
             {
                data = new TempNodeData(resultSet);
@@ -425,19 +419,14 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             values.add(new TempPropertyData(resultSet));
          }
-         // last node can be incomplete, so removed
-         boolean hasNext = resultSetSize == rowsLimit;
-         if (!hasNext)
+
+         if (data != null)
          {
-            // the last one node
-            if (data != null)
-            {
-               NodeData nodeData = loadNodeFromTemporaryNodeData(data, parent.getQPath(), parent.getACL());
-               childNodes.add(nodeData);
-            }
+            NodeData nodeData = loadNodeFromTemporaryNodeData(data, parent.getQPath(), parent.getACL());
+            childNodes.add(nodeData);
          }
 
-         return hasNext;
+         return childNodes.size() != 0 ? true : getLastOrderNumber(parent) > toOrderNum;
       }
       catch (SQLException e)
       {

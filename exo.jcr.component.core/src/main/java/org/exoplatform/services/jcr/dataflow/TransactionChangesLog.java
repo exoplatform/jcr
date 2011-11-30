@@ -168,7 +168,9 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       {
          ItemData item = state.getData();
          if (item.getParentIdentifier().equals(rootIdentifier) && item.isNode() == forNodes)
+         {
             list.add(state);
+         }
       }
       return list;
    }

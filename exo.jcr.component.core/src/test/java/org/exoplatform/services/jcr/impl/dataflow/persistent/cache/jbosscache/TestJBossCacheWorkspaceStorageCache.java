@@ -326,7 +326,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          return null;
       }
 
-      public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+      public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
          throws RepositoryException
       {
          return false;

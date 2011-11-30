@@ -24,6 +24,8 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.transaction.TransactionService;
 
+import java.util.NoSuchElementException;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RangeIterator;
@@ -87,7 +89,7 @@ public class TestGetNodesLazily extends JcrImplBaseTest
       session.save();
       assertChildNodes(testRoot, nodesCount);
    }
-   
+
    /**
     * All child they reordered one by one and though must be returned in same order 
     */
@@ -145,7 +147,7 @@ public class TestGetNodesLazily extends JcrImplBaseTest
       session.save();
 
       nodesCount++;
-      
+
       String newNodeName = "child" + (nodesCount - 1);
 
       session.move("/" + newNodeName, testRoot.getPath() + "/" + newNodeName);
@@ -355,6 +357,19 @@ public class TestGetNodesLazily extends JcrImplBaseTest
       next = (NodeImpl)iterator.next();
       assertEquals(116, iterator.getPosition());
       assertEquals(115, next.getProperty(INDEX_PROPERTY).getLong());
+
+      iterator = testRoot.getNodesLazily();
+      long size = iterator.getSize();
+      iterator.skip(size);
+
+      try
+      {
+         iterator.next();
+         fail("Exception should be thrown");
+      }
+      catch (NoSuchElementException e)
+      {
+      }
    }
 
    //=============== stuff ===============

@@ -154,10 +154,10 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
       throws RepositoryException
    {
-      return storageDataManager.getChildNodesDataByPage(parent, fromOrderNum, limit, copyNodes(childs));
+      return storageDataManager.getChildNodesDataByPage(parent, fromOrderNum, toOrderNum, copyNodes(childs));
    }
 
    /**

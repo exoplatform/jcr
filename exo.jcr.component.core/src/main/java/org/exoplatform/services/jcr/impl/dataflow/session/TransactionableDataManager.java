@@ -105,10 +105,10 @@ public class TransactionableDataManager implements DataManager
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
       throws RepositoryException
    {
-      boolean hasNext = storageDataManager.getChildNodesDataByPage(parent, fromOrderNum, limit, childs);
+      boolean hasNext = storageDataManager.getChildNodesDataByPage(parent, fromOrderNum, toOrderNum, childs);
 
       if (txStarted())
       {
@@ -116,10 +116,9 @@ public class TransactionableDataManager implements DataManager
          List<ItemState> txChanges = transactionLog.getChildrenChanges(parent.getIdentifier(), true);
          if (txChanges.size() > 0)
          {
-            
-            int minOrderNum = childs.size() != 0 ? childs.get(0).getOrderNumber() :-1;
+            int minOrderNum = childs.size() != 0 ? childs.get(0).getOrderNumber() : -1;
             int maxOrderNum = childs.size() != 0 ? childs.get(childs.size() - 1).getOrderNumber() : -1;
-            
+
             for (ItemState state : txChanges)
             {
                NodeData data = (NodeData)state.getData();

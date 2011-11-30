@@ -245,14 +245,16 @@ public interface WorkspaceStorageConnection
     * @param parent 
     *          the parent data
     * @param fromOrderNum
-    *          the last order number returned in previous request
-    * @param limit   
-    *       the recommended amount of children nodes to return            
+    *          the returned list of child nodes should not contain the node with order number 
+    *          less than <code>fromOrderNum</code>
+    * @param toOrderNum   
+    *          the returned list of child nodes should not contain the node with order number 
+    *          more than <code>toOrderNum</code>            
     * @param childs
-    *          will contain the resulted children nodes
+    *          will contain the resulted child nodes
     * @return true if there are data to retrieve for next request and false in other case 
     */
-   boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+   boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
       throws RepositoryException;
    
    /**

@@ -3515,7 +3515,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    {
       private final SessionDataManager dataManager;
 
-      private final int limit;
+      /**
+       * The approximate count of the nodes which can be retrieved from storage by request.
+       */
+      private final int pageSize;
 
       private int fromOrderNum = 0;
 
@@ -3523,6 +3526,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       private int pos = 0;
 
+      /**
+       * The count of child nodes. Calculated only once when asked.
+       */
       private int size = -1;
 
       private LazyNodeIterator lazyNodeItetator = new LazyNodeIterator(new ArrayList<NodeData>());
@@ -3532,10 +3538,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          this(dataManager, session.getLazyNodeIteratorPageSize());
       }
 
-      LazyNodeIteratorByPage(SessionDataManager dataManager, int limit) throws RepositoryException
+      LazyNodeIteratorByPage(SessionDataManager dataManager, int pageSize) throws RepositoryException
       {
          this.dataManager = dataManager;
-         this.limit = limit;
+         this.pageSize = pageSize;
       }
 
       /**
@@ -3622,10 +3628,20 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       public void skip(long skipNum)
       {
          pos += skipNum;
-         long leftToSkip = lazyNodeItetator.trySkip(skipNum, false);
-         if (leftToSkip != 0)
+
+         // iterator is empty, no need to invoke trySkip() method since it returns
+         // decreased by 1 the skipNum parameter
+         if (!lazyNodeItetator.hasNext())
          {
-            readNextPage(leftToSkip + 1);
+            readNextPage(skipNum);
+         }
+         else
+         {
+            long leftToSkip = lazyNodeItetator.trySkip(skipNum, false);
+            if (leftToSkip != 0)
+            {
+               readNextPage(leftToSkip);
+            }
          }
       }
 
@@ -3669,7 +3685,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          List<NodeData> storedNodes = new ArrayList<NodeData>();
          try
          {
-            hasNext = dataManager.getChildNodesDataByPage(nodeData(), fromOrderNum, limit, storedNodes);
+            hasNext =
+               dataManager.getChildNodesDataByPage(nodeData(), fromOrderNum, fromOrderNum + pageSize - 1, storedNodes);
          }
          catch (RepositoryException e)
          {
@@ -3681,7 +3698,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
          int size = storedNodes.size();
 
-         fromOrderNum = size == 0 ? fromOrderNum + limit : storedNodes.get(size - 1).getOrderNumber() + 1;
+         fromOrderNum = size == 0 ? fromOrderNum + pageSize : storedNodes.get(size - 1).getOrderNumber() + 1;
 
          // skip some nodes
          if (size != 0)

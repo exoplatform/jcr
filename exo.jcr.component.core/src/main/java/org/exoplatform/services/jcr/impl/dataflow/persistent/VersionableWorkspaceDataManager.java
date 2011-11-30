@@ -91,14 +91,14 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
     * {@inheritDoc}
     */
    @Override
-   public boolean getChildNodesDataByPage(NodeData nodeData, int fromOrderNum, int limit, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(NodeData nodeData, int fromOrderNum, int toOrderNum, List<NodeData> childs)
       throws RepositoryException
    {
       if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
       {
-         return versionDataManager.getChildNodesDataByPage(nodeData, fromOrderNum, limit, childs);
+         return versionDataManager.getChildNodesDataByPage(nodeData, fromOrderNum, toOrderNum, childs);
       }
-      return super.getChildNodesDataByPage(nodeData, fromOrderNum, limit, childs);
+      return super.getChildNodesDataByPage(nodeData, fromOrderNum, toOrderNum, childs);
    }
 
    /**

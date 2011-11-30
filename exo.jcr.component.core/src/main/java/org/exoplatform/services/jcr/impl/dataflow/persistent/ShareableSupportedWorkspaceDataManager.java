@@ -73,10 +73,10 @@ public class ShareableSupportedWorkspaceDataManager implements SharedDataManager
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
       throws RepositoryException
    {
-      return persistentManager.getChildNodesDataByPage(parent, fromOrderNum, limit, childs);
+      return persistentManager.getChildNodesDataByPage(parent, fromOrderNum, toOrderNum, childs);
    }
 
    /**

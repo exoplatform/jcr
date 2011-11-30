@@ -82,7 +82,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * The description of the statistics corresponding to the method 
     * <code>getChildNodesDataByPage(NodeData nodeData, int fromOrderNum, 
-    *                               int limit, List<NodeData> childNodes)</code>
+    *                               int toOrderNum, List<NodeData> childNodes)</code>
     */
    private static final String GET_CHILD_NODES_DATA_BY_PAGE_DESCR = "getChildNodesDataByPage";
 
@@ -593,14 +593,14 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int limit, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
       throws RepositoryException
    {
       Statistics s = ALL_STATISTICS.get(GET_CHILD_NODES_DATA_BY_PAGE_DESCR);
       try
       {
          s.begin();
-         return wcs.getChildNodesDataByPage(parent, fromOrderNum, limit, childs);
+         return wcs.getChildNodesDataByPage(parent, fromOrderNum, toOrderNum, childs);
       }
       finally
       {
