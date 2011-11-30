@@ -4,24 +4,28 @@
 <chapter id="JCR.RESTServicesOnGroovy">
   <?dbhtml filename="multi-db-schema-support.html"?>
 
-  <title>JBossCache configuration for Multi DB Schema support</title>
+  <title>How to host several JCR instances on the same database
+  instance?</title>
 
   <section>
     <title>Concepts</title>
 
-    <para>This feature allows us to use the same database instance for several
-    JCR instances just by using different schemas/users. It is possible
-    because database queries are to be launched in the scope of current
-    schema.</para>
+    <para>Frequently a single database instance must be shared by several
+    other applications. But some of our customers have also asked for a way to
+    host several JCR instances in the same database instance. To fulfill this
+    need, we had to review our queries and scope them to the current schema;
+    it’s now possible to have one JCR instance per DB schema instead of per DB
+    instance. To benefit of the work done for this feature you will need to
+    apply the configuration changes described in the next sections. </para>
   </section>
 
   <section>
     <title>LockManager configuration</title>
 
-    <para>To enable the feature you need to mention
-    org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader
-    instead of org.jboss.cache.loader.JDBCCacheLoader in JBossCache
-    configuration file.</para>
+    <para>To enable this feature you need to replace
+    org.jboss.cache.loader.JDBCCacheLoader with
+    org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader in
+    JBossCache configuration file.</para>
 
     <para>Here is an example of this very part of the configuration:</para>
 
@@ -69,9 +73,10 @@
   <section>
     <title>HibernateService configuration</title>
 
-    <para>If you use HibernateService for JDBC connections management you also
-    may specify default schema by setting "hibernate.default_schema" property
-    in the configuration of HibernateService. </para>
+    <para>If you use HibernateService for JDBC connections management you will
+    need to specify explicitly the default schema by setting
+    "hibernate.default_schema" property in the configuration of
+    HibernateService.</para>
 
     <para>Here is an example:</para>
 
