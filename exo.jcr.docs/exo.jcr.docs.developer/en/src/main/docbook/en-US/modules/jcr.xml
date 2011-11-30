@@ -50,7 +50,10 @@
 
   <xi:include href="jcr/configuration/multilanguage-support.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-
+              
+  <xi:include href="jcr/configuration/multi-db-schema-support.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+  
   <xi:include href="jcr/configuration/search-configuration.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
