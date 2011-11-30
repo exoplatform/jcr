@@ -370,6 +370,25 @@ public class TestGetNodesLazily extends JcrImplBaseTest
       catch (NoSuchElementException e)
       {
       }
+
+      // remove nodes from 31..60 to make gap in interval of order numbers
+      iterator = testRoot.getNodesLazily();
+      iterator.skip(30);
+      for (int i = 0; i < 30; i++)
+      {
+         ((NodeImpl)iterator.next()).remove();
+      }
+      testRoot.save();
+
+      iterator = testRoot.getNodesLazily(10);
+      size = 0;
+      while (iterator.hasNext())
+      {
+         size++;
+         iterator.next();
+      }
+      
+      assertEquals(320, size);
    }
 
    //=============== stuff ===============
