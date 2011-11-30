@@ -66,6 +66,10 @@ public abstract class PersistedItemData implements ItemData, Externalizable
 
    public PersistedItemData(String id, QPath qpath, String parentId, int version)
    {
+      if (id.equals(parentId))
+      {
+         throw new IllegalArgumentException("Item can't have itself as parent.");
+      }
       this.id = id;
       this.qpath = qpath;
       this.parentId = parentId;
@@ -110,10 +114,14 @@ public abstract class PersistedItemData implements ItemData, Externalizable
    public boolean equals(Object obj)
    {
       if (obj == this)
+      {
          return true;
+      }
 
       if (obj == null)
+      {
          return false;
+      }
 
       if (obj instanceof ItemData)
       {

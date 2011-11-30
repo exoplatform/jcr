@@ -67,6 +67,10 @@ public abstract class TransientItemData implements ItemData, Externalizable
     */
    TransientItemData(QPath path, String identifier, int version, String parentIdentifier)
    {
+      if (identifier.equals(parentIdentifier))
+      {
+         throw new IllegalArgumentException("Item can't have itself as parent.");
+      }
       this.parentIdentifier = parentIdentifier != null ? parentIdentifier : null;
       this.identifier = identifier;
       this.qpath = path;
@@ -82,10 +86,14 @@ public abstract class TransientItemData implements ItemData, Externalizable
    public boolean equals(Object obj)
    {
       if (obj == this)
+      {
          return true;
+      }
 
       if (obj == null)
+      {
          return false;
+      }
 
       if (obj instanceof ItemData)
       {
@@ -208,7 +216,9 @@ public abstract class TransientItemData implements ItemData, Externalizable
          out.write(parentIdentifier.getBytes());
       }
       else
+      {
          out.writeInt(NULL_VALUE);
+      }
 
       out.writeInt(persistedVersion);
    }
