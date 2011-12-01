@@ -170,7 +170,8 @@ public class DBCleanService
       String dialect =
          repoEntry.getWorkspaceEntries().get(0).getContainer()
             .getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
-      if (DBConstants.DB_DIALECT_GENERIC.equals(dialect) || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
+      if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
       {
          dialect = DialectDetecter.detect(jdbcConn.getMetaData());
       }
@@ -840,7 +841,8 @@ public class DBCleanService
 
       String dialect =
          wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
-      if (DBConstants.DB_DIALECT_GENERIC.equals(dialect) || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
+      if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
       {
          dialect = DialectDetecter.detect(jdbcConn.getMetaData());
       }

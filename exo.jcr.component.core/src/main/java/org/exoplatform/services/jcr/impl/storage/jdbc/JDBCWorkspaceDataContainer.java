@@ -318,7 +318,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          this.isManaged = false;
          LOG.info("Connect to JCR database as user '" + this.dbUserName + "'");
 
-         if (DBConstants.DB_DIALECT_GENERIC.equals(pDbDialect)
+         if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(pDbDialect)
             || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(pDbDialect))
          {
             // try to detect via JDBC metadata

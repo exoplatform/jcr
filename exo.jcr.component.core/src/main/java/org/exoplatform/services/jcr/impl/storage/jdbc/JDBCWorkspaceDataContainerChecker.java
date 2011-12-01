@@ -159,13 +159,17 @@ public class JDBCWorkspaceDataContainerChecker
       // The differences in the queries by DB dialect.
       // Oracle doesn't work correct with default query because empty value stored as null value.
       String statement;
-      if (jdbcDataContainer.dbDialect.equals(DBConstants.DB_DIALECT_SYBASE)) {
+      if (jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+      {
          statement = jdbcDataContainer.multiDb
             ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA like null) or (STORAGE_DESC is not null and not DATA like null)"
             : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
                + jdbcDataContainer.containerName
                + "'  AND ((STORAGE_DESC is null and DATA like null) or (STORAGE_DESC is not null and not DATA like null))";
-      } else if (jdbcDataContainer.dbDialect.equals(DBConstants.DB_DIALECT_ORACLE) || jdbcDataContainer.dbDialect.equals(DBConstants.DB_DIALECT_ORACLEOCI)) {
+      }
+      else if (jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
+         || jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
+      {
          statement =  jdbcDataContainer.multiDb
          ? "select * from JCR_MVALUE where (STORAGE_DESC is not null and DATA is not null)"
          : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"

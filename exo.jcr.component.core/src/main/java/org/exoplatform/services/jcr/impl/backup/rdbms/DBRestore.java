@@ -270,7 +270,7 @@ public class DBRestore implements DataRestore
       ResultSet tableMetaData = null;
 
       // switch table name to lower case
-      if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
+      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
       {
          tableName = tableName.toLowerCase();
       }
@@ -328,9 +328,8 @@ public class DBRestore implements DataRestore
             columnType.add(restoreRule.getNewColumnIndex(), restoreRule.getNewColumnType());
 
             String newColumnName =
-               dialect.equals(DBConstants.DB_DIALECT_PGSQL) ? restoreRule.getNewColumnName().toLowerCase()
-                  : restoreRule
-                  .getNewColumnName();
+               dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL) ? restoreRule.getNewColumnName().toLowerCase()
+                  : restoreRule.getNewColumnName();
             columnName.add(restoreRule.getNewColumnIndex(), newColumnName);
          }
 
@@ -470,7 +469,7 @@ public class DBRestore implements DataRestore
                      ba.read(readBuffer);
 
                      String value = new String(readBuffer);
-                     if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
+                     if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
                      {
                         insertNode.setBoolean(targetIndex + 1, value.equalsIgnoreCase("t"));
                      }

@@ -379,39 +379,42 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          String blobType = "BLOB";
          String charType = "VARCHAR(512)";
          // HSSQL
-         if (dialect.equals(DBConstants.DB_DIALECT_HSQLDB))
+         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
          {
             blobType = "VARBINARY(65535)";
          }
          // MYSQL
-         else if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8) ||
-                  dialect.equals(DBConstants.DB_DIALECT_MYSQL_MYISAM) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
          {
             blobType = "LONGBLOB";
          }
          // ORACLE
-         else if (dialect.equals(DBConstants.DB_DIALECT_ORACLE) || dialect.equals(DBConstants.DB_DIALECT_ORACLEOCI))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
          {
             // Oracle suggests the use VARCHAR2 instead of VARCHAR while declaring data type.
             charType = "VARCHAR2(512)";
          }
          // POSTGRE SQL
-         else if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
          {
             blobType = "bytea";
          }
          // Microsoft SQL
-         else if (dialect.equals(DBConstants.DB_DIALECT_MSSQL))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
          {
             blobType = "VARBINARY(MAX)";
          }
          // SYBASE
-         else if (dialect.equals(DBConstants.DB_DIALECT_SYBASE))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
          {
             blobType = "IMAGE";
          }
          // INGRES
-         else if (dialect.equals(DBConstants.DB_DIALECT_INGRES))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_INGRES))
          {
             blobType = "long byte";
          }
