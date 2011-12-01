@@ -246,26 +246,6 @@
          <artifactId>hsqldb</artifactId>
          <scope>test</scope>
       </dependency>
-      <!-- For Apache Derby support (aka JavaDB) -->
-      <!-- dependency>
-         <groupId>org.apache.derby</groupId>
-         <artifactId>derby</artifactId>
-         <version>10.2.2.0</version>
-         <scope>test</scope>
-      </dependency -->
-      <!-- H2 Database (not supported now) -->
-      <!-- dependency>
-         <groupId>com.h2database</groupId>
-         <artifactId>h2</artifactId>
-         <version>1.2.132</version>
-      </dependency-->
-      <!-- Ingres Database (local repository) -->
-      <!-- dependency>
-         <groupId>com.ingres.jdbc</groupId>
-         <artifactId>iijdbc</artifactId>
-         <version>9.2</version>
-         <scope>test</scope>
-      </dependency -->
    </dependencies>      
   <!-- ======================================================================= -->
    <build>
@@ -709,77 +689,6 @@
                         <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
                         <!-- Implementation Specific Excludes -->
                         <exclude>${test.cache.exclude}</exclude>
-                     </excludes>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-      <profile>
-         <id>run-devtests</id>
-         <build>
-            <plugins>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-surefire-plugin</artifactId>
-                  <configuration>
-                     <phase>test</phase>
-                     <forkMode>never</forkMode>
-                     <!-- argLine>${env.MAVEN_OPTS}</argLine -->
-                     <goals>
-                        <goal>test</goal>
-                     </goals>
-                     <systemProperties>
-                        <property>
-                           <name>jcr.test.configuration.file</name>
-                           <value>${jcr.test.configuration.file}</value>
-                        </property>
-                        <property>
-                           <name>jbosscache-shareable</name>
-                           <value>${jbosscache.shareable}</value>
-                        </property>                         
-                        <property>
-                           <name>cache-enabled</name>
-                           <value>${cache.enabled}</value>
-                        </property>                  
-                        <property>
-                           <name>value-storage-enabled</name>
-                           <value>${value.storage.enabled}</value>
-                        </property>                  
-                        <property>
-                           <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                           <value>${statistics.enabled}</value>
-                        </property>
-                        <property>
-                           <name>exo.properties.url</name>
-                           <value>${properties.url.prefix}${properties.url.suffix}</value>
-                        </property>
-                        <!-- We add this system property due to some incompatibility between IPv6 and 
-						some JVM of Linux distributions such as Ubuntu and Fedora-->
-                        <property>
-                           <name>java.net.preferIPv4Stack</name>
-                           <value>true</value>
-                        </property>
-                        <!-- Avoid the firewall -->
-                        <property>
-                           <name>bind.address</name>
-                           <value>127.0.0.1</value>
-                        </property>
-                        <property>
-                           <name>jgroups.stack</name>
-                           <value>udp</value>
-                        </property>                        
-                     </systemProperties>
-                     <includes>
-                        <include>**/**/reading_/Test*.java</include>
-                        <include>**/**/writing_/Test*.java</include>
-                        <include>**/**/TestJBossCacheWorkspaceStorageCache_.java</include>
-                        <exclude>**/**/TestCleanableFileStreamValueData.java</exclude>
-                        <include>**/**/TestSVNodeDataOptimization_.java</include>
-                        <include>**/**/TestValueConstraints.java</include>
-                     </includes>
-                     <excludes>
-                        <exclude>org/exoplatform/services/jcr/impl/core/security/Test*.java</exclude>
                      </excludes>
                   </configuration>
                </plugin>

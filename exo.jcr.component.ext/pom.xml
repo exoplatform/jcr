@@ -316,7 +316,7 @@
            </build>
      </profile>
      <profile>
-         <id>oracle</id>
+         <id>oracle-10G-R2</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-oracle.xml</jcr.test.configuration.file>
          </properties>
@@ -324,19 +324,19 @@
             <dependency>
                <groupId>ojdbc</groupId>
                <artifactId>ojdbc</artifactId>
-               <version>14</version>
+               <version>10.2.0.4</version>
                <scope>test</scope>
             </dependency>
             <dependency>
                <groupId>ojdbc</groupId>
                <artifactId>orai18n</artifactId>
-               <version>14</version>
+               <version>10.2.0.4</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
       </profile>
       <profile>
-         <id>mysql</id>
+         <id>mysql-5.1</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-mysql.xml</jcr.test.configuration.file>
          </properties>
@@ -398,7 +398,7 @@
          </dependencies>
       </profile>
       <profile>
-         <id>pgsql</id>
+         <id>pgsql-8.3</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-pgsql.xml</jcr.test.configuration.file>
          </properties>
