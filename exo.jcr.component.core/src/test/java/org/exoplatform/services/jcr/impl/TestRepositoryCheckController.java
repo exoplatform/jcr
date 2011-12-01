@@ -309,6 +309,59 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       checkController.getLastLogFile().delete();
    }
 
+   /**
+    *  Usecase: property doens't have have parent node.
+    */
+   public void testDBUsecasesTheParentIdIsIdOfThisNodeSingleDB() throws Exception
+   {
+      checkDBUsecasesTheParentIdIsIdOfThisNode(helper.createRepository(container, false, false));
+   }
+
+   /**
+    * Usecase: property doens't have have parent node.
+    */
+   public void testDBUsecasesTheParentIdIsIdOfThisNodeMultiDB() throws Exception
+   {
+      checkDBUsecasesTheParentIdIsIdOfThisNode(helper.createRepository(container, true, false));
+   }
+
+   private void checkDBUsecasesTheParentIdIsIdOfThisNode(ManageableRepository repository) throws Exception
+   {
+      // create repository and add property
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
+      PropertyImpl prop = (PropertyImpl)node.setProperty("prop", "test");
+      session.save();
+      session.logout();
+
+      // repository is consistent
+      checkController = new RepositoryCheckController(repository);
+      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is consistent"));
+      checkController.getLastLogFile().delete();
+
+      WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
+      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+
+      // change ITEM table
+      String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+
+      Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
+
+      conn.prepareStatement("DROP INDEX JCR_IDX_" + (isMultiDb ? "M" : "S") + "ITEM_PARENT").execute();
+      conn.prepareStatement("DROP INDEX JCR_IDX_" + (isMultiDb ? "M" : "S") + "ITEM_PARENT_NAME").execute();
+      conn.prepareStatement(
+         "UPDATE JCR_" + (isMultiDb ? "M" : "S") + "ITEM SET PARENT_ID = '" + (isMultiDb ? "" : wsEntry.getName())
+            + node.getInternalIdentifier() + "' WHERE ID='" + (isMultiDb ? "" : wsEntry.getName())
+            + node.getInternalIdentifier() + "'").execute();
+
+      conn.commit();
+      conn.close();
+
+      // repository is inconsistent
+      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is inconsistent"));
+      checkController.getLastLogFile().delete();
+   }
 
    /**
     *  Usecase: property doens't have have parent node.

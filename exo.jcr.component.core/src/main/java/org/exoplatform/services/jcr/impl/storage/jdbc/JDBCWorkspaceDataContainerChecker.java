@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.InspectionLog;
 import org.exoplatform.services.jcr.impl.InspectionLog.InspectionStatus;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
@@ -202,6 +203,14 @@ public class JDBCWorkspaceDataContainerChecker
             + jdbcDataContainer.containerName + "' and R.NODE_ID=N.ID)", new String[]{"NODE_ID", "PROPERTY_ID",
          DBConstants.COLUMN_VORDERNUM},
          "Reference records that linked to unexisted nodes. Can be normal for some usecases.", InspectionStatus.WARN));
+
+      // an item is its own parent. 
+      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
+         ? "select * from JCR_MITEM I where I.ID = I.PARENT_ID and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'"
+         : "select * from JCR_SITEM I where I.ID = I.PARENT_ID and I.CONTAINER_NAME='"
+            + jdbcDataContainer.containerName + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'", new String[]{
+         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "An item is its own parent.",
+         InspectionStatus.ERR));
 
       // using existing DataSource to get a JDBC Connection.
       Connection jdbcConn = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
