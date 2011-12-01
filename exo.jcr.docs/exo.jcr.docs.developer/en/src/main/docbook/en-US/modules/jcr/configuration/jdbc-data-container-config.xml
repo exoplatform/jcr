@@ -102,6 +102,12 @@
         expect any support and if performances in read accesses are more
         important than the consistency in your use-case. This dialect is only
         dedicated to the community.</para>
+      </note><note>
+        <para>RDBMS reindexing feature use queries based on LIMIT and OFFSET
+        clauses which are not enabled by default for DB2. However, you can
+        ensure they are enabled by executing the following <programlisting>$ db2set DB2_COMPATIBILITY_VECTOR=MYS
+$ db2stop
+$ db2start</programlisting></para>
       </note> Each database software supports ANSI SQL standards but also has
     its own specifics. So, each database has its own configuration in eXo JCR
     as a database dialect parameter. If you need a more detailed configuration
