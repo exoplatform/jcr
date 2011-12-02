@@ -16,8 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-
-
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -131,7 +129,7 @@ public class JobRepositoryRestore extends Thread
     * @throws RepositoryRestoreExeption
     *       if exception occurred during restore 
     */
-   protected void restore() throws RepositoryRestoreExeption
+   final protected void restore() throws RepositoryRestoreExeption
    {
       try
       {
@@ -162,7 +160,7 @@ public class JobRepositoryRestore extends Thread
     *           will be generated the Throwable
     */
    protected void restoreRepository() throws RepositoryRestoreExeption, BackupOperationException,
-            ClassNotFoundException
+      ClassNotFoundException
    {
       List<WorkspaceEntry> originalWorkspaceEntrys = repositoryEntry.getWorkspaceEntries();
 
@@ -182,7 +180,7 @@ public class JobRepositoryRestore extends Thread
 
       //getting backup chail log to system workspace.
       BackupChainLog systemBackupChainLog = workspacesMapping.get(systemWorkspaceEntry.getName());
-      
+
       WorkspaceInitializerEntry wiEntry = getWorkspaceInitializerEntry(systemBackupChainLog);
 
       // set initializer
@@ -223,8 +221,9 @@ public class JobRepositoryRestore extends Thread
       {
          restored = false;
 
-         log.error("Can not restore workspace \"" + currennWorkspaceName + " in repository \""
-            + repositoryEntry.getName() + "\".", e);
+         log.error(
+            "Can not restore workspace \"" + currennWorkspaceName + " in repository \"" + repositoryEntry.getName()
+               + "\".", e);
 
          throw new RepositoryRestoreExeption("Can not restore workspace \"" + currennWorkspaceName
             + " in repository \"" + repositoryEntry.getName() + "\"." + " There was database error.", e);
@@ -234,8 +233,9 @@ public class JobRepositoryRestore extends Thread
       {
          restored = false;
 
-         log.error("Can not restore workspace \"" + currennWorkspaceName + " in repository \""
-            + repositoryEntry.getName() + "\".", t);
+         log.error(
+            "Can not restore workspace \"" + currennWorkspaceName + " in repository \"" + repositoryEntry.getName()
+               + "\".", t);
 
          throw new RepositoryRestoreExeption("Can not restore workspace \"" + currennWorkspaceName
             + " in repository \"" + repositoryEntry.getName() + "\".", t);
@@ -377,19 +377,10 @@ public class JobRepositoryRestore extends Thread
    {
       try
       {
-         stateRestore = REPOSITORY_RESTORE_STARTED;
-         startTime = Calendar.getInstance();
-
-         restoreRepository();
-
-         stateRestore = REPOSITORY_RESTORE_SUCCESSFUL;
-         endTime = Calendar.getInstance();
+         restore();
       }
       catch (Throwable t)
       {
-         stateRestore = REPOSITORY_RESTORE_FAIL;
-         restoreException = t;
-
          log.error("The restore was fail", t);
       }
    }

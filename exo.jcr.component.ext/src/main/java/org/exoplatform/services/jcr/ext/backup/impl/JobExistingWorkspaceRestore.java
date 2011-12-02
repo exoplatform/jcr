@@ -61,7 +61,7 @@ public class JobExistingWorkspaceRestore extends JobWorkspaceRestore
     * {@inheritDoc}
     */
    @Override
-   protected void restore() throws WorkspaceRestoreException
+   protected void restoreWorkspace() throws WorkspaceRestoreException
    {
       try
       {
@@ -99,7 +99,7 @@ public class JobExistingWorkspaceRestore extends JobWorkspaceRestore
             component.clean();
          }
 
-         super.restore();
+         super.restoreWorkspace();
       }
       catch (Throwable t)
       {

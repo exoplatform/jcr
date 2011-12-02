@@ -68,7 +68,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
     * {@inheritDoc}
     */
    @Override
-   protected void restore() throws WorkspaceRestoreException
+   protected void restoreWorkspace() throws WorkspaceRestoreException
    {
       // list of data restorers
       List<DataRestore> dataRestorer = new ArrayList<DataRestore>();

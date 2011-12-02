@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
+import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.ext.backup.server.WorkspaceRestoreExeption;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
@@ -151,19 +152,10 @@ public class JobWorkspaceRestore extends Thread
    {
       try
       {
-         stateRestore = RESTORE_STARTED;
-         startTime = Calendar.getInstance();
-
          restore();
-
-         stateRestore = RESTORE_SUCCESSFUL;
-         endTime = Calendar.getInstance();
       }
       catch (Throwable t)
       {
-         stateRestore = RESTORE_FAIL;
-         restoreException = t;
-
          log.error("The restore was fail", t);
       }
    }
@@ -174,7 +166,34 @@ public class JobWorkspaceRestore extends Thread
     * @throws Throwable
     *           will be generated the Throwable
     */
-   protected void restore() throws Throwable
+   final protected void restore() throws Throwable
+   {
+      try
+      {
+         stateRestore = RESTORE_STARTED;
+         startTime = Calendar.getInstance();
+
+         restoreWorkspace();
+
+         stateRestore = RESTORE_SUCCESSFUL;
+         endTime = Calendar.getInstance();
+      }
+      catch (Throwable t)
+      {
+         stateRestore = RESTORE_FAIL;
+         restoreException = t;
+
+         throw new RepositoryRestoreExeption(t.getMessage(), t);
+      }
+   }
+
+   /**
+    * Will be restored the workspace.
+    * 
+    * @throws Throwable
+    *           will be generated the Throwable
+    */
+   protected void restoreWorkspace() throws Throwable
    {
       boolean restored = true;
       RepositoryImpl repository = (RepositoryImpl)repositoryService.getRepository(repositoryName);
