@@ -176,15 +176,6 @@ public class DBCleanService
          dialect = DialectDetecter.detect(jdbcConn.getMetaData());
       }
 
-      // Sybase doesn't allow DDL scripts inside transaction
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
-      {
-         if (!jdbcConn.getAutoCommit())
-         {
-            jdbcConn.setAutoCommit(true);
-         }
-      }
-
       if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
@@ -194,26 +185,26 @@ public class DBCleanService
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE)
          || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
       {
-         ArrayList<String> dbCleanerScripts = new ArrayList<String>();
+         List<String> dbCleanerScripts = new ArrayList<String>();
          dbCleanerScripts.addAll(getRenameScripts(isMultiDB, dialect));
          dbCleanerScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
          dbCleanerScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
 
-         ArrayList<String> afterRestoreScript = new ArrayList<String>();
+         List<String> afterRestoreScript = new ArrayList<String>();
          afterRestoreScript.addAll(getRemoveOldObjectsScripts(isMultiDB, dialect));
          afterRestoreScript.addAll(getRestoreIndexesScripts(isMultiDB, dialect));
 
-         return new DBCleaner(jdbcConn, dbCleanerScripts, getRollbackScripts(isMultiDB, dialect),
-            afterRestoreScript);
+         return new DBCleaner(jdbcConn, dbCleanerScripts, getRollbackScripts(isMultiDB, dialect), afterRestoreScript,
+            dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
       }
 
-      ArrayList<String> dbCleanerScripts = new ArrayList<String>();
+      List<String> dbCleanerScripts = new ArrayList<String>();
       dbCleanerScripts.addAll(getDropTableScripts(isMultiDB, dialect));
       dbCleanerScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
       dbCleanerScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
 
       return new DBCleaner(jdbcConn, dbCleanerScripts, new ArrayList<String>(), getRestoreIndexesScripts(isMultiDB,
-         dialect));
+         dialect), dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
 
    }
 
@@ -847,15 +838,6 @@ public class DBCleanService
          dialect = DialectDetecter.detect(jdbcConn.getMetaData());
       }
 
-      // Sybase doesn't allow DDL scripts inside transaction
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
-      {
-         if (!jdbcConn.getAutoCommit())
-         {
-            jdbcConn.setAutoCommit(true);
-         }
-      }
-
       if (!isMultiDB)
       {
          boolean cleanWithHelper = false;
@@ -923,12 +905,13 @@ public class DBCleanService
             String deleteItems =
                "delete from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME='" + containerName + "' and PARENT_ID=?";
 
-            return new DBCleaner(jdbcConn, cleanScripts, rollbackScripts, commitScripts,
-               new RecursiveDBCleanHelper(jdbcConn, selectItems, deleteItems));
+            return new DBCleaner(jdbcConn, cleanScripts, rollbackScripts, commitScripts, new RecursiveDBCleanHelper(
+               jdbcConn, selectItems, deleteItems), dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
          }
 
          cleanScripts.add("delete from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
-         return new DBCleaner(jdbcConn, cleanScripts, rollbackScripts, commitScripts);
+         return new DBCleaner(jdbcConn, cleanScripts, rollbackScripts, commitScripts,
+            dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
       }
       else
       {
@@ -949,7 +932,8 @@ public class DBCleanService
             commitScript.addAll(getRemoveOldObjectsScripts(isMultiDB, dialect));
             commitScript.addAll(getRestoreIndexesScripts(isMultiDB, dialect));
 
-            return new DBCleaner(jdbcConn, cleanScripts, getRollbackScripts(isMultiDB, dialect), commitScript);
+            return new DBCleaner(jdbcConn, cleanScripts, getRollbackScripts(isMultiDB, dialect), commitScript,
+               dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
          }
          else
          {
@@ -960,7 +944,7 @@ public class DBCleanService
             cleanScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
 
             return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), getRestoreIndexesScripts(isMultiDB,
-               dialect));
+               dialect), dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
          }
       }
    }

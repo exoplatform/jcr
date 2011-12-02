@@ -126,15 +126,15 @@ public class DBRestore implements DataRestore
    protected List<String> successfulExecuted;
 
    /**
-    * Constructor DBRestor.
+    * Constructor DBRestore.
     * 
     * @throws NamingException 
     * @throws SQLException 
     * @throws RepositoryConfigurationException 
     */
    public DBRestore(File storageDir, Connection jdbcConn, Map<String, RestoreTableRule> tables,
-      WorkspaceEntry wsConfig, FileCleaner fileCleaner, DBCleaner dbCleaner) throws NamingException, SQLException,
-      RepositoryConfigurationException
+      WorkspaceEntry wsConfig, FileCleaner fileCleaner, DBCleaner dbCleaner) throws NamingException,
+      SQLException, RepositoryConfigurationException
    {
       this.jdbcConn = jdbcConn;
       this.fileCleaner = fileCleaner;
@@ -565,6 +565,11 @@ public class DBRestore implements DataRestore
     */
    protected void commitBatch() throws SQLException
    {
+      // commit every batch for sybase
+      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+      {
+         jdbcConn.commit();
+      }
    }
 
    /**

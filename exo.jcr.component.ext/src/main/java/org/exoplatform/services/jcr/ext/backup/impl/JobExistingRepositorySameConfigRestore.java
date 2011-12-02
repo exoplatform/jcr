@@ -155,7 +155,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                                  new Object[]{
                                     fullBackupDir, 
                                     jdbcConn, 
-                                    new DummyDBCleaner(jdbcConn, new ArrayList<String>())});
+                                    new DummyDBCleaner()});
                   }
                   else
                   {

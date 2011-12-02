@@ -16,9 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Created by The eXo Platform SAS.
@@ -34,17 +33,9 @@ public class DummyDBCleaner extends DBCleaner
    /**
     * DummyDBCleaner constructor.
     */
-   public DummyDBCleaner(Connection connection, List<String> cleanScripts)
+   public DummyDBCleaner()
    {
-      super(connection, cleanScripts);
-   }
-
-   /**
-    * DummyDBCleaner constructor.
-    */
-   public DummyDBCleaner(Connection connection, List<String> cleanScripts, DBCleanHelper dbCleanHelper)
-   {
-      super(connection, cleanScripts, dbCleanHelper);
+      super(null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), null, false);
    }
 
    /**

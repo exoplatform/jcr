@@ -38,7 +38,6 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
-import org.exoplatform.services.jcr.impl.backup.rdbms.SybaseDBRestore;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
@@ -1291,17 +1290,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             dbCleaner = DBCleanService.getWorkspaceDBCleaner(jdbcConn, wsConfig);
          }
 
-         if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
-         {
-            restorers.add(new SybaseDBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
-         }
-         else
-         {
-            restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
-         }
+         restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
 
          // prepare value storage restorer
-         File backupValueStorageDir = new File(storageDir, "values");
          if (wsConfig.getContainer().getValueStorages() != null)
          {
             List<File> dataDirs = new ArrayList<File>();

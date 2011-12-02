@@ -18,7 +18,6 @@ package org.exoplatform.services.jcr.impl.clean.rdbms;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -29,7 +28,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * The goal of this class is removing workspace data from database.
@@ -48,11 +46,6 @@ public class DBCleaner
     * Connection to database.
     */
    protected final Connection connection;
-
-   /**
-    * Pattern for JCR tables.
-    */
-   protected final Pattern dbObjectNamePattern;
 
    /**
     * Common clean scripts for database.
@@ -75,17 +68,9 @@ public class DBCleaner
    protected final DBCleanHelper dbCleanHelper;
 
    /**
-    * DBCleaner constructor.
-    * 
-    * @param connection 
-    *          connection to database where workspace tables is placed
-    * @param cleanScripts
-    *          scripts for cleaning database         
+    * Idicates if executing scripts should be done in autoCommit mode.                  
     */
-   public DBCleaner(Connection connection, List<String> cleanScripts)
-   {
-      this(connection, cleanScripts, null);
-   }
+   protected final boolean autoCommit;
 
    /**
     * DBCleaner constructor.
@@ -93,38 +78,25 @@ public class DBCleaner
     * @param connection 
     *          connection to database where workspace tables is placed
     * @param cleanScripts
-    *          scripts for cleaning database         
+    *          scripts for cleaning database
+    * @param rollbackScripts
+    *          scripts for execution when something failed         
+    * @param commitScripts
+    *          scripts for removing temporary objects         
     * @param dbCleanHelper
     *          class which help to clean database by executing special queries
+    * @param autoCommit
+    *          indicates if executing scripts should be done in autoCommit mode                  
     */
-   public DBCleaner(Connection connection, List<String> cleanScripts, DBCleanHelper dbCleanHelper)
+   public DBCleaner(Connection connection, List<String> cleanScripts, List<String> rollbackScripts,
+      List<String> commitScripts, DBCleanHelper dbCleanHelper, boolean autoCommit)
    {
-      this.dbObjectNamePattern = Pattern.compile(DBInitializer.SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
       this.connection = connection;
       this.cleanScripts.addAll(cleanScripts);
-      this.dbCleanHelper = dbCleanHelper;
-   }
-
-   /**
-    * DBCleaner constructor.
-    * 
-    * @param connection 
-    *          connection to database where workspace tables is placed
-    * @param cleanScripts
-    *          scripts for cleaning database
-    * @param rollbackScripts
-    *          scripts for execution when something failed         
-    * @param commitScripts
-    *          scripts for removing temporary objects         
-    * @param dbCleanHelper
-    *          class which help to clean database by executing special queries
-    */
-   public DBCleaner(Connection connection, List<String> cleanScripts, List<String> rollbackScripts,
-      List<String> commitScripts, DBCleanHelper cleanHelper)
-   {
-      this(connection, cleanScripts, cleanHelper);
       this.rollbackScripts.addAll(rollbackScripts);
       this.commitScripts.addAll(commitScripts);
+      this.dbCleanHelper = dbCleanHelper;
+      this.autoCommit = autoCommit;
    }
 
    /**
@@ -137,12 +109,14 @@ public class DBCleaner
     * @param rollbackScripts
     *          scripts for execution when something failed         
     * @param commitScripts
-    *          scripts for removing temporary objects         
+    *          scripts for removing temporary objects
+    * @param autoCommit
+    *          indicates if executing scripts should be done in autoCommit mode                  
     */
    public DBCleaner(Connection connection, List<String> cleanScripts, List<String> rollbackScripts,
-      List<String> commitScripts)
+      List<String> commitScripts, boolean autoCommit)
    {
-      this(connection, cleanScripts, rollbackScripts, commitScripts, null);
+      this(connection, cleanScripts, rollbackScripts, commitScripts, null, autoCommit);
    }
 
    /**
@@ -201,6 +175,14 @@ public class DBCleaner
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
+      // set the new autoCommit mode if need
+      // for example, the Sybase is not allowed DDL query (CREATE TABLE, DROP TABLE, etc. ) within a multi-statement transaction
+      boolean autoCommit = connection.getAutoCommit();
+      if (this.autoCommit != autoCommit)
+      {
+         connection.setAutoCommit(this.autoCommit);
+      }
+
       Statement st = connection.createStatement();
       try
       {
@@ -227,6 +209,12 @@ public class DBCleaner
          catch (SQLException e)
          {
             LOG.error("Can't close the Statement." + e);
+         }
+
+         // restore previous autoCommit mode
+         if (this.autoCommit != autoCommit)
+         {
+            connection.setAutoCommit(autoCommit);
          }
       }
    }
