@@ -881,7 +881,7 @@ public class DBCleanService
             "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
          commitScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
 
-         // PostgreSQL, DB2 on connection.rollback() restore all removed constrains
+         // PostgreSQL, DB2 and MSSQL on connection.rollback() will restore all removed constrains
          if (!dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
             && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
             && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8)
@@ -915,13 +915,22 @@ public class DBCleanService
       }
       else
       {
-         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+         // PostgreSQL, DB2 and MSSQL on connection.rollback() will restore all removed tables
+         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
+         {
+            List<String> cleanScripts = new ArrayList<String>();
+
+            cleanScripts.addAll(getDropTableScripts(isMultiDB, dialect));
+            cleanScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
+            cleanScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
+
+            return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), getRestoreIndexesScripts(isMultiDB,
+               dialect), false);
+         }
+         else
          {
             ArrayList<String> cleanScripts = new ArrayList<String>();
             cleanScripts.addAll(getRenameScripts(isMultiDB, dialect));
@@ -934,17 +943,6 @@ public class DBCleanService
 
             return new DBCleaner(jdbcConn, cleanScripts, getRollbackScripts(isMultiDB, dialect), commitScript,
                dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
-         }
-         else
-         {
-            List<String> cleanScripts = new ArrayList<String>();
-
-            cleanScripts.addAll(getDropTableScripts(isMultiDB, dialect));
-            cleanScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
-            cleanScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
-
-            return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), getRestoreIndexesScripts(isMultiDB,
-               dialect), dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
          }
       }
    }
