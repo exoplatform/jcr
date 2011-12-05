@@ -233,7 +233,7 @@
         <para><emphasis>exo.jcr.component.statistics-X.Y.Z</emphasis>.jar
         corresponding to your eXo JCR version that you can get from the jboss
         maven repository <ulink
-        url="http://repository.jboss.com/maven2/org/exoplatform/jcr/exo.jcr.component.statistics">http://repository.jboss.com/maven2/org/exoplatform/jcr/exo.jcr.component.statistics</ulink>.</para>
+        url="https://repository.jboss.org/nexus/content/groups/public/org/exoplatform/jcr/exo.jcr.component.statistics">https://repository.jboss.org/nexus/content/groups/public/org/exoplatform/jcr/exo.jcr.component.statistics</ulink>.</para>
       </listitem>
 
       <listitem>
