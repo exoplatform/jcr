@@ -24,6 +24,7 @@ import java.util.GregorianCalendar;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.Version;
 
@@ -145,5 +146,17 @@ public class TestNodeDefinition extends JcrAPIBaseTest
       {
          // ok
       }
+   }
+
+   /** 
+    * Testing method canSetProperty for class NodeType. 
+    * when we set the multivalue property....... 
+    * @throws Exception some exception that occurred in the test. 
+    */
+   public void testSetNotAllowedMultiValueProperty() throws Exception
+   {
+      Node n = session.getRootNode().addNode("abc", "nt:folder");
+      session.save();
+      assertFalse(n.getPrimaryNodeType().canSetProperty("test", (Value[])null));
    }
 }

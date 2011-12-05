@@ -206,37 +206,37 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
          InternalQName pname = locationFactory.parseJCRName(propertyName).getInternalName();
 
          PropertyDefinitionDatas pdefs = nodeTypeDataManager.getPropertyDefinitions(pname, nodeTypeData.getName());
-         PropertyDefinitionData pd = pdefs.getDefinition(true);
-         if (pd != null)
+         if (pdefs != null)
          {
-            if (pd.isProtected())
+            PropertyDefinitionData pd = pdefs.getDefinition(true);
+            if (pd != null)
             {
-               // can set (edit)
-               return false;
-            }
-            else if (values != null)
-            {
-               // can set (add or edit)
-               int res = 0;
-               for (Value value : values)
+               if (pd.isProtected())
                {
-                  if (canSetPropertyForType(pd.getRequiredType(), value, pd.getValueConstraints()))
-                  {
-                     res++;
-                  }
+                  // can set (edit)
+                  return false;
                }
-               return res == values.length;
-            }
-            else
-            {
-               // can remove
-               return !pd.isMandatory();
+               else if (values != null)
+               {
+                  // can set (add or edit)
+                  int res = 0;
+                  for (Value value : values)
+                  {
+                     if (canSetPropertyForType(pd.getRequiredType(), value, pd.getValueConstraints()))
+                     {
+                        res++;
+                     }
+                  }
+                  return res == values.length;
+               }
+               else
+               {
+                  // can remove
+                  return !pd.isMandatory();
+               }
             }
          }
-         else
-         {
-            return false;
-         }
+         return false;
       }
       catch (RepositoryException e)
       {
