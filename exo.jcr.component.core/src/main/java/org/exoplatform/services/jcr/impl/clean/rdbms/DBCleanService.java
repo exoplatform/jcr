@@ -261,6 +261,11 @@ public class DBCleanService
          dropScript.add("ALTER TABLE  JCR_" + multiDb + "VALUE DROP CONSTRAINT JCR_FK_" + multiDb + "VALUE_PROPERTY");
          dropScript.add("ALTER TABLE  JCR_" + multiDb + "ITEM DROP CONSTRAINT JCR_PK_" + multiDb + "ITEM");
          dropScript.add("ALTER TABLE  JCR_" + multiDb + "VALUE DROP CONSTRAINT JCR_PK_" + multiDb + "VALUE");
+         dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_PARENT");
+         dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_PARENT_NAME");
+         dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_PARENT_ID");
+         dropScript.add("DROP INDEX JCR_" + multiDb + "VALUE.JCR_IDX_" + multiDb + "VALUE_PROPERTY");
+         dropScript.add("DROP INDEX JCR_" + multiDb + "REF.JCR_IDX_" + multiDb + "REF_PROPERTY");
       }
 
       return dropScript;
@@ -773,6 +778,9 @@ public class DBCleanService
             String query = scripts.get(i);
             if (query.contains("JCR_PK_" + multiDb + "ITEM PRIMARY KEY(ID),"))
             {
+               // removing foreign key creation from initialization scripts for table JCR_S(M)ITEM
+               // it is not possible to create table with such foreign key if the same key exists in
+               // another table of database
                query =
                   query.replace("JCR_PK_" + multiDb + "ITEM PRIMARY KEY(ID),", "JCR_PK_" + multiDb
                      + "ITEM PRIMARY KEY(ID)");
@@ -783,6 +791,9 @@ public class DBCleanService
             }
             else if (query.contains("CONSTRAINT JCR_PK_" + multiDb + "VALUE PRIMARY KEY(ID),"))
             {
+               // removing foreign key creation for table JCR_S(M)VALUE
+               // it is not possible to create table with such foreign key if the same key exists in
+               // another table of database
                query =
                   query.replace("CONSTRAINT JCR_PK_" + multiDb + "VALUE PRIMARY KEY(ID),", "CONSTRAINT JCR_PK_"
                      + multiDb + "VALUE PRIMARY KEY(ID)");
@@ -790,22 +801,6 @@ public class DBCleanService
                   query.replace("CONSTRAINT JCR_FK_" + multiDb
                      + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)", "");
                scripts.set(i, query);
-            }
-         }
-      }
-      else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
-      {
-         for (int i = 0; i < scripts.size(); i++)
-         {
-            String query = scripts.get(i);
-            if (query.contains("JCR_IDX_" + multiDb + "ITEM_PARENT")
-               || query.contains("JCR_IDX_" + multiDb + "ITEM_PARENT_NAME")
-               || query.contains("JCR_IDX_" + multiDb + "ITEM_PARENT_ID")
-               || query.contains("JCR_IDX_" + multiDb + "VALUE_PROPERTY")
-               || query.contains("JCR_IDX_" + multiDb + "REF_PROPERTY"))
-            {
-               scripts.remove(i);
-               i--;
             }
          }
       }
