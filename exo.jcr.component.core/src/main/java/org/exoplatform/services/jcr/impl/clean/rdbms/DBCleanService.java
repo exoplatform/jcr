@@ -98,32 +98,7 @@ public class DBCleanService
       jdbcConn.setAutoCommit(false);
       DBCleaner dbCleaner = getWorkspaceDBCleaner(jdbcConn, wsEntry);
 
-      try
-      {
-         dbCleaner.executeCleanScripts();
-
-         try
-         {
-            dbCleaner.executeCommitScripts();
-         }
-         catch (SQLException e)
-         {
-            LOG.error("Can't remove temporary objects", e);
-         }
-
-         jdbcConn.commit();
-      }
-      catch (SQLException e)
-      {
-         jdbcConn.rollback();
-
-         dbCleaner.executeRollbackScripts();
-         jdbcConn.commit();
-      }
-      finally
-      {
-         jdbcConn.close();
-      }
+      processingClean(dbCleaner, jdbcConn);
    }
 
    /**
@@ -138,9 +113,42 @@ public class DBCleanService
    public static void cleanRepositoryData(RepositoryEntry rEntry) throws RepositoryConfigurationException,
       NamingException, SQLException
    {
-      for (WorkspaceEntry wsEntry : rEntry.getWorkspaceEntries())
+      if (rEntry.getWorkspaceEntries().size() == 0)
       {
-         cleanWorkspaceData(wsEntry);
+         // nothing to clean
+         return;
+      }
+
+      String dsName =
+         rEntry.getWorkspaceEntries().get(0).getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+
+      final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
+      if (ds == null)
+      {
+         throw new NameNotFoundException("Data source " + dsName + " not found");
+      }
+
+      Connection jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+      {
+         public Connection run() throws Exception
+         {
+            return ds.getConnection();
+
+         }
+      });
+
+      jdbcConn.setAutoCommit(false);
+      DBCleaner dbCleaner = getRepositoryDBCleaner(jdbcConn, rEntry);
+      if (dbCleaner != null)
+      {
+         processingClean(dbCleaner, jdbcConn);
+      }
+      else
+      {
+         for (WorkspaceEntry wsEntry : rEntry.getWorkspaceEntries())
+         {
+            cleanWorkspaceData(wsEntry);
+         }
       }
    }
 
@@ -176,36 +184,31 @@ public class DBCleanService
          dialect = DialectDetecter.detect(jdbcConn.getMetaData());
       }
 
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
+      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL)
+         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
       {
          List<String> dbCleanerScripts = new ArrayList<String>();
-         dbCleanerScripts.addAll(getRenameScripts(isMultiDB, dialect));
+         dbCleanerScripts.addAll(getDropTableScripts(isMultiDB, dialect));
          dbCleanerScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
          dbCleanerScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
 
-         List<String> afterRestoreScript = new ArrayList<String>();
-         afterRestoreScript.addAll(getRemoveOldObjectsScripts(isMultiDB, dialect));
-         afterRestoreScript.addAll(getRestoreIndexesScripts(isMultiDB, dialect));
-
-         return new DBCleaner(jdbcConn, dbCleanerScripts, getRollbackScripts(isMultiDB, dialect), afterRestoreScript,
-            dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
+         return new DBCleaner(jdbcConn, dbCleanerScripts, new ArrayList<String>(), getRestoreIndexesScripts(isMultiDB,
+            dialect), false);
       }
 
       List<String> dbCleanerScripts = new ArrayList<String>();
-      dbCleanerScripts.addAll(getDropTableScripts(isMultiDB, dialect));
+      dbCleanerScripts.addAll(getRenameScripts(isMultiDB, dialect));
       dbCleanerScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
       dbCleanerScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
 
-      return new DBCleaner(jdbcConn, dbCleanerScripts, new ArrayList<String>(), getRestoreIndexesScripts(isMultiDB,
-         dialect), dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
+      List<String> afterRestoreScript = new ArrayList<String>();
+      afterRestoreScript.addAll(getRemoveOldObjectsScripts(isMultiDB, dialect));
+      afterRestoreScript.addAll(getRestoreIndexesScripts(isMultiDB, dialect));
 
+      return new DBCleaner(jdbcConn, dbCleanerScripts, getRollbackScripts(isMultiDB, dialect), afterRestoreScript,
+         dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
    }
 
    /**
@@ -393,7 +396,7 @@ public class DBCleanService
    }
 
    /**
-    * Return the command to drop primary or foreign key.  
+    * Return the SQL script for drop primary or foreign key.  
     * 
     * @param isPrimaryKey
     *          boolean
@@ -871,7 +874,6 @@ public class DBCleanService
          String constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
          cleanScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(false, constraintName, dialect));
 
-         constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
          String constraint =
             "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
          commitScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
@@ -939,6 +941,36 @@ public class DBCleanService
             return new DBCleaner(jdbcConn, cleanScripts, getRollbackScripts(isMultiDB, dialect), commitScript,
                dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
          }
+      }
+   }
+
+   private static void processingClean(DBCleaner dbCleaner, Connection jdbcConn) throws SQLException
+   {
+      try
+      {
+         dbCleaner.executeCleanScripts();
+
+         try
+         {
+            dbCleaner.executeCommitScripts();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't remove temporary objects", e);
+         }
+
+         jdbcConn.commit();
+      }
+      catch (SQLException e)
+      {
+         jdbcConn.rollback();
+
+         dbCleaner.executeRollbackScripts();
+         jdbcConn.commit();
+      }
+      finally
+      {
+         jdbcConn.close();
       }
    }
 }
