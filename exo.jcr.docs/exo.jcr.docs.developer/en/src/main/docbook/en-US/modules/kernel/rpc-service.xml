@@ -128,8 +128,9 @@
     <title>Configuration</title>
 
     <para>The configuration of the <emphasis>RPCService</emphasis> should be
-    added only in a cluster environment. See below an example of
-    configuration</para>
+    added only in a cluster environment. See below an example of configuration
+    in case you intend to use JGroups 2 (which is mandatory if you use JBoss
+    Cache as underlying cache):</para>
 
     <programlisting language="xml">&lt;configuration&gt;
 ....  
@@ -161,6 +162,44 @@
   &lt;/component&gt;   
 ...
 &lt;/configuration&gt;</programlisting>
+
+    <para>See below an example of configuration in case you intend to use
+    JGroups 3 (which is mandatory if you use Infinispan as underlying
+    cache):</para>
+
+    <programlisting language="xml">&lt;configuration&gt;
+....  
+  &lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.rpc.RPCService&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.rpc.jgv3.RPCServiceImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;jgroups-configuration&lt;/name&gt;
+        &lt;value&gt;classpath:/udp.xml&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;jgroups-cluster-name&lt;/name&gt;
+        &lt;value&gt;RPCService-Cluster&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;jgroups-default-timeout&lt;/name&gt;
+        &lt;value&gt;0&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;allow-failover&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;retry-timeout&lt;/name&gt;
+        &lt;value&gt;20000&lt;/value&gt;
+      &lt;/value-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;   
+...
+&lt;/configuration&gt;</programlisting>
+
+    <para>The implementation for JGroups 3 is available in the library
+    <emphasis>exo.kernel.component.ext.rpc.impl.jgroups.v3-X.Y.Z.jar</emphasis>.</para>
 
     <table>
       <title>Fields description</title>
