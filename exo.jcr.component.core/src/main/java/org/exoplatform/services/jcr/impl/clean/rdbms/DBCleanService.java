@@ -168,7 +168,7 @@ public class DBCleanService
    }
 
    /**
-    * Returns database cleaner for manual cleaning for repository. 
+    * Returns database cleaner of repository. 
     * 
     * @param jdbcConn
     *          database connection which need to use
@@ -834,7 +834,7 @@ public class DBCleanService
    }
 
    /**
-    * Returns database cleaner for manual cleaning of workspace.  
+    * Returns database cleaner of workspace.  
     * 
     * @param jdbcConn
     *          database connection which need to use
