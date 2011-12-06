@@ -20,6 +20,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -166,6 +167,13 @@ public class DBCleanService
    public static DBCleaner getRepositoryDBCleaner(Connection jdbcConn, RepositoryEntry repoEntry) throws SQLException,
       RepositoryConfigurationException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       final boolean isMultiDB =
          Boolean.parseBoolean(repoEntry.getWorkspaceEntries().get(0).getContainer()
             .getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
@@ -825,6 +833,13 @@ public class DBCleanService
    public static DBCleaner getWorkspaceDBCleaner(Connection jdbcConn, WorkspaceEntry wsEntry) throws SQLException,
       RepositoryConfigurationException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       boolean isMultiDB =
          Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
 
