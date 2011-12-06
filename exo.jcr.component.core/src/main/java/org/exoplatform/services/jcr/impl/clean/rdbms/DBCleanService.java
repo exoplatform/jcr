@@ -79,6 +79,13 @@ public class DBCleanService
    public static void cleanWorkspaceData(WorkspaceEntry wsEntry) throws RepositoryConfigurationException,
       NamingException, SQLException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       String dsName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 
       final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
@@ -114,6 +121,13 @@ public class DBCleanService
    public static void cleanRepositoryData(RepositoryEntry rEntry) throws RepositoryConfigurationException,
       NamingException, SQLException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       if (rEntry.getWorkspaceEntries().size() == 0)
       {
          // nothing to clean
