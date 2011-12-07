@@ -26,6 +26,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.resource.Referenceable;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
 
@@ -36,7 +37,7 @@ import javax.resource.spi.ConnectionManager;
  * @version $Id$
  *
  */
-public class SessionFactoryImpl implements SessionFactory
+public class SessionFactoryImpl implements SessionFactory, Referenceable
 {
 
    /**
