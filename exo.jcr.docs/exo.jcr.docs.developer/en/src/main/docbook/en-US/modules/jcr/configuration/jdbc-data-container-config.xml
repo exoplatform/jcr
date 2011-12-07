@@ -273,11 +273,12 @@
 $ db2stop
 $ db2start</programlisting></para>
         </listitem>
+
         <listitem>
-          <para>Be aware, when using RDBMS for reindexing need to run
-          "RUNSTATS ON TABLE &lt;scheme&gt;.&lt;table&gt; WITH DISTRIBUTION
-          AND INDEXES ALL" for JCR_SITEM (or JCR_MITEM) and JCR_SVALUE (or
-          JCR_MVALUE) tables.</para>
+          <para>Be aware, when using RDBMS you need to run "RUNSTATS ON TABLE
+          &lt;scheme&gt;.&lt;table&gt; WITH DISTRIBUTION AND INDEXES ALL" for
+          JCR_SITEM (or JCR_MITEM) and JCR_SVALUE (or JCR_MVALUE)
+          tables.</para>
         </listitem>
       </itemizedlist>
     </section>
@@ -293,17 +294,33 @@ $ db2start</programlisting></para>
           consistency in your use-case. This dialect is only dedicated to the
           community.</para>
         </listitem>
+
+        <listitem>
+          <para>MySQL relies on collected statistics for keeping track of data
+          distribution in tables and for optimizing join statements, but you
+          can manually call '<ulink
+          url="http://dev.mysql.com/doc/refman/5.0/en/analyze-table.html">ANALYZE</ulink>'
+          to update statistics if needed.</para>
+        </listitem>
       </itemizedlist>
     </section>
 
     <section>
-      <title>PostgresSQL configuration</title>
+      <title>PostgreSQL configuration</title>
 
       <itemizedlist>
         <listitem>
           <para>Be aware, when using RDBMS for reindexing need to set
           "enable_seqscan" to "off" or "default_statistics_target" at least
           "50"</para>
+        </listitem>
+
+        <listitem>
+          <para>Though PostgreSQL server performs query optimization
+          automatically, you can manualy call '<ulink
+          url="http://www.postgresql.org/docs/8.1/static/sql-analyze.html">ANALYZE</ulink>'
+          command to recollect statistic data which can influence the
+          performance.</para>
         </listitem>
       </itemizedlist>
     </section>
@@ -320,6 +337,48 @@ $ db2start</programlisting></para>
           For more information please refer to Microsoft SQL Server
           documentation page "Selecting a SQL Server Collation" <ulink
           url="http://msdn.microsoft.com/en-us/library/ms144250.aspx">here.</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para>MS SQL DB server's optimizer automatically processes queries
+          to increase performance. Optimization is based on statistical data
+          which is collected automatically, but you can manually call <ulink
+          url="http://en.wikipedia.org/wiki/Transact-SQL">Transact-SQL</ulink>
+          command '<ulink
+          url="http://msdn.microsoft.com/en-us/library/ms187348.aspx">UPDATE
+          STATISTICS</ulink>' which in very few situations may increase
+          performance.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Sybase configuration</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Sybase DB Server optimizer automatically processes queries to
+          increase performance. Optimization is based on statistical data
+          which is collected automatically, but you can manually call <ulink
+          url="http://en.wikipedia.org/wiki/Transact-SQL">Transact-SQL</ulink>
+          command '<ulink
+          url="http://manuals.sybase.com/onlinebooks/group-as/asg1250e/sqlug/@Generic__BookTextView/37166;pt=37125">update
+          statistics</ulink>' which in very few situations may increase
+          performance.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Oracle conficuration</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Oracle DB automatically collect data statistics to optimize
+          performance of queries, but you can manually call '<ulink
+          url="http://docs.oracle.com/cd/B13789_01/server.101/b10759/statements_4005.htm">ANALYZE</ulink>'
+          command to start collecting statistics immediately which may improve
+          performance.</para>
         </listitem>
       </itemizedlist>
     </section>
