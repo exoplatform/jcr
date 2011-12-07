@@ -154,13 +154,20 @@ public class CmdRetr extends FtpCommandImpl
       ArrayList<String> newPath = clientSession().getFullPath(resName);
       try
       {
-         String repoPath = clientSession().getRepoPath(newPath);
-         Session curSession = clientSession().getSession(newPath.get(0));
-
-         Node parentNode = (Node)curSession.getItem(repoPath);
-         if (parentNode.isNodeType(FtpConst.NodeTypes.NT_FILE))
+         if (!newPath.isEmpty())
          {
-            return true;
+            String repoPath = clientSession().getRepoPath(newPath);
+            Session curSession = clientSession().getSession(newPath.get(0));
+
+            Node parentNode = (Node)curSession.getItem(repoPath);
+            if (parentNode.isNodeType(FtpConst.NodeTypes.NT_FILE))
+            {
+               return true;
+            }
+         }
+         else
+         {
+            return false;
          }
       }
       catch (PathNotFoundException exc)
