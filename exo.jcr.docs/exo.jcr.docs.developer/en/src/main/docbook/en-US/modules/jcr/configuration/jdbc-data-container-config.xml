@@ -275,9 +275,17 @@ $ db2start</programlisting></para>
         </listitem>
 
         <listitem>
-          <para>Be aware, when using RDBMS you need to run "RUNSTATS ON TABLE
-          &lt;scheme&gt;.&lt;table&gt; WITH DISTRIBUTION AND INDEXES ALL" for
-          JCR_SITEM (or JCR_MITEM) and JCR_SVALUE (or JCR_MVALUE)
+          <para>Statistics is collected <ulink
+          url="http://publib.boulder.ibm.com/infocenter/db2luw/v9/index.jsp?topic=/com.ibm.db2.udb.admin.doc/doc/c0011762.htm">automatically</ulink>
+          starting from DB2 Version 9, however it is needed to launch
+          statistics collection manually during the very first start,
+          otherwise it could be very long. You need to run '<ulink
+          url="http://publib.boulder.ibm.com/infocenter/db2luw/v9/index.jsp?topic=/com.ibm.db2.udb.admin.doc/doc/r0001980.htm">RUNSTATS</ulink>'
+          command</para>
+
+          <programlisting>RUNSTATS ON TABLE &lt;scheme&gt;.&lt;table&gt; WITH DISTRIBUTION AND INDEXES ALL</programlisting>
+
+          <para>for JCR_SITEM (or JCR_MITEM) and JCR_SVALUE (or JCR_MVALUE)
           tables.</para>
         </listitem>
       </itemizedlist>
@@ -300,7 +308,9 @@ $ db2start</programlisting></para>
           distribution in tables and for optimizing join statements, but you
           can manually call '<ulink
           url="http://dev.mysql.com/doc/refman/5.0/en/analyze-table.html">ANALYZE</ulink>'
-          to update statistics if needed.</para>
+          to update statistics if needed. For example</para>
+
+          <programlisting>ANALYZE TABLE JCR_SITEM, JCR_SVALUE</programlisting>
         </listitem>
       </itemizedlist>
     </section>
@@ -319,8 +329,11 @@ $ db2start</programlisting></para>
           <para>Though PostgreSQL server performs query optimization
           automatically, you can manualy call '<ulink
           url="http://www.postgresql.org/docs/8.1/static/sql-analyze.html">ANALYZE</ulink>'
-          command to recollect statistic data which can influence the
-          performance.</para>
+          command to collect statistics which can influence the performance.
+          For example</para>
+
+          <programlisting>ANALYZE JCR_SITEM
+ANALYZE JCR_SVALUE</programlisting>
         </listitem>
       </itemizedlist>
     </section>
@@ -347,7 +360,10 @@ $ db2start</programlisting></para>
           command '<ulink
           url="http://msdn.microsoft.com/en-us/library/ms187348.aspx">UPDATE
           STATISTICS</ulink>' which in very few situations may increase
-          performance.</para>
+          performance. For example</para>
+
+          <programlisting>UPDATE STATISTICS JCR_SITEM
+UPDATE STATISTICS JCR_SVALUE</programlisting>
         </listitem>
       </itemizedlist>
     </section>
@@ -364,21 +380,35 @@ $ db2start</programlisting></para>
           command '<ulink
           url="http://manuals.sybase.com/onlinebooks/group-as/asg1250e/sqlug/@Generic__BookTextView/37166;pt=37125">update
           statistics</ulink>' which in very few situations may increase
-          performance.</para>
+          performance. For example</para>
+
+          <programlisting>update statistics JCR_SITEM
+update statistics JCR_SVALUE</programlisting>
         </listitem>
       </itemizedlist>
     </section>
 
     <section>
-      <title>Oracle conficuration</title>
+      <title>Oracle configuration</title>
 
       <itemizedlist>
         <listitem>
-          <para>Oracle DB automatically collect data statistics to optimize
+          <para>Oracle DB automatically collects statistics to optimize
           performance of queries, but you can manually call '<ulink
           url="http://docs.oracle.com/cd/B13789_01/server.101/b10759/statements_4005.htm">ANALYZE</ulink>'
           command to start collecting statistics immediately which may improve
-          performance.</para>
+          performance. For example</para>
+
+          <programlisting>ANALYZE INDEX JCR_PK_SITEM COMPUTE STATISTICS
+ANALYZE INDEX JCR_IDX_SITEM_PARENT_FK COMPUTE STATISTICS
+ANALYZE INDEX JCR_IDX_SITEM_PARENT COMPUTE STATISTICS
+ANALYZE INDEX JCR_IDX_SITEM_PARENT_NAME COMPUTE STATISTICS
+ANALYZE INDEX JCR_IDX_SITEM_PARENT_ID COMPUTE STATISTICS
+ANALYZE INDEX JCR_PK_SVALUE COMPUTE STATISTICS
+ANALYZE INDEX JCR_IDX_SVALUE_PROPERTY COMPUTE STATISTICS
+ANALYZE INDEX JCR_PK_SREF COMPUTE STATISTICS
+ANALYZE INDEX JCR_IDX_SREF_PROPERTY COMPUTE STATISTICS
+ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
         </listitem>
       </itemizedlist>
     </section>
