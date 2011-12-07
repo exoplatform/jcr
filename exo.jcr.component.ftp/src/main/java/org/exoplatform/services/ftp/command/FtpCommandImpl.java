@@ -196,9 +196,15 @@ public abstract class FtpCommandImpl implements FtpCommand
       {
          path = params[1];
 
+         // ingoring some unknows client options
          if (path.startsWith("-la"))
          {
             path = path.substring(3);
+         }
+
+         if (path.startsWith("-a"))
+         {
+            path = path.substring(2);
          }
 
          while (path.startsWith(" "))
