@@ -39,17 +39,23 @@
 
    <dependencies>
       <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.ear</artifactId>
-         <version>1.14.5-GA-SNAPSHOT</version>
-         <type>ear</type>
-         <scope>runtime</scope>
+        <groupId>org.exoplatform.jcr</groupId>
+        <artifactId>exo.jcr.connectors.jca</artifactId>
+        <version>1.14.5-GA-SNAPSHOT</version>
+        <type>rar</type>
+        <scope>runtime</scope>
       </dependency>
 
+      <!-- Jonas AS 4.10.4 work only with  HSQLDB 1.8.0.7 -->
       <dependency>
          <groupId>hsqldb</groupId>
          <artifactId>hsqldb</artifactId>
          <version>1.8.0.7</version>
+         <scope>runtime</scope>
+      </dependency>
+      <dependency>
+         <groupId>commons-io</groupId>
+         <artifactId>commons-io</artifactId>
          <scope>runtime</scope>
       </dependency>
    </dependencies>
@@ -98,34 +104,73 @@
                      <fileset dir="${exo.projects.directory.dependencies}/${exo.projects.app.jonas.version}" />
                   </copy>
 
-                  <!--renaming ear-->
+                  <!-- Removing timestamps from SNAPSHOT jars-->
+                  <move todir="${basedir}/target/lib-binary.dir/">
+                    <fileset dir="${basedir}/target/lib-binary.dir/">
+                      <include name="**/*.jar" />
+                    </fileset>
+                    <mapper>
+                      <firstmatchmapper>
+                        <!-- If a timestamped SNAPSHOT is used -->
+                        <regexpmapper from="(.*)-([0-9]+(.[0-9]+)*-(.*))-([0-9]{8}.[0-9]{6})-([0-9]+).jar" to="\1-${project.version}.jar" casesensitive="no" />
+                        <!-- By default keep the name -->
+                        <flattenmapper />
+                      </firstmatchmapper>
+                    </mapper>
+                  </move>
+
+                  <!-- Coping jars -->
+                  <copy todir="${exo.projects.directory.working}/exo-jonas/lib/apps/" verbose="true" overwrite="true">
+                    <fileset dir="${basedir}/target/lib-binary.dir">
+                      <include name="**/*.jar" />
+                      <exclude name="**/hsqldb*.jar" />
+                    </fileset>
+                  </copy>
+
+                  <!-- Removing timestamps from SNAPSHOT wars-->
                   <move todir="${basedir}/target/lib-binary.dir/">
                      <fileset dir="${basedir}/target/lib-binary.dir/">
-                        <include name="**/*.ear" />
+                        <include name="**/*.war" />
                      </fileset>
                      <mapper>
-                        <chainedmapper>
-                           <flattenmapper />
-                           <globmapper from="*-${project.version}.ear" to="*.ear" casesensitive="no" />
-                        </chainedmapper>
+                        <firstmatchmapper>
+                           <!-- If a timestamped SNAPSHOT is used -->
+                           <regexpmapper from="exo.jcr.applications.(.*)-([0-9]+(.[0-9]+)*-(.*))-([0-9]{8}.[0-9]{6})-([0-9]+).war" to="\1.war" casesensitive="no" />
+                           <!-- Otherwise -->
+                           <globmapper from="exo.jcr.applications.*-${project.version}.war" to="*.war" casesensitive="no" />
+                           <!-- By default keep the name -->
+                        </firstmatchmapper>
                      </mapper>
                   </move>
-                  <!--copying the ear-->
-                  <copy todir="${exo.projects.directory.working}/exo-jonas/apps/autoload/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/target/lib-binary.dir/" includes="**/*.ear" />
-                  </copy>
-                  <!--copying exo-configuration.xml-->
+
+                  <!-- Renaming rar -->
+                  <move todir="${basedir}/target/lib-binary.dir/">
+                     <fileset dir="${basedir}/target/lib-binary.dir/">
+                        <include name="**/*.rar" />
+                     </fileset>
+                     <mapper>
+                        <firstmatchmapper>
+                           <regexpmapper from="exo.jcr.connectors.jca.*.rar" to="exo.jcr.connectors.jca.rar" casesensitive="no" />
+                        </firstmatchmapper>
+                     </mapper>
+                  </move>
+
+                  <!-- Copying patch directory -->
                   <copy todir="${exo.projects.directory.working}/exo-jonas/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/jonas/" includes="*.xml" />
+                    <fileset dir="${basedir}/../product-patches/as/jonas/" />
                   </copy>
-                  <!--copying jaas.config etc.-->
-                  <copy todir="${exo.projects.directory.working}/exo-jonas/conf/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/jonas/conf/" includes="*.*" />
+
+                  <!-- Coping wars, rar -->
+                  <copy todir="${exo.projects.directory.working}/exo-jonas/apps/autoload/exoplatform.ear" verbose="true" overwrite="true">
+                    <fileset dir="${basedir}/target/lib-binary.dir">
+                      <include name="**/*.war" />
+                      <include name="**/*.rar" />
+                    </fileset>
                   </copy>
-                  <copy todir="${exo.projects.directory.working}/exo-jonas/bin/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/jonas/bin/" />
-                  </copy>
+
                   <chmod dir="${exo.projects.directory.working}/exo-jonas/bin/unix" perm="+x" includes="*" />                  
+
+                  <!--replacing hsqldb with new version-->
                   <delete file="${exo.projects.directory.working}/exo-jonas/lib/commons/jonas/hsqldb.jar" />
                   <copy todir="${exo.projects.directory.working}/exo-jonas/lib/commons/jonas/">
                      <fileset dir="${basedir}/target/lib-binary.dir/">
@@ -134,9 +179,26 @@
                   </copy>
                </tasks>
             </configuration>
+            <dependencies>
+               <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant-launcher</artifactId>
+                  <version>1.8.1</version>
+               </dependency>
+               <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant</artifactId>
+                  <version>1.8.1</version>
+               </dependency>
+               <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant-nodeps</artifactId>
+                  <version>1.8.1</version>
+               </dependency>
+            </dependencies>
          </plugin>
       </plugins>
-   </build>
+     </build>
     </profile>
    </profiles>
 
