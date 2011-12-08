@@ -59,9 +59,9 @@ public class TesterRdbmsWorkspaceInitializer extends RdbmsWorkspaceInitializer
    }
 
    @Override
-   public void fullRdbmsRestore() throws RepositoryException
+   public void doRestore() throws Throwable
    {
-      super.fullRdbmsRestore();
+      super.doRestore();
    }
 
 }

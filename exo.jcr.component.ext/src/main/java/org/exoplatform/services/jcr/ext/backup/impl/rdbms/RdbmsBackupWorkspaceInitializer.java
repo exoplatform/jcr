@@ -32,8 +32,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -70,31 +68,16 @@ public class RdbmsBackupWorkspaceInitializer extends RdbmsWorkspaceInitializer
     * {@inheritDoc}
     */
    @Override
-   protected void restoreAction() throws RepositoryException
+   protected void doRestore() throws Throwable
    {
       // restore from full rdbms backup
-      fullRdbmsRestore();
+      super.doRestore();
 
       // restore from incremental backup
       JCRRestore restorer = new JCRRestore(dataManager, fileCleaner);
       for (File incrBackupFile : JCRRestore.getIncrementalFiles(new File(restoreDir)))
       {
-         try
-         {
-            restorer.incrementalRestore(incrBackupFile);
-         }
-         catch (FileNotFoundException e)
-         {
-            throw new RepositoryException(e);
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException(e);
-         }
-         catch (ClassNotFoundException e)
-         {
-            throw new RepositoryException(e);
-         }
+         restorer.incrementalRestore(incrBackupFile);
       }
    }
 }

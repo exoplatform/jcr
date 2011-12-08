@@ -25,8 +25,6 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
@@ -65,11 +63,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    protected final RepositoryService repositoryService;
 
    /**
-    * Indicates if RDBMS restore in progress or not.
-    */
-   volatile private boolean isRestoreInProgress = false;
-
-   /**
     * Constructor RdbmsWorkspaceInitializer.
     */
    public RdbmsWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
@@ -88,58 +81,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
     * {@inheritDoc}
     */
    @Override
-   public boolean isWorkspaceInitialized()
-   {
-      // If someone invoke isWorkspaceInitialized() during restore then NullNodeData for root node will be pushed
-      // into the cache and will be there even restore is finished and data will be placed into DB. 
-      return isRestoreInProgress ? false : super.isWorkspaceInitialized();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public NodeData initWorkspace() throws RepositoryException
-   {
-      if (isWorkspaceInitialized())
-      {
-         return (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
-      }
-
-      long start = System.currentTimeMillis();
-
-      isRestoreInProgress = true;
-      try
-      {
-         restoreAction();
-      }
-      finally
-      {
-         isRestoreInProgress = false;
-      }
-
-      final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
-
-      log.info("Workspace [" + workspaceName + "] restored from storage " + restorePath + " in "
-         + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
-
-      return root;
-   }
-
-   /**
-    * Calls restoring methods.
-    * 
-    * @throws RepositoryException if any Exception is occurred
-    */
-   protected void restoreAction() throws RepositoryException
-   {
-      fullRdbmsRestore();
-   }
-
-   /**
-    * Restore from full rdbms backup.
-    */
-   protected void fullRdbmsRestore() throws RepositoryException
+   protected void doRestore() throws Throwable
    {
       List<DataRestore> dataRestorers = new ArrayList<DataRestore>();
 
@@ -213,11 +155,11 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             }
             catch (BackupException e1)
             {
-               log.error("Can't rollback restorer", e);
+               log.error("Can't rollback restorer", e1);
             }
          }
 
-         throw new RepositoryException(e);
+         throw e;
       }
       finally
       {
@@ -248,8 +190,8 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             }
             else
             {
-               throw new RepositoryException("Con not set ONLYNE state for repository "
-                        + repository.getConfiguration().getName(), e);
+               throw new RepositoryException("Con not set ONLINE state for repository "
+                  + repository.getConfiguration().getName(), e);
             }
          }
       }

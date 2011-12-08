@@ -120,6 +120,11 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
    protected final File tempDir;
 
+   /**
+    * Indicates if restore action in progress or not.
+    */
+   volatile private boolean isRestoreInProgress = false;
+
    protected class TempOutputStream extends ByteArrayOutputStream
    {
 
@@ -507,46 +512,46 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
     */
    public NodeData initWorkspace() throws RepositoryException
    {
-
       if (isWorkspaceInitialized())
       {
          return (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
       }
 
+      long start = System.currentTimeMillis();
+
+      isRestoreInProgress = true;
       try
       {
-         long start = System.currentTimeMillis();
-
-         PlainChangesLog changes = read();
-
-         TransactionChangesLog tLog = new TransactionChangesLog(changes);
-         tLog.setSystemId(Constants.JCR_CORE_RESTORE_WORKSPACE_INITIALIZER_SYSTEM_ID); // mark changes
-
-         dataManager.save(tLog);
-
-         final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
-
-         log.info("Workspace " + workspaceName + " restored from file " + restorePath + " in "
-            + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
-
-         return root;
+         doRestore();
       }
-      catch (XMLStreamException e)
+      catch (Throwable e)
       {
          throw new RepositoryException(e);
       }
-      catch (FactoryConfigurationError e)
+      finally
       {
-         throw new RepositoryException(e);
+         isRestoreInProgress = false;
       }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IllegalNameException e)
-      {
-         throw new RepositoryException(e);
-      }
+
+      final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
+
+      log.info("Workspace [" + workspaceName + "] restored from storage " + restorePath + " in "
+         + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
+
+      return root;
+   }
+
+   /**
+    * Perform restore operation.
+    */
+   protected void doRestore() throws Throwable
+   {
+      PlainChangesLog changes = read();
+
+      TransactionChangesLog tLog = new TransactionChangesLog(changes);
+      tLog.setSystemId(Constants.JCR_CORE_RESTORE_WORKSPACE_INITIALIZER_SYSTEM_ID); // mark changes
+
+      dataManager.save(tLog);
    }
 
    /**
@@ -894,19 +899,30 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void start()
    {
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void stop()
    {
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean isWorkspaceInitialized()
    {
       try
       {
-         return dataManager.getItemData(Constants.ROOT_UUID) == null ? false : true;
+         // If someone invoke isWorkspaceInitialized() during restore action then NullNodeData for root node will be pushed
+         // into the cache and will be there even restore is finished and data will be placed into DB. 
+         return isRestoreInProgress ? false : dataManager.getItemData(Constants.ROOT_UUID) != null;
       }
       catch (RepositoryException e)
       {
