@@ -144,7 +144,7 @@
     </dependency>         
   </dependencies>
   <build>
-    <finalName>exo-jcr-ear</finalName>
+    <finalName>exo.jcr.ear</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-ear-plugin</artifactId>

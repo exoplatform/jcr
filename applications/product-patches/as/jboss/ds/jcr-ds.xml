@@ -8,7 +8,7 @@
 
     <xa-transaction/>
 
-    <rar-name>exo-jcr-ear.ear#exo-jcr.rar</rar-name>
+    <rar-name>exo.jcr.ear.ear#exo-jcr.rar</rar-name>
 
     <adapter-display-name>eXo JCR Adapter</adapter-display-name>
     <connection-definition>org.exoplatform.connectors.jcr.adapter.SessionFactory</connection-definition>
