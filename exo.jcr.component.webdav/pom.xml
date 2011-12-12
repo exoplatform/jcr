@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>1.12.11-GA</version>
+    <version>1.12.12-GA-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.component.webdav</artifactId>
   <name>eXo JCR :: Component :: Webdav Service</name>
