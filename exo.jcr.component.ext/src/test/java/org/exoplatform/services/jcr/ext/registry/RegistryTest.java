@@ -77,20 +77,16 @@ public class RegistryTest extends BaseStandaloneTest
       assertTrue(regNodes.hasNode(RegistryService.EXO_APPLICATIONS));
       assertTrue(regNodes.hasNode(RegistryService.EXO_USERS));
       
-      assertTrue(regNodes.getNode(RegistryService.EXO_REGISTRY).isNodeType("exo:testFirstHideable")
-         && regNodes.getNode(RegistryService.EXO_REGISTRY).isNodeType("exo:testSecondHideable"));
-
-      assertTrue(regNodes.getNode(RegistryService.EXO_USERS).isNodeType("exo:testFirstHideable")
-         && regNodes.getNode(RegistryService.EXO_USERS).isNodeType("exo:testSecondHideable"));
-
-      assertTrue(regNodes.getNode(RegistryService.EXO_GROUPS).isNodeType("exo:testFirstHideable")
-         && regNodes.getNode(RegistryService.EXO_GROUPS).isNodeType("exo:testSecondHideable"));
-
-      assertTrue(regNodes.getNode(RegistryService.EXO_SERVICES).isNodeType("exo:testFirstHideable")
-         && regNodes.getNode(RegistryService.EXO_SERVICES).isNodeType("exo:testSecondHideable"));
-
-      assertTrue(regNodes.getNode(RegistryService.EXO_APPLICATIONS).isNodeType("exo:testFirstHideable")
-         && regNodes.getNode(RegistryService.EXO_APPLICATIONS).isNodeType("exo:testSecondHideable"));
+      assertTrue(regNodes.isNodeType("exo:testFirstHideable"));
+      assertTrue(regNodes.isNodeType("exo:testSecondHideable"));
+      assertTrue(regNodes.getNode(RegistryService.EXO_USERS).isNodeType("exo:testFirstHideable"));
+      assertTrue(regNodes.getNode(RegistryService.EXO_USERS).isNodeType("exo:testSecondHideable"));
+      assertTrue(regNodes.getNode(RegistryService.EXO_GROUPS).isNodeType("exo:testFirstHideable"));
+      assertTrue(regNodes.getNode(RegistryService.EXO_GROUPS).isNodeType("exo:testSecondHideable"));
+      assertTrue(regNodes.getNode(RegistryService.EXO_SERVICES).isNodeType("exo:testFirstHideable"));
+      assertTrue(regNodes.getNode(RegistryService.EXO_SERVICES).isNodeType("exo:testSecondHideable"));
+      assertTrue(regNodes.getNode(RegistryService.EXO_APPLICATIONS).isNodeType("exo:testFirstHideable"));
+      assertTrue(regNodes.getNode(RegistryService.EXO_APPLICATIONS).isNodeType("exo:testSecondHideable"));
 
       session.getWorkspace().getNodeTypeManager().getNodeType("exo:registry");
       session.getWorkspace().getNodeTypeManager().getNodeType("exo:registryEntry");
