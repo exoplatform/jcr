@@ -46,4 +46,9 @@
       </childNodeDefinitions>
    </nodeType>
 
+   <nodeType name="exo:testFirstHideable" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+   </nodeType>
+
+   <nodeType name="exo:testSecondHideable" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+   </nodeType>   
 </nodeTypes>

@@ -122,18 +122,26 @@
   <section>
     <title>Configuration</title>
 
-    <para>RegistryService has only one optional properties parameter <emphasis
-    role="bold">locations</emphasis>. It is used to mention where exo:registry
-    is placed for each repository. The name of each property is interpreted as
-    a repository name and its value as a workspace name (a system workspace by
-    default).</para>
+    <para>RegistryService has two optional params: value parameter <emphasis
+    role="bold">mixin-names</emphasis> and properties parameter <emphasis
+    role="bold">locations</emphasis>. The mixin-names is used for adding
+    additional mixins to nodes exo:registry, exo:applications, exo:services,
+    exo:users and exo:groups of RegistryService. This allows the top level
+    applications to manage these nodes in special way. Locations is used to
+    mention where exo:registry is placed for each repository. The name of each
+    property is interpreted as a repository name and its value as a workspace
+    name (a system workspace by default).</para>
 
     <programlisting language="xml">&lt;component&gt;
    &lt;type&gt;org.exoplatform.services.jcr.ext.registry.RegistryService&lt;/type&gt;
    &lt;init-params&gt;
-      &lt;properties-param&gt;
+      &lt;value-param&gt;
+         &lt;name&gt;mixin-names&lt;/name&gt;
+         &lt;value&gt;exo:hideable&lt;/value&gt;       
+      &lt;/value-param&gt;
+      &lt;properties-param&gt;         
       &lt;name&gt;locations&lt;/name&gt;
-      &lt;property name="db1" value="ws2"/&gt;
+         &lt;property name="db1" value="ws2"/&gt;
       &lt;/properties-param&gt;
    &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>

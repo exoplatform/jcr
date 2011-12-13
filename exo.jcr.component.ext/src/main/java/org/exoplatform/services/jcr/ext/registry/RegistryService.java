@@ -110,6 +110,8 @@ public class RegistryService extends Registry implements Startable
 
    protected final RepositoryService repositoryService;
 
+   protected final String[] mixinNames;
+
    // TODO temporary flag to have start() run once
    protected boolean started = false;
 
@@ -128,10 +130,25 @@ public class RegistryService extends Registry implements Startable
       this.repositoryService = repositoryService;
       this.regWorkspaces = new HashMap<String, String>();
       if (params == null)
+      {
          throw new RepositoryConfigurationException("Init parameters expected");
+      }
+
       this.props = params.getPropertiesParam("locations");
       if (props == null)
+      {
          throw new RepositoryConfigurationException("Property parameters 'locations' expected");
+      }
+
+      ValueParam mixinValue = params.getValueParam("mixin-names");
+      if (mixinValue != null)
+      {
+         this.mixinNames = mixinValue.getValue().split(",");
+      }
+      else
+      {
+         this.mixinNames = new String[0];
+      }
    }
 
    /**
@@ -405,69 +422,124 @@ public class RegistryService extends Registry implements Startable
          ManageableRepository rep = repositoryService.getRepository(repName);
          final Session sysSession = rep.getSystemSession(regWorkspaces.get(repName));
 
-         if (sysSession.getRootNode().hasNode(EXO_REGISTRY) && replace)
-            sysSession.getRootNode().getNode(EXO_REGISTRY).remove();
-
-         if (!sysSession.getRootNode().hasNode(EXO_REGISTRY))
+         try
          {
-            Node rootNode = sysSession.getRootNode().addNode(EXO_REGISTRY, EXO_REGISTRY_NT);
-            rootNode.addNode(EXO_SERVICES, EXO_REGISTRYGROUP_NT);
-            rootNode.addNode(EXO_APPLICATIONS, EXO_REGISTRYGROUP_NT);
-            rootNode.addNode(EXO_USERS, EXO_REGISTRYGROUP_NT);
-            rootNode.addNode(EXO_GROUPS, EXO_REGISTRYGROUP_NT);
-
-            Set<String> appNames = appConfigurations.keySet();
-            final String fullPath = "/" + EXO_REGISTRY + "/" + entryLocation;
-            for (String appName : appNames)
+            if (sysSession.getRootNode().hasNode(EXO_REGISTRY) && replace)
             {
-               final String xml = appConfigurations.get(appName);
-               try
+               sysSession.getRootNode().getNode(EXO_REGISTRY).remove();
+            }
+
+            Node rootNode;
+            Node servicesNode;
+            Node applicationsNode;
+            Node usersNode;
+            Node groupsNode;
+
+            if (!sysSession.getRootNode().hasNode(EXO_REGISTRY))
+            {
+               rootNode = sysSession.getRootNode().addNode(EXO_REGISTRY, EXO_REGISTRY_NT);
+               servicesNode = rootNode.addNode(EXO_SERVICES, EXO_REGISTRYGROUP_NT);
+               applicationsNode = rootNode.addNode(EXO_APPLICATIONS, EXO_REGISTRYGROUP_NT);
+               usersNode = rootNode.addNode(EXO_USERS, EXO_REGISTRYGROUP_NT);
+               groupsNode = rootNode.addNode(EXO_GROUPS, EXO_REGISTRYGROUP_NT);
+
+               Set<String> appNames = appConfigurations.keySet();
+               final String fullPath = "/" + EXO_REGISTRY + "/" + entryLocation;
+               for (String appName : appNames)
                {
-                  SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+                  final String xml = appConfigurations.get(appName);
+                  try
                   {
-                     public Void run() throws Exception
+                     SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
                      {
-                        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                        ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes());
-                        Document document = builder.parse(stream);
-                        RegistryEntry entry = new RegistryEntry(document);
-                        sysSession.importXML(fullPath, entry.getAsInputStream(), IMPORT_UUID_CREATE_NEW);
-                        return null;
+                        public Void run() throws Exception
+                        {
+                           DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                           ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes());
+                           Document document = builder.parse(stream);
+                           RegistryEntry entry = new RegistryEntry(document);
+                           sysSession.importXML(fullPath, entry.getAsInputStream(), IMPORT_UUID_CREATE_NEW);
+                           return null;
+                        }
+                     });
+                  }
+                  catch (PrivilegedActionException pae)
+                  {
+                     Throwable cause = pae.getCause();
+                     if (cause instanceof ParserConfigurationException)
+                     {
+                        log.error(cause.getLocalizedMessage(), cause);
                      }
-                  });
+                     else if (cause instanceof IOException)
+                     {
+                        log.error(cause.getLocalizedMessage(), cause);
+                     }
+                     else if (cause instanceof SAXException)
+                     {
+                        log.error(cause.getLocalizedMessage(), cause);
+                     }
+                     else if (cause instanceof TransformerException)
+                     {
+                        log.error(cause.getLocalizedMessage(), cause);
+                     }
+                     else if (cause instanceof RuntimeException)
+                     {
+                        throw (RuntimeException)cause;
+                     }
+                     else
+                     {
+                        throw new RuntimeException(cause);
+                     }
+                  }
                }
-               catch (PrivilegedActionException pae)
+               sysSession.save();
+            }
+            else
+            {
+               rootNode = sysSession.getRootNode().getNode(EXO_REGISTRY);
+               servicesNode = rootNode.getNode(EXO_SERVICES);
+               applicationsNode = rootNode.getNode(EXO_APPLICATIONS);
+               usersNode = rootNode.getNode(EXO_USERS);
+               groupsNode = rootNode.getNode(EXO_GROUPS);
+            }
+
+            for (String mixin : mixinNames)
+            {
+               if (rootNode.canAddMixin(mixin))
                {
-                  Throwable cause = pae.getCause();
-                  if (cause instanceof ParserConfigurationException)
-                  {
-                     log.error(cause.getLocalizedMessage(), cause);
-                  }
-                  else if (cause instanceof IOException)
-                  {
-                     log.error(cause.getLocalizedMessage(), cause);
-                  }
-                  else if (cause instanceof SAXException)
-                  {
-                     log.error(cause.getLocalizedMessage(), cause);
-                  }
-                  else if (cause instanceof TransformerException)
-                  {
-                     log.error(cause.getLocalizedMessage(), cause);
-                  }
-                  else if (cause instanceof RuntimeException)
-                  {
-                     throw (RuntimeException)cause;
-                  }
-                  else
-                  {
-                     throw new RuntimeException(cause);
-                  }
+                  rootNode.addMixin(mixin);
+               }
+
+               if (servicesNode.canAddMixin(mixin))
+               {
+                  servicesNode.addMixin(mixin);
+               }
+
+               if (applicationsNode.canAddMixin(mixin))
+               {
+                  applicationsNode.addMixin(mixin);
+               }
+
+               if (usersNode.canAddMixin(mixin))
+               {
+                  usersNode.addMixin(mixin);
+               }
+
+               if (groupsNode.canAddMixin(mixin))
+               {
+                  groupsNode.addMixin(mixin);
                }
             }
-            sysSession.save();
+
+            if (sysSession.hasPendingChanges())
+            {
+               sysSession.save();
+            }
          }
-         sysSession.logout();
+         finally
+         {
+            sysSession.logout();
+         }
       }
    }
 
