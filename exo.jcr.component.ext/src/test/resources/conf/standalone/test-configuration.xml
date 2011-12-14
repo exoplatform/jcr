@@ -181,10 +181,11 @@
          </component-plugin>
       </component-plugins>
       <init-params>
-         <value-param>
+         <values-param>
             <name>mixin-names</name>
-            <value>exo:testFirstHideable,exo:testSecondHideable</value>
-         </value-param>
+            <value>exo:testFirstHideable</value>
+            <value>exo:testSecondHideable</value>
+         </values-param>
          <properties-param>
             <name>locations</name>
             <property name="db1" value="ws2" />

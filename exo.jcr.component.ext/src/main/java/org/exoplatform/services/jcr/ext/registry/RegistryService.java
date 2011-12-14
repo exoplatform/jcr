@@ -25,6 +25,7 @@ import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -45,6 +46,7 @@ import java.io.InputStream;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +112,7 @@ public class RegistryService extends Registry implements Startable
 
    protected final RepositoryService repositoryService;
 
-   protected final String[] mixinNames;
+   protected final List<String> mixinNames;
 
    // TODO temporary flag to have start() run once
    protected boolean started = false;
@@ -140,14 +142,14 @@ public class RegistryService extends Registry implements Startable
          throw new RepositoryConfigurationException("Property parameters 'locations' expected");
       }
 
-      ValueParam mixinValue = params.getValueParam("mixin-names");
-      if (mixinValue != null)
+      ValuesParam mixinValues = params.getValuesParam("mixin-names");
+      if (mixinValues != null)
       {
-         this.mixinNames = mixinValue.getValue().split(",");
+         this.mixinNames = params.getValuesParam("mixin-names").getValues();
       }
       else
       {
-         this.mixinNames = new String[0];
+         this.mixinNames = new ArrayList<String>();
       }
    }
 
