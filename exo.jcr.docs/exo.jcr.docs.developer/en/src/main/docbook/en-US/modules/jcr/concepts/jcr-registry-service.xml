@@ -135,10 +135,10 @@
     <programlisting language="xml">&lt;component&gt;
    &lt;type&gt;org.exoplatform.services.jcr.ext.registry.RegistryService&lt;/type&gt;
    &lt;init-params&gt;
-      &lt;value-param&gt;
+      &lt;values-param&gt;
          &lt;name&gt;mixin-names&lt;/name&gt;
-         &lt;value&gt;exo:hideable&lt;/value&gt;       
-      &lt;/value-param&gt;
+         &lt;value&gt;exo:hideable&lt;/value&gt;      
+      &lt;/values-param&gt;
       &lt;properties-param&gt;         
       &lt;name&gt;locations&lt;/name&gt;
          &lt;property name="db1" value="ws2"/&gt;
