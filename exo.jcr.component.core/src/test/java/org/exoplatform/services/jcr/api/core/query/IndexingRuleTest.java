@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.query.RowIterator;
@@ -124,5 +125,24 @@ public class IndexingRuleTest extends AbstractIndexingTest
       excerpt = rows.nextRow().getValue("rep:excerpt(.)");
       assertNotNull("No excerpt created", excerpt);
       assertTrue("Title must not be present in excerpt", excerpt.getString().indexOf("Platform") == -1);
+   }
+   
+
+   public void testSimpleIndexingRule() throws Exception
+   {
+      Node node = testRootNode.addNode("testPropertySkip", "jcr:extendedUnstructured");
+      node.setProperty("anyProperty", "Marvin", PropertyType.STRING);
+      node.setProperty("included", "Thomas", PropertyType.STRING);
+
+      testRootNode.save();
+
+      String sqlBase = "SELECT * FROM nt:unstructured WHERE CONTAINS";
+      String sqlSkippedProperty = sqlBase + "(*, 'Marvin')";
+      String sqlNotSkippedProperty = sqlBase + "(*, 'Thomas')";
+
+      // this should find nothing, property is not indexed.
+      executeSQLQuery(sqlSkippedProperty, new Node[]{});
+      // this should find node, because property "name" is included to index 
+      executeSQLQuery(sqlNotSkippedProperty, new Node[]{node});
    }
 }

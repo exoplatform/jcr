@@ -40,6 +40,10 @@
     <index-rule nodeType="nt:hierarchyNode">
         <!-- do not index any properties -->
     </index-rule>
+    
+    <index-rule nodeType="jcr:extendedUnstructured">
+        <property>included</property>
+    </index-rule>
 
     <aggregate primaryType="nt:file">
         <include>jcr:content</include>
