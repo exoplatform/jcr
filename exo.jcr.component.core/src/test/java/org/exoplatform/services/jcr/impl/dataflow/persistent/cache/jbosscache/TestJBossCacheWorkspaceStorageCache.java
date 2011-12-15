@@ -336,7 +336,6 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       /**
        * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getACLHolders()
        */
-      @Override
       public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
          UnsupportedOperationException
       {

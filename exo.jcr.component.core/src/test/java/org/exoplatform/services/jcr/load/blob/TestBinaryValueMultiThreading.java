@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.io.FileInputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -43,7 +44,13 @@ public class TestBinaryValueMultiThreading extends JcrAPIBaseTest
 
    private String LOCAL_BIG_FILE = null;
 
-   private String LOCAL_SMALL_FILE = "src/test/resources/index/test_index.doc";
+   private static String LOCAL_SMALL_FILE;
+   static
+   {
+      URL url = TestBinaryValueMultiThreading.class.getResource("/index/test_index.doc");
+      assertNotNull("test_index.doc not found", url);
+      LOCAL_SMALL_FILE = url.getFile();
+   }
 
    private static String REMOTE_BIG_FILE = "\\\\Exooffice\\public\\Tmp\\resources\\BigFile.zip";
 

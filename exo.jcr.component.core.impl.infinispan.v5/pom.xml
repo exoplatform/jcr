@@ -26,12 +26,11 @@
       <artifactId>jcr-parent</artifactId>
       <version>1.14.6-GA-SNAPSHOT</version>
    </parent>
-   <artifactId>exo.jcr.component.core</artifactId>
-   <name>eXo JCR :: Component :: Core Service</name>
-   <description>eXo JCR Service core component</description>
+   <artifactId>exo.jcr.component.core.impl.infinispan.v5</artifactId>
+   <name>eXo JCR :: Component :: Core Service based on ISPN 5</name>
+   <description>eXo JCR Service core component based on Infinispan 5</description>
    <properties>
-      <jcr.test.configuration.file>/conf/standalone/test-configuration-jbc.xml</jcr.test.configuration.file>
-      <jbosscache.shareable>true</jbosscache.shareable>
+      <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
       <cache.enabled>true</cache.enabled>
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
@@ -39,53 +38,9 @@
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
       <!-- ispn specific exclude by default -->
-      <test.cache.exclude>**/persistent/cache/foo/**</test.cache.exclude>
+      <test.cache.exclude>**/persistent/cache/jbosscache/**</test.cache.exclude>
    </properties>
    <dependencies>
-      <dependency>
-         <groupId>javax.jcr</groupId>
-         <artifactId>jcr</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.container</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.commons</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.commons.test</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.command</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.common</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.cache</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.core</groupId>
-         <artifactId>exo.core.component.organization.api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.core</groupId>
-         <artifactId>exo.core.component.document</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.core</groupId>
-         <artifactId>exo.core.component.database</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.core</groupId>
-         <artifactId>exo.core.component.security.core</artifactId>
-      </dependency>
       <dependency>
         <groupId>org.exoplatform.ws</groupId>
         <artifactId>exo.ws.commons</artifactId>
@@ -97,115 +52,35 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.apache.lucene</groupId>
-         <artifactId>lucene-core</artifactId>
-      </dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.commons.test</artifactId>
+      </dependency>     
       <dependency>
-         <groupId>org.apache.lucene</groupId>
-         <artifactId>lucene-spellchecker</artifactId>
-      </dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.component.ext.rpc.impl.jgroups.v3</artifactId>
+      </dependency>     
       <dependency>
-         <groupId>org.apache.lucene</groupId>
-         <artifactId>lucene-memory</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>com.sun.xml.stream</groupId>
-         <artifactId>sjsxp</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>commons-dbcp</groupId>
-         <artifactId>commons-dbcp</artifactId>
+         <groupId>org.exoplatform.jcr</groupId>
+         <artifactId>exo.jcr.component.core</artifactId>
          <exclusions>
             <exclusion>
-               <groupId>xerces</groupId>
-               <artifactId>xercesImpl</artifactId>
+               <groupId>org.jgroups</groupId>
+               <artifactId>jgroups</artifactId>
             </exclusion>
-         </exclusions>
-      </dependency>
+         </exclusions>         
+      </dependency>      
       <dependency>
-         <groupId>commons-pool</groupId>
-         <artifactId>commons-pool</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>commons-lang</groupId>
-         <artifactId>commons-lang</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>commons-chain</groupId>
-         <artifactId>commons-chain</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>xml-apis</groupId>
-         <artifactId>xml-apis</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-api</artifactId>
-         <scope>compile</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.jibx</groupId>
-         <artifactId>jibx-run</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>picocontainer</groupId>
-         <artifactId>picocontainer</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>javax.transaction</groupId>
-         <artifactId>jta</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>concurrent</groupId>
-         <artifactId>concurrent</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>commons-collections</groupId>
-         <artifactId>commons-collections</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>commons-beanutils</groupId>
-        <artifactId>commons-beanutils</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.jgroups</groupId>
-        <artifactId>jgroups</artifactId>
-        <version>2.6.20.Final</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>xpp3</groupId>
-        <artifactId>xpp3</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>jboss.jbossts</groupId>
-         <artifactId>jbossjts</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>jboss.jbossts</groupId>
-         <artifactId>jbossts-common</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.ws.commons</groupId>
-         <artifactId>ws-commons-util</artifactId>
+         <groupId>org.exoplatform.jcr</groupId>
+         <artifactId>exo.jcr.component.core</artifactId>
+         <classifier>test-sources</classifier>
+         <scope>test</scope>
+         <version>${project.version}</version>
          <exclusions>
             <exclusion>
-               <groupId>xml-apis</groupId>
-               <artifactId>xml-apis</artifactId>
+               <groupId>org.jgroups</groupId>
+               <artifactId>jgroups</artifactId>
             </exclusion>
-            <exclusion>
-               <groupId>junit</groupId>
-               <artifactId>junit</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>    
-      <!-- TCK binaries and deps for repo stub, some eXo API test -->
-      <dependency>
-         <groupId>org.jboss.cache</groupId>
-         <artifactId>jbosscache-core</artifactId>
+         </exclusions>         
       </dependency>
       <dependency>
          <groupId>org.apache.jackrabbit</groupId>
@@ -219,14 +94,31 @@
             </exclusion>
          </exclusions>
       </dependency>
+      <!-- Excludes jboss-logging-spi since it is in conflict with the
+      latest version that is required by infinispan -->
+      <dependency>
+         <groupId>org.jboss.cache</groupId>
+         <artifactId>jbosscache-core</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>org.jboss.logging</groupId>
+               <artifactId>jboss-logging-spi</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>         
+      <!-- TCK binaries and deps for repo stub, some eXo API test -->
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-core</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-cachestore-jdbc</artifactId>
+      </dependency>
       <dependency>
         <groupId>javax.resource</groupId>
         <artifactId>connector-api</artifactId>
         <scope>test</scope>
-      </dependency>      
-      <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-log4j12</artifactId>
       </dependency>
       <!-- ===== Databases JDBC support for tests ===== -->
       <dependency>
@@ -283,10 +175,6 @@
                      <value>target/emma/coverage.ec</value>
                   </property>
                   <property>
-                     <name>jbosscache-shareable</name>
-                     <value>${jbosscache.shareable}</value>
-                  </property>                  
-                  <property>
                      <name>cache-enabled</name>
                      <value>${cache.enabled}</value>
                   </property>                  
@@ -308,14 +196,10 @@
                      <name>java.net.preferIPv4Stack</name>
                      <value>true</value>
                   </property>
-                  <!-- Avoid the firewall -->
+                  <!-- Avoid the firewall -->           
                   <property>
-                     <name>bind.address</name>
+                     <name>jgroups.bind_addr</name>
                      <value>127.0.0.1</value>
-                  </property>
-                  <property>
-                     <name>jgroups.stack</name>
-                     <value>udp</value>
                   </property>
                </systemProperties>
                <includes>
@@ -335,23 +219,6 @@
                </excludes>
             </configuration>
          </plugin>
-         <plugin>
-            <groupId>org.jibx</groupId>
-            <artifactId>maven-jibx-plugin</artifactId>
-            <configuration>
-               <directory>src/main/resources</directory>
-               <includes>
-                  <includes>binding*.xml</includes>
-               </includes>
-            </configuration>
-            <executions>
-               <execution>
-                  <goals>
-                     <goal>bind</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
           <plugin>
              <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
@@ -365,54 +232,28 @@
                   <configuration>
                      <artifactItems>
                         <artifactItem>
+                           <groupId>org.exoplatform.jcr</groupId>
+                           <artifactId>exo.jcr.component.core</artifactId>
+                           <classifier>test-sources</classifier>
+                           <type>jar</type>
+                           <overWrite>false</overWrite>
+                        </artifactItem>
+                        <artifactItem>
                            <groupId>org.apache.jackrabbit</groupId>
                            <artifactId>jackrabbit-jcr-tests</artifactId>
                            <classifier>sources</classifier>
                            <type>jar</type>
                            <overWrite>false</overWrite>
-                        </artifactItem>
+                        </artifactItem>                        
                      </artifactItems>
-                     <outputDirectory>${project.build.directory}/jackrabbit-jcr-tests</outputDirectory>
+                     <outputDirectory>${project.build.directory}/jcr-core-tests</outputDirectory>
                   </configuration>
                </execution>
             </executions>
-          </plugin> 
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>attach-sources</id>
-                <goals>
-                  <goal>test-jar-no-fork</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
+          </plugin>                 
           <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
-               <execution>
-                  <id>delete-sources</id>
-                  <phase>process-sources</phase>
-                  <configuration>
-                     <tasks>
-                        <echo>Remove files that have been customized</echo>
-                        <delete>
-                           <fileset dir="${project.build.directory}/generated-sources/javacc/org/exoplatform/services/jcr/impl/core/query">
-                              <include name="sql/ASTLiteral.java" />
-                              <include name="sql/ASTContainsExpression.java" />
-                              <include name="sql/ASTPredicate.java" />
-                              <include name="sql/ASTIdentifier.java" />
-                              <include name="xpath/SimpleNode.java" />
-                           </fileset>
-                        </delete>
-                     </tasks>
-                  </configuration>
-                  <goals>
-                     <goal>run</goal>
-                  </goals>
-               </execution>
                <execution>
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
@@ -449,47 +290,42 @@
          </plugin>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
-            <artifactId>javacc-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>fulltext</id>
-                  <configuration>
-                     <sourceDirectory>${basedir}/src/main/javacc/fulltext</sourceDirectory>
-                  </configuration>
-                  <goals>
-                     <goal>jjtree-javacc</goal>
-                  </goals>
-               </execution>
-               <execution>
-                  <id>sql</id>
-                  <configuration>
-                     <sourceDirectory>${basedir}/src/main/javacc/sql</sourceDirectory>
-                  </configuration>
-                  <goals>
-                     <goal>jjtree-javacc</goal>
-                  </goals>
-               </execution>
-               <execution>
-                  <id>xpath</id>
-                  <configuration>
-                     <sourceDirectory>${basedir}/src/main/javacc/xpath</sourceDirectory>
-                  </configuration>
-                  <goals>
-                     <goal>jjtree-javacc</goal>
-                  </goals>
-               </execution>
-            </executions>
-            <dependencies>
-               <dependency>
-                  <groupId>net.java.dev.javacc</groupId>
-                  <artifactId>javacc</artifactId>
-                  <version>3.2</version>
-               </dependency>
-            </dependencies>
+            <artifactId>taglist-maven-plugin</artifactId>
          </plugin>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
-            <artifactId>taglist-maven-plugin</artifactId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.3</version>
+            <executions>
+               <execution>
+                  <id>add-test-resource</id>
+                  <phase>generate-test-sources</phase>
+                  <goals>
+                     <goal>add-test-resource</goal>
+                  </goals>
+                  <configuration>
+                     <resources>
+                        <resource>
+                           <directory>${project.build.directory}/jcr-core-tests</directory>
+                           <excludes>
+                           </excludes>
+                        </resource>
+                     </resources>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>add-test-source</id>
+                  <phase>generate-test-sources</phase>
+                  <goals>
+                     <goal>add-test-source</goal>
+                  </goals>
+                  <configuration>
+                     <sources>
+                        <source>${project.build.directory}/jcr-core-tests</source>
+                     </sources>
+                  </configuration>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>
@@ -516,11 +352,7 @@
                         <property>
                            <name>emma.coverage.out.file</name>
                            <value>target/emma/coverage.ec</value>
-                        </property>
-                        <property>
-                           <name>jbosscache-shareable</name>
-                           <value>${jbosscache.shareable}</value>
-                        </property>                  
+                        </property>                
                         <property>
                            <name>cache-enabled</name>
                            <value>${cache.enabled}</value>
@@ -551,14 +383,10 @@
                            <name>java.net.preferIPv4Stack</name>
                            <value>true</value>
                         </property>
-                        <!-- Avoid the firewall -->
+                        <!-- Avoid the firewall -->                    
                         <property>
-                           <name>bind.address</name>
+                           <name>jgroups.bind_addr</name>
                            <value>127.0.0.1</value>
-                        </property>
-                        <property>
-                           <name>jgroups.stack</name>
-                           <value>udp</value>
                         </property>
                      </systemProperties>
                      <includes>
@@ -602,11 +430,7 @@
                         <property>
                            <name>emma.coverage.out.file</name>
                            <value>target/emma/coverage.ec</value>
-                        </property>
-                        <property>
-                           <name>jbosscache-shareable</name>
-                           <value>${jbosscache.shareable}</value>
-                        </property>                         
+                        </property>                        
                         <property>
                             <name>cache-enabled</name>
                             <value>${cache.enabled}</value>
@@ -637,14 +461,10 @@
                            <name>java.net.preferIPv4Stack</name>
                            <value>true</value>
                         </property>
-                        <!-- Avoid the firewall -->
+                        <!-- Avoid the firewall -->                    
                         <property>
-                           <name>bind.address</name>
+                           <name>jgroups.bind_addr</name>
                            <value>127.0.0.1</value>
-                        </property>
-                        <property>
-                           <name>jgroups.stack</name>
-                           <value>udp</value>
                         </property>
                      </systemProperties>
                      <includes>
@@ -888,14 +708,14 @@
       <profile>
          <id>sjdbc</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc-jbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc.xml</jcr.test.configuration.file>
             <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
          </properties>
       </profile>      
       <profile>
          <id>cluster</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-jbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration.xml</jcr.test.configuration.file>
          </properties>
       </profile>      
    </profiles>
