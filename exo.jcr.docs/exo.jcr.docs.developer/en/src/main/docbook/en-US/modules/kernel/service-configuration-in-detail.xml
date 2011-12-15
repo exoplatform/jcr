@@ -608,53 +608,14 @@ public class LDAPConnectionConfig {
   <section>
     <title>Import</title>
 
-    <para>The import tag allows to link to other configuration files. These
-    imported files can be placed anywhere. If you write a default
-    configuration which is part of your jar file you should not import files
-    from outside your jar.</para>
+    <para>The import tag allows to import other configuration files using URLs
+    that are configuration manager specific, for more details about what are
+    the supported URLs please refer to the next section about the
+    configuration manager.</para>
 
-    <itemizedlist>
-      <listitem>
-        <para><emphasis role="bold">war</emphasis>: Imports from <emphasis
-        role="bold">portal.war/WEB-INF</emphasis></para>
-      </listitem>
+    <para>See below an example of a configuration file composed of
+    imports:</para>
 
-      <listitem>
-        <para><emphasis role="bold">jar</emphasis> or <emphasis
-        role="bold">classpath</emphasis>: Uses the <emphasis
-        role="bold">classloader</emphasis>, you can use this prefix in the
-        default configuration for importing an other configuration file which
-        is accessible by the classloader.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">file</emphasis>: Uses an <emphasis
-        role="bold">absolute path</emphasis>, you also can put a <emphasis
-        role="bold">URL</emphasis>.</para>
-      </listitem>
-
-      <listitem>
-        <para><emphasis role="bold">without any prefix</emphasis>:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>Standalone mode: <emphasis role="bold">user
-            directory</emphasis></para>
-          </listitem>
-
-          <listitem>
-            <para>Portal mode: $AS-HOME, that means the application server
-            home, for example " <emphasis
-            role="bold">exo-tomcat</emphasis>".</para>
-          </listitem>
-        </itemizedlist>
-      </listitem>
-    </itemizedlist>
-
-    <para>If you open the
-    "portal/trunk/web/portal/src/main/webapp/WEB-INF/conf.configuration.xml"
-    you will see that it consists only of imports:</para>
-    
     <programlisting language="xml">&lt;import&gt;war:/conf/common/common-configuration.xml&lt;/import&gt;
 &lt;import&gt;war:/conf/common/logs-configuration.xml&lt;/import&gt;
 &lt;import&gt;war:/conf/database/database-configuration.xml&lt;/import&gt;
@@ -671,9 +632,8 @@ public class LDAPConnectionConfig {
     possible to resolve properties at runtime instead of providing a value at
     packaging time.</para>
 
-    <para>In
-    portal/trunk/web/portal/src/main/webapp/WEB-INF/conf/database/database-configuration.tmpl.xml
-    you find an example for system properties:</para>
+    <para>See below an example of a configuration file based on system
+    properties:</para>
 
     <programlisting language="xml">  &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
@@ -701,5 +661,99 @@ public class LDAPConnectionConfig {
     role="bold">set
     EXO_OPTS="-DconnectionUrl=jdbc:hsqldb:file:../temp/data/exodb
     -DdriverClass=org.hsqldb.jdbcDriver"</emphasis></para>
+  </section>
+
+  <section>
+    <title>Understanding the prefixes supported by the configuration
+    manager</title>
+
+    <para>The configuration manager allows you to find files using URL with
+    special prefixes that we describe in details below.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">war</emphasis>: try to find the file using
+        the <emphasis>Servlet Context</emphasis> of your
+        <emphasis>portal.war</emphasis> or any web applications defined as
+        <emphasis>PortalContainerConfigOwner</emphasis>, so for example in
+        case of the portal.war if the URL is
+        <emphasis>war:/conf/common/portlet-container-configuration.xml</emphasis>
+        it will try to get the file from
+        <emphasis>portal.war/WEB-INF/conf/common/portlet-container-configuration.xml.</emphasis></para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">jar</emphasis> or <emphasis
+        role="bold">classpath</emphasis>: you can use this prefix to find a
+        file that is accessible using the <emphasis>ClassLoader</emphasis>.
+        For example <emphasis>jar:/conf/my-file.xml</emphasis> will be
+        understood as try to find <emphasis>conf/my-file.xml</emphasis> from
+        the <emphasis>ClassLoader</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">file</emphasis>: this prefix will indicate
+        the configuration manager that it needs to interprete the URL as an
+        <emphasis>absolute path</emphasis>. For example
+        <emphasis>file:///path/to/my/file.xml</emphasis> will be understood as
+        an obsolute path.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>Without prefixes</emphasis>: it will be understood as
+        a <emphasis>relative path</emphasis> from the parent directory of the
+        last processed configuration file. For example, if the configuration
+        manager is processing the file corresonding to the URL
+        <emphasis>file:///path/to/my/configuration.xml</emphasis> and in this
+        file you import <emphasis>dir/to/foo.xml</emphasis>, the configuration
+        manager will try to get the file from
+        <emphasis>file:///path/to/my/dir/to/foo.xml</emphasis>. Please note
+        that it works also for other perfixes. In case you use the
+        configuration manager in a component to get a file like the example
+        below, it will depend on the mode and will be relative to the
+        following directories:</para>
+
+        <programlisting>&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.resources.LocaleConfigService&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.resources.impl.LocaleConfigServiceImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;locale.config.file&lt;/name&gt;
+      &lt;value&gt;war:/conf/common/locales-config.xml&lt;/value&gt;
+    &lt;/value-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para>In standalone mode: it will be a relative path to where it
+            can find the file <emphasis>exo-configuration.xml</emphasis>
+            knowing that the file is first checked in the <emphasis>user
+            directory</emphasis>, if it cannot be found there, it will check
+            in the <emphasis>exo configuration directory</emphasis> and if it
+            still cannot be found it will try to find
+            <emphasis>conf/exo-configuration.xml</emphasis> in the
+            <emphasis>ClassLoader</emphasis>.</para>
+          </listitem>
+
+          <listitem>
+            <para>In portal mode: it will be a relative path to the
+            <emphasis>exo configuration directory</emphasis> in case of the
+            RootContainer (assuming that a file configuration.xml exists there
+            otherwise it would be hard to know) and from
+            <emphasis>${exo-configuration-directory}/portal/${portal-container-name}</emphasis>
+            in case of the PortalContainer (assuming that a file
+            configuration.xml exists there otherwise it would be hard to
+            know).</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+
+    <note>
+      <para>For more details about the exo configuration directory please
+      refer to the chapter <emphasis>Configuration
+      Retrieval</emphasis>.</para>
+    </note>
   </section>
 </chapter>
