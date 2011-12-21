@@ -99,6 +99,7 @@ public class ImportNodeData extends TransientNodeData implements ImportItemData
       this.qpath = QPath.makeChildPath(parent.getQPath(), name, index);
       this.parentIdentifier = parent.getIdentifier();
       this.nodeTypes = new ArrayList<NodeTypeData>();
+      this.persistedVersion = -1;
    }
 
    /**

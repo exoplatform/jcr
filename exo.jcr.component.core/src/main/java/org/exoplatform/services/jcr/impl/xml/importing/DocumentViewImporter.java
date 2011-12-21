@@ -155,14 +155,14 @@ public class DocumentViewImporter extends BaseXmlImporter
          }
 
          ImportPropertyData newProperty =
-            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_PRIMARYTYPE), IdGenerator
-               .generate(), 0, PropertyType.NAME, nodeData.getIdentifier(), false);
+            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_PRIMARYTYPE),
+               IdGenerator.generate(), -1, PropertyType.NAME, nodeData.getIdentifier(), false);
 
          newProperty.setValue(new TransientValueData(Constants.NT_UNSTRUCTURED));
          changesLog.add(new ItemState(newProperty, ItemState.ADDED, true, getAncestorToSave()));
          newProperty =
-            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_XMLCHARACTERS), IdGenerator
-               .generate(), 0, PropertyType.STRING, nodeData.getIdentifier(), false);
+            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_XMLCHARACTERS),
+               IdGenerator.generate(), -1, PropertyType.STRING, nodeData.getIdentifier(), false);
          newProperty.setValue(new TransientValueData(text.toString()));
 
          changesLog.add(new ItemState(newProperty, ItemState.ADDED, true, getAncestorToSave()));

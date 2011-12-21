@@ -18,18 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
-import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
@@ -76,23 +71,4 @@ public class WorkspaceRestoreContentImporter extends WorkspaceContentImporter
          currentWorkspaceName);
 
    }
-
-   @Override
-   protected ImportNodeData processRootNode(QPath parentPath)
-   {
-      // remove the wrong root (null) from the stack
-      tree.pop();
-
-      ImportNodeData newNodeData =
-         new ImportNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, Constants.NT_UNSTRUCTURED,
-            new InternalQName[0], 0, null, new AccessControlList());
-
-      // persisted.
-      changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, parentPath, false, true));
-
-      // TODO check root nodetype(s) in backup !!!
-
-      return newNodeData;
-   }
-
 }

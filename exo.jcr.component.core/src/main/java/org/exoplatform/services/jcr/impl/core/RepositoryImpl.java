@@ -31,10 +31,13 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.RepositoryContainer;
 import org.exoplatform.services.jcr.impl.WorkspaceContainer;
+import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
 import org.exoplatform.services.jcr.impl.xml.ExportImportFactory;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
@@ -467,25 +470,39 @@ public class RepositoryImpl implements ManageableRepository
 
       try
       {
-
          Map<String, Object> context = new HashMap<String, Object>();
          context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, true);
 
          NodeData rootData = ((NodeData)((NodeImpl)sysSession.getRootNode()).getData());
          TransactionableDataManager dataManager = sysSession.getTransientNodesManager().getTransactManager();
-         ExportImportFactory eiFactory = new ExportImportFactory();
+         
+         cleanWorkspace(dataManager);
 
          StreamImporter importer =
-            eiFactory.getWorkspaceImporter(rootData, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW, dataManager,
-               dataManager, sysSession.getWorkspace().getNodeTypesHolder(), sysSession.getLocationFactory(),
-               sysSession.getValueFactory(), getNamespaceRegistry(), sysSession.getAccessManager(),
-               sysSession.getUserState(), context, this, wsName);
+            new ExportImportFactory().getWorkspaceImporter(rootData, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
+               dataManager, dataManager, sysSession.getWorkspace().getNodeTypesHolder(),
+               sysSession.getLocationFactory(), sysSession.getValueFactory(), getNamespaceRegistry(),
+               sysSession.getAccessManager(), sysSession.getUserState(), context, this, wsName);
          importer.importStream(xmlStream);
       }
       finally
       {
          sysSession.logout();
       }
+   }
+
+   private void cleanWorkspace(TransactionableDataManager dataManager)
+      throws RepositoryException
+   {
+      NodeData rootData = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
+
+      ItemDataRemoveVisitor removeVisitor = new ItemDataRemoveVisitor(dataManager, null);
+      rootData.accept(removeVisitor);
+
+      PlainChangesLogImpl changesLog = new PlainChangesLogImpl();
+      changesLog.addAll(removeVisitor.getRemovedStates());
+
+      dataManager.save(changesLog);
    }
 
    /**

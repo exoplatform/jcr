@@ -79,9 +79,9 @@ public class SystemViewImporter extends BaseXmlImporter
    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SystemViewImporter");
 
    protected PropertyInfo propertyInfo = new PropertyInfo();
-   
+
    protected Map<String, NodePropertiesInfo> mapNodePropertiesInfo = new HashMap<String, NodePropertiesInfo>();
-   
+
    /**
     * Root node name.
     */
@@ -159,11 +159,11 @@ public class SystemViewImporter extends BaseXmlImporter
          if (propertyData != null)
          {
             changesLog.add(new ItemState(propertyData, ItemState.ADDED, true, getAncestorToSave()));
-            
+
             ImportNodeData currentNodeInfo = (ImportNodeData)getParent();
-            
+
             NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
-            
+
             currentNodePropertiesInfo.addProperty(propertyData);
          }
       }
@@ -224,9 +224,9 @@ public class SystemViewImporter extends BaseXmlImporter
          newNodeData.setACL(parentData.getACL());
          newNodeData.setOrderNumber(getNextChildOrderNum(parentData));
          newNodeData.setIdentifier(IdGenerator.generate());
-         
+
          changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, getAncestorToSave()));
-         
+
          mapNodePropertiesInfo.put(newNodeData.getIdentifier(), new NodePropertiesInfo(newNodeData));
 
          tree.push(newNodeData);
@@ -330,8 +330,9 @@ public class SystemViewImporter extends BaseXmlImporter
       currentNodeInfo.setMixinTypeNames(mixinNames);
 
       propertyData =
-         new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()), propertyInfo
-            .getIndentifer(), 0, propertyInfo.getType(), currentNodeInfo.getIdentifier(), true);
+         new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()),
+            propertyInfo.getIndentifer(), -1, propertyInfo.getType(), currentNodeInfo.getIdentifier(), true);
+
       propertyData.setValues(parseValues());
       return propertyData;
    }
@@ -344,14 +345,14 @@ public class SystemViewImporter extends BaseXmlImporter
    private void endNode() throws RepositoryException
    {
       ImportNodeData currentNodeInfo = (ImportNodeData)tree.pop();
-      
+
       NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
-      
+
       if (currentNodePropertiesInfo != null)
       {
          checkProperties(currentNodePropertiesInfo);
       }
-      
+
       mapNodePropertiesInfo.remove(currentNodeInfo.getIdentifier());
 
       currentNodeInfo.setMixinTypeNames(currentNodeInfo.getMixinTypeNames());
@@ -365,7 +366,6 @@ public class SystemViewImporter extends BaseXmlImporter
          currentNodeInfo.getExoPrivileges()));
    }
 
-   
    /**
     * Checking priopertis if nodetype is nt:frozennode
     * 
@@ -378,7 +378,7 @@ public class SystemViewImporter extends BaseXmlImporter
    private void checkProperties(NodePropertiesInfo currentNodePropertiesInfo) throws RepositoryException
    {
       if (currentNodePropertiesInfo.getNode().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH)
-               && currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
+         && currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
       {
          InternalQName fptName = null;
          List<InternalQName> fmtNames = new ArrayList<InternalQName>();
@@ -391,14 +391,15 @@ public class SystemViewImporter extends BaseXmlImporter
                if (propertyData.getQName().equals(Constants.JCR_FROZENPRIMARYTYPE))
                {
                   fptName =
-                           InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray(),
-                                    Constants.DEFAULT_ENCODING));
+                     InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray(),
+                        Constants.DEFAULT_ENCODING));
                }
                else if (propertyData.getQName().equals(Constants.JCR_FROZENMIXINTYPES))
                {
                   for (ValueData valueData : propertyData.getValues())
                   {
-                     fmtNames.add(InternalQName.parse(new String(valueData.getAsByteArray(), Constants.DEFAULT_ENCODING)));
+                     fmtNames
+                        .add(InternalQName.parse(new String(valueData.getAsByteArray(), Constants.DEFAULT_ENCODING)));
                   }
                }
             }
@@ -415,22 +416,22 @@ public class SystemViewImporter extends BaseXmlImporter
          {
             throw new RepositoryException(e.getMessage(), e);
          }
-         
+
          InternalQName nodePrimaryTypeName = currentNodePropertiesInfo.getNode().getPrimaryTypeName();
          InternalQName[] nodeMixinTypeName = currentNodePropertiesInfo.getNode().getMixinTypeNames();
 
          for (ImportPropertyData propertyData : currentNodePropertiesInfo.getProperties())
          {
             PropertyDefinitionDatas defs =
-                     nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), nodePrimaryTypeName,
-                              nodeMixinTypeName);
-            
-            if (defs == null  || (defs != null && defs.getAnyDefinition().isResidualSet()))
+               nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), nodePrimaryTypeName,
+                  nodeMixinTypeName);
+
+            if (defs == null || (defs != null && defs.getAnyDefinition().isResidualSet()))
             {
                PropertyDefinitionDatas vhdefs =
-                        nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), fptName, fmtNames
-                                 .toArray(new InternalQName[fmtNames.size()]));
-   
+                  nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), fptName,
+                     fmtNames.toArray(new InternalQName[fmtNames.size()]));
+
                if (vhdefs != null)
                {
                   boolean isMultivalue = (vhdefs.getDefinition(true) != null ? true : false);
@@ -468,8 +469,8 @@ public class SystemViewImporter extends BaseXmlImporter
          {
             //do nothing
          }
-         else if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName, parentNodeData
-            .getPrimaryTypeName(), parentNodeData.getMixinTypeNames()))
+         else if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName,
+            parentNodeData.getPrimaryTypeName(), parentNodeData.getMixinTypeNames()))
          {
             throw new ConstraintViolationException("Can't add node " + nodeData.getQName().getAsString() + " to "
                + parentNodeData.getQPath().getAsString() + " node type " + sName
@@ -482,12 +483,13 @@ public class SystemViewImporter extends BaseXmlImporter
       nodeData.setPrimaryTypeName(primaryTypeName);
 
       propertyData =
-         new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), propertyInfo.getName()), propertyInfo
-            .getIndentifer(), 0, propertyInfo.getType(), nodeData.getIdentifier(), false);
+         new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), propertyInfo.getName()),
+            propertyInfo.getIndentifer(), -1, propertyInfo.getType(), nodeData.getIdentifier(), false);
+
       propertyData.setValues(parseValues());
-      
+
       tree.push(nodeData);
-      
+
       return propertyData;
    }
 
@@ -576,11 +578,11 @@ public class SystemViewImporter extends BaseXmlImporter
 
          propertyData =
             new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()),
-               propertyInfo.getIndentifer(), 0, propertyInfo.getType(), currentNodeInfo.getIdentifier(), isMultivalue);
+               propertyInfo.getIndentifer(), -1, propertyInfo.getType(), currentNodeInfo.getIdentifier(), isMultivalue);
          propertyData.setValues(values);
 
       }
-      
+
       return propertyData;
    }
 
@@ -595,20 +597,20 @@ public class SystemViewImporter extends BaseXmlImporter
       ImportPropertyData propertyData;
       ImportNodeData currentNodeInfo = (ImportNodeData)tree.pop();
 
-      currentNodeInfo.setMixReferenceable(nodeTypeDataManager.isNodeType(Constants.MIX_REFERENCEABLE, currentNodeInfo
-         .getPrimaryTypeName(), currentNodeInfo.getMixinTypeNames()));
+      currentNodeInfo.setMixReferenceable(nodeTypeDataManager.isNodeType(Constants.MIX_REFERENCEABLE,
+         currentNodeInfo.getPrimaryTypeName(), currentNodeInfo.getMixinTypeNames()));
 
       if (currentNodeInfo.isMixReferenceable())
       {
-         currentNodeInfo.setMixVersionable(nodeTypeDataManager.isNodeType(Constants.MIX_VERSIONABLE, currentNodeInfo
-            .getPrimaryTypeName(), currentNodeInfo.getMixinTypeNames()));
+         currentNodeInfo.setMixVersionable(nodeTypeDataManager.isNodeType(Constants.MIX_VERSIONABLE,
+            currentNodeInfo.getPrimaryTypeName(), currentNodeInfo.getMixinTypeNames()));
          checkReferenceable(currentNodeInfo, propertyInfo.getValues().get(0).toString());
       }
 
       propertyData =
-         new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()), propertyInfo
-            .getIndentifer(), 0, propertyInfo.getType(), currentNodeInfo.getIdentifier(), false);
-      
+         new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()),
+            propertyInfo.getIndentifer(), -1, propertyInfo.getType(), currentNodeInfo.getIdentifier(), false);
+
       if (currentNodeInfo.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
       {
          propertyData.setValue(new TransientValueData(propertyInfo.getValues().get(0).toString()));
@@ -619,9 +621,9 @@ public class SystemViewImporter extends BaseXmlImporter
       }
 
       tree.push(currentNodeInfo);
-      
+
       mapNodePropertiesInfo.put(currentNodeInfo.getIdentifier(), new NodePropertiesInfo(currentNodeInfo));
-      
+
       return propertyData;
    }
 
@@ -686,8 +688,8 @@ public class SystemViewImporter extends BaseXmlImporter
                // TODO cleanup
                // TransientValueData binaryValue = new TransientValueData(vStream);
                TransientValueData binaryValue =
-                  new TransientValueData(k, null, vStream, null, valueFactory.getFileCleaner(), valueFactory
-                     .getMaxBufferSize(), null, true);
+                  new TransientValueData(k, null, vStream, null, valueFactory.getFileCleaner(),
+                     valueFactory.getMaxBufferSize(), null, true);
                // Call to spool file into tmp
                binaryValue.getAsStream().close();
                vStream.close();
