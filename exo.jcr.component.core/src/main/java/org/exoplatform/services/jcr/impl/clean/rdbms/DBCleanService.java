@@ -278,6 +278,7 @@ public class DBCleanService
          dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "ITEM_PARENT");
          dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "ITEM_PARENT_NAME");
          dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "ITEM_PARENT_ID");
+         dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "ITEM_N_ORDER_NUM");
          dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "VALUE_PROPERTY");
          dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "REF_PROPERTY");
       }
@@ -289,6 +290,7 @@ public class DBCleanService
          dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_PARENT");
          dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_PARENT_NAME");
          dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_PARENT_ID");
+         dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_N_ORDER_NUM");
          dropScript.add("DROP INDEX JCR_" + multiDb + "VALUE.JCR_IDX_" + multiDb + "VALUE_PROPERTY");
          dropScript.add("DROP INDEX JCR_" + multiDb + "REF.JCR_IDX_" + multiDb + "REF_PROPERTY");
       }
@@ -336,6 +338,8 @@ public class DBCleanService
          addScript.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
             + "ITEM_PARENT_ID ON JCR_" + multiDb + "ITEM", isMultiDB, dialect));
          addScript.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
+            + "ITEM_N_ORDER_NUM ON JCR_" + multiDb + "ITEM", isMultiDB, dialect));
+         addScript.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
             + "VALUE_PROPERTY ON JCR_" + multiDb + "VALUE", isMultiDB, dialect));
          addScript.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
             + "REF_PROPERTY ON JCR_" + multiDb + "REF", isMultiDB, dialect));
@@ -381,6 +385,8 @@ public class DBCleanService
          addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT_NAME ON JCR_" + multiDb
             + "ITEM", isMultiDB, dialect));
          addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT_ID ON JCR_" + multiDb
+            + "ITEM", isMultiDB, dialect));
+         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_N_ORDER_NUM ON JCR_" + multiDb
             + "ITEM", isMultiDB, dialect));
          addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "VALUE_PROPERTY ON JCR_" + multiDb
             + "VALUE", isMultiDB, dialect));
@@ -521,6 +527,8 @@ public class DBCleanService
             + "ITEM_PARENT_NAME" + OLD_OBJECT_SUFFIX);
          renameScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID RENAME TO JCR_IDX_" + isMultiDB
             + "ITEM_PARENT_ID" + OLD_OBJECT_SUFFIX);
+         renameScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM RENAME TO JCR_IDX_" + isMultiDB
+            + "ITEM_N_ORDER_NUM" + OLD_OBJECT_SUFFIX);
 
          // JCR_[S,M]REF
          renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF RENAME TO JCR_" + isMultiDB + "REF"
@@ -586,6 +594,9 @@ public class DBCleanService
 
          renameScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID RENAME TO JCR_IDX_" + isMultiDB
             + "ITEM_PARENT_ID" + OLD_OBJECT_SUFFIX);
+
+         renameScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM RENAME TO JCR_IDX_" + isMultiDB
+            + "ITEM_N_ORDER_NUM" + OLD_OBJECT_SUFFIX);
 
          renameScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "VALUE_PROPERTY RENAME TO JCR_IDX_" + isMultiDB
             + "VALUE_PROPERTY" + OLD_OBJECT_SUFFIX);
@@ -654,6 +665,8 @@ public class DBCleanService
             + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_PARENT_NAME");
          rollbackScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID" + OLD_OBJECT_SUFFIX
             + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID");
+         rollbackScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM" + OLD_OBJECT_SUFFIX
+            + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM");
    
          // JCR_[S,M]REF
          rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_" + isMultiDB
@@ -723,6 +736,9 @@ public class DBCleanService
 
          rollbackScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID" + OLD_OBJECT_SUFFIX
             + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID");
+
+         rollbackScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM" + OLD_OBJECT_SUFFIX
+            + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM");
 
          rollbackScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "VALUE_PROPERTY" + OLD_OBJECT_SUFFIX
             + " RENAME TO JCR_IDX_" + isMultiDB + "VALUE_PROPERTY");
