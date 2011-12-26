@@ -820,7 +820,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public void addChildPropertiesList(NodeData parent, List<PropertyData> childProperties)
    {
-      // TODO not implemented, will force read from DB
+
    }
 
    /**

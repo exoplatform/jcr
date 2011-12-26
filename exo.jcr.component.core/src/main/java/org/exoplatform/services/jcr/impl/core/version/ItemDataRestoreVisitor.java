@@ -842,8 +842,6 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
    @Override
    protected void entering(PropertyData property, int level) throws RepositoryException
    {
-
-      // TODO what to do if REFERENCE property target doesn't exists in workspace
       if (currentNode() != null)
       {
          NodeData frozenParent = (NodeData)dataManager.getItemData(property.getParentIdentifier());

@@ -45,7 +45,6 @@ public class LockImpl implements ExtendedLock
 
    private SessionImpl session;
 
-   // TODO remove this constructor, need refactor lock classes ierarchy
    public LockImpl()
    {
    }

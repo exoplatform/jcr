@@ -252,7 +252,6 @@ public class TransientValueData implements ValueData
        */
       public long getLength()
       {
-         // TODO try ask on FileChannel (via FileInputStream if have such stream).
          if (isByteArrayAfterSpool())
          {
             return data.length;
@@ -354,7 +353,7 @@ public class TransientValueData implements ValueData
 
             MappedByteBuffer bb = spoolChannel.map(FileChannel.MapMode.READ_ONLY, position, length);
 
-            WritableByteChannel ch = Channels.newChannel(stream); // TODO don't use Channels.newChannel on java5
+            WritableByteChannel ch = Channels.newChannel(stream);
             ch.write(bb);
             ch.close();
 
@@ -653,7 +652,6 @@ public class TransientValueData implements ValueData
 
          try
          {
-            //TODO do refactor of work with NIO and java6
             ByteBuffer bb = ByteBuffer.allocate((int)fch.size());
             fch.read(bb);
             if (bb.hasArray())

@@ -103,7 +103,6 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
          rootNodeType = config.getInitializer().getParameterValue(WorkspaceInitializer.ROOT_NODETYPE_PARAMETER, null);
       }
 
-      // use deprecated params if found, temporary TODO
       if (config.getAutoInitializedRootNt() != null)
       {
          if (rootNodeType == null)

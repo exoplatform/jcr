@@ -107,7 +107,6 @@ public class ObjectWriterImpl implements ObjectWriter
       out.write(v ? 1 : 0);
    }
 
-   // TODO can be useful to flag write
    /**
     * {@inheritDoc}
     */

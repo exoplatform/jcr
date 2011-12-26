@@ -673,8 +673,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             else
             {
-               // TODO do we not restoring same content few times, i.e. on STARTING, WAITIG, FINISHED
-               // events which are logged in chan log one after another
                try
                {
                   incrementalRestore(list.get(i).getURL().getPath(), reposytoryName, workspaceName);
@@ -765,8 +763,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             else
             {
-               // TODO do we not restoring same content few times, i.e. on STARTING, WAITIG, FINISHED
-               // events which are logged in chan log one after another
                try
                {
                   incrementalRestore(list.get(i).getURL().getPath(), reposytoryName, workspaceName);

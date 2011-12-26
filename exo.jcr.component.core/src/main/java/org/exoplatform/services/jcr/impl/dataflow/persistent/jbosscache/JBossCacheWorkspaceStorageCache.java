@@ -1101,7 +1101,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    public void addChildPropertiesList(NodeData parent, List<PropertyData> childProperties)
    {
-      // TODO not implemented, will force read from DB
+
    }
 
    /**
@@ -1830,9 +1830,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                NodeData prevNode = (NodeData)data;
 
                TransientNodeData newNode =
-                  new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(), prevNode
-                     .getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
-                     .getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
+                  new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
+                     prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+                     prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL());
                // update this node
                cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
             }
@@ -1899,9 +1899,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             QPath
                .makeChildPath(rootPath, prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1]);
          TransientNodeData newNode =
-            new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(), prevNode
-               .getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
-               .getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
+            new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
+               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+               prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL());
          // update this node
          cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
          // update childs recursive

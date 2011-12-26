@@ -430,7 +430,6 @@ public abstract class QueryResultImpl implements QueryResult
       {
          try
          {
-            // TODO: rather use AccessManager.canRead(Path)
             //if (nodes[i] != null && !accessMgr.isGranted(nodes[i].getNodeId(), PermissionType.READ)) {
             if (nodes[i] != null)
             {

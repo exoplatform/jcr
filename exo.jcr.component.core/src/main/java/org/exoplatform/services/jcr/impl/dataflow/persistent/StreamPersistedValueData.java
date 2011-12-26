@@ -173,7 +173,6 @@ public class StreamPersistedValueData extends FilePersistedValueData
    @Override
    public InputStream getAsStream() throws IOException
    {
-      // TODO check if file exists, wait a bit (for replication etc.)
       return super.getAsStream();
    }
 

@@ -146,8 +146,6 @@ public class LockCommand
                .ok(body(nsContext, requestEntity, depth, lockToken, requestEntity.getOwner(), timeout), "text/xml")
                .header("Lock-Token", "<" + lockToken + ">").build();
          }
-
-         // TODO 412 Precondition Failed ?
       }
       catch (LockException exc)
       {

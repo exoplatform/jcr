@@ -87,7 +87,6 @@ public class NodeTypeDataHierarchyHolder
     */
    public Set<InternalQName> getDeclaredSubtypes(final InternalQName nodeTypeName)
    {
-      // TODO Speed up this method
       Set<InternalQName> resultSet = new HashSet<InternalQName>();
       for (Map.Entry<InternalQName, NodeTypeHolder> entry : nodeTypes.entrySet())
       {
@@ -141,7 +140,6 @@ public class NodeTypeDataHierarchyHolder
     */
    public Set<InternalQName> getSubtypes(final InternalQName nodeTypeName)
    {
-      // TODO Speed up this method
       Set<InternalQName> resultSet = new HashSet<InternalQName>();
       for (InternalQName ntName : nodeTypes.keySet())
       {

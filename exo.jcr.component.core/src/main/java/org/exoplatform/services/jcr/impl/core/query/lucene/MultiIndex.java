@@ -3323,7 +3323,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    public void refreshIndexList() throws IOException
    {
-      // TODO: re-study synchronization here.
       synchronized (updateMonitor)
       {
          // release reader if any

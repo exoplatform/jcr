@@ -97,7 +97,6 @@ public abstract class TransientItemData implements ItemData, Externalizable
 
       if (obj instanceof ItemData)
       {
-         // TODO use String.equals, but check performance!
          return getIdentifier().hashCode() == ((ItemData)obj).getIdentifier().hashCode();
       }
 

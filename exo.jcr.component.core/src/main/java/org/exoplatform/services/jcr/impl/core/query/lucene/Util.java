@@ -226,7 +226,6 @@ public class Util
          case PropertyType.REFERENCE :
          case PropertyType.STRING :
             return value.getString();
-            // TODO: JSR 283 now node types
          default :
             throw new RepositoryException("Unsupported type: " + PropertyType.nameFromValue(value.getType()));
       }
@@ -313,7 +312,6 @@ public class Util
          case PropertyType.STRING :
             c2 = v2.getString();
             break;
-         // TODO: JSR 283 now node types
          default :
             throw new RepositoryException("Unsupported type: " + PropertyType.nameFromValue(v2.getType()));
       }
@@ -398,7 +396,6 @@ public class Util
     */
    public static long getLength(ValueData value, int propType)
    {
-      // TODO: support new JSR 283 property types
       if (propType == PropertyType.BINARY)
       {
          return value.getLength();

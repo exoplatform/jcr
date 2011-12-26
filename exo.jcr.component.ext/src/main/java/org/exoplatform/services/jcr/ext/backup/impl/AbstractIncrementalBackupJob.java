@@ -119,7 +119,6 @@ public abstract class AbstractIncrementalBackupJob extends AbstractBackupJob imp
     */
    public final void run()
    {
-      // TODO [PN] listener was added but never will be removed
       repository.addItemPersistenceListener(workspaceName, this);
       state = WORKING;
 

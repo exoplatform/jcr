@@ -464,8 +464,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                            }
                            else
                            {
-                              // TODO ask dest file from VS provider, can be null after
-                              // TODO for JBC case, the storage connection will evict the replicated Value to read it from the DB
                               File destFile = null;
 
                               if (tvd.getSpoolFile() != null)
@@ -841,7 +839,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     *          connection
     * @throws RepositoryException
     * @throws InvalidItemStateException
-    *           if the item not found TODO compare persistedVersion number
+    *           if the item not found
     */
    protected void doUpdate(final ItemData item, final WorkspaceStorageConnection con) throws RepositoryException,
       InvalidItemStateException

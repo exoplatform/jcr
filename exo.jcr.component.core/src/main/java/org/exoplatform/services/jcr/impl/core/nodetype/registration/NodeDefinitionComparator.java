@@ -384,7 +384,6 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          NodeDefinitionData ancestorDefinitionData = changedDefinitions.getAncestorDefinition();
          NodeDefinitionData recipientDefinitionData = changedDefinitions.getRecepientDefinition();
          // change from mandatory=false to mandatory = true
-         // TODO residual
          if (!ancestorDefinitionData.isMandatory() && recipientDefinitionData.isMandatory())
          {
             for (NodeData nodeData : nodesData)
@@ -409,7 +408,6 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          // change from Protected=false to Protected = true
          if (!ancestorDefinitionData.isProtected() && recipientDefinitionData.isProtected())
          {
-            // TODO residual
             for (NodeData nodeData : nodesData)
             {
 
@@ -463,7 +461,6 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
             {
                List<NodeData> childs = dataConsumer.getChildNodesData(nodeData);
                // more then mixin and primary type
-               // TODO it could be possible, check add definitions
                if (childs.size() > 0)
                {
                   for (NodeData nodeData2 : childs)

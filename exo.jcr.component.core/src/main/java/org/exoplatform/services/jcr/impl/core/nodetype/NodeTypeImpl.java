@@ -319,7 +319,6 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       }
       catch (RepositoryException e)
       {
-         // TODO
          throw new RuntimeException("Wrong name in nodeTypeData " + e, e);
       }
    }
@@ -338,7 +337,6 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       }
       catch (RepositoryException e)
       {
-         // TODO
          throw new RuntimeException("Wrong primary item name in nodeTypeData " + e, e);
       }
    }
@@ -736,29 +734,6 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       {
          return false;
       }
-
-      // TODO old code
-      //      if (constraints != null && constraints.length > 0)
-      //      {
-      //         for (int i = 0; i < constraints.length; i++)
-      //         {
-      //            try
-      //            {
-      //               if (constraints[i].equals(value.getString()))
-      //               {
-      //                  return true;
-      //               }
-      //            }
-      //            catch (RepositoryException e)
-      //            {
-      //               LOG.error("Can't get value's string value " + e, e);
-      //            }
-      //         }
-      //      }
-      //      else
-      //         return true;
-      //
-      //      return false;
    }
 
    private String getCharsetString(String source, String charSetName)

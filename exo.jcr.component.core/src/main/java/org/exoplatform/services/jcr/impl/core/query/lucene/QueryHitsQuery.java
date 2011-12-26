@@ -151,7 +151,6 @@ public class QueryHitsQuery extends Query implements JcrQuery{
          */
         @Override
       public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
-           // TODO: use arguments!
             return new QueryHitsQueryScorer(reader, similarity);
         }
 

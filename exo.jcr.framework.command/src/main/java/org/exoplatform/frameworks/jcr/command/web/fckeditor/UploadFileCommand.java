@@ -134,7 +134,6 @@ public class UploadFileCommand extends AbstractFCKConnector implements Command
 
       parentFolder.save();
 
-      // TODO
       int retVal = 0;
 
       out.println("<script type=\"text/javascript\">");

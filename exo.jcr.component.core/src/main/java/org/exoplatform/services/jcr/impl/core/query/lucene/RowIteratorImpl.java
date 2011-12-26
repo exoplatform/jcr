@@ -503,7 +503,6 @@ class RowIteratorImpl implements RowIterator
          ScoreNode s = sn[getSelectorIndex(selectorName)];
          if (s == null)
          {
-            // TODO correct?
             return null;
          }
          return (Node)itemMgr.getItemByIdentifier(s.getNodeId(), true);
@@ -613,7 +612,6 @@ class RowIteratorImpl implements RowIterator
          ScoreNode s = sn[getSelectorIndex(selectorName)];
          if (s == null)
          {
-            // TODO correct?
             return Double.NaN;
          }
          return s.getScore();

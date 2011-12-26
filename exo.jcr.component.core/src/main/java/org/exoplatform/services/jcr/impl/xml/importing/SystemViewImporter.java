@@ -685,7 +685,6 @@ public class SystemViewImporter extends BaseXmlImporter
             {
                InputStream vStream = propertyInfo.getValues().get(k).getInputStream();
 
-               // TODO cleanup
                // TransientValueData binaryValue = new TransientValueData(vStream);
                TransientValueData binaryValue =
                   new TransientValueData(k, null, vStream, null, valueFactory.getFileCleaner(),

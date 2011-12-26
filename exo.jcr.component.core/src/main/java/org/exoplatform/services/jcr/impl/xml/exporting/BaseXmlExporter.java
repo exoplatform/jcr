@@ -267,7 +267,6 @@ public abstract class BaseXmlExporter extends ItemDataTraversingVisitor
          case PropertyType.NAME :
          case PropertyType.DATE :
          case PropertyType.PATH :
-            // TODO namespace mapping for values
             try
             {
                charValue = systemValueFactory.loadValue(data, type).getString();

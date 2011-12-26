@@ -64,7 +64,6 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
    private static String LOCAL_ADDRESS;
    static
    {
-      // TODO this info may be is not necessary
       try
       {
          // get the inet address
@@ -145,7 +144,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
          lockFile = new File(tempDir, targetFile.getName() + LOCK_FILE_EXTENSION);
 
          FileOutputStream lout = new FileOutputStream(lockFile, true);
-         lout.write(operationInfo.getBytes()); // TODO write info
+         lout.write(operationInfo.getBytes());
          lout.getChannel().lock(); // wait for unlock (on Windows will wait for this JVM too)
 
          lockFileStream = lout;
@@ -175,7 +174,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
             lockFileStream.close();
 
          if (!lockFile.delete())
-         { // TODO don't use FileCleaner, delete should be enough
+         {
             LOG.warn("Cannot delete lock file " + lockFile.getAbsolutePath() + ". Add to the FileCleaner");
             cleaner.addFile(lockFile);
          }

@@ -148,7 +148,6 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
                if (!file.isDirectory())
                {
                   // if parent directory is not "offline" then add this file. Otherwise skip it.
-                  // TODO implement list retrieval via index state manager
                   if (!file.getParent().endsWith(OfflinePersistentIndex.NAME))
                   {
                      result.add(PrivilegedFileHelper.getAbsolutePath(file).substring(indexDirLen));

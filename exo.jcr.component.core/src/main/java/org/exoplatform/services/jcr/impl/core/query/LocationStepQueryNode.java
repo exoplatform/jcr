@@ -16,9 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+
+import javax.jcr.RepositoryException;
 
 
 
@@ -44,7 +44,6 @@ public class LocationStepQueryNode extends NAryQueryNode {
     /**
      * The empty name used in matching the root node. This is an implementation
      * specific constant as the empty name is not a valid JCR name.
-     * TODO: The root location step should be refactored somehow
      */
     public static final InternalQName EMPTY_NAME = new InternalQName("", "");
 

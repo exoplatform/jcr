@@ -114,7 +114,6 @@ public class RegistryService extends Registry implements Startable
 
    protected final List<String> mixinNames;
 
-   // TODO temporary flag to have start() run once
    protected boolean started = false;
 
    /**

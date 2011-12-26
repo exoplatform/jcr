@@ -920,7 +920,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
                throw new ConstraintViolationException("Node definition not found for " + getPath());
             }
 
-            // TODO same functionality in NodeTypeImpl
             InternalQName[] rnames = definition.getRequiredPrimaryTypes();
             NodeType[] rnts = new NodeType[rnames.length];
             for (int j = 0; j < rnames.length; j++)
@@ -1559,7 +1558,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    /**
     * Indicates whether this node is of the specified node type. Returns true if this node is of the
     * specified node type or a subtype of the specified node type. Returns false otherwise. <br/>
-    * Nodetype name asked in for mof internal QName. TODO have it private.
+    * Nodetype name asked in for mof internal QName. 
     * 
     * @param qName
     *          InternalQName
@@ -1605,7 +1604,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          NodeData nodeData = (NodeData)data;
 
-         // TODO do we need this three checks here?
          if (nodeData.getPrimaryTypeName() == null)
          {
             throw new RepositoryException("Load data: NodeData has no primaryTypeName. Null value found. "
@@ -2963,7 +2961,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       List<PropertyData> storedProps = new ArrayList<PropertyData>(dataManager.getChildPropertiesData(nodeData()));
 
-      // TODO we should not sort here!
       Collections.sort(storedProps, new PropertiesDataOrderComparator<PropertyData>());
 
       return storedProps;

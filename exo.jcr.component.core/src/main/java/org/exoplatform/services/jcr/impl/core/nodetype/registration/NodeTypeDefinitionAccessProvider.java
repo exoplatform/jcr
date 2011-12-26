@@ -88,10 +88,6 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
       boolean mixin = readMandatoryBoolean(nodeData, Constants.JCR_ISMIXIN);
 
       boolean hasOrderableChildNodes = readMandatoryBoolean(nodeData, Constants.JCR_HASORDERABLECHILDNODES);
-      // TODO fix to mandatory
-      //      boolean isAbstract = readMandatoryBoolean(nodeData, Constants.JCR_ISABSTRACT);
-      //
-      //      boolean isQueryable = readBoolean(nodeData, Constants.JCR_ISQUERYABLE);
 
       InternalQName[] declaredSupertypeNames = readNames(nodeData, Constants.JCR_SUPERTYPES);
 

@@ -703,7 +703,6 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       {
          NodeData nData = (NodeData)dataManager.getItemData(nodeIdentifier);
 
-         //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that node was removed in other node of cluster.  
          if (nData == null)
          {
@@ -717,7 +716,6 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
             copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1),
                ItemType.PROPERTY));
 
-         //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that lock was removed in other node of cluster.  
          if (lockOwner == null)
          {
@@ -730,7 +728,6 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
             copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1),
                ItemType.PROPERTY));
 
-         //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that lock was removed in other node of cluster.  
          if (lockIsDeep == null)
          {
@@ -749,7 +746,6 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (JCRInvalidItemStateException e)
       {
-         //TODO EXOJCR-412, should be refactored in future.
          //Skip property not found in DB, because that lock property was removed in other node of cluster.
          if (LOG.isDebugEnabled())
          {

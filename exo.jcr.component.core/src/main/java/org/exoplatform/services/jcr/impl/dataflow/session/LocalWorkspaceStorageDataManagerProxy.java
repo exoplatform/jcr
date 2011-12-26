@@ -55,8 +55,6 @@ import javax.jcr.RepositoryException;
  * applied (for ex RMI) this implementation is responsible for making copy of persisted (shared)
  * data objects for session data manager and pass it on top (to TransactionableDM) (and vice versa?)
  * 
- * <p>TODO not used since optimization EXOJCR-272.</p>
- * 
  * @author Gennady Azarenkov
  * @version $Id: LocalWorkspaceStorageDataManagerProxy.java 11907 2008-03-13 15:36:21Z ksm $
  */
@@ -284,7 +282,7 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    private List<NodeData> copyNodes(final List<NodeData> childNodes) throws RepositoryException
    {
       final List<NodeData> copyOfChildsNodes = new LinkedList<NodeData>();
-      synchronized (childNodes) // TODO EXOJCR-273
+      synchronized (childNodes)
       {
          for (NodeData nodeData : childNodes)
          {
@@ -298,7 +296,7 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    private List<PropertyData> copyProperties(final List<PropertyData> traverseProperties) throws RepositoryException
    {
       final List<PropertyData> copyOfChildsProperties = new LinkedList<PropertyData>();
-      synchronized (traverseProperties) // TODO EXOJCR-273
+      synchronized (traverseProperties)
       {
          for (PropertyData nodeProperty : traverseProperties)
          {
@@ -313,7 +311,7 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
       throws RepositoryException
    {
       final List<PropertyData> copyOfChildsProperties = new LinkedList<PropertyData>();
-      synchronized (traverseProperties) // TODO EXOJCR-273
+      synchronized (traverseProperties)
       {
          for (PropertyData nodeProperty : traverseProperties)
          {

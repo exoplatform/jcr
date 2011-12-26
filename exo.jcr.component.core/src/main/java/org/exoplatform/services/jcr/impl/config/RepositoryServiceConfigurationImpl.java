@@ -225,7 +225,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          // writing configuration in to the persister
          if (configurationPersister != null)
          {
-            // TODO file output stream
             configurationPersister.write(new ByteArrayInputStream(((ByteArrayOutputStream)saveStream).toByteArray()));
          }
 

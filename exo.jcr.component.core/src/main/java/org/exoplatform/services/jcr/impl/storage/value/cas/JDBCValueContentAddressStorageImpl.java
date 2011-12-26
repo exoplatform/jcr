@@ -537,7 +537,6 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             }
             else
             {
-               // TODO unused externaly feature (except tests)
                ps = con.prepareStatement(sqlSelectRecords);
                ps.setString(1, propertyId);
                rs = ps.executeQuery();

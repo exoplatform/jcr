@@ -282,18 +282,6 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
                   // if no session currently holds lock except this
                   try
                   {
-                     // TODO it's possible to have next error
-                     // java.lang.NullPointerException
-                     // at
-                     // org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl.onCloseSession(LockManagerImpl.java:312)
-                     // at org.exoplatform.services.jcr.impl.core.SessionImpl.logout(SessionImpl.java:794)
-                     // at
-                     // org.exoplatform.services.jcr.impl.core.XASessionImpl.logout(XASessionImpl.java:254)
-                     // at
-                     // org.exoplatform.services.jcr.impl.core.SessionRegistry
-                     // $SessionCleaner.callPeriodically(SessionRegistry.java:165)
-                     // at
-                     // org.exoplatform.services.jcr.impl.proccess.WorkerThread.run(WorkerThread.java:46)
                      ((NodeImpl)sessionImpl.getTransientNodesManager().getItemByIdentifier(
                         lockData.getNodeIdentifier(), false)).unlock();
                   }

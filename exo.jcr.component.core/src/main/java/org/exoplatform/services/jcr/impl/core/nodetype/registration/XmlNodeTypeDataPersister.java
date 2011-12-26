@@ -188,7 +188,6 @@ public class XmlNodeTypeDataPersister implements NodeTypeDataPersister
     */
    public NodeTypeData getNodeType(InternalQName nodeTypeName) throws RepositoryException
    {
-      // TODO Auto-generated method stub
       return null;
    }
 

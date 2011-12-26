@@ -89,10 +89,6 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
     */
    public List<ItemState> getAllStates()
    {
-      // TODO [PN] use a wrapping List/Iterator for all changes logs instead of
-      // putting all logs
-      // content into one list
-      // will increase a performance of tx-related operations
       List<ItemState> states = new ArrayList<ItemState>();
       for (PlainChangesLog changesLog : changesLogs)
       {

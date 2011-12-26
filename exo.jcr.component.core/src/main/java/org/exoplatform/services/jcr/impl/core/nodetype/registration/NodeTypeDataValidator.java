@@ -226,7 +226,6 @@ public class NodeTypeDataValidator
                + " in nodetype " + nodeType.getName().getAsString(), e);
          }
          
-         // TODO validate constraints, we have issue with TCK nodetype tests:canSetProperty
          try
          {
             validateValueConstraints(pdef.getRequiredType(), pdef.getValueConstraints());

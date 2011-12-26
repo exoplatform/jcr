@@ -66,7 +66,6 @@ public class CmdStor extends FtpCommandImpl
 
       try
       {
-         // TODO: Add TimeOut here
          while (!clientSession().getDataTransiver().isConnected())
          {
             Thread.sleep(100);

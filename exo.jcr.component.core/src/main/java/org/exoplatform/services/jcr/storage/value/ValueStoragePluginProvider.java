@@ -62,8 +62,6 @@ public interface ValueStoragePluginProvider
    /**
     * Run consistency check operation on each plugin registered.
     * 
-    * TODO: NOT USED yet (empty implementations).
-    * 
     * @param dataConnection
     *          WorkspaceStorageConnection persistent connection
     */

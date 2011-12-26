@@ -83,7 +83,6 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
 
          if (!PrivilegedFileHelper.delete(file))
          {
-            //TODO FileCleaner maybe null. 
             if (cleaner != null)
             {
                cleaner.addFile(file);

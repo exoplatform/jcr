@@ -559,7 +559,6 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
             {
                List<PropertyData> childs = dataConsumer.getChildPropertiesData(nodeData);
                // more then mixin and primary type
-               // TODO it could be possible, check add definitions
                for (PropertyData propertyData : childs)
                {
                   if (!isNonResidualMatch(propertyData.getQPath().getName(), recipientDefinition))
@@ -574,7 +573,6 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          }
          else if (!isResidualMatch(removePropertyDefinitionData.getName(), recipientDefinition))
          {
-            // TODO more complex exception
             List<NodeData> nodes =
                getNodes(nodesData, new InternalQName[]{removePropertyDefinitionData.getName()}, new InternalQName[]{});
             if (nodes.size() > 0)

@@ -1509,7 +1509,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                List<PropertyData> childProperties =
                   CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData);
-               // TODO childProperties.size() > 0 for SDB
+
                if (childProperties.size() > 0 && cache.isEnabled())
                {
                   cache.addChildProperties(nodeData, childProperties);
@@ -1866,7 +1866,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                List<PropertyData> propertiesList =
                   CacheableWorkspaceDataManager.super.listChildPropertiesData(nodeData);
-               // TODO propertiesList.size() > 0 for SDB
+
                if (propertiesList.size() > 0 && cache.isEnabled())
                {
                   cache.addChildPropertiesList(nodeData, propertiesList);

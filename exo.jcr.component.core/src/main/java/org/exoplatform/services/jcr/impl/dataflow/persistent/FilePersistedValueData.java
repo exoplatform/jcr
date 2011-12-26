@@ -196,7 +196,6 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
     */
    private byte[] fileToByteArray() throws IOException
    {
-      // TODO do refactor of work with NIO and java6
       FileChannel fch = PrivilegedFileHelper.fileInputStream(file).getChannel();
 
       try
@@ -263,7 +262,6 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
       // write canonical file path
       if (file != null)
       {
-         // TODO for tests byte[] buf = file.getPath().getBytes("UTF-8");
          byte[] buf = PrivilegedFileHelper.getCanonicalPath(file).getBytes("UTF-8");
          out.writeInt(buf.length);
          out.write(buf);

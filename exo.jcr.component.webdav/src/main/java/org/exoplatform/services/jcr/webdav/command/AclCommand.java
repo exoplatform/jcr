@@ -34,8 +34,8 @@ import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -161,7 +161,6 @@ public class AclCommand
 
          HierarchicalProperty principalProperty = ace.getChild(ACLProperties.PRINCIPAL);
          // each ace element must contain principal element
-         // TODO invert element is not implemented
          // <!ELEMENT ace ((principal | invert), (grant|deny), protected?, inherited?)>
          if (principalProperty == null)
          {
@@ -180,7 +179,6 @@ public class AclCommand
          }
 
          // each principal must contain either href or all element
-         // TODO authenticated, unauthenticated, property, self are not implemented
          // <!ELEMENT principal (href | all | authenticated | unauthenticated | property | self)> 
          else
          {

@@ -58,7 +58,6 @@ public class EditableValueData extends TransientValueData
          this.spooled = true;
       }
 
-      // TODO use InputStream instead of spoolFile and use Channel.transferFrom.
       public NewEditableValueData(SpoolFile spoolFile, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
          File tempDirectory) throws IOException
       {
@@ -280,7 +279,6 @@ public class EditableValueData extends TransientValueData
                   }
 
                   // write update data
-                  // TODO don't use Channels.newChannel in Java5
                   ReadableByteChannel sch = Channels.newChannel(stream);
                   chch.transferFrom(sch, newIndex, length);
                   sch.close();

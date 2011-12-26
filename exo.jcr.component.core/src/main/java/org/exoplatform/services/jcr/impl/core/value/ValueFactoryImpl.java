@@ -79,7 +79,6 @@ public class ValueFactoryImpl implements ValueFactory
       this.fileCleaner = cleanerHolder.getFileCleaner();
       this.tempDirectory = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
 
-      // TODO we use WorkspaceDataContainer constants but is it ok?
       this.maxBufferSize =
          workspaceConfig.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);

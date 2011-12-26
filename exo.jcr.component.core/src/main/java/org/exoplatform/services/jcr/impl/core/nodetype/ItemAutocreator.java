@@ -180,8 +180,6 @@ public class ItemAutocreator
             }
             else
             {
-               // TODO if autocreated property exists it's has wrong data (e.g. ACL)
-               // - throw an exception
                if (this.log.isDebugEnabled())
                {
                   this.log.debug("Skipping existed property " + pdef.getName() + " in "

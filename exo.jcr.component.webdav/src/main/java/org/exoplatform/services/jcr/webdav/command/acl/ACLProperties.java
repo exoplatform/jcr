@@ -185,13 +185,6 @@ public class ACLProperties
       return ownerProperty;
    }
 
-   // TODO support for DAV:supported-privilege-set property
-   // specified here: http://www.webdav.org/specs/rfc3744.html#PROPERTY_supported-privilege-set
-   // TODO support for DAV:acl-restrictions property
-   // specified here: http://www.webdav.org/specs/rfc3744.html#PROPERTY_acl-restrictions
-   // TODO support for DAV:current-user-privilege-set property
-   // specified here: http://www.webdav.org/specs/rfc3744.html#PROPERTY_current-user-privilege-set
-
    private static HierarchicalProperty getPrincipalProperty(String principal)
    {
       HierarchicalProperty principalProperty = new HierarchicalProperty(PRINCIPAL);
