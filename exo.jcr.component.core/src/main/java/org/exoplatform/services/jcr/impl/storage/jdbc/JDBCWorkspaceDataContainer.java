@@ -259,8 +259,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public JDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
       InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
-      FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException, NamingException,
-      RepositoryException, IOException
+      FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException,
+      NamingException, RepositoryException, IOException
    {
       checkIntegrity(wsConfig, repConfig);
       this.wsConfig = wsConfig;
@@ -374,7 +374,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          this.dbSourceName = sn;
          if (dsProvider == null)
          {
-            throw new IllegalArgumentException("Since a data source has been defined, the DataSourceProvider cannot be null, add it in your configuration.");
+            throw new IllegalArgumentException(
+               "Since a data source has been defined, the DataSourceProvider cannot be null, add it in your configuration.");
          }
          // the data source cannot be managed if there is no transaction manager
          this.isManaged = dsProvider.isManaged(dbSourceName);
@@ -833,10 +834,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    {
       String str =
          "JDBC based JCR Workspace Data container \n" + "container name: " + containerName + " \n"
-            + (isManaged ? "managed " : "") + "data source JNDI name: " + dbSourceName + "\n" + "is multi database: " + multiDb + "\n"
-            + "storage version: " + storageVersion + "\n" + "value storage provider: " + valueStorageProvider + "\n"
-            + "max buffer size (bytes): " + maxBufferSize + "\n" + "swap directory path: "
-            + PrivilegedFileHelper.getAbsolutePath(swapDirectory);
+            + (isManaged ? "managed " : "") + "data source JNDI name: " + dbSourceName + "\n" + "is multi database: "
+            + multiDb + "\n" + "storage version: " + storageVersion + "\n" + "value storage provider: "
+            + valueStorageProvider + "\n" + "max buffer size (bytes): " + maxBufferSize + "\n"
+            + "swap directory path: " + PrivilegedFileHelper.getAbsolutePath(swapDirectory);
       return str;
    }
 
@@ -860,7 +861,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          con = getConnectionFactory().getJdbcConnection();
          if (con.getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
          {
-            LOG.warn("Wrong default isolation level, please set the default isolation level to READ_COMMITTED or higher. Other default isolation levels are not supported");
+            LOG.warn("Wrong default isolation level, please set the default isolation level "
+               + "to READ_COMMITTED or higher. Other default isolation levels are not supported");
          }
       }
       catch (SQLException e)

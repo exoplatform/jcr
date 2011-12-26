@@ -564,12 +564,13 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       try
       {
          removeValuesStatement =
-            dbConnection
-               .prepareStatement("DELETE FROM JCR_MVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+            dbConnection.prepareStatement("DELETE FROM JCR_MVALUE WHERE PROPERTY_ID IN "
+               + "(SELECT ID FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
 
          removeItemsStatement =
-            dbConnection
-               .prepareStatement("DELETE FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'");
+            dbConnection.prepareStatement("DELETE FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep'"
+               + " OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'");
 
          removeValuesStatement.executeUpdate();
          removeItemsStatement.executeUpdate();

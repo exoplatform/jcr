@@ -249,8 +249,9 @@ public class TransactionableResourceManager implements XAResource
    }
 
    /**
-    * This synchronization is used to apply all changes before commit phase and it is also used to execute actions once the tx is completed
-    * which is necessary in case we use non tx aware resources like the lucene indexes and the observation
+    * This synchronization is used to apply all changes before commit phase and it is also used
+    * to execute actions once the tx is completed which is necessary in case we use non tx aware
+    * resources like the lucene indexes and the observation
     * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
     * @version $Id$
     *

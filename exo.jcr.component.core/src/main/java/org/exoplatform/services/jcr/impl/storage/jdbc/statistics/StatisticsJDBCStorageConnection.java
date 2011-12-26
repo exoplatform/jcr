@@ -460,7 +460,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData, java.lang.String[] pattern)
+    * {@inheritDoc}
     */
    public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
       throws RepositoryException, IllegalStateException

@@ -98,7 +98,7 @@ public class ManagedSessionFactory implements ManagedConnectionFactory
    }
 
    /**
-    * @see javax.resource.spi.ManagedConnectionFactory#createManagedConnection(javax.security.auth.Subject, javax.resource.spi.ConnectionRequestInfo)
+    * {@inheritDoc}
     */
    public ManagedConnection createManagedConnection(Subject subject, ConnectionRequestInfo cxRequestInfo)
       throws ResourceException
@@ -137,7 +137,8 @@ public class ManagedSessionFactory implements ManagedConnectionFactory
       }
       catch (Exception e)
       {
-         throw new ResourceException("Could not login to the workspace " + (workspaceName == null ? "'default'" : workspaceName), e);
+         throw new ResourceException("Could not login to the workspace " + 
+            (workspaceName == null ? "'default'" : workspaceName), e);
       }
       return new ManagedSessionImpl(session);
    }
@@ -250,7 +251,7 @@ public class ManagedSessionFactory implements ManagedConnectionFactory
    }
 
    /**
-    * @see javax.resource.spi.ManagedConnectionFactory#matchManagedConnections(java.util.Set, javax.security.auth.Subject, javax.resource.spi.ConnectionRequestInfo)
+    * {@inheritDoc}
     */
    public ManagedConnection matchManagedConnections(@SuppressWarnings("rawtypes") Set connectionSet, Subject subject,
       ConnectionRequestInfo cxRequestInfo) throws ResourceException

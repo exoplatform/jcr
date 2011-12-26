@@ -1080,8 +1080,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          //       at org.infinispan.commands.read.GetKeyValueCommand.acceptVisitor(GetKeyValueCommand.java:64)
          //    This is due to the fact that ISPN enlist the cache even for a read access and enlistments are not 
          //    allowed in the commit phase
-         // 2. If we call them in the commit phase, we use Arjuna with ISPN and we suspend the current tx, we get deadlocks because we 
-         //    try to acquire locks on cache entries that have been locked by the main tx.
+         // 2. If we call them in the commit phase, we use Arjuna with ISPN and we suspend the current tx,
+         //    we get deadlocks because we try to acquire locks on cache entries that have been locked by the main tx.
          // 3. If we call them in the afterComplete, we use JOTM with ISPN and we suspend and resume the current tx, we get:
          //       jotm: resume: Invalid Transaction Status:STATUS_COMMITTED (Current.java, line 743) 
          //       javax.transaction.InvalidTransactionException: Invalid resume org.objectweb.jotm.TransactionImpl
@@ -2400,7 +2400,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          filtersSupported.set(false);
          if (LOG.isDebugEnabled())
          {
-            LOG.debug("The bloom filters are disabled as they are not supported by the cache implementation " + cache.getClass().getName());
+            LOG.debug("The bloom filters are disabled as they are not supported by the cache implementation "
+               + cache.getClass().getName());
          }
          return;
       }

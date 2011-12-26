@@ -397,12 +397,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    /**
     * Check index consistency. Iterator goes through index documents and check, does each document have
-    * according jcr-node. If index is suspended then it will be temporary resumed, while check is running and suspended afterwards.
+    * according jcr-node. If index is suspended then it will be temporary resumed, while check is running
+    * and suspended afterwards.
     */
    public void checkIndex(final InspectionLog inspectionLog, final boolean isSystem) throws RepositoryException,
       IOException
    {
-
       if (isSuspended)
       {
          try

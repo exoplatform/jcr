@@ -317,7 +317,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    /**
     * {@inheritDoc}
     */
-   public void createRepository(String backupId, RepositoryEntry rEntry, String rToken) throws RepositoryConfigurationException, RepositoryCreationException
+   public void createRepository(String backupId, RepositoryEntry rEntry, String rToken)
+      throws RepositoryConfigurationException, RepositoryCreationException
    {
       createRepositoryInternally(backupId, rEntry, rToken, null);
    }
@@ -847,7 +848,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             }
             catch (RepositoryException e)
             {
-               throw new RepositoryCreationException("It is not possible to check is repository " + repositoryName + " in usage or not", e);
+               throw new RepositoryCreationException("It is not possible to check is repository " + repositoryName
+                  + " in usage or not", e);
             }
          }
 

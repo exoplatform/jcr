@@ -66,13 +66,13 @@ public class BackupConsole
                      + "     <form auth parm>        :   form <method> <form path>\n"
                      + "     <method>                :   POST or GET\n"
                      + "     <form path>             :   /path/path?<paramName1>=<paramValue1>&<paramName2>=<paramValue2>...\n"
-                     + "     Example to <url form authentication> : http://127.0.0.1:8080/portal/rest form POST \"/portal/login?initialURI=/portal/private&username=root&password=gtn\"\n\n"
+                     + "     Example to <url form authentication> : http://127.0.0.1:8080/portal/rest form POST \"/portal/login?initialURI=/portal/private&username=root&password=gtn\"\n\n" //NOSONAR
 
          + " <cmd>  :   start <repo[/ws]> <backup_dir> [<incr>] \n" 
          + "            stop <backup_id> \n"
          + "            status <backup_id> \n" 
          + "            restores <repo[/ws]> \n"
-         + "            restore [remove-exists] {{<backup_id>|<backup_set_path>} | {<repo[/ws]> {<backup_id>|<backup_set_path>} [<pathToConfigFile>]}} \n"
+         + "            restore [remove-exists] {{<backup_id>|<backup_set_path>} | {<repo[/ws]> {<backup_id>|<backup_set_path>} [<pathToConfigFile>]}} \n" //NOSONAR
          + "            list [completed] \n"
          + "            info \n" 
          + "            drop [force-close-session] <repo[/ws]>  \n"

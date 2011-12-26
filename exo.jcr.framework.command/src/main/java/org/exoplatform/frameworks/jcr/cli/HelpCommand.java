@@ -62,10 +62,8 @@ public class HelpCommand extends AbstractCliCommand
       map.put("copy", "<srcAbsPath>, <destAbsPath> copy the node at srcAbsPath to the new location at destAbsPath");
       map.put("movenode", "<srcAbsPath>, <destAbsPath> move the node at srcAbsPath to the new location at destAbsPath");
       map.put("move", "<srcAbsPath>, <destAbsPath> move the node at srcAbsPath to the new location at destAbsPath");
-      map
-         .put(
-            "|",
-            "<console size> limit the count of lines to output, e.g. |20 will displayed only 20 lines, works in standalone mode only");
+      map.put("|", "<console size> limit the count of lines to output, e.g. |20 will displayed only 20 lines, "
+         + "works in standalone mode only");
    }
 
    @Override

@@ -37,14 +37,14 @@ public class RepositoryResourceAdapter implements ResourceAdapter
 {
 
    /**
-    * @see javax.resource.spi.ResourceAdapter#endpointActivation(javax.resource.spi.endpoint.MessageEndpointFactory, javax.resource.spi.ActivationSpec)
+    * {@inheritDoc}
     */
    public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException
    {
    }
 
    /**
-    * @see javax.resource.spi.ResourceAdapter#endpointDeactivation(javax.resource.spi.endpoint.MessageEndpointFactory, javax.resource.spi.ActivationSpec)
+    * {@inheritDoc}
     */
    public void endpointDeactivation(MessageEndpointFactory endpointFactory, ActivationSpec spec)
    {

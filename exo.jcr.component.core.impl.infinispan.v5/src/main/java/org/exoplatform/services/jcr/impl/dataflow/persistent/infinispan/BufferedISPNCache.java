@@ -282,7 +282,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    }
 
    /**
-    * It tries to get Map{filter, Set{itemIds}} by given key. If Map exists then adds itemDatas ID to all acceptable pattern lists.
+    * It tries to get Map{filter, Set{itemIds}} by given key. 
+    * If Map exists then adds itemDatas ID to all acceptable pattern lists.
     */
    public static class AddToPatternListContainer extends ChangesContainer
    {
@@ -330,7 +331,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
-            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes to reload them from the db
+            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
+            // to reload them from the db
             cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
          }
       }
@@ -381,7 +383,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    }
 
    /**
-    * It tries to get Map{filter, Set{itemIds}} by given key. IfMap exists then removes item IDs from all acceptable pattern lists.
+    * It tries to get Map{filter, Set{itemIds}} by given key. 
+    * IfMap exists then removes item IDs from all acceptable pattern lists.
     */
    public static class RemoveFromPatternListContainer extends ChangesContainer
    {

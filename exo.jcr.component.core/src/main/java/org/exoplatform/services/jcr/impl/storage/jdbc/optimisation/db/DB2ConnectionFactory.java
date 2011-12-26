@@ -181,12 +181,14 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
                {
                   if (isReindexingSupport)
                   {
-                     log.debug("RDBMS indexing enabled as the major version is 9, the minor version is 7 and the maintenance version is greater or equals to 2 knowing that the extracted value is "
+                     log.debug("RDBMS indexing enabled as the major version is 9, the minor version is 7 "
+                        + "and the maintenance version is greater or equals to 2 knowing that the extracted value is "
                         + maintenanceVersion + ".");
                   }
                   else
                   {
-                     log.debug("RDBMS indexing disabled as the major version is 9, the minor version is 7 and the maintenance version is lower than 2 knowing that the extracted value is "
+                     log.debug("RDBMS indexing disabled as the major version is 9, the minor version is 7 "
+                        + "and the maintenance version is lower than 2 knowing that the extracted value is "
                         + maintenanceVersion + ".");
                   }
                }

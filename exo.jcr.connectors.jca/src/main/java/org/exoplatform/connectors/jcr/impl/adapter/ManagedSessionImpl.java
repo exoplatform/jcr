@@ -109,7 +109,7 @@ public class ManagedSessionImpl implements ManagedConnection
    }
 
    /**
-    * @see javax.resource.spi.ManagedConnection#getConnection(javax.security.auth.Subject, javax.resource.spi.ConnectionRequestInfo)
+    * {@inheritDoc}
     */
    public Object getConnection(Subject subject, ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {

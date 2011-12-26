@@ -676,8 +676,8 @@ public abstract class QueryResultImpl implements QueryResult
                   resultNodes.remove(nextPos);
                   if (log.isDebugEnabled())
                   {
-                     log
-                        .debug("The node is invalid since we don't have sufficient rights to access it, it will be removed from the results set");
+                     log.debug("The node is invalid since we don't have sufficient rights to access it, "
+                        + "it will be removed from the results set");
                   }
                }
             }

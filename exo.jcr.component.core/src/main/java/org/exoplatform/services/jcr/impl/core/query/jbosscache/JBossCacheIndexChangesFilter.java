@@ -141,7 +141,9 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       PrivilegedJBossCacheHelper.create(cache);
       PrivilegedJBossCacheHelper.start(cache);
       
-      this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(searchManager.getExoContainerContext(), cache, CacheType.INDEX_CACHE);
+      this.jmxManager =
+         ExoJBossCacheFactory.getJmxRegistrationManager(searchManager.getExoContainerContext(), cache,
+            CacheType.INDEX_CACHE);
       if (jmxManager != null)
       {
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()

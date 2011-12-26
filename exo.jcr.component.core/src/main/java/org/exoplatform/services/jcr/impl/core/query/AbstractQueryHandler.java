@@ -82,7 +82,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setIndexerIoModeHandler(org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler)
+    * {@inheritDoc}
     */
    public void setIndexerIoModeHandler(IndexerIoModeHandler modeHandler) throws IOException
    {
@@ -98,7 +98,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setContext(org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext)
+    * {@inheritDoc}
     */
    public void setContext(QueryHandlerContext context)
    {
@@ -233,7 +233,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setIndexInfos(org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos)
+    * {@inheritDoc}
     */
    public void setIndexInfos(IndexInfos indexInfos)
    {

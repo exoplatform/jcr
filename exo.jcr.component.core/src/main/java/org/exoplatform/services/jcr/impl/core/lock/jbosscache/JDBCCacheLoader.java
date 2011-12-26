@@ -41,9 +41,9 @@ public class JDBCCacheLoader extends org.jboss.cache.loader.JDBCCacheLoader
    {
       return JDBCUtils.tableExists(tableName, con);
    }
-   
+
    /**
-    * @see org.jboss.cache.loader.AdjListJDBCCacheLoader#processConfig(org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig)
+    * {@inheritDoc}
     */
    @Override
    protected AdjListJDBCCacheLoaderConfig processConfig(CacheLoaderConfig.IndividualCacheLoaderConfig base)
