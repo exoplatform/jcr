@@ -24,8 +24,8 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.jcr.InvalidItemStateException;
@@ -86,9 +86,12 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1";
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
       FIND_NODES_BY_PARENTID_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-            + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
-            + " where I.PARENT_ID=? and I.I_CLASS=1 and (P.PARENT_ID=I.ID and P.I_CLASS=2 and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and V.PROPERTY_ID=P.ID)"
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
+            + " where I.PARENT_ID=? and I.I_CLASS=1 and (P.PARENT_ID=I.ID and P.I_CLASS=2 and"
+            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and V.PROPERTY_ID=P.ID)"
             + " order by I.N_ORDER_NUM, I.ID";
       FIND_PROPERTIES_BY_PARENTID_CQ =
          "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED,"

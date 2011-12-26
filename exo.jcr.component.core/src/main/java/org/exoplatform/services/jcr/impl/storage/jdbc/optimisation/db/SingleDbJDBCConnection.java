@@ -52,10 +52,13 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 {
 
    protected static final String FIND_NODES_BY_PARENTID_CQ_QUERY =
-      "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-         + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
+      "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
          + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and"
-         + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+         + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+         + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+         + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+         + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+         + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
          + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
 
    protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
@@ -138,9 +141,9 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             + " where CONTAINER_NAME=? and PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
 
       FIND_PROPERTY_BY_NAME =
-         "select V.DATA"
-            + " from JCR_SITEM I, JCR_SVALUE V"
-            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+         "select V.DATA from JCR_SITEM I, JCR_SVALUE V"
+            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.NAME=? and"
+            + " I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
 
       FIND_REFERENCES =
          "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME" + " from JCR_SREF R, JCR_SITEM P"
@@ -160,9 +163,12 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
 
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
-         "select I.NAME, V.DATA, V.ORDER_NUM"
-            + " from JCR_SITEM I, JCR_SVALUE V"
-            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and I.ID=V.PROPERTY_ID";
+         "select I.NAME, V.DATA, V.ORDER_NUM from JCR_SITEM I, JCR_SVALUE V"
+            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and"
+            + " (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and I.ID=V.PROPERTY_ID";
 
       FIND_ITEM_QPATH_BY_ID_CQ = FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
 
@@ -177,8 +183,9 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
       FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
-         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
-            + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)";
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE,"
+            + " I.P_MULTIVALUED, V.ORDER_NUM, V.DATA, V.STORAGE_DESC"
+            + " from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)";
 
       FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
          "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V";
@@ -187,8 +194,8 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
          "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,?,"
             + I_CLASS_NODE + ",?,?)";
       INSERT_PROPERTY =
-         "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,?,"
-            + I_CLASS_PROPERTY + ",?,?,?)";
+         "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, P_TYPE, P_MULTIVALUED)"
+            + " VALUES(?,?,?,?,?," + I_CLASS_PROPERTY + ",?,?,?)";
 
       INSERT_VALUE = "insert into JCR_SVALUE(DATA, ORDER_NUM, PROPERTY_ID, STORAGE_DESC) VALUES(?,?,?,?)";
       INSERT_REF = "insert into JCR_SREF(NODE_ID, PROPERTY_ID, ORDER_NUM) VALUES(?,?,?)";
@@ -959,13 +966,15 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       try
       {
          removeValuesStatement =
-            dbConnection
-               .prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
+            dbConnection.prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM"
+               + " WHERE CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
          removeValuesStatement.setString(1, containerName);
 
          removeItemsStatement =
-            dbConnection
-               .prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND"
+               + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
          removeItemsStatement.setString(1, containerName);
 
          removeValuesStatement.executeUpdate();

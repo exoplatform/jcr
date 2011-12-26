@@ -128,45 +128,42 @@ public class JDBCWorkspaceDataContainerChecker
             + "' and NOT EXISTS(select * from JCR_SITEM P where P.ID = I.PARENT_ID)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS},
          "Items that do not have parent nodes", InspectionStatus.ERR));
-      queries
-         .add(new InspectionQuery(
-            jdbcDataContainer.multiDb
-               ? "select * from JCR_MITEM N where N.I_CLASS=1 and NOT EXISTS (select * from JCR_MITEM P where P.I_CLASS=2 and P.PARENT_ID=N.ID)"
-               : "select * from JCR_SITEM N where N.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName
-                  + "' and N.I_CLASS=1 and NOT EXISTS (select * from JCR_SITEM P where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName + "')",
-            new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-            "Nodes that do not have at least one property", InspectionStatus.ERR));
-      queries
-         .add(new InspectionQuery(
-            jdbcDataContainer.multiDb
-               ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
-               : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName
-                  + "' and NOT EXISTS(select * from JCR_SITEM P where P.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName + "' and V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{
-               DBConstants.COLUMN_ID, DBConstants.COLUMN_VPROPERTY_ID},
-            "All value records that has not owner-property record", InspectionStatus.ERR));
-      queries
-         .add(new InspectionQuery(
-            jdbcDataContainer.multiDb
-               ? "select * from JCR_MITEM P where P.I_CLASS=2 and NOT EXISTS( select * from JCR_MVALUE V where V.PROPERTY_ID=P.ID)"
-               : "select * from JCR_SITEM P where P.CONTAINER_NAME='" + jdbcDataContainer.containerName
-                  + "' and P.I_CLASS=2 and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)",
-            new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-            "All properties that have not value record.", InspectionStatus.ERR));
+      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
+         ? "select * from JCR_MITEM N where N.I_CLASS=1 and NOT EXISTS "
+            + "(select * from JCR_MITEM P where P.I_CLASS=2 and P.PARENT_ID=N.ID)"
+         : "select * from JCR_SITEM N where N.CONTAINER_NAME='" + jdbcDataContainer.containerName
+            + "' and N.I_CLASS=1 and NOT EXISTS (select * from JCR_SITEM P "
+            + "where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.CONTAINER_NAME='" + jdbcDataContainer.containerName + "')",
+         new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+         "Nodes that do not have at least one property", InspectionStatus.ERR));
+      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
+         ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
+            + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
+         : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
+            + jdbcDataContainer.containerName + "' and NOT EXISTS(select * from JCR_SITEM P where P.CONTAINER_NAME='"
+            + jdbcDataContainer.containerName + "' and V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{
+         DBConstants.COLUMN_ID, DBConstants.COLUMN_VPROPERTY_ID},
+         "All value records that has not owner-property record", InspectionStatus.ERR));
+      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
+         ? "select * from JCR_MITEM P where P.I_CLASS=2 and NOT EXISTS( select * from JCR_MVALUE V "
+            + "where V.PROPERTY_ID=P.ID)" : "select * from JCR_SITEM P where P.CONTAINER_NAME='"
+            + jdbcDataContainer.containerName
+            + "' and P.I_CLASS=2 and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)", new String[]{
+         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+         "All properties that have not value record.", InspectionStatus.ERR));
       
       // The differences in the queries by DB dialect.
       // Oracle doesn't work correct with default query because empty value stored as null value.
       String statement;
       if (jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
       {
-         statement = jdbcDataContainer.multiDb
-            ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA like null) or (STORAGE_DESC is not null and not DATA like null)"
-            : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-               + jdbcDataContainer.containerName
-               + "'  AND ((STORAGE_DESC is null and DATA like null) or (STORAGE_DESC is not null and not DATA like null))";
+         statement =
+            jdbcDataContainer.multiDb
+               ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA like null) or "
+                  + "(STORAGE_DESC is not null and not DATA like null)"
+               : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
+                  + jdbcDataContainer.containerName
+                  + "'  AND ((STORAGE_DESC is null and DATA like null) or (STORAGE_DESC is not null and not DATA like null))";
       }
       else if (jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
          || jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
@@ -177,22 +174,23 @@ public class JDBCWorkspaceDataContainerChecker
             + jdbcDataContainer.containerName
             + "'  AND (STORAGE_DESC is not null and DATA is not null)";
       } else {
-         statement =  jdbcDataContainer.multiDb
-            ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null)"
-            : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-               + jdbcDataContainer.containerName
-               + "'  AND ((STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null))";
+         statement =
+            jdbcDataContainer.multiDb
+               ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA is null) or "
+                  + "(STORAGE_DESC is not null and DATA is not null)"
+               : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
+                  + jdbcDataContainer.containerName
+                  + "'  AND ((STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null))";
       }
       queries
          .add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID}, "Incorrect JCR_VALUE records", InspectionStatus.ERR));
-      queries
-         .add(new InspectionQuery(
-            jdbcDataContainer.multiDb
-               ? "select * from JCR_MITEM P where P.P_TYPE=9 and NOT EXISTS( select * from JCR_MREF R where P.ID=R.PROPERTY_ID)"
-               : "select * from JCR_SITEM P where P.CONTAINER_NAME='" + jdbcDataContainer.containerName
-                  + "' and P.P_TYPE=9 and NOT EXISTS( select * from JCR_SREF R where P.ID=R.PROPERTY_ID)",
-            new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-            "Reference properties without reference records", InspectionStatus.ERR));
+      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
+         ? "select * from JCR_MITEM P where P.P_TYPE=9 and NOT EXISTS "
+            + "(select * from JCR_MREF R where P.ID=R.PROPERTY_ID)"
+         : "select * from JCR_SITEM P where P.CONTAINER_NAME='" + jdbcDataContainer.containerName
+            + "' and P.P_TYPE=9 and NOT EXISTS( select * from JCR_SREF R where P.ID=R.PROPERTY_ID)", new String[]{
+         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+         "Reference properties without reference records", InspectionStatus.ERR));
 
       // properties can refer to missing node. It is possible to perform this usecase via JCR API with no exceptions 
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
@@ -332,11 +330,11 @@ public class JDBCWorkspaceDataContainerChecker
       try
       {
          st =
-            connection
-               .prepareStatement(jdbcDataContainer.multiDb
-                  ? "SELECT PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_MVALUE where STORAGE_DESC is not null"
-                  : "SELECT V.PROPERTY_ID, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM I where I.CONTAINER_NAME='"
-                     + jdbcDataContainer.containerName + "' and V.PROPERTY_ID = I.ID and STORAGE_DESC is not null");
+            connection.prepareStatement(jdbcDataContainer.multiDb
+               ? "SELECT PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_MVALUE where STORAGE_DESC is not null"
+               : "SELECT V.PROPERTY_ID, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM I"
+                  + " where I.CONTAINER_NAME='" + jdbcDataContainer.containerName
+                  + "' and V.PROPERTY_ID = I.ID and STORAGE_DESC is not null");
 
          resultSet = st.executeQuery();
          // traverse all values, written to value storage

@@ -82,9 +82,9 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          "select * from JCR_SITEM"
             + " where PARENT_ID=? and CONTAINER_NAME=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
       FIND_PROPERTY_BY_NAME =
-         "select V.DATA"
-            + " from JCR_SITEM I, JCR_SVALUE V"
-            + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+         "select V.DATA from JCR_SITEM I, JCR_SVALUE V"
+            + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? and I.NAME=? and"
+            + " I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
 
@@ -96,14 +96,18 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       FIND_PROPERTIES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=2 and CONTAINER_NAME=?" + " order by ID";
       FIND_NODES_BY_PARENTID_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-            + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
             + " where I.PARENT_ID=? and I.I_CLASS=1 and I.CONTAINER_NAME=? and"
-            + " P.PARENT_ID=I.ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " P.PARENT_ID=I.ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and"
+            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
             + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
       FIND_PROPERTIES_BY_PARENTID_CQ =
-         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
-            + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE,"
+            + " I.P_MULTIVALUED, V.ORDER_NUM, V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN"
+            + " JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? order by I.NAME";
    }
 

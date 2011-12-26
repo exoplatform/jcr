@@ -54,10 +54,11 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 {
 
    protected static final String FIND_NODES_BY_PARENTID_CQ_QUERY =
-      "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-         + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
-         + " where I.I_CLASS=1 and I.PARENT_ID=? and"
-         + " P.I_CLASS=2 and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+      "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
+         + " where I.I_CLASS=1 and I.PARENT_ID=? and P.I_CLASS=2 and P.PARENT_ID=I.ID and"
+         + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'"
+         + " or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
+         + " or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
          + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
 
    protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
@@ -155,9 +156,11 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
 
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
-         "select I.NAME, V.DATA, V.ORDER_NUM"
-            + " from JCR_MITEM I, JCR_MVALUE V"
-            + " where I.I_CLASS=2 and I.PARENT_ID=? and (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and I.ID=V.PROPERTY_ID";
+         "select I.NAME, V.DATA, V.ORDER_NUM from JCR_MITEM I, JCR_MVALUE V"
+            + " where I.I_CLASS=2 and I.PARENT_ID=? and (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and " + "I.ID=V.PROPERTY_ID";
 
       FIND_ITEM_QPATH_BY_ID_CQ = FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
 
@@ -1041,12 +1044,14 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       try
       {
          removeValuesStatement =
-            dbConnection
-               .prepareStatement("DELETE FROM JCR_MVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+            dbConnection.prepareStatement("DELETE FROM JCR_MVALUE WHERE PROPERTY_ID IN"
+               + " (SELECT ID FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
 
          removeItemsStatement =
-            dbConnection
-               .prepareStatement("DELETE FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'");
+            dbConnection.prepareStatement("DELETE FROM JCR_MITEM WHERE"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'");
 
          removeValuesStatement.executeUpdate();
          removeItemsStatement.executeUpdate();

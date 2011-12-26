@@ -116,9 +116,9 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
       super.prepareQueries();
 
       SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE =
-               "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM into "
-                        + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME
-                        + " from JCR_SITEM I (index JCR_PK_SITEM) where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID ASC";
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM into "
+            + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + " from JCR_SITEM I (index JCR_PK_SITEM)"
+            + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID ASC";
 
       COUNT_NODES_IN_TEMPORARY_TABLE = "select count(*) from " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 

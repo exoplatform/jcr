@@ -668,7 +668,7 @@ public class ReplicationTestService implements ResourceContainer
     * @return Response return the response
     */
    @GET
-   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath}/{nodeName}/{destNodeName}/{contentSize}/workspaceCopy")
+   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath}/{nodeName}/{destNodeName}/{contentSize}/workspaceCopy") //NOSONAR
    public Response workspaceCopy(@PathParam("repositoryName") String repositoryName,
       @PathParam("workspaceName") String workspaceName, @PathParam("userName") String userName,
       @PathParam("password") String password, @PathParam("srcRepoPath") String srcRepoPath,
@@ -704,7 +704,7 @@ public class ReplicationTestService implements ResourceContainer
     * @return Response return the response
     */
    @GET
-   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath}/{nodeName}/{destNodeName}/{contentSize}/workspaceMove")
+   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath}/{nodeName}/{destNodeName}/{contentSize}/workspaceMove") //NOSONAR
    public Response workspaceMove(@PathParam("repositoryName") String repositoryName,
       @PathParam("workspaceName") String workspaceName, @PathParam("userName") String userName,
       @PathParam("password") String password, @PathParam("srcRepoPath") String srcRepoPath,
@@ -740,7 +740,7 @@ public class ReplicationTestService implements ResourceContainer
     * @return Response return the response
     */
    @GET
-   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath:.*}/{nodeName}/{destNodeName}/{contentSize}/sessionMove")
+   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath:.*}/{nodeName}/{destNodeName}/{contentSize}/sessionMove") //NOSONAR
    public Response sessionMove(@PathParam("repositoryName") String repositoryName,
       @PathParam("workspaceName") String workspaceName, @PathParam("userName") String userName,
       @PathParam("password") String password, @PathParam("srcRepoPath") String srcRepoPath,
@@ -776,7 +776,7 @@ public class ReplicationTestService implements ResourceContainer
     * @return Response return the response
     */
    @GET
-   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath:.*}/{nodeName}/{destNodeName}/{contentSize}/checkCopyMoveNode")
+   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath:.*}/{nodeName}/{destNodeName}/{contentSize}/checkCopyMoveNode") //NOSONAR
    public Response checkCopyMoveNode(@PathParam("repositoryName") String repositoryName,
       @PathParam("workspaceName") String workspaceName, @PathParam("userName") String userName,
       @PathParam("password") String password, @PathParam("srcRepoPath") String srcRepoPath,
@@ -944,7 +944,7 @@ public class ReplicationTestService implements ResourceContainer
     * @return Response return the response
     */
    @GET
-   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{repoPath:.*}/{fileName}/{iterations}/{simpleContent}/createContent")
+   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{repoPath:.*}/{fileName}/{iterations}/{simpleContent}/createContent") //NOSONAR
    public Response createContent(@PathParam("repositoryName") String repositoryName,
       @PathParam("workspaceName") String workspaceName, @PathParam("userName") String userName,
       @PathParam("password") String password, @PathParam("repoPath") String repoPath,
@@ -980,7 +980,7 @@ public class ReplicationTestService implements ResourceContainer
     * @return Response return the response
     */
    @GET
-   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath:.*}/{srcFileName}/{destRepoPath:.*}/{destFileName}/compareData")
+   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath:.*}/{srcFileName}/{destRepoPath:.*}/{destFileName}/compareData") //NOSONAR
    public Response compareData(@PathParam("repositoryName") String repositoryName,
       @PathParam("workspaceName") String workspaceName, @PathParam("userName") String userName,
       @PathParam("password") String password, @PathParam("srcRepoPath") String srcRepoPath,
@@ -1019,7 +1019,7 @@ public class ReplicationTestService implements ResourceContainer
     * @return Response return the response
     */
    @GET
-   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath:.*}/{srcFileName}/{destRepoPath:.*}/{destFileName}/{iterations}/startThreadUpdater")
+   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{srcRepoPath:.*}/{srcFileName}/{destRepoPath:.*}/{destFileName}/{iterations}/startThreadUpdater") //NOSONAR
    public Response startThreadUpdater(@PathParam("repositoryName") String repositoryName,
       @PathParam("workspaceName") String workspaceName, @PathParam("userName") String userName,
       @PathParam("password") String password, @PathParam("srcRepoPath") String srcRepoPath,
@@ -1156,7 +1156,7 @@ public class ReplicationTestService implements ResourceContainer
     * @return Response return the response
     */
    @GET
-   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{repoPath:.*}/{nodeName}/{size}/{iterations}/addBinaryPropertyOnly")
+   @Path("/{repositoryName}/{workspaceName}/{userName}/{password}/{repoPath:.*}/{nodeName}/{size}/{iterations}/addBinaryPropertyOnly") //NOSONAR
    public Response addBinaryPropertyOnly(@PathParam("repositoryName") String repositoryName,
       @PathParam("workspaceName") String workspaceName, @PathParam("userName") String userName,
       @PathParam("password") String password, @PathParam("repoPath") String repoPath,

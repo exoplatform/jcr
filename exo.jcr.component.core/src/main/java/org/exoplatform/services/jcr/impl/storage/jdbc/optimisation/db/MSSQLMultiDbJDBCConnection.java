@@ -38,9 +38,9 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     */
    public static final String FIND_NODES_AND_PROPERTIES_TEMPLATE =
       "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-         + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V WITH (INDEX (JCR_IDX_MVALUE_PROPERTY)), JCR_MITEM P "
-         + " join (select TOP ${TOP} I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I WITH (INDEX (JCR_PK_MITEM))"
-         + " where I.I_CLASS=1 AND I.ID > ? order by I.ID) J on P.PARENT_ID = J.ID"
+         + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V WITH (INDEX (JCR_IDX_MVALUE_PROPERTY)), JCR_MITEM P"
+         + " join (select TOP ${TOP} I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I"
+         + " WITH (INDEX (JCR_PK_MITEM)) where I.I_CLASS=1 AND I.ID > ? order by I.ID) J on P.PARENT_ID = J.ID"
          + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
 
    /**
