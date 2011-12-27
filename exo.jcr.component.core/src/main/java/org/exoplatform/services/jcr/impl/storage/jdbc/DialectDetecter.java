@@ -66,7 +66,6 @@ public class DialectDetecter
 
       if ("MySQL".equals(databaseName))
       {
-         // TODO doesn't detect MySQL_UTF8
          return DBConstants.DB_DIALECT_MYSQL;
       }
 
@@ -97,24 +96,16 @@ public class DialectDetecter
 
       if (databaseName.startsWith("Adaptive Server Anywhere"))
       {
-         // TODO not implemented anything special for
          return DBConstants.DB_DIALECT_SYBASE;
       }
 
-      // TODO Informix not supported now
-      //if ( "Informix Dynamic Server".equals( databaseName ) ) {
-      //   return new InformixDialect();
-      //}
-
       if (databaseName.startsWith("DB2/"))
       {
-         // TODO doesn't detect DB2 v8 
          return DBConstants.DB_DIALECT_DB2;
       }
 
       if ("Oracle".equals(databaseName))
       {
-         // TODO doesn't detect Oracle OCI (experimental support still)
          return DBConstants.DB_DIALECT_ORACLE;
 
          //         int databaseMajorVersion = metaData.getDatabaseMajorVersion();

@@ -153,12 +153,9 @@ public class VersionHistoryRemover
                vhState = state;
          }
          if (vhState != null && vhState.isDeleted())
-            // [PN] TODO check why we here if VH already isn't exists.
-            // usecase: child version remove when child versionable node is located
-            // as child
-            // of its containing history versionable node.
-            // We may check this case in ChildVersionRemoveVisitor.
+         {
             return;
+         }
 
          throw new RepositoryException("Version history is not found. UUID: " + vhID
             + ". Context item (ancestor to save) " + ancestorToSave.getAsString());

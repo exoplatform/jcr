@@ -308,11 +308,7 @@ public class VersionHistoryDataHelper extends TransientNodeData
          TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
             new TransientValueData(Constants.MIX_REFERENCEABLE));
 
-      // jcr:created
-      // TODO Current time source was
-      // rvCreated.setValue(new
-      // TransientValueData(dataManager.getTransactManager().getStorageDataManager
-      // ().getCurrentTime()));
+      // jcr:created     
       TransientPropertyData rvCreated =
          TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_CREATED, PropertyType.DATE, false,
             new TransientValueData(Calendar.getInstance()));

@@ -224,8 +224,6 @@ public class StringNumberParser
     * supported: <br/>milliseconds - ms <br/>seconds - without sufix <br/>minutes - m <br/>hours - h
     * <br/>days - d <br/>weeks - w
     * 
-    * <br/>TODO handle strings like 2d+4h, 2h+30m+15s+500 etc.
-    * 
     * @param timeText
     *          - String
     * @return time in milliseconds

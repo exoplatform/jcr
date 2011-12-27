@@ -483,8 +483,6 @@ public class PendingChangesLog
     */
    public void restore() throws IOException
    {
-      // TODO same code as in BackupWorkspaceInitializer?
-
       List<ItemState> listItemState = itemDataChangesLog.getAllStates();
       for (int i = 0; i < this.listFixupStream.size(); i++)
       {

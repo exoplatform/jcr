@@ -1340,8 +1340,6 @@ public class SessionDataManager implements ItemDataConsumer
       }
    }
 
-   // TODO: review. Won't work if renamed states for descendants are not fired
-   // Node will be only updated with the same NodeData with same outdated path
    void reloadPool(ItemData fromItem) throws RepositoryException
    {
       Collection<ItemImpl> pooledItems = itemsPool.getAll();
@@ -1536,11 +1534,6 @@ public class SessionDataManager implements ItemDataConsumer
          ItemState vhState = changesLog.getItemState(vhID);
          if (vhState != null && vhState.isDeleted())
          {
-            // [PN] TODO check why we here if VH already isn't exists.
-            // usecase: child version remove when child versionable node is located
-            // as child
-            // of its containing history versionable node.
-            // We may check this case in ChildVersionRemoveVisitor.
             return;
          }
 
@@ -1646,10 +1639,6 @@ public class SessionDataManager implements ItemDataConsumer
          ItemState reindexedState = ItemState.createUpdatedState(reindexed);
          changes.add(reindexedState);
 
-         // reload pooled implies... it's actual for session and workspace scope
-         // operations
-         // TODO this operation must respect all sub-tree of reindexed node
-         // http://jira.exoplatform.org/browse/JCR-340
          itemsPool.reload(reindexed);
 
          // next...
@@ -1788,8 +1777,6 @@ public class SessionDataManager implements ItemDataConsumer
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
       throws RepositoryException
    {
-      // simple locate now
-      // TODO list copy?
       List<PropertyData> persisted = transactionableManager.getReferencesData(identifier, skipVersionStorage);
       List<PropertyData> sessionTransient = new ArrayList<PropertyData>();
       for (PropertyData p : persisted)
@@ -2627,8 +2614,6 @@ public class SessionDataManager implements ItemDataConsumer
          }
          else
          {
-            // TODO if (changesLog.get) check if DELETED!!
-
             item = itemFactory.createItem(newData, parent);
             items.put(item.getInternalIdentifier(), new WeakReference<ItemImpl>(item));
          }

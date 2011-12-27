@@ -129,7 +129,7 @@ public class PersistedValueDataReader
          }
          else
          {
-            sf.acquire(this); // TODO workaround for AsyncReplication test
+            sf.acquire(this); // workaround for AsyncReplication test
             try
             {
                AbstractPersistedValueData vd = new StreamPersistedValueData(orderNumber, sf);

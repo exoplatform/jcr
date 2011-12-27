@@ -93,9 +93,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
     */
    public static final int DEF_BLOCKING_USERS_COUNT = 0;
 
-   /**
-    * TODO remove it
-    */
    public static final String DEEP_DELETE_PARAMETER_NAME = "deep-delete";
 
    /**
@@ -1104,9 +1101,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    public void addChildProperties(final NodeData parentData, final List<PropertyData> childItems)
    {
       if (enabled && parentData != null && childItems != null)
-      { // TODO don't check parentData !=
-         // null && childItems != null
-
+      {
          String logInfo = null;
          if (LOG.isDebugEnabled())
          {
@@ -1170,9 +1165,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    public void addChildPropertiesList(final NodeData parentData, final List<PropertyData> childItems)
    {
       if (enabled && parentData != null && childItems != null)
-      { // TODO don't check parentData !=
-         // null && childItems != null
-
+      {
          String logInfo = null;
          if (LOG.isDebugEnabled())
          {
@@ -1223,9 +1216,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    public void addChildNodes(final NodeData parentData, final List<NodeData> childItems)
    {
       if (enabled && parentData != null && childItems != null)
-      { // TODO don't check parentData !=
-         // null && childItems != null
-
+      {
          String logInfo = null;
          if (LOG.isDebugEnabled())
          {
@@ -1736,10 +1727,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
     */
    public void setMaxSize(int maxSize)
    {
-      // TODO not supported now, but it's possible as an option
-      // e.g. we will create new cache instance with new size and fill it with
-      // current cache size.
-      // it's fully synchronized operation, i.e. method
       LOG.warn("setMaxSize not supported now");
    }
 
@@ -1968,9 +1955,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
                }
                else if (item.getQPath().getName().equals(Constants.EXO_PERMISSIONS))
                {
-                  // TODO EXOJCR-12 place to put workaround for JCR cache exo:permissions updated
                   // get parent Node
-
                   // check if parent is mix:privilegeable
                   ItemData parent = get(item.getParentIdentifier());
                   // delete parent
@@ -2138,19 +2123,16 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
 
    public void beginTransaction()
    {
-      // TODO Auto-generated method stub
 
    }
 
    public void commitTransaction()
    {
-      // TODO Auto-generated method stub
 
    }
 
    public void rollbackTransaction()
    {
-      // TODO Auto-generated method stub
 
    }
 

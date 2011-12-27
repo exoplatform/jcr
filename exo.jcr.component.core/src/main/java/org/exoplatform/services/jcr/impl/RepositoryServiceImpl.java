@@ -166,8 +166,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       }
       catch (Throwable t)
       {
-         //TODO will be implemented unregistration in managerStartChanges
-         //managerStartChanges.removeListeners(repositoryContainer);
          repositoryContainers.remove(rEntry.getName());
 
          throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " was not started.",

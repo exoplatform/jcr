@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.webdav;
 
-import java.util.Hashtable;
-
 import org.exoplatform.common.http.HTTPStatus;
+
+import java.util.Hashtable;
 
 /**
  * Constants used for webdav service implemetation.
@@ -115,7 +115,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private DavDocument()
+      private DavDocument() //NOSONAR
       {
       }
 
@@ -199,7 +199,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private DavProperty()
+      private DavProperty() //NOSONAR
       {
       }
 
@@ -244,7 +244,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private ResourceType()
+      private ResourceType() //NOSONAR
       {
       }
 
@@ -271,7 +271,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private CacheConstants()
+      private CacheConstants() //NOSONAR
       {
       }
 
@@ -293,7 +293,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private Lock()
+      private Lock() //NOSONAR
       {
       }
 
@@ -329,7 +329,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private NodeTypes()
+      private NodeTypes() //NOSONAR
       {
       }
 
@@ -450,7 +450,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private DateFormat()
+      private DateFormat() //NOSONAR
       {
 
       }

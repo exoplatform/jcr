@@ -119,10 +119,8 @@ public class ObjectReaderImpl implements ObjectReader
    {
       if (true)
          throw new IOException("Not implemented");
-      // TODO this is not a workable code due to buffered stream reads!!!
 
       boolean recreateBuffer = true;
-      // TODO use FileChannel for buffered read???
       try
       {
          if (fileIn != null && stream instanceof FileOutputStream)
@@ -170,11 +168,6 @@ public class ObjectReaderImpl implements ObjectReader
             this.in = new BufferedInputStream(in, SerializationConstants.INTERNAL_BUFFER_SIZE);
       }
    }
-
-   // TODO can be useful to flag read
-   // public byte readByte() throws IOException {
-   // return (byte)in.read();
-   // }
 
    /**
     * {@inheritDoc}

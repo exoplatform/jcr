@@ -101,7 +101,7 @@ public class DeleteValues extends ValueFileOperation
             for (File f : files)
             {
                if (!f.delete())
-                  // TODO possible place of error: FileNotFoundException when we delete/update existing
+                  // Possible place of error: FileNotFoundException when we delete/update existing
                   // Value and then add/update again.
                   // After the time the Cleaner will delete the file which is mapped to the Value.
                   // Don't use cleaner! Care about transaction-style files isolation per-user etc. 
