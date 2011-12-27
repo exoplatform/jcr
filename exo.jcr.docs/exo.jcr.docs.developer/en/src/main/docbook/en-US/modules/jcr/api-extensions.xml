@@ -63,11 +63,15 @@
     <section>
       <title>Configuration</title>
 
-      <para>"Lazy" iterator makes ahead reading into memory, though reading
-      the "page". "Page" is a set of nodes read at once. Size of the page by
-      default is 100 nodes and can be configured though workspace container
-      configuration using "lazy-node-iterator-page-size" parameter.
-      I.e.:</para>
+      <para>In order to enable add the
+      "-Dorg.exoplatform.jcr.forceUserGetNodesLazily=true" to the java system
+      properties.</para>
+
+      <para>The "lazy" iterator reads the child nodes "page" after "page" into
+      the memory. In this context, a "page" is a set of nodes that is read at
+      once. The size of the page is by default 100 nodes and can be configured
+      though workspace container configuration using
+      "lazy-node-iterator-page-size" parameter. For example:</para>
 
       <programlisting language="xml">&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
    &lt;properties&gt;
@@ -79,7 +83,8 @@
       ...
    &lt;/properties&gt;</programlisting>
 
-      <para>But it's not recommended to set huge page size</para>
+      <para>It's not recommended to configure a large number for the page
+      size.</para>
     </section>
 
     <section>
