@@ -206,7 +206,7 @@ public class ReplicationTestService implements ResourceContainer
          /**
           * OperationType constructor.
           */
-         private OperationType()
+         private OperationType() //NOSONAR
          {
 
          }
@@ -215,7 +215,7 @@ public class ReplicationTestService implements ResourceContainer
       /**
        * Constants constructor.
        */
-      private Constants()
+      private Constants() //NOSONAR
       {
       }
    }

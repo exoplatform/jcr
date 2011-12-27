@@ -219,7 +219,7 @@ public class StorageUpdateManager
       }
    }
 
-   private class Updater100 extends Updater
+   private class Updater100 extends Updater //NOSONAR
    {
 
       @Override
@@ -230,7 +230,7 @@ public class StorageUpdateManager
       }
    }
 
-   private class Updater101 extends Updater
+   private class Updater101 extends Updater //NOSONAR
    {
 
       @Override

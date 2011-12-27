@@ -237,12 +237,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       this.dbConnection = dbConnection;
       this.readOnly = readOnly;
 
-      // Fix for Sybase jConnect JDBC driver bug.
-      // Which throws SQLException(JZ016: The AutoCommit option is already set to
-      // false)
-      // if conn.setAutoCommit(false) called twise or more times with value
-      // 'false'.
-      // TODO remove workaround for Sybase, jconn 6.05 Build 26564
       if (!readOnly && dbConnection.getAutoCommit())
       {
          dbConnection.setAutoCommit(false);
