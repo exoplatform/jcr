@@ -252,37 +252,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
 
    }
 
-   private void initFromStream(InputStream jcrConfigurationInputStream) throws RepositoryConfigurationException
-   {
-      try
-      {
-         if (configurationPersister != null)
-         {
-            if (!configurationPersister.hasConfig())
-            {
-               configurationPersister.write(jcrConfigurationInputStream);
-            }
-            init(configurationPersister.read());
-         }
-         else
-         {
-            init(jcrConfigurationInputStream);
-         }
-      }
-      finally
-      {
-         try
-         {
-            jcrConfigurationInputStream.close();
-         }
-         catch (IOException e)
-         {
-            // ignore me
-         }
-      }
-
-   }
-
    /**
     * {@inheritDoc}
     */

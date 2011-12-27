@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
@@ -159,16 +158,4 @@ public class PropertyWriteUtil
          xmlStreamWriter.writeAttribute(attrName, attrValue);
       }
    }
-   
-   /**
-    * Checks if string contains encoded characters like %2f.
-    * @param str string to check.
-    * @return <code>true</code> if string contains encoded characters, otherwise returns <code>false</code> 
-    */
-   private static boolean containsEncodedChar(String str){
-      Matcher matcher = ESCAPE_PATTERN.matcher(str);
-      return matcher.find();
-      
-   }
-
 }

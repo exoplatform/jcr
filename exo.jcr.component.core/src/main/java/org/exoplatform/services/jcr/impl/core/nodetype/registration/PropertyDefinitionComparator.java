@@ -204,36 +204,6 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
 
    /**
     * @param registeredNodeType
-    * @param nodes
-    * @param recipientDefinitionData
-    * @throws RepositoryException
-    */
-   private void checkProtected(NodeTypeData registeredNodeType, List<NodeData> nodesData,
-      PropertyDefinitionData recipientDefinitionData) throws RepositoryException
-   {
-      if (Constants.JCR_ANY_NAME.equals(recipientDefinitionData.getName()) && recipientDefinitionData.isMandatory())
-         throw new ConstraintViolationException("Invalid property definition " + recipientDefinitionData.getName()
-            + ". Residual definition can't be protected");
-
-      List<NodeData> protectedNodes =
-         getNodes(nodesData, new InternalQName[]{}, new InternalQName[]{recipientDefinitionData.getName()});
-      if (protectedNodes.size() > 0)
-      {
-         String message =
-            "Can not change " + recipientDefinitionData.getName().getAsString()
-               + " property definition from Protected=false to Protected = true , because " + " the following nodes ";
-         for (NodeData nodeData : protectedNodes)
-         {
-            message += nodeData.getQPath().getAsString() + " ";
-         }
-         message += "  doesn't have these properties ";
-
-         throw new ConstraintViolationException(message);
-      }
-   }
-
-   /**
-    * @param registeredNodeType
     * @param recipientDefinitionData
     * @param allRecipientDefinition
     * @throws RepositoryException

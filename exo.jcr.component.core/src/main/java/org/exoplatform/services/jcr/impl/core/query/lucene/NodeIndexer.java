@@ -255,20 +255,6 @@ public class NodeIndexer
    }
 
    /**
-    * Wraps the exception <code>e</code> into a <code>RepositoryException</code>
-    * and throws the created exception.
-    *
-    * @param e the base exception.
-    */
-   private void throwRepositoryException(Exception e) throws RepositoryException
-   {
-      String msg =
-         "Error while indexing node: " + node.getIdentifier() + " of " + "type: "
-            + node.getPrimaryTypeName().getAsString();
-      throw new RepositoryException(msg, e);
-   }
-
-   /**
     * Adds a {@link FieldNames#MVP} field to <code>doc</code> with the resolved
     * <code>name</code> using the internal search index namespace mapping.
     *

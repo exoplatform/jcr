@@ -1840,35 +1840,6 @@ public class SessionDataManager implements ItemDataConsumer
    }
 
    /**
-    * Validate size of access control list.
-    * 
-    * @param changedItem
-    * @throws RepositoryException
-    */
-   @Deprecated
-   private void validateAclSize(ItemState changedItem) throws RepositoryException
-   {
-      NodeData node;
-      if (changedItem.getData().isNode())
-      {
-         node = ((NodeData)changedItem.getData());
-      }
-      else
-      {
-         node = (NodeData)getItemData(changedItem.getData().getParentIdentifier());
-         if (node == null)
-         {
-            return; // parent was deleted
-         }
-      }
-
-      if (node.getACL().getPermissionsSize() < 1)
-      {
-         throw new RepositoryException("Node " + node.getQPath().getAsString() + " has wrong formed ACL.");
-      }
-   }
-
-   /**
     * Validate ItemState for access permeations
     * 
     * @param changedItem
@@ -2765,19 +2736,6 @@ public class SessionDataManager implements ItemDataConsumer
    private class SessionItemFactory
    {
 
-      private ItemImpl createItem(ItemData data) throws RepositoryException
-      {
-
-         if (data.isNode())
-         {
-            return createNode((NodeData)data);
-         }
-         else
-         {
-            return createProperty(data);
-         }
-      }
-
       private ItemImpl createItem(ItemData data, NodeData parent) throws RepositoryException
       {
 
@@ -2788,23 +2746,6 @@ public class SessionDataManager implements ItemDataConsumer
          else
          {
             return createProperty(data, parent);
-         }
-      }
-
-      private NodeImpl createNode(NodeData data) throws RepositoryException
-      {
-         NodeImpl node = new NodeImpl(data, session);
-         if (node.isNodeType(Constants.NT_VERSION))
-         {
-            return new VersionImpl(data, session);
-         }
-         else if (node.isNodeType(Constants.NT_VERSIONHISTORY))
-         {
-            return new VersionHistoryImpl(data, session);
-         }
-         else
-         {
-            return node;
          }
       }
 
@@ -2823,11 +2764,6 @@ public class SessionDataManager implements ItemDataConsumer
          {
             return node;
          }
-      }
-
-      private PropertyImpl createProperty(ItemData data) throws RepositoryException
-      {
-         return new PropertyImpl(data, session);
       }
 
       private PropertyImpl createProperty(ItemData data, NodeData parent) throws RepositoryException

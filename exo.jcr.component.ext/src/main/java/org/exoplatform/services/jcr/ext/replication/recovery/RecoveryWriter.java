@@ -600,49 +600,4 @@ class FileRemover extends Thread
 
       return list;
    }
-
-   /**
-    * getAllSavedBinaryFile.
-    * 
-    * @param recoveryDataDir
-    *          The recovery data directory
-    * @return List return the list of File
-    * @throws IOException
-    *           will be generated the IOException
-    */
-   private List<File> getAllSavedBinaryFile(File recoveryDataDir) throws IOException
-   {
-      ArrayList<File> list = new ArrayList<File>();
-
-      long startTime = System.currentTimeMillis();
-
-      getFiles(recoveryDataDir, list);
-
-      if (log.isDebugEnabled())
-         log.debug("The total time of parced : " + (System.currentTimeMillis() - startTime) / ONE_SECOND);
-      return list;
-   }
-
-   /**
-    * getFiles. The recurcive parcing the directory. Will be added to list all files from tree.
-    * 
-    * @param f
-    *          the directory
-    * @param list
-    *          the list of Files.
-    */
-   private void getFiles(File f, List<File> list)
-   {
-      if (PrivilegedFileHelper.isDirectory(f))
-      {
-         for (File subFile : PrivilegedFileHelper.listFiles(f))
-         {
-            getFiles(subFile, list);
-         }
-      }
-      else if (f.isFile() && !(f.getName().endsWith(AbstractFSAccess.REMOVED_SUFFIX)))
-      {
-         list.add(f);
-      }
-   }
 }
