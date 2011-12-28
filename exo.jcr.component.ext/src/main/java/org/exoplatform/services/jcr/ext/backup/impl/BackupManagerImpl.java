@@ -249,48 +249,54 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       private String makeJobInfo(BackupJob job, Throwable error)
       {
-         String jobInfo = "";
+         StringBuilder jobInfo = new StringBuilder();
 
          if (job != null)
          {
 
             switch (job.getType())
             {
-               case BackupJob.FULL :
-                  jobInfo += "FULL BACKUP";
+               case BackupJob.FULL : {
+                  jobInfo.append("FULL BACKUP");
                   break;
-               case BackupJob.INCREMENTAL :
-                  jobInfo += "INCREMENTAL BACKUP";
+               }
+               case BackupJob.INCREMENTAL : {
+                  jobInfo.append("INCREMENTAL BACKUP");
                   break;
+               }
             }
 
-            jobInfo += " [";
+            jobInfo.append(" [");
             switch (job.getState())
             {
-               case BackupJob.FINISHED :
-                  jobInfo += "FINISHED";
+               case BackupJob.FINISHED : {
+                  jobInfo.append("FINISHED");
                   break;
-               case BackupJob.STARTING :
-                  jobInfo += "STARTING";
+               }
+               case BackupJob.STARTING : {
+                  jobInfo.append("STARTING");
                   break;
-               case BackupJob.WAITING :
-                  jobInfo += "WAITING";
+               }
+               case BackupJob.WAITING : {
+                  jobInfo.append("WAITING");
                   break;
-               case BackupJob.WORKING :
-                  jobInfo += "WORKING";
+               }
+               case BackupJob.WORKING : {
+                  jobInfo.append("WORKING");
                   break;
+               }
             }
 
-            jobInfo += "]";
+            jobInfo.append("]");
 
             if (error != null)
             {
-               jobInfo += " Error: " + error.getMessage();
+               jobInfo.append(" Error: ").append(error.getMessage());
             }
 
             try
             {
-               jobInfo += " log: " + job.getStorageURL().getPath();
+               jobInfo.append(" log: ").append(job.getStorageURL().getPath());
             }
             catch (BackupOperationException e)
             {
@@ -298,11 +304,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             finally
             {
-               jobInfo += " ";
+               jobInfo.append(" ");
             }
          }
 
-         return jobInfo;
+         return jobInfo.toString();
       }
 
       public String printStackTrace(Throwable error)

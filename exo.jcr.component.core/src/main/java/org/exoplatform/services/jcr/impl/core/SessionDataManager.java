@@ -124,11 +124,9 @@ public class SessionDataManager implements ItemDataConsumer
 
    public String dump()
    {
-      String d = "\nChanges:";
-      d += changesLog.dump();
-      d += "\nCache:";
-      d += itemsPool.dump();
-      return d;
+      StringBuilder d = new StringBuilder("\nChanges:");
+      d.append(changesLog.dump()).append("\nCache:").append(itemsPool.dump());
+      return d.toString();
    }
 
    /**
@@ -536,10 +534,10 @@ public class SessionDataManager implements ItemDataConsumer
       if (log.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         String debugPath = "";
+         StringBuilder debugPath = new StringBuilder();
          for (QPathEntry rp : relPath)
          {
-            debugPath += rp.getAsString();
+            debugPath.append(rp.getAsString());
          }
          log.debug("getItem(" + parent.getQPath().getAsString() + " + " + debugPath + " ) >>>>>");
       }
@@ -553,10 +551,10 @@ public class SessionDataManager implements ItemDataConsumer
       {
          if (log.isDebugEnabled())
          {
-            String debugPath = "";
+            StringBuilder debugPath = new StringBuilder();
             for (QPathEntry rp : relPath)
             {
-               debugPath += rp.getAsString();
+               debugPath.append(rp.getAsString());
             }
             log.debug("getItem(" + parent.getQPath().getAsString() + " + " + debugPath + ") --> "
                + (item != null ? item.getPath() : "null") + " <<<<< " + ((System.currentTimeMillis() - start) / 1000d)
@@ -1994,7 +1992,7 @@ public class SessionDataManager implements ItemDataConsumer
       PlainChangesLog slog = changesLog.pushLog(item.getQPath());
       SessionChangesLog changes = new SessionChangesLog(slog.getAllStates(), session);
 
-      String exceptions = "";
+      StringBuilder exceptions = new StringBuilder();
 
       for (Iterator<ItemImpl> removedIter = invalidated.iterator(); removedIter.hasNext();)
       {
@@ -2005,8 +2003,8 @@ public class SessionDataManager implements ItemDataConsumer
 
          if (rstate == null)
          {
-            exceptions +=
-               "Can't find removed item " + removed.getLocation().getAsString(false) + " in changes for rollback.\n";
+            exceptions.append("Can't find removed item ").append(removed.getLocation().getAsString(false))
+               .append(" in changes for rollback.\n");
             continue;
          }
 
@@ -2016,9 +2014,8 @@ public class SessionDataManager implements ItemDataConsumer
             rstate = changes.findItemState(rstate.getData().getIdentifier(), false, new int[]{ItemState.DELETED});
             if (rstate == null)
             {
-               exceptions +=
-                  "Can't find removed item (of move operation) " + removed.getLocation().getAsString(false)
-                     + " in changes for rollback.\n";
+               exceptions.append("Can't find removed item (of move operation) ")
+                  .append(removed.getLocation().getAsString(false)).append(" in changes for rollback.\n");
                continue;
             }
          }
@@ -2040,7 +2037,7 @@ public class SessionDataManager implements ItemDataConsumer
          removedIter.remove();
       }
 
-      if (exceptions.length() > 0 && log.isDebugEnabled())
+      if (exceptions.toString().length() > 0 && log.isDebugEnabled())
       {
          log.warn(exceptions);
       }
@@ -2708,16 +2705,18 @@ public class SessionDataManager implements ItemDataConsumer
 
       String dump()
       {
-         String str = "Items Pool: \n";
+         StringBuilder str = new StringBuilder("Items Pool: \n");
          try
          {
             for (ItemImpl item : getAll())
             {
                if (item != null)
                {
-                  str +=
-                     (item.isNode() ? "Node\t\t" : "Property\t") + "\t" + item.isValid() + "\t" + item.isNew() + "\t"
-                        + item.getInternalIdentifier() + "\t" + item.getPath() + "\n";
+                  str.append(item.isNode() ? "Node\t\t" : "Property\t");
+                  str.append("\t").append(item.isValid());
+                  str.append("\t").append(item.isNew());
+                  str.append("\t").append(item.getInternalIdentifier());
+                  str.append("\t").append(item.getPath()).append("\n");
                }
             }
          }
@@ -2726,7 +2725,7 @@ public class SessionDataManager implements ItemDataConsumer
             log.error(e.getLocalizedMessage(), e);
          }
 
-         return str;
+         return str.toString();
       }
    }
 

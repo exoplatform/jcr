@@ -85,12 +85,12 @@ public class TreeFileIOChannel extends FileIOChannel
    protected String buildPathX(String fileName)
    {
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
       for (char ch : chs)
       {
-         path += File.separator + ch;
+         path.append(File.separator).append(ch);
       }
-      return path;
+      return path.toString();
    }
 
    // best for now, 12.07.07
@@ -98,13 +98,13 @@ public class TreeFileIOChannel extends FileIOChannel
    {
       final int xLength = 8;
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
       for (int i = 0; i < xLength; i++)
       {
-         path += File.separator + chs[i];
+         path.append(File.separator).append(chs[i]);
       }
-      path += fileName.substring(xLength);
-      return path;
+      path.append(fileName.substring(xLength));
+      return path.toString();
    }
 
    protected String buildPathXX2X4(String fileName)
@@ -113,48 +113,49 @@ public class TreeFileIOChannel extends FileIOChannel
       final int xLength = 8;
       boolean xxBlock = true;
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
+
       for (int xxi = 0; xxi < xxLength; xxi++)
       {
          char ch = chs[xxi];
-         path += xxBlock ? File.separator + ch : ch;
+         path.append(xxBlock ? File.separator + ch : ch);
          xxBlock = !xxBlock;
       }
       for (int xi = xxLength; xi < xLength; xi++)
       {
-         path += File.separator + chs[xi];
+         path.append(File.separator).append(chs[xi]);
       }
-      path += fileName.substring(xLength);
-      return path;
+      path.append(fileName.substring(xLength));
+      return path.toString();
    }
 
    protected String buildPathXX(String fileName)
    {
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
       boolean block = true;
       for (char ch : chs)
       {
-         path += block ? File.separator + ch : ch;
+         path.append(block ? File.separator + ch : ch);
          block = !block;
       }
-      return path;
+      return path.toString();
    }
 
    protected String buildPathXX8(String fileName)
    {
       final int xxLength = 16; // length / 2 = xx length
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
       boolean block = true;
       for (int i = 0; i < xxLength; i++)
       {
          char ch = chs[i];
-         path += block ? File.separator + ch : ch;
+         path.append(block ? File.separator + ch : ch);
          block = !block;
       }
-      path += fileName.substring(xxLength);
-      return path;
+      path.append(fileName.substring(xxLength));
+      return path.toString();
    }
 
    private static void mkdirs(File dir)

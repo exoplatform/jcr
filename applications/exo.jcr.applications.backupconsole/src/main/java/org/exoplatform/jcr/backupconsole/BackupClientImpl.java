@@ -307,63 +307,50 @@ public class BackupClientImpl
 
          if (info.getType() == DetailedInfo.COMPLETED)
          {
-            String result = "\nThe completed (ready to restore) backup information : \n";
+            StringBuilder result = new StringBuilder("\nThe completed (ready to restore) backup information : \n");
 
             BackupConfigBean configBean = info.getBackupConfig();
 
-            result +=
-                     ("\t\tbackup id               : "
-                              + info.getBackupId()
-                              + "\n"
-                              + "\t\tbackup folder           : "
-                              + configBean.getBackupDir()
-                              + "\n"
-                              + "\t\trepository name         : "
-                              + info.getRepositoryName()
-                              + "\n"
-                              + (info.getWorkspaceName().equals("") ? "" : "\t\tworkspace name          : "
-                                       + info.getWorkspaceName() + "\n")
-                              + "\t\tbackup type             : "
-                  + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
-                                       : "full only") + "\n" + "\t\tstarted time            : " + info.getStartedTime()
-                              + "\n" + (info.getFinishedTime().equals("") ? "\n" : "\t\tfinished time           : "
-                              + info.getFinishedTime() + "\n\n"));
+            result.append("\t\tbackup id               : ").append(info.getBackupId()).append("\n");
+            result.append("\t\tbackup folder           : ").append(configBean.getBackupDir()).append("\n");
+            result.append("\t\trepository name         : ").append(info.getRepositoryName()).append("\n");
+            result.append(info.getWorkspaceName().equals("") ? "" : "\t\tworkspace name          : "
+               + info.getWorkspaceName() + "\n");
+            result.append("\t\tbackup type             : ");
+            result.append(configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
+               : "full only");
+            result.append("\n");
+            result.append("\t\tstarted time            : ").append(info.getStartedTime()).append("\n");
+            result.append(info.getFinishedTime().equals("") ? "\n" : "\t\tfinished time           : "
+               + info.getFinishedTime() + "\n\n");
 
-            return result;
+            return result.toString();
          }
          else
          {
-            String result = "\nThe current backup information : \n";
-
+            StringBuilder result = new StringBuilder("\nThe current backup information : \n"); 
             BackupConfigBean configBean = info.getBackupConfig();
 
-            result +=
-                     ("\t\tbackup id                : "
-                              + info.getBackupId()
-                              + "\n"
-                              + "\t\tbackup folder            : "
-                              + configBean.getBackupDir()
-                              + "\n"
-                              + "\t\trepository name          : "
-                              + info.getRepositoryName()
-                              + "\n"
-                              + (info.getWorkspaceName().equals("") ? "" : "\t\tworkspace name           : "
-                                       + info.getWorkspaceName() + "\n")
-                              + "\t\tbackup type              : "
-                  + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
-                                       : "full only") + "\n" + "\t\tfull backup state        : " + (info
-                              .getWorkspaceName().equals("") ? getRepositoryBackupToFullState(info.getState())
-                                                         : getState(info.getState())))
-                              + "\n"
-                              + (info.getBackupType() == BackupManager.FULL_BACKUP_ONLY ? ""
-                                       : "\t\tincremental backup state : " + "working" + "\n")
-                              + "\t\tstarted time             : "
-                              + info.getStartedTime()
-                              + "\n"
-                              + (info.getFinishedTime().equals("") ? "\n" : "\t\tfinished time            : "
-                                       + info.getFinishedTime() + "\n\n");
-
-            return result;
+            result.append("\t\tbackup id                : ").append(info.getBackupId()).append("\n");
+            result.append("\t\tbackup folder            : ").append(configBean.getBackupDir()).append("\n");
+            result.append("\t\trepository name          : ").append(info.getRepositoryName()).append("\n");
+            result.append(info.getWorkspaceName().equals("") ? "" : "\t\tworkspace name           : "
+               + info.getWorkspaceName() + "\n");
+            result.append("\t\tbackup type              : ");
+            result.append(configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
+               : "full only");
+            result.append("\n");
+            result.append("\t\tfull backup state        : ");
+            result.append(info.getWorkspaceName().equals("") ? getRepositoryBackupToFullState(info.getState())
+               : getState(info.getState()));
+            result.append("\n");
+            result.append(info.getBackupType() == BackupManager.FULL_BACKUP_ONLY ? ""
+               : "\t\tincremental backup state : " + "working" + "\n");
+            result.append("\t\tstarted time             : ").append(info.getStartedTime()).append("\n");
+            result.append(info.getFinishedTime().equals("") ? "\n" : "\t\tfinished time            : "
+               + info.getFinishedTime() + "\n\n");
+            
+            return result.toString();
          }
       }
       else
@@ -754,64 +741,58 @@ public class BackupClientImpl
             throw new RuntimeException("Can not get ShortInfoList from responce.", e);
          }
 
-         String result = "\nThe current backups information : \n";
+         StringBuilder result = new StringBuilder("\nThe current backups information : \n");
 
          if ((repositoryInfoList.getBackups().size() == 0) && (workspaceInfoList.getBackups().size() == 0))
          {
-            result += "\tNo active backups.\n\n";
+            result.append("\tNo active backups.\n\n");
          }
 
          int count = 1;
          for (ShortInfo shortInfo : repositoryInfoList.getBackups())
          {
-            result += "\t" + count + ") Repository backup with id " + shortInfo.getBackupId() + " :\n";
-
-            result +=
-                     ("\t\trepository name            : "
-                              + shortInfo.getRepositoryName()
-                              + "\n"
-                              + "\t\tbackup type                : "
-                              + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
-                                       : "full only") + "\n" + "\t\tfull backups state         : " 
-                                       + getRepositoryBackupToFullState(shortInfo.getState()))
-                              + "\n"
-                              + (shortInfo.getBackupType() == BackupManager.FULL_BACKUP_ONLY ? ""
-                                       : "\t\tincremental backups state  : " + "working" + "\n")
-                              + "\t\tstarted time               : "
-                              + shortInfo.getStartedTime()
-                              + "\n"
-                              + (shortInfo.getFinishedTime().equals("") ? "" : "\t\tfinished time              : "
-                                       + shortInfo.getFinishedTime() + "\n");
+            result.append("\t").append(count).append(") Repository backup with id ").append(shortInfo.getBackupId())
+               .append(" :\n");
+            result.append("\t\trepository name            : ").append(shortInfo.getRepositoryName()).append("\n");
+            result.append("\t\tbackup type                : ");
+            result.append(shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
+               : "full only");
+            result.append("\n");
+            result.append("\t\tfull backups state         : ")
+               .append(getRepositoryBackupToFullState(shortInfo.getState())).append("\n");
+            result.append(shortInfo.getBackupType() == BackupManager.FULL_BACKUP_ONLY ? ""
+               : "\t\tincremental backups state  : " + "working" + "\n");
+            result.append("\t\tstarted time               : ").append(shortInfo.getStartedTime()).append("\n");
+            result.append(shortInfo.getFinishedTime().equals("") ? "" : "\t\tfinished time              : "
+               + shortInfo.getFinishedTime() + "\n");
+            
             count++;
          }
 
          for (ShortInfo shortInfo : workspaceInfoList.getBackups())
          {
-            result += "\t" + count + ") Workspace backup with id " + shortInfo.getBackupId() + " :\n";
+            result.append("\t").append(count).append(") Workspace backup with id ").append(shortInfo.getBackupId())
+               .append(" :\n");
 
-            result +=
-                     ("\t\trepository name            : "
-                              + shortInfo.getRepositoryName()
-                              + "\n"
-                              + "\t\tworkspace name             : "
-                              + shortInfo.getWorkspaceName()
-                              + "\n"
-                              + "\t\tbackup type                : "
-                  + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
-                                       : "full only") + "\n" + "\t\tfull backup state          : " + getState(shortInfo
-                              .getState()))
-                              + "\n"
-                              + (shortInfo.getBackupType() == BackupManager.FULL_BACKUP_ONLY ? ""
-                                       : "\t\tincremental backup state   : " + "working" + "\n")
-                              + "\t\tstarted time               : "
-                              + shortInfo.getStartedTime()
-                              + "\n"
-                              + (shortInfo.getFinishedTime().equals("") ? "" : "\t\tfinished time              : "
-                                       + shortInfo.getFinishedTime() + "\n");
+            result.append("\t\trepository name            : ").append(shortInfo.getRepositoryName()).append("\n");
+            result.append("\t\tworkspace name             : ").append(shortInfo.getWorkspaceName()).append("\n");
+
+            result.append("\t\tbackup type                : ");
+            result.append(
+               shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental" : "full only")
+               .append("\n");
+
+            result.append("\t\tfull backup state          : ").append(getState(shortInfo.getState())).append("\n");
+            result.append(shortInfo.getBackupType() == BackupManager.FULL_BACKUP_ONLY ? ""
+               : "\t\tincremental backup state   : " + "working\n");
+            result.append("\t\tstarted time               : ").append(shortInfo.getStartedTime()).append("\n");
+            result.append(shortInfo.getFinishedTime().equals("") ? "" : "\t\tfinished time              : "
+               + shortInfo.getFinishedTime() + "\n");
+
             count++;
          }
 
-         return result;
+         return result.toString();
       }
       else
       {
@@ -856,50 +837,50 @@ public class BackupClientImpl
             throw new RuntimeException("Can not get ShortInfoList from responce.", e);
          }
 
-         String result = "\nThe completed (ready to restore) backups information : \n";
+         StringBuilder result = new StringBuilder("\nThe completed (ready to restore) backups information : \n");
 
          if ((repositoryInfoList.getBackups().size() == 0) && (workspaceInfoList.getBackups().size() == 0))
          {
-            result += "\tNo completed backups.\n\n";
+            result.append("\tNo completed backups.\n\n");
          }
 
          int count = 1;
          for (ShortInfo shortInfo : repositoryInfoList.getBackups())
          {
-            result += "\t" + count + ") Repository backup with id " + shortInfo.getBackupId() + " :\n";
+            result.append("\t").append(count).append(") Repository backup with id ").append(shortInfo.getBackupId())
+               .append(" :\n");
+            result.append("\t\trepository name           : ").append(shortInfo.getRepositoryName()).append("\n");
 
-            result +=
-                     ("\t\trepository name           : "
-                              + shortInfo.getRepositoryName()
-                              + "\n"
-                              + "\t\tbackup type               : "
-                  + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
-                                       : "full only") + "\n" + "\t\tstarted time              : "
-                              + shortInfo.getStartedTime() + "\n" + (shortInfo.getFinishedTime().equals("") ? "\n"
-                              : "\t\tfinished time             : " + shortInfo.getFinishedTime() + "\n"));
+            result.append("\t\tbackup type               : ");
+            result.append(
+               shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental" : "full only")
+               .append("\n");
+            result.append("\t\tstarted time              : ").append(shortInfo.getStartedTime()).append("\n");
+            result.append(shortInfo.getFinishedTime().equals("") ? "\n"
+               : "\t\tfinished time             : " + shortInfo.getFinishedTime() + "\n");
+
             count++;
          }
 
          for (ShortInfo shortInfo : workspaceInfoList.getBackups())
          {
-            result += "\t" + count + ") Workspace backup with id " + shortInfo.getBackupId() + " :\n";
+            result.append("\t").append(count).append(") Workspace backup with id ").append(shortInfo.getBackupId())
+               .append(" :\n");
+            result.append("\t\trepository name           : ").append(shortInfo.getRepositoryName()).append("\n");
+            result.append("\t\tworkspace name            : ").append(shortInfo.getWorkspaceName()).append("\n");
 
-            result +=
-                     ("\t\trepository name           : "
-                              + shortInfo.getRepositoryName()
-                              + "\n"
-                              + "\t\tworkspace name            : "
-                              + shortInfo.getWorkspaceName()
-                              + "\n"
-                              + "\t\tbackup type               : "
-                  + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
-                                       : "full only") + "\n" + "\t\tstarted time              : "
-                              + shortInfo.getStartedTime() + "\n" + (shortInfo.getFinishedTime().equals("") ? "\n"
-                              : "\t\tfinished time             : " + shortInfo.getFinishedTime() + "\n"));
+            result.append("\t\tbackup type               : ");
+            result.append(
+               shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental" : "full only")
+               .append("\n");
+            result.append("\t\tstarted time              : ").append(shortInfo.getStartedTime()).append("\n");
+            result.append(shortInfo.getFinishedTime().equals("") ? "\n"
+               : "\t\tfinished time             : " + shortInfo.getFinishedTime() + "\n");
+
             count++;
          }
 
-         return result;
+         return result.toString();
       }
       else
       {
@@ -932,30 +913,25 @@ public class BackupClientImpl
                throw new RuntimeException("Can not get DetailedInfo from responce.", e);
             }
 
-            String result = "\nThe current restores information : \n";
+            StringBuilder result = new StringBuilder("\nThe current restores information : \n");
 
-            result += "\tWorkspace restore with id " + info.getBackupId() + ":\n";
+            result.append("\tWorkspace restore with id ").append(info.getBackupId()).append(":\n");
 
             BackupConfigBean configBean = info.getBackupConfig();
 
-            result +=
-                     ("\t\tbackup folder           : "
-                              + configBean.getBackupDir()
-                              + "\n"
-                              + "\t\trepository name         : "
-                              + info.getRepositoryName()
-                              + "\n"
-                              + "\t\tworkspace name          : "
-                              + info.getWorkspaceName()
-                              + "\n"
-                              + "\t\tbackup type             : "
-                  + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
-                                       : "full only") + "\n" + "\t\trestore state           : "
-                              + getRestoreState(info.getState()) + "\n" + "\t\tstarted time            : "
-                              + info.getStartedTime() + "\n" + (info.getFinishedTime().equals("") ? "\n"
-                              : "\t\tfinished time           : " + info.getFinishedTime() + "\n\n"));
+            result.append("\t\tbackup folder           : ").append(configBean.getBackupDir()).append("\n");
+            result.append("\t\trepository name         : ").append(info.getRepositoryName()).append("\n");
+            result.append("\t\tworkspace name          : ").append(info.getWorkspaceName()).append("\n");
+            result.append("\t\tbackup type             : ");
+            result.append(
+               configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental" : "full only")
+               .append("\n");
+            result.append("\t\trestore state           : ").append(getRestoreState(info.getState())).append("\n");
+            result.append("\t\tstarted time            : ").append(info.getStartedTime()).append("\n");
+            result.append(info.getFinishedTime().equals("") ? "\n"
+               : "\t\tfinished time           : " + info.getFinishedTime() + "\n\n");
 
-            return result;
+            return result.toString();
          }
          else
          {
@@ -983,27 +959,25 @@ public class BackupClientImpl
                throw new RuntimeException("Can not get DetailedInfo from responce.", e);
             }
 
-            String result = "\nThe current restores information : \n";
+            StringBuilder result = new StringBuilder("\nThe current restores information : \n");
 
-            result += "\tRepository restore with id " + info.getBackupId() + ":\n";
+            result.append("\tRepository restore with id ").append(info.getBackupId()).append(":\n");
 
             BackupConfigBean configBean = info.getBackupConfig();
 
-            result +=
-                     ("\t\tbackup folder           : "
-                              + configBean.getBackupDir()
-                              + "\n"
-                              + "\t\trepository name         : "
-                              + info.getRepositoryName()
-                              + "\n"
-                              + "\t\tbackup type             : "
-                  + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
-                                       : "full only") + "\n" + "\t\trestore state           : "
-                              + getRepositoryRestoreState(info.getState()) + "\n" + "\t\tstarted time            : "
-                              + info.getStartedTime() + "\n" + (info.getFinishedTime().equals("") ? "\n"
-                              : "\t\tfinished time           : " + info.getFinishedTime() + "\n\n"));
-
-            return result;
+            result.append("\t\tbackup folder           : ").append(configBean.getBackupDir()).append("\n");
+            result.append("\t\trepository name         : ").append(info.getRepositoryName()).append("\n");
+            result.append("\t\tbackup type             : ");
+            result.append(
+               configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental" : "full only")
+               .append("\n");
+            result.append("\t\trestore state           : ").append(getRepositoryRestoreState(info.getState()))
+               .append("\n");
+            result.append("\t\tstarted time            : ").append(info.getStartedTime()).append("\n");
+            result.append(info.getFinishedTime().equals("") ? "\n"
+               : "\t\tfinished time           : " + info.getFinishedTime() + "\n\n");
+            
+            return result.toString();
          }
          else
          {

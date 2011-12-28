@@ -41,10 +41,10 @@ public class GetContextInfoCommand extends AbstractCliCommand
 
    public boolean perform(CliAppContext ctx)
    {
-      String output = "";
+      StringBuilder output = new StringBuilder();
       try
       {
-         output = "Context info: \n";
+         output.append("Context info: \n");
          Item item = ctx.getCurrentItem();
          ItemDefinition itemDefinition;
          if (item.isNode())
@@ -55,17 +55,19 @@ public class GetContextInfoCommand extends AbstractCliCommand
          {
             itemDefinition = ((PropertyImpl)item).getDefinition();
          }
-         output += "username: " + ctx.getUserName() + "\n";
-         output += "workspace: " + ctx.getCurrentWorkspace() + "\n";
-         output += "item path: " + item.getPath() + "\n";
-         String itemType = item.isNode() ? "Node" : "Property";
-         output += "item type: " + itemType + "\n";
-         output += "item definitions:\n";
-         output += "  name: " + itemDefinition.getName() + "\n";
-         output += "  autocreated:" + itemDefinition.isAutoCreated() + "\n";
-         output += "  mandatory:" + itemDefinition.isMandatory() + "\n";
-         output += "  protected:" + itemDefinition.isProtected() + "\n";
-         output += "  onparentversion:" + itemDefinition.getOnParentVersion() + "\n";
+
+         output.append("username: ").append(ctx.getUserName()).append("\n");
+         output.append("workspace: ").append(ctx.getCurrentWorkspace()).append("\n");
+         output.append("item path: ").append(item.getPath()).append("\n");
+         output.append("item type: ").append(item.isNode() ? "Node" : "Property").append("\n");
+         output.append("item definitions:\n");
+         output.append("  name: ").append(itemDefinition.getName()).append("\n");
+         output.append("  autocreated:").append(itemDefinition.isAutoCreated()).append("\n");
+         output.append("  mandatory:").append(itemDefinition.isMandatory()).append("\n");
+         output.append("  protected:").append(itemDefinition.isProtected()).append("\n");
+         output.append("  onparentversion:").append(itemDefinition.getOnParentVersion()).append("\n");
+
+
          if (item.isNode() == false)
          {
             Property property = (Property)item;
@@ -75,32 +77,33 @@ public class GetContextInfoCommand extends AbstractCliCommand
                PropertyDefinition propertyDefinition = (PropertyDefinition)itemDefinition;
                if (propertyDefinition.isMultiple() == false)
                {
-                  output += "property value:" + property.getValue().getString() + "\n";
+                  output.append("property value:").append(property.getValue().getString()).append("\n");
                }
                else
                {
-                  output += "property value is multiple" + "\n";
+                  output.append("property value is multiple\n");
                }
             }
             else
             {
-               output += "can't show property value:" + "\n";
+               output.append("can't show property value:\n");
             }
          }
-         output += "parameters:\n";
+         output.append("parameters:\n");
+
          Iterator parametersIterator = ctx.getParameters().iterator();
          int i = 0;
          while (parametersIterator.hasNext())
          {
-            output += "  [" + i + "]" + " : " + (String)parametersIterator.next() + "\n";
+            output.append("  [").append(i).append("] : ").append((String)parametersIterator.next()).append("\n");
             i++;
          }
       }
       catch (Exception e)
       {
-         output = "Can't execute command - " + e.getMessage() + "\n";
+         output.append("Can't execute command - ").append(e.getMessage()).append("\n");
       }
-      ctx.setOutput(output);
+      ctx.setOutput(output.toString());
       return false;
    }
 }
