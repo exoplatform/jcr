@@ -374,7 +374,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       {
          return systemConnection == null
          // we need system connection but it's not exist
-            ? systemConnection = (systemDataContainer != dataContainer
+            ? systemConnection = (systemDataContainer != dataContainer // NOSONAR
             // if it's different container instances
                ? systemDataContainer.equals(dataContainer) && thisConnection != null
                // but container confugrations are same and non-system connnection open
@@ -396,7 +396,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       {
          return thisConnection == null
          // we need this conatiner conection
-            ? thisConnection = (systemDataContainer != dataContainer
+            ? thisConnection = (systemDataContainer != dataContainer // NOSONAR
             // if it's different container instances
                ? dataContainer.equals(systemDataContainer) && systemConnection != null
                // but container confugrations are same and system connnection open

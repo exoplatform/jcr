@@ -294,7 +294,7 @@ class IndexMerger extends Thread implements IndexListener
             isIdle = true;
          }
          Merge task = (Merge)mergeTasks.remove();
-         if (task == QUIT)
+         if (task == QUIT) // NOSONAR
          {
             mergerIdle.release();
             break;

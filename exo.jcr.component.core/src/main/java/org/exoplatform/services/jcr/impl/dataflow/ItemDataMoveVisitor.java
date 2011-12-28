@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
@@ -178,7 +177,7 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
             }
          }
 
-         if (destParent == srcParent)// (destParent.getIdentifier().equals(node.getParentIdentifier()))
+         if (destParent == srcParent) // NOSONAR
          {
             // move to same parent
             srcChilds = destChilds;
@@ -216,7 +215,7 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
                   srcIndex++;
                }
                // find index on destination in case when destination the same as source
-               if (srcChilds == destChilds && (child.getQPath().getName().equals(destNodeName)))
+               if (srcChilds == destChilds && (child.getQPath().getName().equals(destNodeName))) // NOSONAR
                {
                   destIndex++;
                }

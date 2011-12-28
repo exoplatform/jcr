@@ -117,7 +117,7 @@ class ParentAxisQuery extends Query
    public Query rewrite(IndexReader reader) throws IOException
    {
       Query cQuery = contextQuery.rewrite(reader);
-      if (cQuery == contextQuery)
+      if (cQuery == contextQuery) // NOSONAR
       {
          return this;
       }

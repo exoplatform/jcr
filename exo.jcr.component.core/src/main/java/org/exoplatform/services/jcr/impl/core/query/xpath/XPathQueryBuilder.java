@@ -607,7 +607,7 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
         Node p = node.jjtGetParent();
         for (int i = 0; i < p.jjtGetNumChildren(); i++) {
             SimpleNode c = (SimpleNode) p.jjtGetChild(i);
-            if (c == node) {
+            if (c == node) { // NOSONAR
                 queryNode = factory.createLocationStepQueryNode(parent);
                 queryNode.setNameTest(null);
                 queryNode.setIncludeDescendants(descendant);
@@ -976,7 +976,7 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
                             Node p = node.jjtGetParent();
                             for (int i = 0; i < p.jjtGetNumChildren(); i++) {
                                 SimpleNode c = (SimpleNode) p.jjtGetChild(i);
-                                if (c == node) {
+                                if (c == node) { // NOSONAR
                                     break;
                                 }
                                 descendant = (c.getId() == JJTSLASHSLASH

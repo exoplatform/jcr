@@ -173,11 +173,11 @@ public class JCRPathExt extends JCRPath
 
    private static int addEntry(PathElement[] entries, int size, PathElement entry)
    {
-      if (entry == THIS_ELEMENT)
+      if (entry == THIS_ELEMENT) // NOSONAR
       {
          return size;
       }
-      if (size > 0 && entry == MOVE_UP_ELEMENT && !(entries[size - 1] == MOVE_UP_ELEMENT))
+      if (size > 0 && entry == MOVE_UP_ELEMENT && !(entries[size - 1] == MOVE_UP_ELEMENT)) // NOSONAR
       {
          if (size <= 0)
          {

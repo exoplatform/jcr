@@ -20,7 +20,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
@@ -140,7 +139,7 @@ class DerefQuery extends Query
    public Query rewrite(IndexReader reader) throws IOException
    {
       Query cQuery = contextQuery.rewrite(reader);
-      if (cQuery == contextQuery)
+      if (cQuery == contextQuery) // NOSONAR
       {
          return this;
       }

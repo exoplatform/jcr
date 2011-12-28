@@ -89,7 +89,7 @@ class NotQuery extends Query
    public Query rewrite(IndexReader reader) throws IOException
    {
       Query cQuery = context.rewrite(reader);
-      if (cQuery == context)
+      if (cQuery == context) // NOSONAR
       {
          return this;
       }

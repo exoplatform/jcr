@@ -237,7 +237,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       }
 
       // if we get here we could not compact the query
-      if (cQuery == contextQuery)
+      if (cQuery == contextQuery) // NOSONAR
       {
          return this;
       }

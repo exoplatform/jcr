@@ -231,7 +231,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
                .rewrite(reader);
          }
       }
-      if (cQuery == contextQuery && sQuery == subQuery)
+      if (cQuery == contextQuery && sQuery == subQuery) // NOSONAR
       {
          return this;
       }

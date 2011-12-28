@@ -1569,7 +1569,7 @@ public class SessionDataManager implements ItemDataConsumer
                      return;
                   }
                }
-               else if (wsSession != session)
+               else if (wsSession != session) // NOSONAR
                {
                   // has a reference to the VH in traversed workspace,
                   // it's not a version storage, i.e. it's a property of versionable
@@ -1582,7 +1582,7 @@ public class SessionDataManager implements ItemDataConsumer
          }
          finally
          {
-            if (wsSession != session)
+            if (wsSession != session) // NOSONAR
             {
                wsSession.logout();
             }

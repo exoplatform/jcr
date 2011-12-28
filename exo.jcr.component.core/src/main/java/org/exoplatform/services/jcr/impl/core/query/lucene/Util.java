@@ -246,7 +246,7 @@ public class Util
     */
    public static int compare(Comparable c1, Comparable c2)
    {
-      if (c1 == c2)
+      if (c1 == c2) // NOSONAR
       {
          return 0;
       }
