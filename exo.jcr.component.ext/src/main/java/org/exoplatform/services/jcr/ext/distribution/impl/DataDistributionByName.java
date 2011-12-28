@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.ext.distribution.impl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -45,17 +46,17 @@ import javax.jcr.RepositoryException;
  */
 public class DataDistributionByName extends AbstractDataDistributionType
 {
-   
+
    /**
     * The level of depth used by the algorithm
     */
    private int depth = 4;
-   
+
    /**
     * The suffix used by the algorithm to indicate that they are sub nodes inside
     */
    private String suffix = "___";
-   
+
    /**
     * {@inheritDoc}
     */
@@ -98,57 +99,48 @@ public class DataDistributionByName extends AbstractDataDistributionType
    public void migrate(Node rootNode, String nodeType, List<String> mixinTypes, Map<String, String[]> permissions)
       throws RepositoryException
    {
-      // try to detect if migration is needed
-      NodeIterator iter = ((NodeImpl)rootNode).getNodesLazily(1);
-      while (iter.hasNext())
-      {
-         String userName = iter.nextNode().getName();
-         if (userName.length() == 1)
-         {
-            continue;
-         }
-         else if (userName.endsWith(suffix) || (!iter.hasNext()))
-         {
-            return;
-         }
-         else
-         {
-            break;
-         }
-      }
-
-      iter = ((NodeImpl)rootNode).getNodesLazily();
+      NodeIterator iter = ((NodeImpl)rootNode).getNodesLazily();
       while (iter.hasNext())
       {
          Node userNode = iter.nextNode();
-         if (userNode.getName().length() == 1)
+
+         if (!alreadyMigrated(userNode))
          {
-            continue;
-         }
-         List<String> ancestors = getAncestors(userNode.getName());
+            Node ancestorNode = rootNode;
 
-         Node node = rootNode;
-
-         for (int i = 0, length = ancestors.size() - 1; i < length; i++)
-         {
-            String nodeName = ancestors.get(i);
-            try
+            Iterator<String> ancestors = getAncestors(userNode.getName()).iterator();
+            while (ancestors.hasNext())
             {
-               node = node.getNode(nodeName);
-               continue;
-            }
-            catch (PathNotFoundException e)
-            {
-               // ignore me
+               String ancestorName = ancestors.next();
+
+               if (ancestors.hasNext())
+               {
+                  try
+                  {
+                     ancestorNode = ancestorNode.getNode(ancestorName);
+                     continue;
+                  }
+                  catch (PathNotFoundException e)
+                  {
+                     ancestorNode =
+                        createNode(ancestorNode, ancestorName, nodeType, mixinTypes, permissions, false, false);
+                  }
+               }
+               else
+               {
+                  rootNode.getSession().move(userNode.getPath(), ancestorNode.getPath() + "/" + ancestorName);
+               }
             }
 
-            // The node doesn't exist we need to create it
-            node = createNode(node, nodeName, nodeType, mixinTypes, permissions, false, false);
+            rootNode.getSession().save();
          }
-
-         userNode.getSession().move(userNode.getPath(), node.getPath() + "/" + ancestors.get(ancestors.size() - 1));
       }
+   }
 
-      rootNode.getSession().save();
+   private boolean alreadyMigrated(Node userNode) throws RepositoryException
+   {
+      String nodeName = userNode.getName();
+
+      return nodeName.length() == 1 || nodeName.endsWith(suffix);
    }
 }

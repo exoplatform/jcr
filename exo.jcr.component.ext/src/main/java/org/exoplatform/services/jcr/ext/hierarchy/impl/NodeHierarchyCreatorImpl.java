@@ -122,13 +122,16 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
          log.error("An error occurs while processing the plugins", e);
       }
 
-      try
+      if (isNeededToMigrate())
       {
-         checkForUpgrade();
-      }
-      catch (RepositoryException e)
-      {
-         log.error("An error occurs while upgrading JCR structure", e);
+         try
+         {
+            migrate();
+         }
+         catch (RepositoryException e)
+         {
+            log.error("An error occurs while upgrading JCR structure", e);
+         }
       }
    }
 
@@ -309,9 +312,10 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
     */
    public Node getUserNode(SessionProvider sessionProvider, String userName) throws Exception
    {
-      String userPath = getJcrPath(USERS_PATH);
       Session session = getSession(sessionProvider);
-      Node usersNode = (Node)session.getItem(userPath);
+
+      Node usersNode = getRootOfUsersNodes(session);
+
       DataDistributionType type =
          dataDistributionManager_.getDataDistributionType(oldDistribution ? DataDistributionMode.NONE
             : DataDistributionMode.READABLE);
@@ -323,11 +327,11 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
     */
    public void removeUserNode(SessionProvider sessionProvider, String userName) throws Exception
    {
-      String userPath = getJcrPath(USERS_PATH);
       Session session = getSession(sessionProvider);
       try
       {
-         Node usersNode = (Node)session.getItem(userPath);
+         Node usersNode = getRootOfUsersNodes(session);
+
          DataDistributionType type =
             dataDistributionManager_.getDataDistributionType(oldDistribution ? DataDistributionMode.NONE
                : DataDistributionMode.READABLE);
@@ -375,26 +379,29 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       }
    }
 
-   private void checkForUpgrade() throws RepositoryException
+   private boolean isNeededToMigrate()
    {
-      if (!oldDistribution && autoMigrate)
-      {
-         ManageableRepository repo = jcrService_.getCurrentRepository();
-         Session session = repo.getSystemSession(repo.getConfiguration().getDefaultWorkspaceName());
-         try
-         {
-            String userPath = getJcrPath(USERS_PATH);
-            Node usersNode = (Node)session.getItem(userPath);
+      return !oldDistribution && autoMigrate;
+   }
 
-            dataDistributionManager_.getDataDistributionType(DataDistributionMode.READABLE).migrate(usersNode);
-         }
-         finally
-         {
-            if (session != null)
-            {
-               session.logout();
-            }
-         }
+   private void migrate() throws RepositoryException
+   {
+      Session session = getSession(SessionProvider.createSystemProvider());
+
+      try
+      {
+         Node rootNode = getRootOfUsersNodes(session);
+         dataDistributionManager_.getDataDistributionType(DataDistributionMode.READABLE).migrate(rootNode);
       }
+      finally
+      {
+         session.logout();
+      }
+   }
+
+   private Node getRootOfUsersNodes(Session session) throws PathNotFoundException, RepositoryException
+   {
+      String usersPath = getJcrPath(USERS_PATH);
+      return (Node)session.getItem(usersPath);
    }
 }
