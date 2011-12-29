@@ -163,7 +163,7 @@ public class FtpFileInfoImpl implements FtpFileInfo
 
       String _name = fileL;
 
-      this.name = _name.toString();
+      this.name = _name;
       this.date = _date.toString();
       this.time = _time.toString();
       this.size = new Long(_size.toString());
@@ -268,7 +268,7 @@ public class FtpFileInfoImpl implements FtpFileInfo
       String _name = fileL;
 
       this.name = _name;
-      this.date = _month + " " + _day;
+      this.date = _month.toString() + " " + _day.toString();
       this.time = _time.toString();
       this.size = new Long(_size.toString());
 

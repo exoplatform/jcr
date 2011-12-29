@@ -2037,7 +2037,7 @@ public class SessionDataManager implements ItemDataConsumer
          removedIter.remove();
       }
 
-      if (exceptions.toString().length() > 0 && log.isDebugEnabled())
+      if (exceptions.length() > 0 && log.isDebugEnabled())
       {
          log.warn(exceptions);
       }
