@@ -120,7 +120,6 @@ public abstract class AbstractWorkspaceDataReceiver implements PacketListener
     */
    public AbstractWorkspaceDataReceiver() throws RepositoryConfigurationException
    {
-      // TODO: need to use FileCleaner from FileCleanerHolder
       this.fileCleaner = new FileCleaner(ReplicationService.FILE_CLEANRE_TIMEOUT);
       mapPendingBinaryFile = new HashMap<String, PendingBinaryFile>();
 

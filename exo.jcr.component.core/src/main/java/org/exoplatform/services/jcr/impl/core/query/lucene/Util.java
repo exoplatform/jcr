@@ -192,7 +192,6 @@ public class Util
          case PropertyType.REFERENCE :
          case PropertyType.STRING :
             return ValueDataConvertor.readString(value);
-            // TODO: JSR 283 now node types
          default :
             return null;
       }

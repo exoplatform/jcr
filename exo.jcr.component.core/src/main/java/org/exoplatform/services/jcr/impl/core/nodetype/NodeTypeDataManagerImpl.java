@@ -874,15 +874,14 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       final Set<String> nodes = this.indexSearcherHolder.getNodesByNodeType(nodeTypeName);
       if (nodes.size() > 0)
       {
-         String message =
-            "Can not remove " + nodeTypeName.getAsString()
-               + " nodetype, because the following node types is used in nodes with uuid: ";
+         StringBuilder message =
+            new StringBuilder("Can not remove ").append(nodeTypeName.getAsString()).append(
+               " nodetype, because the following node types is used in nodes with uuid: ");
          for (final String uuids : nodes)
          {
-            message += uuids + " ";
+            message.append(uuids).append(" ");
          }
-         throw new RepositoryException(message);
-
+         throw new RepositoryException(message.toString());
       }
       this.nodeTypeRepository.unregisterNodeType(nodeType);
    }

@@ -26,19 +26,12 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.ws.frameworks.json.JsonHandler;
-import org.exoplatform.ws.frameworks.json.JsonParser;
-import org.exoplatform.ws.frameworks.json.impl.BeanBuilder;
-import org.exoplatform.ws.frameworks.json.impl.JsonDefaultHandler;
-import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
-import org.exoplatform.ws.frameworks.json.value.JsonValue;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -423,28 +416,6 @@ public class RepositoryBackupChainLog
          
 
          return conf.getRepositoryConfiguration(getBackupConfig().getRepository());
-      }
-
-      /**
-       * Will be created the Object from JSON binary data.
-       * 
-       * @param cl
-       *          Class
-       * @param data
-       *          binary data (JSON)
-       * @return Object
-       * @throws Exception
-       *           will be generated Exception
-       */
-      private Object getObject(Class cl, byte[] data) throws Exception
-      {
-         JsonHandler jsonHandler = new JsonDefaultHandler();
-         JsonParser jsonParser = new JsonParserImpl();
-         InputStream inputStream = new ByteArrayInputStream(data);
-         jsonParser.parse(inputStream, jsonHandler);
-         JsonValue jsonValue = jsonHandler.getJsonObject();
-
-         return new BeanBuilder().createObject(cl, jsonValue);
       }
 
       private List<String> readWorkspaceBackupInfo() throws XMLStreamException, IOException

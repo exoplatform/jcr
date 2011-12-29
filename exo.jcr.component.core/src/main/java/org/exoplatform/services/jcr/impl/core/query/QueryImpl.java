@@ -65,7 +65,6 @@ public class QueryImpl extends AbstractQueryImpl
     * A string constant representing the JCR-SQL2 query language.
     *
     * @since JCR 2.0
-    * TODO: REMOVE WHEN JSR 283 IS FINAL!!
     */
    public static final String JCR_SQL2 = "JCR-SQL2";
 
@@ -73,7 +72,6 @@ public class QueryImpl extends AbstractQueryImpl
     * A string constant representing the JCR-JQOM query language.
     *
     * @since JCR 2.0
-    * TODO: REMOVE WHEN JSR 283 IS FINAL!!
     */
    public static final String JCR_JQOM = "JCR-JQOM";
 

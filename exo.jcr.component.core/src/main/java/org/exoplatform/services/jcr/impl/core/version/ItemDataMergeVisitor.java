@@ -88,7 +88,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
 
       private final QPath path;
 
-      private VersionableState(QPath path, int result) //NOSONAR
+      private VersionableState(QPath path, int result) // NOSONAR
       {
          this.path = path;
          this.result = result;
@@ -156,7 +156,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       }
    }
 
-   private class VersionableStateComparator implements Comparator<VersionableState> //NOSONAR
+   private class VersionableStateComparator implements Comparator<VersionableState> // NOSONAR
    {
       public int compare(VersionableState nc1, VersionableState nc2)
       {

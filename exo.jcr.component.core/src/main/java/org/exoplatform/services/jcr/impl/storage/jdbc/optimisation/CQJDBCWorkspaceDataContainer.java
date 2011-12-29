@@ -151,8 +151,8 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          if (dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
          {
             LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only"
-                  + " if you don't expect any support and performances in read accesses are more important than the consistency"
-                  + " in your use-case. This dialect is only dedicated to the community.");
+               + " if you don't expect any support and performances in read accesses are more important than the consistency"
+               + " in your use-case. This dialect is only dedicated to the community.");
          }
          if (dbSourceName != null)
          {

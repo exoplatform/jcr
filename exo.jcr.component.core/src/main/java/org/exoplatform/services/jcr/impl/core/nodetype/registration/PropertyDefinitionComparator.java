@@ -548,14 +548,14 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
                getNodes(nodesData, new InternalQName[]{removePropertyDefinitionData.getName()}, new InternalQName[]{});
             if (nodes.size() > 0)
             {
-               String message =
-                  "Can not remove " + removePropertyDefinitionData.getName().getAsString()
-                     + " PropertyDefinitionData, because the following nodes have these properties: ";
+               StringBuilder message =
+                  new StringBuilder("Can not remove ").append(removePropertyDefinitionData.getName().getAsString())
+                     .append(" PropertyDefinitionData, because the following nodes have these properties: ");
                for (NodeData nodeData : nodes)
                {
-                  message += nodeData.getQPath().getAsString() + " ";
+                  message.append(nodeData.getQPath().getAsString()).append(" ");
                }
-               throw new ConstraintViolationException(message);
+               throw new ConstraintViolationException(message.toString());
 
             }
          }
