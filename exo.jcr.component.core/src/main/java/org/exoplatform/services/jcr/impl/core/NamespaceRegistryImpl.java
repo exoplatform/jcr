@@ -27,7 +27,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -171,7 +170,6 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
     * @param nodeType
     * @return
     * @throws RepositoryException
-    * @throws IOException
     */
    @Deprecated
    public Set<String> getNodes(String uri) throws RepositoryException

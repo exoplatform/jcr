@@ -22,14 +22,10 @@ import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
-import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.version.OnParentVersionAction;
@@ -57,10 +53,7 @@ public class NodeDefinitionAccessProvider extends AbstractItemDefinitionAccessPr
     * @return
     * @throws RepositoryException 
     * @throws NodeTypeReadException 
-    * @throws IOException
-    * @throws IllegalNameException
     * @throws RepositoryException
-    * @throws UnsupportedEncodingException
     */
    public NodeDefinitionData read(NodeData childDefinition, InternalQName declaringNodeType)
       throws NodeTypeReadException, RepositoryException

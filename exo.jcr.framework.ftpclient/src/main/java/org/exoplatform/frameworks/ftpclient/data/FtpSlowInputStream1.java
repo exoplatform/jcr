@@ -18,7 +18,6 @@
  */
 package org.exoplatform.frameworks.ftpclient.data;
 
-import org.exoplatform.frameworks.ftpclient.FtpConst;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 

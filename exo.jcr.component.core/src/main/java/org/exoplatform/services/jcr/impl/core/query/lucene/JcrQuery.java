@@ -18,7 +18,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import java.io.IOException;
 
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Query; //NOSONAR
 import org.apache.lucene.search.Sort;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 

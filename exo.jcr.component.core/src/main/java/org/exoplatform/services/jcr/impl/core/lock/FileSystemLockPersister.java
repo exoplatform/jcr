@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.LockPersisterEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;

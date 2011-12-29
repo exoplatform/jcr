@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -350,7 +349,7 @@ public class QPath implements Comparable<QPath>
     * @param qPath
     *          - String to be parsed
     * @return QPath
-    * @throws RepositoryException
+    * @throws IllegalPathException
     *           - if string is invalid
     */
    public static QPath parse(String qPath) throws IllegalPathException

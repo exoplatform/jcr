@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import java.util.Calendar;
 import java.util.List;
 
 /**

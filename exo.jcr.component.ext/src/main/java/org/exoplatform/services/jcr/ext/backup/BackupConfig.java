@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import java.io.File;
-
 /**
  * Created by The eXo Platform SARL .<br/>
  * 

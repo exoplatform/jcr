@@ -16,20 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.xpath;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.RepositoryException;
-import javax.jcr.query.InvalidQueryException;
-
 import org.apache.commons.collections.map.ReferenceMap;
-
 import org.exoplatform.commons.utils.ISO8601;
-import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -51,6 +39,16 @@ import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
+
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.RepositoryException;
+import javax.jcr.query.InvalidQueryException;
 
 
 /**

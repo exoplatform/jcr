@@ -19,9 +19,6 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeReadException;
-
-import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
@@ -31,59 +28,17 @@ import javax.jcr.RepositoryException;
 public interface NodeTypeData
 {
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
-   public NodeDefinitionData[] getDeclaredChildNodeDefinitions();;
+   public NodeDefinitionData[] getDeclaredChildNodeDefinitions();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public PropertyDefinitionData[] getDeclaredPropertyDefinitions();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public InternalQName[] getDeclaredSupertypeNames();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public InternalQName getPrimaryItemName();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public InternalQName getName();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public boolean hasOrderableChildNodes();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public boolean isMixin();
 }

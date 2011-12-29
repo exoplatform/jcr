@@ -40,7 +40,6 @@ import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.PrivilegedAction;
@@ -122,7 +121,6 @@ public class RegistryService extends Registry implements Startable
     * @param repositoryService
     * @throws RepositoryConfigurationException
     * @throws RepositoryException
-    * @throws FileNotFoundException
     */
    public RegistryService(InitParams params, RepositoryService repositoryService)
       throws RepositoryConfigurationException
