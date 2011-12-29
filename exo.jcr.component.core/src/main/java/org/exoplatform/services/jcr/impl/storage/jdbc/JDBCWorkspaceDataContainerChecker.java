@@ -182,8 +182,8 @@ public class JDBCWorkspaceDataContainerChecker
                   + jdbcDataContainer.containerName
                   + "'  AND ((STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null))";
       }
-      queries
-         .add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID}, "Incorrect JCR_VALUE records", InspectionStatus.ERR));
+      queries.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID}, "Incorrect JCR_VALUE records",
+         InspectionStatus.ERR));
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM P where P.P_TYPE=9 and NOT EXISTS "
             + "(select * from JCR_MREF R where P.ID=R.PROPERTY_ID)"

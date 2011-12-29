@@ -588,7 +588,8 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       {
          removeValuesStatement =
             dbConnection
-               .prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND "
+               .prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID "
+                  + "IN (SELECT ID FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND "
                   + "(NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
          removeValuesStatement.setString(1, containerName);
 

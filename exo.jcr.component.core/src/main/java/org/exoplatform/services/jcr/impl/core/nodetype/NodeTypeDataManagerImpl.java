@@ -862,7 +862,9 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       final Set<InternalQName> descendantNt = this.nodeTypeRepository.getSubtypes(nodeTypeName);
       if (descendantNt.size() > 0)
       {
-         StringBuilder message = new StringBuilder("Can not remove ").append(nodeTypeName.getAsString()).append("nodetype, because the following node types depend on it: ");
+         StringBuilder message =
+            new StringBuilder("Can not remove ").append(nodeTypeName.getAsString()).append(
+               "nodetype, because the following node types depend on it: ");
          for (final InternalQName internalQName : descendantNt)
          {
             message.append(internalQName.getAsString()).append(" ");

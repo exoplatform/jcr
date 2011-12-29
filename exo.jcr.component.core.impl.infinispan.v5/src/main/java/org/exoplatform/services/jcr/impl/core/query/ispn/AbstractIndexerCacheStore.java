@@ -148,7 +148,8 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
                {  
                   public void run()
                   {
-                     cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING, Flag.FORCE_ASYNCHRONOUS, Flag.SKIP_REMOTE_LOOKUP).removeAsync(key);
+                     cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING, Flag.FORCE_ASYNCHRONOUS,
+                        Flag.SKIP_REMOTE_LOOKUP).removeAsync(key);
                   }
                });
             }
