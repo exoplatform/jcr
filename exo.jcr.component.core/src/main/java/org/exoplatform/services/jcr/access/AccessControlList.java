@@ -223,19 +223,19 @@ public class AccessControlList implements Externalizable
 
    public String dump()
    {
-      String res = "OWNER: " + (owner != null ? owner : "null") + "\n";
+      StringBuilder res = new StringBuilder("OWNER: ").append(owner != null ? owner : "null").append("\n");
       if (accessList != null)
       {
          for (AccessControlEntry a : accessList)
          {
-            res += a.getAsString() + "\n";
+            res.append(a.getAsString()).append("\n");
          }
       }
       else
       {
-         res += "null";
+         res.append("null");
       }
-      return res;
+      return res.toString();
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException

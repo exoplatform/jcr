@@ -270,12 +270,12 @@ public class QPath implements Comparable<QPath>
       if (stringName == null)
       {
 
-         String str = "";
+         StringBuilder str = new StringBuilder();
          for (int i = 0; i < getLength(); i++)
          {
-            str += names[i].getAsString(true);
+            str.append(names[i].getAsString(true));
          }
-         stringName = str;
+         stringName = str.toString();
       }
 
       return stringName;

@@ -155,15 +155,16 @@ public abstract class BaseXmlImporter implements ContentImporter
 
       if (log.isDebugEnabled())
       {
-         String str = "";
+         StringBuilder str = new StringBuilder();
          for (int i = 0; i < changesLog.getAllStates().size(); i++)
-            str +=
-               " " + ItemState.nameFromValue(changesLog.getAllStates().get(i).getState()) + "\t\t"
-                  + changesLog.getAllStates().get(i).getData().getIdentifier() + "\t" + "isPersisted="
-                  + changesLog.getAllStates().get(i).isPersisted() + "\t" + "isEventFire="
-                  + changesLog.getAllStates().get(i).isEventFire() + "\t" + "isInternallyCreated="
-                  + changesLog.getAllStates().get(i).isInternallyCreated() + "\t"
-                  + changesLog.getAllStates().get(i).getData().getQPath().getAsString() + "\n";
+         {
+            str.append(" ").append(ItemState.nameFromValue(changesLog.getAllStates().get(i).getState())).append("\t\t");
+            str.append(changesLog.getAllStates().get(i).getData().getIdentifier()).append("\t").append("isPersisted=");
+            str.append(changesLog.getAllStates().get(i).isPersisted()).append("\t").append("isEventFire=");
+            str.append(changesLog.getAllStates().get(i).isEventFire()).append("\t").append("isInternallyCreated=");
+            str.append(changesLog.getAllStates().get(i).isInternallyCreated()).append("\t");
+            str.append(changesLog.getAllStates().get(i).getData().getQPath().getAsString()).append("\n");
+         }
          log.debug(str);
       }
       if (isNeedReloadAncestorToSave)

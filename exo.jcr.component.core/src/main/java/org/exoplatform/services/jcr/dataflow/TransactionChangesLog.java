@@ -173,12 +173,12 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
 
    public String dump()
    {
-      String str = "ChangesLog: size" + changesLogs.size() + "\n ";
+      StringBuilder str = new StringBuilder("ChangesLog: size").append(changesLogs.size()).append("\n ");
       for (PlainChangesLog cLog : changesLogs)
       {
-         str += cLog.dump() + "\n";
+         str.append(cLog.dump()).append("\n");
       }
-      return str;
+      return str.toString();
    }
 
    // Need for Externalizable

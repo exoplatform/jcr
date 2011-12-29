@@ -334,16 +334,16 @@ public class DBRestore implements DataRestore
          }
 
          // construct statement
-         String names = "";
-         String parameters = "";
+         StringBuilder names = new StringBuilder();
+         StringBuilder parameters = new StringBuilder();
          for (int i = 0; i < targetColumnCount; i++)
          {
             if (restoreRule.getSkipColumnIndex() != null && restoreRule.getSkipColumnIndex() == i)
             {
                continue;
             }
-            names += columnName.get(i) + (i == targetColumnCount - 1 ? "" : ",");
-            parameters += "?" + (i == targetColumnCount - 1 ? "" : ",");
+            names.append(columnName.get(i)).append(i == targetColumnCount - 1 ? "" : ",");
+            parameters.append("?").append(i == targetColumnCount - 1 ? "" : ",");
          }
 
          int batchSize = 0;

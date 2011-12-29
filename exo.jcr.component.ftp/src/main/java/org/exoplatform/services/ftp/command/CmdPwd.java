@@ -41,17 +41,17 @@ public class CmdPwd extends FtpCommandImpl
    {
       ArrayList<String> curPath = clientSession().getPath();
 
-      String path = "/";
+      StringBuilder path = new StringBuilder("/");
       for (int i = 0; i < curPath.size(); i++)
       {
-         path += curPath.get(i);
+         path.append(curPath.get(i));
          if (i != (curPath.size() - 1))
          {
-            path += "/";
+            path.append("/");
          }
       }
 
-      reply(String.format(FtpConst.Replyes.REPLY_257, path));
+      reply(String.format(FtpConst.Replyes.REPLY_257, path.toString()));
    }
 
 }

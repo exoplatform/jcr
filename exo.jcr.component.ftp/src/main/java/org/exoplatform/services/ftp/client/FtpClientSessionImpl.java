@@ -315,16 +315,16 @@ public class FtpClientSessionImpl implements FtpClientSession
 
    public String getRepoPath(ArrayList<String> repoPath)
    {
-      String curPath = "/";
+      StringBuilder curPath = new StringBuilder("/");
       for (int i = 1; i < repoPath.size(); i++)
       {
-         curPath += repoPath.get(i);
+         curPath.append(repoPath.get(i));
          if (i < (repoPath.size() - 1))
          {
-            curPath += "/";
+            curPath.append("/");
          }
       }
-      return curPath;
+      return curPath.toString();
    }
 
    public Session getSession(String workspaceName) throws Exception

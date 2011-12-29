@@ -532,13 +532,13 @@ public class ReplicationService implements Startable, ManagementAware
       Element root = doc.createElement(SERVICE_NAME);
       doc.appendChild(root);
 
-      String reps = "";
+      StringBuilder reps = new StringBuilder();
       for (String rep : repoNamesList)
       {
-         reps += rep + ";";
+         reps.append(rep).append(";");
       }
       Element element = doc.createElement("repositories");
-      setAttributeSmart(element, "repositories", reps);
+      setAttributeSmart(element, "repositories", reps.toString());
       root.appendChild(element);
 
       element = doc.createElement("replication-properties");

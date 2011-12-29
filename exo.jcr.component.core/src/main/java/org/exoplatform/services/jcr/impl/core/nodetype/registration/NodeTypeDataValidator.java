@@ -166,19 +166,19 @@ public class NodeTypeDataValidator
       }
       if (unresolvedDependecies.size() > 0)
       {
-         String msg = "Fail. Unresolved cyclic dependecy for :";
+         StringBuilder msg = new StringBuilder("Fail. Unresolved cyclic dependecy for :");
          for (InternalQName internalQName : resolvedDependecies)
          {
-            msg += " " + internalQName.getAsString();
+            msg.append(" ").append(internalQName.getAsString());
          }
 
-         msg += " Unresolved ";
+         msg.append(" Unresolved ");
          for (InternalQName internalQName : unresolvedDependecies)
          {
-            msg += " " + internalQName.getAsString();
+            msg.append(" ").append(internalQName.getAsString());
          }
 
-         throw new RepositoryException(msg);
+         throw new RepositoryException(msg.toString());
       }
    }
 

@@ -49,15 +49,13 @@ public class CmdPasv extends FtpCommandImpl
       }
       clientSession().setDataTransiver(transiver);
 
-      String serverLocation = clientSession().getServerIp();
-      serverLocation = serverLocation.replace('.', ',');
-
+      StringBuilder serverLocation = new StringBuilder(clientSession().getServerIp().replace('.', ','));
       int dataPort = transiver.getDataPort();
       int high = dataPort / 256;
       int low = dataPort % 256;
 
-      serverLocation += String.format(",%s,%s", high, low);
-      reply(String.format(FtpConst.Replyes.REPLY_227, serverLocation));
+      serverLocation.append(String.format(",%s,%s", high, low));
+      reply(String.format(FtpConst.Replyes.REPLY_227, serverLocation.toString()));
    }
 
 }

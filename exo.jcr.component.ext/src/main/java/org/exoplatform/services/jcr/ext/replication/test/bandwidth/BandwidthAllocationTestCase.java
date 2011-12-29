@@ -159,13 +159,13 @@ public class BandwidthAllocationTestCase extends BaseReplicationTestCase
       try
       {
          // create random value
-         String sValue = "";
+         StringBuilder value = new StringBuilder();
          for (int i = 0; i < size; i++)
          {
             int sIndex = (int)(Math.random() * RANDOM_VALUE) % ALPHABET.length();
-            sValue += ALPHABET.substring(sIndex, sIndex + 1);
+            value.append(ALPHABET.substring(sIndex, sIndex + 1));
          }
-
+         String sValue = value.toString();
          for (int i = 0; i < iterations; i++)
          {
             String normalizePath = getNormalizePath(repoPath);

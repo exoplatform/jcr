@@ -133,7 +133,7 @@ public class LockCommand
 
          LockRequestEntity requestEntity = new LockRequestEntity(body);
 
-         lockToken = WebDavConst.Lock.OPAQUE_LOCK_TOKEN + ":" + lockToken;
+         lockToken = WebDavConst.Lock.OPAQUE_LOCK_TOKEN + ":" + lockToken; //NOSONAR
 
          if (bodyIsEmpty)
          {

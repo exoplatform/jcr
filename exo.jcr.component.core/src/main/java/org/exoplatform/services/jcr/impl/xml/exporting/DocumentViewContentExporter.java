@@ -114,7 +114,7 @@ public class DocumentViewContentExporter extends HandlingContentExporter
                      continue;
                   }
 
-                  strValue +=
+                  strValue += //NOSONAR
                      MULTI_VALUE_DELIMITER
                         + (property.getType() == PropertyType.BINARY ? strVal : StringConverter.normalizeString(strVal,
                            true));

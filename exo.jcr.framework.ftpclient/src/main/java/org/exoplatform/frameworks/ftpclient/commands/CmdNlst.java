@@ -87,13 +87,13 @@ public class CmdNlst extends FtpCommandImpl
             byte[] data = dataTransiver.receive();
             dataTransiver.close();
 
-            String dd = "";
+            StringBuilder dd = new StringBuilder();
             for (int i = 0; i < data.length; i++)
             {
-               dd += (char)data[i];
+               dd.append((char)data[i]);
             }
 
-            String[] lines = dd.split("\r\n");
+            String[] lines = dd.toString().split("\r\n");
             for (int i = 0; i < lines.length; i++)
             {
                names.add(lines[i]);

@@ -157,7 +157,7 @@ public class LinkGenerator
       writeBytes(rootItem, outStream);
 
       pathes = targetPath.split("/");
-      String curHref = servletPath;
+      StringBuilder curHref = new StringBuilder(servletPath);
 
       for (int i = 0; i < pathes.length; i++)
       {
@@ -166,17 +166,17 @@ public class LinkGenerator
             continue;
          }
          String curName = pathes[i];
-         curHref += "/" + curName;
+         curHref.append("/").append(curName);
 
          if (i < pathes.length - 1)
          {
-            byte[] linkItem = getHreffedFolder(curName, curHref);
+            byte[] linkItem = getHreffedFolder(curName, curHref.toString());
             writeInt(linkItem.length + 2, outStream);
             writeBytes(linkItem, outStream);
          }
          else
          {
-            byte[] linkFile = getHreffedFile(curName, curHref);
+            byte[] linkFile = getHreffedFile(curName, curHref.toString());
             writeInt(linkFile.length + 2, outStream);
             writeBytes(linkFile, outStream);
          }

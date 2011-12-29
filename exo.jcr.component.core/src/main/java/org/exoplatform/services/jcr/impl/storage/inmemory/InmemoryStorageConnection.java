@@ -274,14 +274,14 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
 
    public String dump()
    {
-      String str = "Inmemory WorkspaceContainer Data: \n";
+      StringBuilder str = new StringBuilder("Inmemory WorkspaceContainer Data: \n");
       Iterator i = items.keySet().iterator();
       while (i.hasNext())
       {
          MapKey d = (MapKey)i.next();
-         str += d.getQPath().getAsString() + '\t' + d.getItemType().toString() + "\n";
+         str.append(d.getQPath().getAsString()).append('\t').append(d.getItemType().toString()).append("\n");
       }
-      return str;
+      return str.toString();
    }
 
    public void rename(NodeData destData) throws RepositoryException, UnsupportedOperationException,

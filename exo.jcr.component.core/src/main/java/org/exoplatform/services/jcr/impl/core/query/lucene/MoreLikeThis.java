@@ -613,9 +613,10 @@ public final class MoreLikeThis {
             // go through all the fields and find the largest document frequency
             String topField = fieldNames[0];
             int docFreq = 0;
-            for (int i = 0; i < fieldNames.length; i++) {
+            for (int i = 0; i < fieldNames.length; i++) 
+            {
                 int freq = ir.docFreq(new Term(fieldNames[i], word));
-                topField = (freq > docFreq) ? fieldNames[i] : topField;
+                topField = (freq > docFreq) ? fieldNames[i] : topField; //NOSONAR
                 docFreq = (freq > docFreq) ? freq : docFreq;
             }
 

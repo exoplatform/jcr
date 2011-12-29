@@ -124,12 +124,12 @@ public class OraclePoolConnectionFactory extends GenericCQConnectionFactory
       catch (Throwable e)
       {
          cpool = null;
-         String err = "Oracle OCI connection pool is unavailable due to error " + e;
+         StringBuilder err = new StringBuilder("Oracle OCI connection pool is unavailable due to error ").append(e);
          if (e.getCause() != null)
          {
-            err += " (" + e.getCause() + ")";
+            err.append(" (").append(e.getCause()).append(")");
          }
-         err += ". Standard JDBC DriverManager will be used for connections opening.";
+         err.append(". Standard JDBC DriverManager will be used for connections opening.");
          if (log.isDebugEnabled())
             log.warn(err, e);
          else

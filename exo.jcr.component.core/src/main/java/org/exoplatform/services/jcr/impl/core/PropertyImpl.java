@@ -576,20 +576,20 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public String dump()
    {
-      String vals = "Property ";
+      StringBuilder vals = new StringBuilder("Property ");
       try
       {
-         vals = getPath() + " values: ";
+         vals = new StringBuilder(getPath()).append(" values: ");
          for (int i = 0; i < getValueArray().length; i++)
          {
-            vals += new String(((BaseValue)getValueArray()[i]).getInternalData().getAsByteArray()) + ";";
+            vals.append(new String(((BaseValue)getValueArray()[i]).getInternalData().getAsByteArray())).append(";");
          }
       }
       catch (Exception e)
       {
          LOG.error(e.getLocalizedMessage(), e);
       }
-      return vals;
+      return vals.toString();
    }
 
    // ----------------------- Object -----------------------

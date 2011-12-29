@@ -227,11 +227,11 @@ public abstract class BaseXmlExporter extends ItemDataTraversingVisitor
          nodeName = prefix.length() == 0 ? "" : prefix + ":";
          if ("".equals(itemPath.getName().getName()) && itemPath.isDescendantOf(Constants.EXO_NAMESPACES_PATH))
          {
-            nodeName += DEFAULT_EMPTY_NAMESPACE_PREFIX;
+            nodeName += DEFAULT_EMPTY_NAMESPACE_PREFIX; //NOSONAR
          }
          else
          {
-            nodeName += internalNodeName.getName();
+            nodeName += internalNodeName.getName(); //NOSONAR
          }
 
       }

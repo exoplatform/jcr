@@ -18,7 +18,6 @@
  */
 package org.exoplatform.frameworks.ftpclient.commands;
 
-import org.exoplatform.frameworks.ftpclient.FtpConst;
 import org.exoplatform.frameworks.ftpclient.FtpUtils;
 import org.exoplatform.frameworks.ftpclient.client.FtpClientSession;
 import org.exoplatform.services.log.ExoLogger;
@@ -100,7 +99,7 @@ public abstract class FtpCommandImpl implements FtpCommand
    public int getReply() throws Exception
    {
       log.info("try get reply..........");
-      String reply = "";
+      StringBuilder reply = new StringBuilder(); 
       String curReply = "";
 
       while (true)
@@ -109,24 +108,24 @@ public abstract class FtpCommandImpl implements FtpCommand
 
          if ("".equals(curReply))
          {
-            reply += "\r\n";
+            reply.append("\r\n");
          }
          else
          {
-            reply += curReply;
+            reply.append(curReply);
             if (isReplyString(curReply))
             {
                break;
             }
             else
             {
-               reply += "\r\n";
+               reply.append("\r\n");
             }
          }
 
       }
 
-      descript = reply;
+      descript = reply.toString();
 
       replyCode = FtpUtils.getReplyCode(curReply);
       log.info("<<< " + descript);
@@ -163,12 +162,12 @@ public abstract class FtpCommandImpl implements FtpCommand
 
          if (prevByte == '\r' && received == '\n')
          {
-            String resultLine = "";
+            StringBuilder resultLine = new StringBuilder();
             for (int i = 0; i < bufPos - 2; i++)
             {
-               resultLine += (char)buffer[i];
+               resultLine.append((char)buffer[i]);
             }
-            return resultLine;
+            return resultLine.toString();
          }
 
          prevByte = (byte)received;

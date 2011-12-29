@@ -213,17 +213,18 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
 
    public String dump()
    {
-      String str = "ChangesLog: \n";
+      StringBuilder str = new StringBuilder("ChangesLog: \n");
       for (int i = 0; i < items.size(); i++)
       {
-         str +=
-            " " + ItemState.nameFromValue(items.get(i).getState()) + "\t" + items.get(i).getData().getIdentifier()
-               + "\t" + "isPersisted=" + items.get(i).isPersisted() + "\t" + "isEventFire="
-               + items.get(i).isEventFire() + "\t" + "isInternallyCreated=" + items.get(i).isInternallyCreated() + "\t"
-               + items.get(i).getData().getQPath().getAsString() + "\n";
+         str.append(" ").append(ItemState.nameFromValue(items.get(i).getState())).append("\t")
+            .append(items.get(i).getData().getIdentifier());
+         str.append("\t").append("isPersisted=").append(items.get(i).isPersisted()).append("\t").append("isEventFire=");
+         str.append(items.get(i).isEventFire()).append("\t").append("isInternallyCreated=")
+            .append(items.get(i).isInternallyCreated()).append("\t");
+         str.append(items.get(i).getData().getQPath().getAsString()).append("\n");
       }
 
-      return str;
+      return str.toString();
    }
 
    /**

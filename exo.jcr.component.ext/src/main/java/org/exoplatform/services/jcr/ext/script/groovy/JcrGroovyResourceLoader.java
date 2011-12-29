@@ -49,7 +49,7 @@ public class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
             }
             else if (ref.charAt(ref.length() - 1) != '/')
             {
-               ref = ref + "/";
+               ref = ref + "/"; //NOSONAR
             }
             res[i] = new URL(src[i], "#" + ref);
          }

@@ -93,11 +93,11 @@ public class FtpClientCommandThread extends Thread
                         {
                            if ("".equals(comms[i]))
                            {
-                              comms[1] += " ";
+                              comms[1] += " "; //NOSONAR
                            }
                            else
                            {
-                              comms[1] += " " + comms[i];
+                              comms[1] += " " + comms[i]; //NOSONAR
                            }
                         }
 

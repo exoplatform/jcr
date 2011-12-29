@@ -36,30 +36,30 @@ public class FtpTextUtils
    {
       try
       {
-         String datka = "";
+         StringBuilder datka = new StringBuilder();
          for (int i = 0; i < reqLen; i++)
          {
             if (i >= strVal.length())
             {
-               datka += " ";
+               datka.append(" ");
             }
             else
             {
-               datka += strVal.charAt(i);
+               datka.append(strVal.charAt(i));
             }
          }
-         return datka;
+         return datka.toString();
       }
       catch (Exception exc)
       {
          log.info("Unhandled exception. " + exc.getMessage(), exc);
       }
-      String resStr = "";
+      StringBuilder resStr = new StringBuilder(); 
       for (int i = 0; i < reqLen; i++)
       {
-         resStr += " ";
+         resStr.append(" ");
       }
-      return resStr;
+      return resStr.toString();
    }
 
    public static String getStrachedAtStart(String strVal, int reqLen)
@@ -67,7 +67,7 @@ public class FtpTextUtils
       String result = strVal;
       while (result.length() < reqLen)
       {
-         result = " " + result;
+         result = " " + result; //NOSONAR
       }
       return result;
    }

@@ -189,16 +189,17 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          getNodes(nodesData, new InternalQName[]{}, new InternalQName[]{recipientDefinitionData.getName()});
       if (mandatoryNodes.size() > 0)
       {
-         String message =
-            "Can not change " + recipientDefinitionData.getName().getAsString()
-               + " property definition from mandatory=false to mandatory = true , because " + " the following nodes ";
+         StringBuilder message =
+            new StringBuilder("Can not change ").append(recipientDefinitionData.getName().getAsString()).append(
+               " property definition from mandatory=false to mandatory = true , because ").append(" the following nodes ");
+
          for (NodeData nodeData : mandatoryNodes)
          {
-            message += nodeData.getQPath().getAsString() + " ";
+            message.append(nodeData.getQPath().getAsString()).append(" ");
          }
-         message += "  doesn't have these properties ";
+         message.append("  doesn't have these properties ");
 
-         throw new ConstraintViolationException(message);
+         throw new ConstraintViolationException(message.toString());
       }
    }
 

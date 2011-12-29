@@ -35,23 +35,23 @@ public class GetPropertiesCommand extends AbstractCliCommand
    @Override
    public boolean perform(CliAppContext ctx)
    {
-      String output = "";
+      StringBuilder output;
       try
       {
          Node currentNode = (Node)ctx.getCurrentItem();
          PropertyIterator propertyIterator = currentNode.getProperties();
-         output = "Properties:\n";
+         output = new StringBuilder("Properties:\n");
          while (propertyIterator.hasNext())
          {
             Property property = propertyIterator.nextProperty();
-            output += property.getName() + "\n";
+            output.append(property.getName()).append("\n");
          }
       }
       catch (Exception e)
       {
-         output = "Can't execute command - " + e.getMessage() + "\n";
+         output = new StringBuilder("Can't execute command - ").append(e.getMessage()).append("\n");
       }
-      ctx.setOutput(output);
+      ctx.setOutput(output.toString());
       return false;
    }
 }

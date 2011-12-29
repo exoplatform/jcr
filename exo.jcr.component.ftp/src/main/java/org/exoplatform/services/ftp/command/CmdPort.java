@@ -50,7 +50,7 @@ public class CmdPort extends FtpCommandImpl
          return;
       }
 
-      String host = "";
+      StringBuilder host = new StringBuilder();
       int port = 0;
 
       try
@@ -58,9 +58,9 @@ public class CmdPort extends FtpCommandImpl
          String[] ports = params[1].split(",");
          for (int i = 0; i < 3; i++)
          {
-            host += ports[i] + ".";
+            host.append(ports[i]).append(".");
          }
-         host += ports[3];
+         host.append(ports[3]);
          port = new Integer(ports[4]) * 256 + new Integer(ports[5]);
       }
       catch (Exception exc)
@@ -72,7 +72,8 @@ public class CmdPort extends FtpCommandImpl
       try
       {
          FtpDataTransiver dataTransiver =
-            new FtpDataTransiverImpl(host, port, clientSession().getFtpServer().getConfiguration(), clientSession());
+            new FtpDataTransiverImpl(host.toString(), port, clientSession().getFtpServer().getConfiguration(),
+               clientSession());
 
          clientSession().setDataTransiver(dataTransiver);
          reply(String.format(FtpConst.Replyes.REPLY_200, "Port command success"));

@@ -207,18 +207,18 @@ public class FileNameProducer
       String sDate = getStrDate(date);
       String sTime = getStrTime(date);
 
-      String fileName = backupSetName + "-" + sDate + "_" + sTime + ".";
+      StringBuilder fileName = new StringBuilder(backupSetName).append("-").append(sDate).append("_").append(sTime).append("."); 
 
       if (isFullBackup)
       {
-         fileName += "0";
+         fileName.append("0");
       }
       else
       {
-         fileName += getNextSufix();
+         fileName.append(getNextSufix());
       }
 
-      return fileName;
+      return fileName.toString();
    }
 
    private String getNextSufix()
