@@ -369,14 +369,16 @@ public class FCKeditor
    private String createIFrameHTML()
    {
 
-      String sLink = basePath + "editor/fckeditor.html?InstanceName=" + instanceName;
+      StringBuilder sLink =
+         new StringBuilder(basePath).append("editor/fckeditor.html?InstanceName=").append(instanceName);
 
       if (!toolbarSet.equals(""))
-         sLink += "&Toolbar=" + toolbarSet;
+      {
+         sLink.append("&Toolbar=").append(toolbarSet);
+      }
 
-      return "<iframe id=\"" + instanceName + "___Frame\" src=\"" + sLink + "\" width=\"" + width + "\" height=\""
-         + height + "\" frameborder=\"no\" scrolling=\"no\"></iframe>";
-
+      return "<iframe id=\"" + instanceName + "___Frame\" src=\"" + sLink.toString() + "\" width=\"" + width
+         + "\" height=\"" + height + "\" frameborder=\"no\" scrolling=\"no\"></iframe>";
    }
 
    /**

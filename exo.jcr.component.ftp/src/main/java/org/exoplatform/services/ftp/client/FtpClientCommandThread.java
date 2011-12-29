@@ -78,12 +78,9 @@ public class FtpClientCommandThread extends Thread
 
                if (!"".equals(command))
                {
-                  String logStr = "";
                   String[] comms = command.split(" ");
 
                   FtpCommand curCommand = clientSession.getFtpServer().getCommand(comms[0].toUpperCase());
-
-                  logStr = comms[0].toUpperCase();
 
                   if (curCommand != null)
                   {
@@ -100,8 +97,6 @@ public class FtpClientCommandThread extends Thread
                               comms[1] += " " + comms[i]; //NOSONAR
                            }
                         }
-
-                        logStr += " " + comms[1];
                      }
 
                      FtpContext ftpContext = new FtpContext(clientSession, comms);
