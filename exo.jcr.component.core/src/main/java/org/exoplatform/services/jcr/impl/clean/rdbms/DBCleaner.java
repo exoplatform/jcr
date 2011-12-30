@@ -196,15 +196,7 @@ public class DBCleaner
                   LOG.debug("Execute script: \n[" + sql + "]");
                }
 
-               if ((sql.startsWith("ALTER INDEX") || sql.startsWith("DROP INDEX"))
-                  && (sql.contains("JCR_IDX_SITEM_N_ORDER_NUM") || sql.contains("JCR_IDX_MITEM_N_ORDER_NUM")))
-               {
-                  executeQueryAndCatchException(st, sql);
-               }
-               else
-               {
-                  executeQuery(st, sql);
-               }
+               executeQuery(st, sql);
             }
          }
       }
@@ -237,20 +229,5 @@ public class DBCleaner
             return null;
          }
       });
-   }
-
-   protected void executeQueryAndCatchException(final Statement statement, final String sql)
-   {
-      try
-      {
-         executeQuery(statement, sql);
-      }
-      catch (SQLException e)
-      {
-         if (LOG.isDebugEnabled())
-         {
-            LOG.debug("Can not execute query : '" + sql + "'.", e);
-         }
-      }
    }
 }
