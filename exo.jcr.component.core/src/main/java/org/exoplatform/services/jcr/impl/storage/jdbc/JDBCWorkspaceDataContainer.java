@@ -57,7 +57,6 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
-import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -463,12 +462,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       this.swapCleaner = fileCleanerHolder.getFileCleaner();
 
       initDatabase();
-
-      // enableStorageUpdate left unchanged since it is never used in StorageUpdateManager.checkVersion
-      boolean enableStorageUpdate = false;
-      this.storageVersion =
-         StorageUpdateManager.checkVersion(dbSourceName, this.connFactory.getJdbcConnection(), multiDb,
-            enableStorageUpdate);
 
       LOG.info(getInfo());
    }

@@ -35,7 +35,6 @@
                      <property name="source-name" value="jdbcjcr2" />
                      <property name="dialect" value="generic" />
                      <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp1/swap/ws" />
                   </properties>
@@ -77,7 +76,6 @@
                      <property name="source-name" value="jdbcjcr1" />
                      <property name="dialect" value="generic" />
                      <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="204800" />
                      <property name="swap-directory" value="target/temp2/swap/ws" />
                   </properties>
@@ -128,7 +126,6 @@
                      <property name="source-name" value="jdbcjcr1" />
                      <property name="dialect" value="generic" />
                      <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="204800" />
                      <property name="swap-directory" value="target/temp1/swap/ws" />
                   </properties>
@@ -170,7 +167,6 @@
                      <property name="source-name" value="jdbcjcr1" />
                      <property name="dialect" value="generic" />
                      <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="204800" />
                      <property name="swap-directory" value="target/temp1/swap/ws" />
                   </properties>

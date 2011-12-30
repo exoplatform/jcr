@@ -301,7 +301,6 @@ public class TesterConfigurationHelper
       params.add(new SimpleParameterEntry("source-name", dsName));
       params.add(new SimpleParameterEntry("db-type", "generic"));
       params.add(new SimpleParameterEntry("multi-db", isMultiDb ? "true" : "false"));
-      params.add(new SimpleParameterEntry("update-storage", "true"));
       params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
 
       if (dbDialect != null)

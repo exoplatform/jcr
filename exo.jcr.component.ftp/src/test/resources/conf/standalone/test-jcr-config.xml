@@ -31,10 +31,7 @@
                   <properties>
                      <property name="sourceName" value="jdbcjcr" />
                      <property name="dialect" value="generic" />
-                     <!-- example of direct jdbc connection usage (without JNDI), see docs for details -->
-
                      <property name="multi-db" value="false" />
-                     <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="204800" />
                      <property name="swap-directory" value="target/temp/swap/ws" />
                   </properties>
@@ -59,15 +56,14 @@
                   </persister>
                </lock-manager>
             </workspace>
+
             <workspace name="ws2" auto-init-root-nodetype="nt:unstructured">
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="sourceName" value="jdbcjcr" />
                      <property name="dialect" value="generic" />
-                     <!-- example of direct jdbc connection usage (without JNDI), see docs for details -->
                      <property name="multi-db" value="false" />
-                     <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="204800" />
                      <property name="swap-directory" value="target/temp/swap/ws2" />
                   </properties>

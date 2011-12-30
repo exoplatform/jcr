@@ -31,7 +31,6 @@
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="multi-db" value="false" />
-                     <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/production" />
                   </properties>
@@ -99,7 +98,6 @@
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="multi-db" value="false" />
-                     <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/backup" />
                   </properties>
@@ -167,7 +165,6 @@
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="multi-db" value="false" />
-                     <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/digital-assets" />
                   </properties>
