@@ -89,7 +89,6 @@
                      &lt;property name=&quot;source-name&quot; value=&quot;jdbcjcr&quot; /&gt;
                      &lt;property name=&quot;dialect&quot; value=&quot;oracle&quot; /&gt;
                      &lt;property name=&quot;multi-db&quot; value=&quot;false&quot; /&gt;
-                     &lt;property name=&quot;update-storage&quot; value=&quot;false&quot; /&gt;
                      &lt;property name=&quot;max-buffer-size&quot; value=&quot;200k&quot; /&gt;
                      &lt;property name=&quot;swap-directory&quot; value=&quot;../temp/swap/production&quot; /&gt;
                   &lt;/properties&gt;

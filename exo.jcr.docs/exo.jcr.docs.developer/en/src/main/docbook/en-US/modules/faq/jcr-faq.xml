@@ -214,7 +214,6 @@
     &lt;property name="source-name" value="jdbcjcr" /&gt;
     &lt;property name="dialect" value="auto" /&gt;
     &lt;property name="multi-db" value="true" /&gt;
-    &lt;property name="update-storage" value="false" /&gt;
     &lt;property name="max-buffer-size" value="200k" /&gt;
     &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
     &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;

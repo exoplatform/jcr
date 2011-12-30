@@ -686,9 +686,6 @@ body:
           { "name" : "multi-db",
             "value" : "false"
           },
-          { "name" : "update-storage",
-            "value" : "false"
-          },
           { "name" : "max-buffer-size",
             "value" : "200k"
           },
@@ -822,9 +819,6 @@ failure message in response  - the description of failure</programlisting>
             "value" : "hsqldb"
           },
           { "name" : "multi-db",
-            "value" : "false"
-          },
-          { "name" : "update-storage",
             "value" : "false"
           },
           { "name" : "max-buffer-size",
@@ -1593,7 +1587,6 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
               &lt;property name="source-name" value="jdbcjcr" /&gt;
               &lt;property name="dialect" value="pgsql" /&gt;
               &lt;property name="multi-db" value="false" /&gt;
-              &lt;property name="update-storage" value="false" /&gt;
               &lt;property name="max-buffer-size" value="200k" /&gt;
               &lt;property name="swap-directory" value="../temp/swap/backup" /&gt;
             &lt;/properties&gt;
@@ -1765,7 +1758,6 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                   &lt;properties&gt;
                      &lt;property name="source-name" value="jdbcjcr" /&gt;
                      &lt;property name="multi-db" value="false" /&gt;
-                     &lt;property name="update-storage" value="false" /&gt;
                      &lt;property name="max-buffer-size" value="200k" /&gt;
                      &lt;property name="swap-directory" value="../temp/swap/production" /&gt;
                   &lt;/properties&gt;
@@ -1811,7 +1803,6 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                   &lt;properties&gt;
                      &lt;property name="source-name" value="jdbcjcr" /&gt;
                      &lt;property name="multi-db" value="false" /&gt;
-                     &lt;property name="update-storage" value="false" /&gt;
                      &lt;property name="max-buffer-size" value="200k" /&gt;
                      &lt;property name="swap-directory" value="../temp/swap/backup" /&gt;
                   &lt;/properties&gt;
@@ -1849,7 +1840,6 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                   &lt;properties&gt;
                      &lt;property name="source-name" value="jdbcjcr" /&gt;
                      &lt;property name="multi-db" value="false" /&gt;
-                     &lt;property name="update-storage" value="false" /&gt;
                      &lt;property name="max-buffer-size" value="200k" /&gt;
                      &lt;property name="swap-directory" value="../temp/swap/digital-assets" /&gt;
                   &lt;/properties&gt;

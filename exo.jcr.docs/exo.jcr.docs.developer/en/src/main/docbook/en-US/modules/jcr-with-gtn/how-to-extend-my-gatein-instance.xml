@@ -1457,7 +1457,6 @@ public class GadgetRegister implements ServletContextListener {
               &lt;property name="source-name" value="jdbcexo${container.name.suffix}" /&gt;
               &lt;property name="dialect" value="hsqldb" /&gt;
               &lt;property name="multi-db" value="false" /&gt;
-              &lt;property name="update-storage" value="true" /&gt;
               &lt;property name="max-buffer-size" value="204800" /&gt;
               &lt;property name="swap-directory" value="../temp/swap/sample-ws${container.name.suffix}" /&gt;
             &lt;/properties&gt;
