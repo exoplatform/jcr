@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.version.VersionException;
@@ -52,8 +53,13 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
       versionable.accept(visitor);
 
       // ask for nt:frozenNode
-      List<ItemState> versionableChanges = versionableLog.getChildrenChanges(versionable.getIdentifier());
-      List<ItemState> testChanges = changesLog.getChildrenChanges(frozenRoot.getIdentifier());
+      List<ItemState> versionableChanges = new ArrayList<ItemState>();
+      versionableChanges.addAll(versionableLog.getChildrenChanges(versionable.getIdentifier(), true));
+      versionableChanges.addAll(versionableLog.getChildrenChanges(versionable.getIdentifier(), false));
+
+      List<ItemState> testChanges = new ArrayList<ItemState>();
+      testChanges.addAll(changesLog.getChildrenChanges(frozenRoot.getIdentifier(), true));
+      testChanges.addAll(changesLog.getChildrenChanges(frozenRoot.getIdentifier(), false));
 
       next : for (ItemState state : versionableChanges)
       {

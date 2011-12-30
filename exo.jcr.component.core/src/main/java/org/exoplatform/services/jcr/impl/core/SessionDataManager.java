@@ -817,11 +817,11 @@ public class SessionDataManager implements ItemDataConsumer
          return nodeChanges.size() > 0;
       }
 
-      List<ItemState> states = changesLog.getItemStates(item.getIdentifier());
-      if (states.size() > 0)
+      ItemState state = changesLog.getLastState(item, false);
+
+      if (state != null)
       {
-         ItemState lastState = states.get(states.size() - 1);
-         if (lastState.isAdded() || lastState.isDeleted())
+         if (state.isAdded() || state.isDeleted())
          {
             return false;
          }

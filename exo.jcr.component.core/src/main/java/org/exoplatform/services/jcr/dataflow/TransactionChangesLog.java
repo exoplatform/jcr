@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -37,7 +37,6 @@ import java.util.List;
  * @author Gennady Azarenkov
  * @version $Id: TransactionChangesLog.java 11907 2008-03-13 15:36:21Z ksm $
  */
-
 public class TransactionChangesLog implements CompositeChangesLog, Externalizable
 {
 
@@ -74,10 +73,8 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       changesLogs.remove(log);
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.dataflow.CompositeChangesLog#getLogIterator()
+   /**
+    * {@inheritDoc}
     */
    public ChangesLogIterator getLogIterator()
    {
@@ -133,26 +130,35 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
 
    public ItemState getItemState(String itemIdentifier)
    {
-      List<ItemState> allStates = getAllStates();
-      for (int i = allStates.size() - 1; i >= 0; i--)
+      ItemState state;
+      for (PlainChangesLog changesLog : changesLogs)
       {
-         ItemState state = allStates.get(i);
-         if (state.getData().getIdentifier().equals(itemIdentifier))
+         state = ((PlainChangesLogImpl)changesLog).getItemState(itemIdentifier);
+         if (state != null)
+         {
             return state;
+         }
       }
       return null;
    }
 
    public ItemState getItemState(NodeData parentData, QPathEntry name, ItemType itemType)
    {
-      List<ItemState> allStates = getAllStates();
-      for (int i = allStates.size() - 1; i >= 0; i--)
+      ItemState state;
+      for (PlainChangesLog changesLog : changesLogs)
       {
-         ItemState state = allStates.get(i);
-         if (state.getData().getParentIdentifier().equals(parentData.getIdentifier())
-            && state.getData().getQPath().getEntries()[state.getData().getQPath().getEntries().length - 1].isSame(name)
-            && itemType.isSuitableFor(state.getData()))
-            return state;
+         try
+         {
+            state = ((PlainChangesLogImpl)changesLog).getItemState(parentData, name, itemType);
+            if (state != null)
+            {
+               return state;
+            }
+         }
+         catch (IllegalPathException e)
+         {
+
+         }
       }
       return null;
    }
@@ -160,13 +166,10 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
    public List<ItemState> getChildrenChanges(String rootIdentifier, boolean forNodes)
    {
       List<ItemState> list = new ArrayList<ItemState>();
-      for (ItemState state : getAllStates())
+      for (PlainChangesLog changesLog : changesLogs)
       {
-         ItemData item = state.getData();
-         if (item.getParentIdentifier().equals(rootIdentifier) && item.isNode() == forNodes)
-         {
-            list.add(state);
-         }
+         List<ItemState> subList = ((PlainChangesLogImpl)changesLog).getChildrenChanges(rootIdentifier, forNodes);
+         list.addAll(subList);
       }
       return list;
    }
