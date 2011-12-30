@@ -205,7 +205,7 @@ public class Packet extends AbstractPacket implements Externalizable
       /**
        * Private PacketType constructor.
        */
-      private PacketType() // NOSONAR
+      private PacketType()
       {
       }
    }

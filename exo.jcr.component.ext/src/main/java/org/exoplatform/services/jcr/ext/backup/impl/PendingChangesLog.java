@@ -77,7 +77,7 @@ public class PendingChangesLog
       /**
        * Empty constructor.
        */
-      private Type() // NOSONAR
+      private Type()
       {
       }
    }

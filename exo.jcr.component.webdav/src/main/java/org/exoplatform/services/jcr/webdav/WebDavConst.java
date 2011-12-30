@@ -115,7 +115,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private DavDocument() // NOSONAR
+      private DavDocument()
       {
       }
 
@@ -199,7 +199,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private DavProperty() // NOSONAR
+      private DavProperty()
       {
       }
 
@@ -244,7 +244,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private ResourceType() // NOSONAR
+      private ResourceType()
       {
       }
 
@@ -271,7 +271,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private CacheConstants() // NOSONAR
+      private CacheConstants()
       {
       }
 
@@ -293,7 +293,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private Lock() // NOSONAR
+      private Lock()
       {
       }
 
@@ -329,7 +329,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private NodeTypes() // NOSONAR
+      private NodeTypes()
       {
       }
 
@@ -450,7 +450,7 @@ public final class WebDavConst
       /**
        * Private constructor.
        */
-      private DateFormat() // NOSONAR
+      private DateFormat()
       {
       }
 
