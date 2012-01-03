@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.ext.replication;
 import org.exoplatform.services.jcr.dataflow.ItemDataKeeper;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
-import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
+import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.log.ExoLogger;
@@ -67,7 +67,7 @@ public class WorkspaceDataManagerProxy implements ItemDataKeeper
     *          the LockManagerImpl
     */
    public WorkspaceDataManagerProxy(CacheableWorkspaceDataManager dataManager, SearchManager searchIndex,
-      LockManagerImpl lockManager)
+      WorkspaceLockManager lockManager)
    {
       this.listeners = new ArrayList<ItemsPersistenceListener>();
       listeners.add(dataManager.getCache());
@@ -78,7 +78,7 @@ public class WorkspaceDataManagerProxy implements ItemDataKeeper
 
       if (lockManager != null)
       {
-         listeners.add(lockManager);
+         listeners.add((ItemsPersistenceListener)lockManager);
       }
 
       log.info("WorkspaceDataManagerProxy is instantiated");

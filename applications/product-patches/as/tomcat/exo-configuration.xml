@@ -58,17 +58,12 @@
          <value-param>
             <name>conf-path</name>
             <description>JCR configuration file</description>
-            <value>jar:/conf/portal/exo-jcr-config.xml</value>
+            <value>jar:/conf/portal/exo-jcr-jbc-config.xml</value>
          </value-param>
          <value-param profiles="ispn">
             <name>conf-path</name>
             <description>JCR configuration file</description>
             <value>jar:/conf/portal/exo-jcr-ispn-config.xml</value>
-         </value-param>
-         <value-param profiles="jbc">
-            <name>conf-path</name>
-            <description>JCR configuration file</description>
-            <value>jar:/conf/portal/exo-jcr-jbc-config.xml</value>
          </value-param>
       </init-params>
    </component>

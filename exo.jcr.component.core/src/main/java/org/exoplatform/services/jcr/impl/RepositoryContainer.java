@@ -44,7 +44,6 @@ import org.exoplatform.services.jcr.impl.core.SessionFactory;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.access.DefaultAccessManagerImpl;
-import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
@@ -302,6 +301,7 @@ public class RepositoryContainer extends ExoContainer
                   throw new RepositoryConfigurationException("Class not found for workspace data container "
                      + wsConfig.getUniqueName() + " : " + e);
                }
+
                // cache type
                try
                {
@@ -324,22 +324,6 @@ public class RepositoryContainer extends ExoContainer
                workspaceContainer.registerComponentImplementation(LocalWorkspaceDataManagerStub.class);
                workspaceContainer.registerComponentImplementation(ObservationManagerRegistry.class);
 
-               // Lock manager and Lock persister is a optional parameters
-               if (wsConfig.getLockManager() != null && wsConfig.getLockManager().getPersister() != null)
-               {
-                  try
-                  {
-                     final Class<?> lockPersister = Class.forName(wsConfig.getLockManager().getPersister().getType());
-                     workspaceContainer.registerComponentImplementation(lockPersister);
-                  }
-                  catch (ClassNotFoundException e)
-                  {
-                     throw new RepositoryConfigurationException("Class not found for workspace lock persister "
-                        + wsConfig.getLockManager().getPersister().getType() + ", container " + wsConfig.getUniqueName()
-                        + " : " + e);
-                  }
-               }
-
                if (wsConfig.getLockManager() != null && wsConfig.getLockManager().getType() != null)
                {
                   try
@@ -355,8 +339,10 @@ public class RepositoryContainer extends ExoContainer
                }
                else
                {
-                  workspaceContainer.registerComponentImplementation(LockManagerImpl.class);
+                  throw new RepositoryConfigurationException(
+                     "The configuration of lock manager is expected in container " + wsConfig.getUniqueName());
                }
+
                // Query handler
                if (wsConfig.getQueryHandler() != null)
                {

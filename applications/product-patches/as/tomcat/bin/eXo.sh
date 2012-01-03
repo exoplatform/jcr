@@ -6,7 +6,7 @@ PRGDIR=`dirname "$PRG"`
 LOG_OPTS="-Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog"
 SECURITY_OPTS="-Djava.security.auth.login.config=$PRGDIR/../conf/jaas.conf"
 EXO_OPTS="-Dexo.product.developing=true -Dexo.profiles=$1 -Djava.net.preferIPv4Stack=true"
-if [ "$1" = "jbc" ] || [ "$1" = "ispn" ]; then
+if [ "$1" = "ispn" ]; then
     shift
 fi
 

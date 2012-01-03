@@ -23,6 +23,7 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.ContainerEntry;
+import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -31,6 +32,7 @@ import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -187,12 +189,30 @@ public class TesterConfigurationHelper
       CacheEntry cacheEntry = new CacheEntry(params);
       cacheEntry.setType(baseWorkspaceEntry.getCache().getType());
 
+      // Lock
+      LockManagerEntry lockManagerEntry = new LockManagerEntry();
+      lockManagerEntry.setType("org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl");
+      lockManagerEntry.putParameterValue("time-out", "15m");
+      lockManagerEntry.putParameterValue("jbosscache-configuration", "conf/standalone/test-jbosscache-lock.xml");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.name", "jcrlocks");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.create", "true");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.drop", "false");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.primarykey",
+         "jcrlocks_" + IdGenerator.generate());
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.fqn.column", "fqn");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.node.column", "node");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.parent.column", "parent");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.datasource", baseWorkspaceEntry.getContainer()
+         .getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME));
+      lockManagerEntry.putParameterValue("jbosscache-shareable", "${jbosscache-shareable}");
+
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
       workspaceEntry.setContainer(containerEntry);
       workspaceEntry.setCache(cacheEntry);
       workspaceEntry.setQueryHandler(qEntry);
       workspaceEntry.setName(baseWorkspaceEntry.getName());
       workspaceEntry.setUniqueName(baseWorkspaceEntry.getUniqueName());
+      workspaceEntry.setLockManager(lockManagerEntry);
 
       return workspaceEntry;
 
@@ -321,7 +341,24 @@ public class TesterConfigurationHelper
       CacheEntry cacheEntry = new CacheEntry(cacheParams);
       cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
 
+      // Lock
+      LockManagerEntry lockManagerEntry = new LockManagerEntry();
+      lockManagerEntry.setType("org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl");
+      lockManagerEntry.putParameterValue("time-out", "15m");
+      lockManagerEntry.putParameterValue("jbosscache-configuration", "conf/standalone/test-jbosscache-lock.xml");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.name", "jcrlocks");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.create", "true");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.drop", "false");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.primarykey",
+         "jcrlocks_" + IdGenerator.generate());
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.fqn.column", "fqn");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.node.column", "node");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.parent.column", "parent");
+      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.datasource", dsName);
+      lockManagerEntry.putParameterValue("jbosscache-shareable", "${jbosscache-shareable}");
+
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
+      workspaceEntry.setLockManager(lockManagerEntry);
       workspaceEntry.setContainer(containerEntry);
       workspaceEntry.setCache(cacheEntry);
       workspaceEntry.setQueryHandler(qEntry);

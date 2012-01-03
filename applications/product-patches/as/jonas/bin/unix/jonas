@@ -81,7 +81,7 @@ JONAS_OPTS="\
 cd $JONAS_ROOT/bin
 JONAS_OPTS="$JONAS_OPTS -Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog -Djava.awt.headless=true -Dexo.profiles=$1 -Djava.net.preferIPv4Stack=true -Dexo.jcr.parent.dir=.."
 JAVA_OPTS="$JAVA_OPTS -Xmx512M"
-if [ "$1" = "jbc" ] || [ "$1" = "ispn" ]; then
+if [ "$1" = "ispn" ]; then
     shift
 fi
 

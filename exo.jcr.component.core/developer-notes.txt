@@ -1,4 +1,5 @@
 * Removed JCR_SCONTAINER table
 * Removed StorageUpdateManager class
 * "update-storage" parameter in Workspace data container configuration is not supported anymore
-* Removed support of FileSystemLockPersister
+* Removed LockPersister
+* Removed LockManagerImpl which was the default lock manager 

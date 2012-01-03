@@ -78,16 +78,6 @@
       <collection name="properties" field="parameters" usage="optional"
         item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
         factory="org.jibx.runtime.Utility.arrayListFactory" />
-      <value name="time-out" field="timeout" usage="optional"
-              serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeTime" 
-			  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" /> 
-              
-      <structure name="persister" field="persister" usage="optional">
-        <value name="class" field="type" style="attribute" />
-        <collection name="properties" field="parameters" usage="optional"
-          item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
-          factory="org.jibx.runtime.Utility.arrayListFactory" />
-      </structure>
     </structure>
   </mapping>
 

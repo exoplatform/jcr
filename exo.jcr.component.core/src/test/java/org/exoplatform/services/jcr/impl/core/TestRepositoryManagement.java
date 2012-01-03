@@ -72,8 +72,6 @@ public class TestRepositoryManagement extends JcrImplBaseTest
    public void testMarshalUnmarshalRepositoryConfiguration() throws Exception
    {
       ManageableRepository newRepository = helper.createRepository(container, false, null);
-      final long lockManagerTimeOut =
-         newRepository.getConfiguration().getWorkspaceEntries().get(0).getLockManager().getTimeout();
 
       // 1st marshal configuration
       File tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
@@ -100,8 +98,6 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       // 1st check
       RepositoryEntry unmarshledRepositoryEntry =
          conf.getRepositoryConfiguration(newRepository.getConfiguration().getName());
-      assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
-         .getTimeout());
 
       
       // 2nd marshal configuration
@@ -127,8 +123,6 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       // 2nd check
       unmarshledRepositoryEntry =
          conf.getRepositoryConfiguration(newRepository.getConfiguration().getName());
-      assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
-         .getTimeout());
    }
 
    public void testAddNewRepositoryWithSameName() throws Exception

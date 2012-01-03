@@ -711,11 +711,7 @@ body:
           } ],
       "type" : "org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer"
     },
-  "lockManager" : { "persister" : { "parameters" : [ { "name" : "path",
-                "value" : "../temp/lock/system"
-              } ],
-          "type" : "org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"
-        },
+  "lockManager" : 
       "timeout" : 15728640
     },
   "name" : "production",
@@ -846,11 +842,7 @@ failure message in response  - the description of failure</programlisting>
           } ],
       "type" : "org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer"
     },
-  "lockManager" : { "persister" : { "parameters" : [ { "name" : "path",
-                "value" : "../temp/lock/system"
-              } ],
-          "type" : "org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"
-        },
+  "lockManager" :
       "timeout" : 15728640
     },
   "name" : "production",
@@ -1617,6 +1609,21 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
               &lt;property name="index-dir" value="../temp/jcrlucenedb/backup" /&gt;
             &lt;/properties&gt;
           &lt;/query-handler&gt;
+          &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+             &lt;properties&gt;
+                &lt;property name="time-out" value="15m" /&gt;
+                &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
+                &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
+                &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
+                &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
+                &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
+                &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
+                &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
+                &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
+                &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                &lt;property name="jbosscache-shareable" value="true" /&gt;
+             &lt;/properties&gt;
+          &lt;/lock-manager&gt;
         &lt;/workspace&gt;
       &lt;/workspaces&gt;
     &lt;/repository&gt;
@@ -1788,13 +1795,20 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                      &lt;property name="index-dir" value="../temp/jcrlucenedb/production" /&gt;
                   &lt;/properties&gt;
                &lt;/query-handler&gt;
-               &lt;lock-manager&gt;
-                  &lt;time-out&gt;15m&lt;/time-out&gt;
-                  &lt;persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"&gt;
-                     &lt;properties&gt;
-                        &lt;property name="path" value="../temp/lock/system" /&gt;
-                     &lt;/properties&gt;
-                  &lt;/persister&gt;
+               &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="time-out" value="15m" /&gt;
+                     &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                     &lt;property name="jbosscache-shareable" value="true" /&gt;
+                  &lt;/properties&gt;
                &lt;/lock-manager&gt;
             &lt;/workspace&gt;
 
@@ -1833,6 +1847,21 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                      &lt;property name="index-dir" value="../temp/jcrlucenedb/backup" /&gt;
                   &lt;/properties&gt;
                &lt;/query-handler&gt;
+                &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="time-out" value="15m" /&gt;
+                     &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                     &lt;property name="jbosscache-shareable" value="true" /&gt;
+                  &lt;/properties&gt;
+               &lt;/lock-manager&gt;
             &lt;/workspace&gt;
 
             &lt;workspace name="digital-assets"&gt;
@@ -1870,6 +1899,21 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                      &lt;property name="index-dir" value="../temp/jcrlucenedb/digital-assets" /&gt;
                   &lt;/properties&gt;
                &lt;/query-handler&gt;
+               &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="time-out" value="15m" /&gt;
+                     &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                     &lt;property name="jbosscache-shareable" value="true" /&gt;
+                  &lt;/properties&gt;
+               &lt;/lock-manager&gt;
             &lt;/workspace&gt;
          &lt;/workspaces&gt;
       &lt;/repository&gt;

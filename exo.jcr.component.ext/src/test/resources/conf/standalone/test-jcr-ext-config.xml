@@ -57,7 +57,23 @@
                      <property name="index-dir" value="target/temp/index/ws" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
@@ -79,7 +95,23 @@
                      <property name="index-dir" value="target/temp/index/ws1" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr1" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws2" auto-init-root-nodetype="nt:unstructured">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
@@ -101,7 +133,23 @@
                      <property name="index-dir" value="target/temp/index/ws2" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws3" auto-init-root-nodetype="nt:unstructured">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
@@ -123,7 +171,23 @@
                      <property name="index-dir" value="target/temp/index/ws3" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr3" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws4" auto-init-root-nodetype="nt:unstructured">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
@@ -145,7 +209,23 @@
                      <property name="index-dir" value="target/temp/index/ws4" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr4" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws5" auto-init-root-nodetype="nt:unstructured">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
@@ -167,9 +247,25 @@
                      <property name="index-dir" value="target/temp/index/ws5" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr5" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
-      </repository>
+      </repository>\
+
       <repository name="db2" system-workspace="ws" default-workspace="ws">
          <security-domain>exo-domain</security-domain>
          <access-control>optional</access-control>
@@ -197,6 +293,21 @@
                      <property name="index-dir" value="target/temp/index/db2_ws" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr19" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>
@@ -241,8 +352,20 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db3ws" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>54000</time-out>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr6" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
                </lock-manager>
             </workspace>
 
@@ -281,9 +404,21 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db3ws1" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>54000</time-out>
-               </lock-manager>               
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr6" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>
@@ -328,8 +463,20 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db4ws" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>15m</time-out>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr7" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
                </lock-manager>
             </workspace>
 
@@ -368,9 +515,21 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db4ws1" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>15m</time-out>
-               </lock-manager>               
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr8" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>     
@@ -402,7 +561,23 @@
                      <property name="index-dir" value="target/temp/index/db5_ws" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr21" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws1">
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
@@ -425,9 +600,25 @@
                      <property name="index-dir" value="target/temp/index/db5_ws1" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr23" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>
+
       <repository name="db6" system-workspace="ws" default-workspace="ws">
          <security-domain>exo-domain</security-domain>
          <access-control>optional</access-control>
@@ -455,7 +646,23 @@
                      <property name="index-dir" value="target/temp/index/db6_ws" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr24" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
@@ -477,7 +684,23 @@
                      <property name="index-dir" value="target/temp/index/db6_ws1" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr25" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws2">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
@@ -499,6 +722,21 @@
                      <property name="index-dir" value="target/temp/index/db6_ws2" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr26" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>
@@ -540,7 +778,23 @@
                      <property name="index-dir" value="target/temp/index/db7_ws" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr_to_repository_restore_singel_db" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
@@ -572,6 +826,21 @@
                      <property name="index-dir" value="target/temp/index/db7_ws1" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr_to_repository_restore_singel_db" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>

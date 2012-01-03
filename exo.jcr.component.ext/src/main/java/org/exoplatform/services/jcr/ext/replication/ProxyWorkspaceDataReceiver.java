@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.ext.replication;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
+import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 
@@ -43,7 +43,7 @@ public class ProxyWorkspaceDataReceiver extends AbstractWorkspaceDataReceiver
     * @throws RepositoryConfigurationException
     *           will be generated RepositoryConfigurationException
     */
-   public ProxyWorkspaceDataReceiver(CacheableWorkspaceDataManager dataManager, LockManagerImpl lockManager)
+   public ProxyWorkspaceDataReceiver(CacheableWorkspaceDataManager dataManager, WorkspaceLockManager lockManager)
       throws RepositoryConfigurationException
    {
       this(dataManager, null, lockManager);
@@ -91,7 +91,7 @@ public class ProxyWorkspaceDataReceiver extends AbstractWorkspaceDataReceiver
     *           will be generated the RepositoryConfigurationException
     */
    public ProxyWorkspaceDataReceiver(CacheableWorkspaceDataManager dataManager, SearchManager searchManager,
-      LockManagerImpl lockManager) throws RepositoryConfigurationException
+      WorkspaceLockManager lockManager) throws RepositoryConfigurationException
    {
       dataKeeper = new WorkspaceDataManagerProxy(dataManager, searchManager, lockManager);
    }

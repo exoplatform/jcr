@@ -57,7 +57,6 @@ rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server
 rem # Add the eXo variables
 set "JAVA_OPTS=%JAVA_OPTS% -Dexo.profiles=%1 -Dexo.jcr.parent.dir=../server/default/data"
 
-if ""%1"" == ""jbc"" shift
 if ""%1"" == ""ispn"" shift
 
 :JAVA_OPTS_SET
