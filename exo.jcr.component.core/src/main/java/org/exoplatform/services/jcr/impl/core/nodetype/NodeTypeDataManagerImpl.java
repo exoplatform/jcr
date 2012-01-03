@@ -634,6 +634,15 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       nodeTypeDataValidator.validateNodeType(nodeTypes);
 
       nodeTypeRepository.registerNodeType(nodeTypes, this, accessControlPolicy, alreadyExistsBehaviour);
+
+      for (NodeTypeData nodeType : nodeTypes)
+      {
+         for (NodeTypeManagerListener listener : listeners.values())
+         {
+            listener.nodeTypeRegistered(nodeType.getName());
+         }
+      }
+
       return nodeTypes;
    }
 
@@ -650,6 +659,14 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       nodeTypeDataValidator.validateNodeType(nodeTypes);
 
       nodeTypeRepository.registerNodeType(nodeTypes, this, accessControlPolicy, alreadyExistsBehaviour);
+
+      for (NodeTypeData nodeType : nodeTypes)
+      {
+         for (NodeTypeManagerListener listener : listeners.values())
+         {
+            listener.nodeTypeRegistered(nodeType.getName());
+         }
+      }
 
       return nodeTypes;
    }
@@ -750,8 +767,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
          new PropertyDefinitionComparator(this, dataManager, itemAutocreator, affectedNodes, locationFactory);
       changesLog.addAll(propertyDefinitionComparator.compare(recipientDefinition,
          getAllPropertyDefinitions(ancestorAllNodeTypeNames), getAllPropertyDefinitions(recipienAllNodeTypeNames))
-
-      .getAllStates());
+         .getAllStates());
 
       return changesLog;
    }
@@ -884,6 +900,11 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
          throw new RepositoryException(message.toString());
       }
       this.nodeTypeRepository.unregisterNodeType(nodeType);
+
+      for (NodeTypeManagerListener listener : listeners.values())
+      {
+         listener.nodeTypeUnregistered(nodeType.getName());
+      }
    }
 
    /**
@@ -976,9 +997,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
             affectedNodes, this.locationFactory);
       changesLog.addAll(propertyDefinitionComparator.compare(recipientDefinition,
          getAllPropertyDefinitions(ancestorDefinition.getName()),
-         volatileNodeTypeDataManager.getAllPropertyDefinitions(recipientDefinition.getName()))
-
-      .getAllStates());
+         volatileNodeTypeDataManager.getAllPropertyDefinitions(recipientDefinition.getName())).getAllStates());
 
       // notify listeners about changes
       if (!Arrays.deepEquals(recipientDefinition.getDeclaredSupertypeNames(), ancestorDefinition
@@ -1034,6 +1053,11 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.nodeTypeRepository.removeNodeType(ancestorDefinition);
 
       this.nodeTypeRepository.addNodeType(recipientDefinition, volatileNodeTypes);
+
+      for (NodeTypeManagerListener listener : listeners.values())
+      {
+         listener.nodeTypeReRegistered(recipientDefinition.getName());
+      }
 
       return changesLog;
    }

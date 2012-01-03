@@ -67,6 +67,8 @@ public class PropertyTypeRegistry implements NodeTypeManagerListener
    {
       this.registry = reg;
       fillCache();
+
+      registry.addListener(this);
    }
 
    /**

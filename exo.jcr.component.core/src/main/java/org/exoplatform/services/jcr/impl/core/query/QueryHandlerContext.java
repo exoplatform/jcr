@@ -21,7 +21,6 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableResolver;
 import org.exoplatform.services.rpc.RPCService;
 
@@ -144,7 +143,7 @@ public class QueryHandlerContext
       this.repositoryName = repositoryName;
       this.workspaceName = workspaceName;
       this.recoveryFilterUsed = useIndexRecoveryFilters;
-      ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).addListener(propRegistry);
+      this.nodeTypeDataManager.addListener(propRegistry);
    }
 
    /**
@@ -246,7 +245,7 @@ public class QueryHandlerContext
     */
    public void destroy()
    {
-      ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).removeListener(propRegistry);
+      this.nodeTypeDataManager.removeListener(propRegistry);
    }
 
    public DocumentReaderService getExtractor()
