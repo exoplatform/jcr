@@ -2,4 +2,5 @@
 * Removed StorageUpdateManager class
 * "update-storage" parameter in Workspace data container configuration is not supported anymore
 * Removed LockPersister
-* Removed LockManagerImpl which was the default lock manager 
+* Removed LockManagerImpl
+* If lock manager is not configured we will have RepositoryConfigurationException at startup
