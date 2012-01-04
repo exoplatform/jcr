@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.ext.resource;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 
 import java.net.MalformedURLException;
@@ -266,29 +267,7 @@ public class UnifiedNodeReference
          try
          {
             String clsName = packagePrefix + "." + JCR_SCHEME + ".Handler";
-            Class<?> cls = null;
-            try
-            {
-               cls = Class.forName(clsName);
-            }
-            catch (ClassNotFoundException e1)
-            {
-               try
-               {
-                  // try do it with context ClassLoader
-                  ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                  cls = cl.loadClass(clsName);
-               }
-               catch (ClassNotFoundException e2)
-               {
-                  // last chance, try use system ClasLoader
-                  ClassLoader cl = ClassLoader.getSystemClassLoader();
-                  if (cl != null)
-                  {
-                     cls = cl.loadClass(clsName);
-                  }
-               }
-            }
+            Class<?> cls = ClassLoading.forName(clsName, UnifiedNodeReference.class);
             if (cls != null)
             {
                handler = (URLStreamHandler)cls.newInstance();

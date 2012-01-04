@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -171,7 +172,7 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
 
       try
       {
-         Class.forName(dbDriver).newInstance();
+         ClassLoading.forName(dbDriver, this).newInstance();
       }
       catch (InstantiationException e)
       {

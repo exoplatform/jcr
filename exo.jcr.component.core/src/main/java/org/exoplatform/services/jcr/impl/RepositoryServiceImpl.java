@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -519,7 +520,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
                try
                {
-                  Class<?> listenerType = Class.forName(sk.getListenerClassName());
+                  Class<?> listenerType = ClassLoading.forName(sk.getListenerClassName(), this);
                   wc.registerComponentImplementation(listenerType);
                   ItemsPersistenceListener listener =
                      (ItemsPersistenceListener)wc.getComponentInstanceOfType(listenerType);

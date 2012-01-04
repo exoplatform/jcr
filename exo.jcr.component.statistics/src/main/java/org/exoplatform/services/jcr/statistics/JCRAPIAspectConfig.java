@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.statistics;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.log.ExoLogger;
@@ -68,7 +69,7 @@ public class JCRAPIAspectConfig
             try
             {
                className = (String)o;
-               lTargetInterfaces.add(Class.forName(className));
+               lTargetInterfaces.add(ClassLoading.forName(className, this));
             }
             catch (Exception e)
             {

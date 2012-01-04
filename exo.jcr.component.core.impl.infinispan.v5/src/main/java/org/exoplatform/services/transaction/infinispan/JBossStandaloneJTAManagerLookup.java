@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.transaction.infinispan;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
@@ -97,9 +98,6 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
     */
    private static Class<?> loadClassStrict(String classname) throws ClassNotFoundException
    {
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      if (cl == null)
-         cl = ClassLoader.getSystemClassLoader();
-      return cl.loadClass(classname);
+      return ClassLoading.loadClass(classname, JBossStandaloneJTAManagerLookup.class);
    }
 }

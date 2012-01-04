@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -300,11 +301,11 @@ public class JobRepositoryRestore extends Thread
       String fullbackupType = null;
       try
       {
-         if ((Class.forName(systemBackupChainLog.getFullBackupType()).equals(FullBackupJob.class)))
+         if ((ClassLoading.forName(systemBackupChainLog.getFullBackupType(), this).equals(FullBackupJob.class)))
          {
             fullbackupType = systemBackupChainLog.getFullBackupType();
          }
-         else if ((Class.forName(systemBackupChainLog.getFullBackupType())
+         else if ((ClassLoading.forName(systemBackupChainLog.getFullBackupType(), this)
                   .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
          {
             fullbackupType = systemBackupChainLog.getFullBackupType();
@@ -322,7 +323,7 @@ public class JobRepositoryRestore extends Thread
       }
 
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
-      if ((Class.forName(fullbackupType).equals(FullBackupJob.class)))
+      if ((ClassLoading.forName(fullbackupType, this).equals(FullBackupJob.class)))
       {
          // set the initializer BackupWorkspaceInitializer
          wiEntry.setType(BackupWorkspaceInitializer.class.getCanonicalName());
@@ -333,7 +334,7 @@ public class JobRepositoryRestore extends Thread
 
          wiEntry.setParameters(wieParams);
       }
-      else if ((Class.forName(fullbackupType)
+      else if ((ClassLoading.forName(fullbackupType, this)
                .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
       {
          // set the initializer RdbmsBackupWorkspaceInitializer
