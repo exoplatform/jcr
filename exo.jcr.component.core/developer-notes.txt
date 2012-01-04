@@ -4,3 +4,4 @@
 * Removed LockPersister
 * Removed LockManagerImpl
 * If lock manager is not configured we will have RepositoryConfigurationException at startup
+* Index JCR_XITEM_PARENT_NAME removed (JCR_IDX_MITEM_PN - for DB2)

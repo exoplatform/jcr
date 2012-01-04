@@ -44,11 +44,6 @@ public class DBConstants
    protected String JCR_IDX_ITEM_PARENT;
 
    /**
-    * JCR_IDX_ITEM_PARENT_NAME.
-    */
-   protected String JCR_IDX_ITEM_PARENT_NAME;
-
-   /**
     * JCR_IDX_ITEM_PARENT_ID.
     */
    protected String JCR_IDX_ITEM_PARENT_ID;
