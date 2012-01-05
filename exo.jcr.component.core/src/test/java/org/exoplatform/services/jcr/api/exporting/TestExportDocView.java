@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.StringTokenizer;
 
+import javax.jcr.InvalidSerializedDataException;
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
@@ -409,5 +410,33 @@ public class TestExportDocView extends ExportBase
       String exportContent = bos.toString();
       assertFalse(exportContent.contains("newjcr"));
       newSession.logout();
+   }
+
+   public void testExportDocumentViewWhenPathNotFound() throws IOException, InvalidSerializedDataException,
+      SAXException, RepositoryException
+   {
+      try
+      {
+         session.exportDocumentView("/TestChildNode", new MockContentHandler(), false, false);
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+
+
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      try
+      {
+         session.exportDocumentView("/TestChildNode", out, false, false);
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+      finally
+      {
+         out.close();
+      }
    }
 }

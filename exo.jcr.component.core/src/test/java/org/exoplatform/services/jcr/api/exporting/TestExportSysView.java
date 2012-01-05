@@ -413,4 +413,31 @@ public class TestExportSysView extends ExportBase
       assertEquals(1, mock.nodes);
       assertEquals(2, mock.properties);
    }
+
+   public void testExportSystemViewWhenPathNotFound() throws IOException, SAXException, RepositoryException
+   {
+      try
+      {
+         session.exportSystemView("/testNode", new MockContentHandler(), false, true);
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+      try
+      {
+         session.exportSystemView("/testNode", out, false, false);
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+      finally
+      {
+         out.close();
+      }
+   }
 }

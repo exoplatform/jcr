@@ -20,17 +20,27 @@ package org.exoplatform.services.jcr.api.reading;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Calendar;
 
+import javax.jcr.ItemExistsException;
+import javax.jcr.ItemNotFoundException;
 import javax.jcr.LoginException;
+import javax.jcr.NamespaceException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
+import javax.jcr.version.VersionException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -161,4 +171,136 @@ public class TestSession extends JcrAPIBaseTest
 
    }
 
+   public void testGetAllNamespacePrefixes() throws RepositoryException
+   {
+      assertTrue(Arrays.asList(session.getWorkspace().getNamespaceRegistry().getPrefixes()).containsAll(
+         Arrays.asList(session.getAllNamespacePrefixes())));
+   }
+
+   public void testGetImportContentHandlerCheckLockException() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      Node testNode = root.addNode("test");
+      testNode.addMixin("mix:lockable");
+      session.save();
+
+      testNode.lock(true, true);
+
+      Session session2 =
+         repository.login(new CredentialsImpl("admin", "admin".toCharArray()), session.getWorkspace().getName());
+      
+      try
+      {
+         session2.getImportContentHandler("/test", 0);
+         fail();
+      }
+      catch (LockException e)
+      {
+      }
+      finally
+      {
+         session2.logout();
+         testNode.unlock();
+      }
+   }
+
+   public void testGetImportContentHandlerCheckConstraintViolationException() throws ItemExistsException,
+      PathNotFoundException, VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      root.addNode("someNode", "exo:myTypeJCR1703");
+
+      try
+      {
+         session.getImportContentHandler("/someNode/exo:myChildNode", 0);
+         fail();
+      }
+      catch (ConstraintViolationException e)
+      {
+      }
+   }
+
+   public void testImportXMLCheckLockException() throws ItemExistsException, PathNotFoundException,
+      NoSuchNodeTypeException, LockException, VersionException, ConstraintViolationException, RepositoryException,
+      IOException
+   {
+      Node testNode = root.addNode("testNode");
+      testNode.setProperty("exo:title", "testNode");
+      testNode.addMixin("mix:versionable");
+
+      Node testNodeImport = root.addNode("testNodeImport");
+      testNodeImport.addMixin("mix:lockable");
+      session.save();
+      
+      testNodeImport.lock(true, true);
+
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      testNode.getSession().exportDocumentView(testNode.getPath(), bos, false, false);
+      ByteArrayInputStream is = new ByteArrayInputStream(bos.toByteArray());
+
+      Session session2 =
+         repository.login(new CredentialsImpl("admin", "admin".toCharArray()), session.getWorkspace().getName());
+
+      try
+      {
+         session2.importXML(testNodeImport.getPath(), is, 1);
+         fail();
+      }
+      catch (LockException e)
+      {
+      }
+      finally
+      {
+         session2.logout();
+         testNodeImport.unlock();
+      }
+   }
+
+   public void testImportXMLCheckConstraintViolationException() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException, IOException
+   {
+      Node testNode = root.addNode("testNode");
+      testNode.setProperty("exo:title", "testNode");
+      testNode.addMixin("mix:versionable");
+
+      root.addNode("someNode", "exo:myTypeJCR1703");
+      session.save();
+
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      testNode.getSession().exportDocumentView(testNode.getPath(), bos, false, false);
+      ByteArrayInputStream is = new ByteArrayInputStream(bos.toByteArray());
+
+      try
+      {
+         session.importXML("/someNode/exo:myChildNode", is, 1);
+         fail();
+      }
+      catch (ConstraintViolationException e)
+      {
+      }
+   }
+
+   public void testGetNodeByIdentifierWhenNodeNotFound() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      try
+      {
+         session.getNodeByIdentifier("someidentifier");
+         fail();
+      }
+      catch (ItemNotFoundException e)
+      {
+      }
+   }
+
+   public void testSetNamespacePrefix() throws RepositoryException
+   {
+      try
+      {
+         session.setNamespacePrefix("nt", "http://www.jcp.org/jcr/1.0");
+         fail();
+      }
+      catch (NamespaceException e)
+      {
+      }
+   }
 }
