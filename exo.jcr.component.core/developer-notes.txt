@@ -5,3 +5,4 @@
 * Removed LockManagerImpl
 * If lock manager is not configured we will have RepositoryConfigurationException at startup
 * Index JCR_XITEM_PARENT_NAME removed (JCR_IDX_MITEM_PN - for DB2)
+* Index JCR_IDX_XITEM_PARENT_N_ORDER_NUM from MySQL scripts.
