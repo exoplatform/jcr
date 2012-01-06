@@ -18,9 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
+import org.exoplatform.commons.utils.IOUtil;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.database.utils.ExceptionManagementHelper;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -89,8 +90,7 @@ public class DBInitializer
    {
       this.connection = connection;
       this.containerName = containerName;
-      this.script = script(scriptPath);
-
+      this.script = IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(scriptPath));
       this.creatTablePattern = Pattern.compile(SQL_CREATETABLE, Pattern.CASE_INSENSITIVE);
       this.creatViewPattern = Pattern.compile(SQL_CREATEVIEW, Pattern.CASE_INSENSITIVE);
       this.dbObjectNamePattern = Pattern.compile(SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
@@ -99,11 +99,6 @@ public class DBInitializer
       this.creatSequencePattern = Pattern.compile(SQL_CREATESEQUENCE, Pattern.CASE_INSENSITIVE);
       this.creatTriggerPattern = Pattern.compile(SQL_CREATETRIGGER, Pattern.CASE_INSENSITIVE);
       this.dbTriggerNamePattern = Pattern.compile(SQL_TRIGGERNAME, Pattern.CASE_INSENSITIVE);
-   }
-
-   protected String script(String scriptPath) throws IOException
-   {
-      return DBInitializerHelper.readScriptResource(scriptPath);
    }
 
    protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
@@ -250,7 +245,7 @@ public class DBInitializer
 
    public void init() throws DBInitializerException
    {
-      String[] scripts = DBInitializerHelper.scripts(script);
+      String[] scripts = JDBCUtils.splitWithSQLDelimiter(script);
       String sql = null;
       Statement st = null;
       Set<String> existingTables = new HashSet<String>();
@@ -263,7 +258,7 @@ public class DBInitializer
          connection.setAutoCommit(true);
          for (String scr : scripts)
          {
-            String s = DBInitializerHelper.cleanWhitespaces(scr.trim());
+            String s = JDBCUtils.cleanWhitespaces(scr.trim());
             if (s.length() > 0)
             {
                if (isObjectExists(connection, sql = s, existingTables))
@@ -319,8 +314,8 @@ public class DBInitializer
          else
          {
             String msg =
-                     "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
-                              + ExceptionManagementHelper.getFullSQLExceptionMessage(e) + ". Last command: " + sql;
+               "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
+                  + JDBCUtils.getFullMessage(e) + ". Last command: " + sql;
 
             throw new DBInitializerException(msg, e);
          }
@@ -355,6 +350,5 @@ public class DBInitializer
     */
    protected void postInit(Connection connection) throws SQLException
    {
-
    }
 }

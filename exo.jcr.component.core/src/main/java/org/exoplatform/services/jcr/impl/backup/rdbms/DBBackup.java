@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.impl.backup.rdbms;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.services.database.utils.ExceptionManagementHelper;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
@@ -114,7 +114,7 @@ public class DBBackup
       catch (SQLException e)
       {
          exc = e;
-         throw new BackupException("SQL Exception: " + ExceptionManagementHelper.getFullSQLExceptionMessage(e), e);
+         throw new BackupException("SQL Exception: " + JDBCUtils.getFullMessage(e), e);
       }
       finally
       {

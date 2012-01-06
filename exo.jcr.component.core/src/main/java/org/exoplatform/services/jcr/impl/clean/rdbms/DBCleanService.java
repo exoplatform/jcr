@@ -16,13 +16,16 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms;
 
+import org.exoplatform.commons.utils.IOUtil;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.DialectDetecter;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
@@ -772,7 +775,7 @@ public class DBCleanService
       String script;
       try
       {
-         script = DBInitializerHelper.readScriptResource(scriptsPath);
+         script = IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(scriptsPath));
       }
       catch (IOException e)
       {
@@ -780,12 +783,12 @@ public class DBCleanService
       }
 
       List<String> scripts = new ArrayList<String>();
-      for (String query : DBInitializerHelper.scripts(script))
+      for (String query : JDBCUtils.splitWithSQLDelimiter(script))
       {
          // Skip creation JCR_S(M)CONTAINER TABLE
          if (!query.contains("CREATE TABLE JCR_" + multiDb + "CONTAINER"))
          {
-            scripts.add(DBInitializerHelper.cleanWhitespaces(query));
+            scripts.add(JDBCUtils.cleanWhitespaces(query));
          }
       }
 

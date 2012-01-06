@@ -21,7 +21,8 @@ package org.exoplatform.services.jcr.impl.storage.jdbc;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.database.utils.ExceptionManagementHelper;
+import org.exoplatform.services.database.utils.DialectDetecter;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
@@ -273,7 +274,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       String pDbDialect = null;
       try
       {
-         pDbDialect = DBInitializerHelper.validateDialect(wsConfig.getContainer().getParameterValue(DB_DIALECT));
+         pDbDialect = validateDialect(wsConfig.getContainer().getParameterValue(DB_DIALECT));
       }
       catch (RepositoryConfigurationException e)
       {
@@ -915,8 +916,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       catch (SQLException e)
       {
-         LOG.error(
-            "Can't remove lock properties because of " + ExceptionManagementHelper.getFullSQLExceptionMessage(e), e);
+         LOG.error("Can't remove lock properties because of " + JDBCUtils.getFullMessage(e), e);
       }
       catch (RepositoryException e)
       {
@@ -1397,5 +1397,27 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.", e);
       }
+   }
+
+   /**
+    * Validate dialect.
+    * 
+    * @param confParam
+    *          String, dialect from configuration.
+    * @return String
+    *           return dialect. By default return DB_DIALECT_GENERIC. 
+    * 
+    */
+   private String validateDialect(String confParam)
+   {
+      for (String dbType : DBConstants.DB_DIALECTS)
+      {
+         if (dbType.equalsIgnoreCase(confParam))
+         {
+            return dbType;
+         }
+      }
+
+      return DBConstants.DB_DIALECT_GENERIC; // by default
    }
 }

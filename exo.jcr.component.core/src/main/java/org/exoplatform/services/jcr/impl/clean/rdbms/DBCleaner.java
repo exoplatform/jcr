@@ -17,8 +17,8 @@
 package org.exoplatform.services.jcr.impl.clean.rdbms;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -188,7 +188,7 @@ public class DBCleaner
       {
          for (String scr : scripts)
          {
-            String sql = DBInitializerHelper.cleanWhitespaces(scr.trim());
+            String sql = JDBCUtils.cleanWhitespaces(scr.trim());
             if (sql.length() > 0)
             {
                if (LOG.isDebugEnabled())
