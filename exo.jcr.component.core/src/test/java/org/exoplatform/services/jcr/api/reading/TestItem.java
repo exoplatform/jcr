@@ -19,16 +19,22 @@
 package org.exoplatform.services.jcr.api.reading;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.ItemImpl;
 
 import java.util.Calendar;
 
 import javax.jcr.Item;
+import javax.jcr.ItemExistsException;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.VersionException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -171,6 +177,43 @@ public class TestItem extends JcrAPIBaseTest
       assertTrue(contentNode.isSame(contentNode));
       assertFalse(contentNode2.isSame(root));
       assertFalse(contentNode2.isSame(contentNode.getProperty("jcr:data")));
+      assertFalse(contentNode2.isSame(null));
+   }
+
+   public void testRemoveRootNode()
+   {
+      try
+      {
+         root.remove();
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+   }
+
+   public void testGetParentDataWhenNodeIsRoot() throws RepositoryException
+   {
+      ItemImpl node = (ItemImpl)root;
+
+      try
+      {
+         node.parentData();
+         fail();
+      }
+      catch (ItemNotFoundException e)
+      {
+      }
+   }
+
+   public void testEquals() throws ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      ItemImpl testNode1 = (ItemImpl)root.addNode("testNode1");
+      ItemImpl testNode2 = (ItemImpl)root.addNode("testNode2");
+
+      assertFalse(testNode1.equals(new Object()));
+      assertFalse(testNode1.equals(testNode2));
    }
 
 }

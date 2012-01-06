@@ -19,16 +19,27 @@
 package org.exoplatform.services.jcr.api.reading;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
 import org.exoplatform.services.jcr.impl.core.value.StringValue;
 
+import java.security.AccessControlException;
 import java.util.Calendar;
+import java.util.HashMap;
 
+import javax.jcr.AccessDeniedException;
+import javax.jcr.InvalidItemStateException;
 import javax.jcr.Item;
+import javax.jcr.ItemExistsException;
 import javax.jcr.ItemNotFoundException;
+import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
@@ -36,6 +47,10 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Value;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
+import javax.jcr.version.VersionException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -539,4 +554,374 @@ public class TestNode extends JcrAPIBaseTest
       assertEquals(3l, i.getSize());
    }
 
+   public void testAddMixinWhenNodeIsProtected() throws NoSuchNodeTypeException, VersionException,
+      LockException, ItemExistsException, PathNotFoundException, RepositoryException
+   {                 
+      try
+      {
+         root.addNode("someNode", "exo:myTypeJCR1703").getNode("exo:myChildNode").addMixin("mix:lockable");
+         fail();
+      }
+      catch (ConstraintViolationException e)
+      {
+      }
+   }
+
+   public void testCannotAddNodeWithThisRelPath()
+   {
+      try
+      {
+         root.addNode(".");
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+   }
+
+   public void testCanAddMixinWhenNodeIsProtected() throws NoSuchNodeTypeException, PathNotFoundException,
+      ItemExistsException, LockException, VersionException, ConstraintViolationException, RepositoryException
+   {
+      Node node = root.addNode("someNode", "exo:myTypeJCR1703").getNode("exo:myChildNode");
+      assertFalse(node.canAddMixin("mix:lockable"));
+   }
+
+   public void testCannotDoCheckinWhenMergeFailedIsSet() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      Node testNode = root.addNode("testNode");
+      testNode.setProperty("jcr:mergeFailed", "");
+      testNode.addMixin("mix:versionable");
+      session.save();
+
+      try
+      {
+         testNode.checkin();
+         fail();
+      }
+      catch (VersionException e)
+      {
+      }
+   }
+
+   public void testCannotDoCheckinWhenNodeIsLocked() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      Node testNode = root.addNode("test");
+      testNode.addMixin("mix:lockable");
+      testNode.addMixin("mix:versionable");
+      session.save();
+      testNode.lock(true, true);
+
+      Session session2 =
+         repository.login(new CredentialsImpl("admin", "admin".toCharArray()), session.getWorkspace().getName());
+
+      try
+      {
+         session2.getRootNode().getNode("test").checkin();
+         fail();
+      }
+      catch (LockException e)
+      {
+      }
+      finally
+      {
+         session2.logout();
+         testNode.unlock();
+      }
+   }
+
+   public void testCannotClearACLForNotExoPrivilegeableNode() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      try
+      {
+         ((NodeImpl)root.addNode("testNode")).clearACL();
+         fail();
+      }
+      catch (AccessControlException e)
+      {
+      }
+   }
+
+   public void testEquals() throws ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      assertFalse(root.addNode("testNode").equals(new Object()));
+   }
+
+   public void testCannotGetBaseVersionForNotVersionableNode() throws Exception
+   {
+      try
+      {
+         root.addNode("testNode").getBaseVersion();
+         fail();
+      }
+      catch (UnsupportedRepositoryOperationException e)
+      {
+      }
+   }
+
+   public void testLockWithIsSessionScopedWhenUnsavedChanges() throws UnsupportedRepositoryOperationException,
+      LockException, AccessDeniedException, ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+      testNode.addMixin("mix:lockable");
+
+      try
+      {
+         testNode.lock(true, false);
+         fail();
+      }
+      catch (InvalidItemStateException e)
+      {
+      }
+   }
+
+   public void testLockWithTimeOutScopedWhenUnsavedChanges() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+      testNode.addMixin("mix:lockable");
+
+      try
+      {
+         testNode.lock(true, 10L);
+         fail();
+      }
+      catch (InvalidItemStateException e)
+      {
+      }
+   }
+
+   public void testLockWithTimeOutScopedWhenLockException() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+      testNode.addMixin("mix:lockable");
+      session.save();
+
+      testNode.lock(true, false);
+
+      try
+      {
+         testNode.lock(true, 10L);
+         fail();
+      }
+      catch (LockException e)
+      {
+      }
+   }
+
+   public void testCannotRemovePermissionForNotExoPrivileageableNode() throws ItemExistsException,
+      PathNotFoundException, VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+      NodeImpl testChildNode = (NodeImpl)testNode.addNode("testChildNode");
+
+      try
+      {
+         testNode.removePermission(testChildNode.getIdentifier());
+         fail();
+      }
+      catch (AccessControlException e)
+      {
+      }
+
+      try
+      {
+         testNode.removePermission(testChildNode.getIdentifier(), "jonh");
+         fail();
+      }
+      catch (AccessControlException e)
+      {
+      }
+   }
+
+   public void testSetPermission() throws ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+
+      try
+      {
+         testNode.setPermission("john", PermissionType.ALL);
+         fail();
+      }
+      catch (AccessControlException e)
+      {
+      }
+
+      testNode.addMixin("exo:privilegeable");
+      session.save();
+
+      try
+      {
+         testNode.setPermission(null, PermissionType.ALL);
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+
+      try
+      {
+         testNode.setPermission("john", null);
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+   }
+
+   public void testSetPermissions() throws ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+      HashMap<String, String[]> permissions = new HashMap<String, String[]>();
+
+      try
+      {
+         testNode.setPermissions(permissions);
+         fail();
+      }
+      catch (AccessControlException e)
+      {
+      }
+
+      testNode.addMixin("exo:privilegeable");
+      session.save();
+
+      permissions.put(null, PermissionType.ALL);
+
+      try
+      {
+         testNode.setPermissions(permissions);
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+
+      permissions.remove(null);
+      permissions.put("jonh", null);
+
+      try
+      {
+         testNode.setPermissions(permissions);
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+   }
+
+   public void testUnlockWhenUnsavedChanges() throws ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      Node someNode = root.addNode("someNode");
+      someNode.addMixin("mix:lockable");
+      session.save();
+
+      someNode.lock(true, false);
+      someNode.addNode("temp");
+
+      try
+      {
+         someNode.unlock();
+         fail();
+      }
+      catch (InvalidItemStateException e)
+      {
+      }
+   }
+
+   public void testUpdateNodeIsLocked() throws NoSuchWorkspaceException, AccessDeniedException,
+      InvalidItemStateException, PathNotFoundException, ItemExistsException, NoSuchNodeTypeException, VersionException,
+      ConstraintViolationException, RepositoryException
+   {
+      Node someNode = root.addNode("someNode");
+      someNode.addMixin("mix:lockable");
+      session.save();
+
+      someNode.lock(true, false);
+
+      Session session2 =
+         repository.login(new CredentialsImpl("admin", "admin".toCharArray()), session.getWorkspace().getName());
+
+
+      try
+      {
+         session2.getRootNode().getNode("someNode").update("/");
+         fail();
+      }
+      catch (LockException e)
+      {
+      }
+      finally
+      {
+         session2.logout();
+         someNode.unlock();
+      }
+   }
+
+   public void testValidateChildNodeWhenNodeIsProtected() throws PathNotFoundException, ItemExistsException,
+      NoSuchNodeTypeException, LockException, VersionException, ConstraintViolationException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("someNode", "exo:myTypeJCR1703").getNode("exo:myChildNode");
+
+      try
+      {
+         ((NodeImpl)root.getNode("someNode")).validateChildNode(testNode.getInternalName(),
+            ((NodeTypeImpl)testNode.getPrimaryNodeType()).getQName());
+         fail();
+      }
+      catch (ConstraintViolationException e)
+      {
+      }
+   }
+
+   public void testVersionHistoryWhenNodeHaventVersionHistory() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("someNode");
+
+      try
+      {
+         testNode.versionHistory(false);
+         fail();
+      }
+      catch (UnsupportedRepositoryOperationException e)
+      {
+      }
+   }
+
+   public void testRemoveMixinWhenRemovedLockableMixin() throws ItemExistsException, PathNotFoundException,
+      VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      Node someNode = root.addNode("someNode");
+      someNode.addMixin("mix:lockable");
+      session.save();
+
+      someNode.lock(true, false);
+
+      Session session2 =
+         repository.login(new CredentialsImpl("admin", "admin".toCharArray()), session.getWorkspace().getName());
+
+      try
+      {
+         session2.getRootNode().getNode("someNode").removeMixin("mix:lockable");
+         fail();
+      }
+      catch (LockException e)
+      {
+      }
+      finally
+      {
+         session2.logout();
+         someNode.unlock();
+      }
+   }
 }

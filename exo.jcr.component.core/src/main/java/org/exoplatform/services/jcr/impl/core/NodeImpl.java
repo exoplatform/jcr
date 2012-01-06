@@ -219,13 +219,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new NoSuchNodeTypeException("Nodetype " + mixinName + " not found or not mixin type.");
       }
 
-      // Validate
-      if (session.getWorkspace().getNodeTypesHolder().isNodeType(type.getName(), nodeData().getPrimaryTypeName(),
-         nodeData().getMixinTypeNames()))
-      {
-         throw new ConstraintViolationException("Can not add mixin type " + mixinName + " to " + getPath());
-      }
-
       if (definition.isProtected())
       {
          throw new ConstraintViolationException("Can not add mixin type. Node is protected " + getPath());
