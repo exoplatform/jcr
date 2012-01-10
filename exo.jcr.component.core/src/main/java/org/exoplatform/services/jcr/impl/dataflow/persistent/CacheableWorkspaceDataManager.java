@@ -718,15 +718,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
-   {
-      return getItemData(parentData, name, ItemType.UNKNOWN);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    public ItemData getItemData(final NodeData parentData, final QPathEntry name, final ItemType itemType)
       throws RepositoryException
    {

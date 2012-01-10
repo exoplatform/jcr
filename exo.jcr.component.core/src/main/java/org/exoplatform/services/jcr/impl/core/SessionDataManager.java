@@ -169,22 +169,6 @@ public class SessionDataManager implements ItemDataConsumer
     * @param parent
     * @param relPath
     *          - array of QPathEntry which represents the relation path to the searched item
-    * @return existed item data or null if not found
-    * @throws RepositoryException
-    */
-   @Deprecated
-   public ItemData getItemData(NodeData parent, QPathEntry[] relPathEntries) throws RepositoryException
-   {
-      return getItemData(parent, relPathEntries, ItemType.UNKNOWN);
-   }
-
-   /**
-    * Return item data by parent NodeDada and relPathEntries If relpath is JCRPath.THIS_RELPATH = '.'
-    * it return itself
-    * 
-    * @param parent
-    * @param relPath
-    *          - array of QPathEntry which represents the relation path to the searched item
     * @param itemType
     *          - item type         
     * @return existed item data or null if not found
@@ -220,14 +204,6 @@ public class SessionDataManager implements ItemDataConsumer
          }
       }
       return item;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
-   {
-      return getItemData(parentData, name, ItemType.UNKNOWN);
    }
 
    /**
@@ -328,26 +304,6 @@ public class SessionDataManager implements ItemDataConsumer
     * @return existed item or null if not found
     * @throws RepositoryException
     */
-   @Deprecated
-   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool) throws RepositoryException
-   {
-      return getItem(parent, name, pool, ItemType.UNKNOWN);
-   }
-
-   /**
-    * Return Item by parent NodeDada and the name of searched item.
-    * 
-    * @param parent
-    *          - parent of the searched item
-    * @param name
-    *          - item name
-    * @param itemType
-    *          - item type
-    * @param pool
-    *          - indicates does the item fall in pool
-    * @return existed item or null if not found
-    * @throws RepositoryException
-    */
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType)
       throws RepositoryException
    {
@@ -422,27 +378,6 @@ public class SessionDataManager implements ItemDataConsumer
       }
    }
 
-   /**
-    * Return Item by parent NodeDada and the name of searched item.
-    * 
-    * @param parent
-    *          - parent of the searched item
-    * @param name
-    *          - item name
-    * @param pool
-    *          - indicates does the item fall in pool
-    * @param skipCheckInPersistence
-    *          - skip getting Item from persistence if need
-    * @return existed item or null if not found
-    * @throws RepositoryException
-    */
-   @Deprecated
-   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, boolean skipCheckInPersistence)
-      throws RepositoryException
-   {
-      return getItem(parent, name, pool, skipCheckInPersistence, ItemType.UNKNOWN, true);
-   }
-
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, boolean skipCheckInPersistence,
       ItemType itemType) throws RepositoryException
    {
@@ -491,25 +426,6 @@ public class SessionDataManager implements ItemDataConsumer
                + "sec");
          }
       }
-   }
-
-   /**
-    * Return Item by parent NodeDada and array of QPathEntry which represent a relative path to the
-    * searched item
-    * 
-    * @param parent
-    *          - parent of the searched item
-    * @param relPath
-    *          - array of QPathEntry which represents the relation path to the searched item
-    * @param pool
-    *          - indicates does the item fall in pool
-    * @return existed item or null if not found
-    * @throws RepositoryException
-    */
-   @Deprecated
-   public ItemImpl getItem(NodeData parent, QPathEntry[] relPath, boolean pool) throws RepositoryException
-   {
-      return getItem(parent, relPath, pool, ItemType.UNKNOWN);
    }
 
    /**
@@ -879,111 +795,6 @@ public class SessionDataManager implements ItemDataConsumer
          }
       }
       return refs;
-   }
-
-   /**
-    * Return list with properties, for the parent node, for which user have access permeations.
-    * 
-    * @param parent
-    *          NodeData
-    * @param pool
-    *          boolean, if true list of childs will be refreshed in Items pool
-    * @return List of NodeImpl
-    * @throws RepositoryException
-    *           if error occurs
-    * @throws AccessDeniedException
-    *           if it's no permissions for childs listing
-    */
-   @Deprecated
-   public List<NodeImpl> getChildNodes(NodeData parent, boolean pool) throws RepositoryException, AccessDeniedException
-   {
-
-      long start = 0;
-      if (log.isDebugEnabled())
-      {
-         start = System.currentTimeMillis();
-         log.debug("getChildNodes(" + parent.getQPath().getAsString() + ") >>>>>");
-      }
-
-      try
-      {
-         // merge data from changesLog with data from txManager
-         List<NodeData> nodeDatas = getChildNodesData(parent);
-         List<NodeImpl> nodes = new ArrayList<NodeImpl>(nodeDatas.size());
-
-         for (int i = 0, length = nodeDatas.size(); i < length; i++)
-         {
-            NodeData data = nodeDatas.get(i);
-            if (accessManager.hasPermission(data.getACL(), new String[]{PermissionType.READ}, session.getUserState()
-               .getIdentity()))
-            {
-               NodeImpl item = (NodeImpl)readItem(data, parent, pool, false);
-               session.getActionHandler().postRead(item);
-               nodes.add(item);
-            }
-         }
-         return nodes;
-      }
-      finally
-      {
-         if (log.isDebugEnabled())
-         {
-            log.debug("getChildNodes(" + parent.getQPath().getAsString() + ") <<<<< "
-               + ((System.currentTimeMillis() - start) / 1000d) + "sec");
-         }
-      }
-   }
-
-   /**
-    * Return list with properties, for the parent node, for which user have access permeations.
-    * 
-    * @param parent
-    *          NodeData
-    * @param pool
-    *          boolean, if true list of childs will be refreshed in Items pool
-    * @return List of PropertyImpl
-    * @throws RepositoryException
-    *           if error occurs
-    * @throws AccessDeniedException
-    *           if it's no permissions for childs listing
-    */
-   @Deprecated
-   public List<PropertyImpl> getChildProperties(NodeData parent, boolean pool) throws RepositoryException,
-      AccessDeniedException
-   {
-
-      long start = 0;
-      if (log.isDebugEnabled())
-      {
-         start = System.currentTimeMillis();
-         log.debug("getChildProperties(" + parent.getQPath().getAsString() + ") >>>>>");
-      }
-
-      try
-      {
-         List<PropertyData> propDatas = getChildPropertiesData(parent);
-         List<PropertyImpl> props = new ArrayList<PropertyImpl>(propDatas.size());
-         for (int i = 0, length = propDatas.size(); i < length; i++)
-         {
-            PropertyData data = propDatas.get(i);
-            if (accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.READ}, session.getUserState()
-               .getIdentity()))
-            {
-               ItemImpl item = readItem(data, parent, pool, false);
-               session.getActionHandler().postRead(item);
-               props.add((PropertyImpl)item);
-            }
-         }
-         return props;
-      }
-      finally
-      {
-         if (log.isDebugEnabled())
-         {
-            log.debug("getChildProperties(" + parent.getQPath().getAsString() + ") <<<<< "
-               + ((System.currentTimeMillis() - start) / 1000d) + "sec");
-         }
-      }
    }
 
    /**
@@ -2612,70 +2423,6 @@ public class SessionDataManager implements ItemDataConsumer
             return item;
          }
          return null;
-      }
-
-      /**
-       * Load nodes ti the pool USED FOR TEST PURPOSE ONLY
-       * 
-       * @param nodes
-       * @return child nodes
-       * @throws RepositoryException
-       */
-      @Deprecated
-      List<NodeImpl> getNodes(List<NodeImpl> nodes) throws RepositoryException
-      {
-         List<NodeImpl> children = new ArrayList<NodeImpl>();
-         for (NodeImpl node : nodes)
-         {
-            String id = node.getInternalIdentifier();
-
-            WeakReference<ItemImpl> weakItem = items.get(id);
-            NodeImpl pooled = weakItem != null ? (NodeImpl)weakItem.get() : null;
-
-            if (pooled == null)
-            {
-               items.put(id, new WeakReference<ItemImpl>(node));
-               children.add(node);
-            }
-            else
-            {
-               pooled.loadData(node.getData());
-               children.add(pooled);
-            }
-         }
-         return children;
-      }
-
-      /**
-       * Load properties to the pool USED FOR TEST PURPOSE ONLY
-       * 
-       * @param props
-       * @return child properties
-       * @throws RepositoryException
-       */
-      @Deprecated
-      List<PropertyImpl> getProperties(List<PropertyImpl> props) throws RepositoryException
-      {
-         List<PropertyImpl> children = new ArrayList<PropertyImpl>();
-         for (PropertyImpl prop : props)
-         {
-            String id = prop.getInternalIdentifier();
-
-            WeakReference<ItemImpl> weakItem = items.get(id);
-            PropertyImpl pooled = weakItem != null ? (PropertyImpl)weakItem.get() : null;
-
-            if (pooled == null)
-            {
-               items.put(id, new WeakReference<ItemImpl>(prop));
-               children.add(prop);
-            }
-            else
-            {
-               pooled.loadData(prop.getData());
-               children.add(pooled);
-            }
-         }
-         return children;
       }
 
       /**

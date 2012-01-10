@@ -602,13 +602,6 @@ public abstract class BaseStandaloneTest extends TestCase
    {
 
       @Override
-      public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,
-         IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      @Override
       public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
       {

@@ -121,7 +121,8 @@ public class TestSessionDataManager extends JcrImplBaseTest
       List<NodeImpl> nodes = new ArrayList<NodeImpl>();
       nodes.add(node1);
       nodes.add(node2);
-      List<NodeImpl> testNodes = pool.getNodes(nodes);
+
+      List<NodeImpl> testNodes = getNodes(pool, nodes);
       assertEquals(2, testNodes.size());
       assertEquals(node1, testNodes.get(0));
       assertEquals(node2, testNodes.get(1));
@@ -133,7 +134,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
       PropertyImpl prop1 = (PropertyImpl)modificationManager.update(ItemState.createAddedState(prop), true);
       List<PropertyImpl> props = new ArrayList<PropertyImpl>();
       props.add(prop1);
-      List<PropertyImpl> testProps = pool.getProperties(props);
+      List<PropertyImpl> testProps = getProperties(pool, props);
       assertEquals(1, testProps.size());
       assertEquals(prop1, testProps.get(0));
 
@@ -149,6 +150,70 @@ public class TestSessionDataManager extends JcrImplBaseTest
       // /TestSessionDataManager/testItemReferencePool2
 
       assertEquals(3, pool.size());
+   }
+
+   private List<NodeImpl> getNodes(SessionDataManager.ItemReferencePool pool, List<NodeImpl> nodes)
+      throws RepositoryException
+   {
+      List<ItemImpl> items = (List<ItemImpl>)pool.getAll();
+      List<NodeImpl> children = new ArrayList<NodeImpl>();
+      for (NodeImpl node : nodes)
+      {
+         String id = node.getInternalIdentifier();
+
+         NodeImpl pooled = null;
+         for (ItemImpl item : items)
+         {
+            if (items.get(0).getData().getIdentifier().equals(id))
+            {
+               pooled = (NodeImpl)item;
+               break;
+            }
+         }
+
+         if (pooled == null)
+         {
+            children.add(node);
+         }
+         else
+         {
+            pooled.loadData(node.getData());
+            children.add(pooled);
+         }
+      }
+      return children;
+   }
+
+   private List<PropertyImpl> getProperties(SessionDataManager.ItemReferencePool pool, List<PropertyImpl> props)
+      throws RepositoryException
+   {
+      List<ItemImpl> items = (List<ItemImpl>)pool.getAll();
+      List<PropertyImpl> children = new ArrayList<PropertyImpl>();
+      for (PropertyImpl prop : props)
+      {
+         String id = prop.getInternalIdentifier();
+
+         PropertyImpl pooled = null;
+         for (ItemImpl item : items)
+         {
+            if (items.get(0).getData().getIdentifier().equals(id))
+            {
+               pooled = (PropertyImpl)item;
+               break;
+            }
+         }
+
+         if (pooled == null)
+         {
+            children.add(prop);
+         }
+         else
+         {
+            pooled.loadData(prop.getData());
+            children.add(pooled);
+         }
+      }
+      return children;
    }
 
    public void testSessionChangesLog() throws Exception
@@ -252,12 +317,12 @@ public class TestSessionDataManager extends JcrImplBaseTest
       assertEquals(1, modificationManager.getChildNodesData(parent).size());
       assertEquals(2, modificationManager.getChildPropertiesData(parent).size());
 
-      assertEquals(1, modificationManager.getChildNodes(parent, true).size());
+      assertEquals(1, modificationManager.getChildNodesData(parent).size());
       // List <PropertyImpl> props =
       // modificationManager.getChildProperties(parent, true);
       // for(PropertyImpl p: props)
       // System.out.println(">>>>>>>>>>>>>>>> "+p.getPath());
-      assertEquals(2, modificationManager.getChildProperties(parent, true).size());
+      assertEquals(2, modificationManager.getChildPropertiesData(parent).size());
 
       // Collections.copy(dest, src);
 
@@ -283,8 +348,8 @@ public class TestSessionDataManager extends JcrImplBaseTest
       assertEquals(0, modificationManager.getChangesLog().getSize());
 
       assertNotNull(modificationManager.getItem(data1.getQPath(), true));
-
-      assertEquals(1, modificationManager.getChildProperties(data1, true).size());
+      
+      assertEquals(1, modificationManager.getChildPropertiesData(parent).size());
 
       // ... add property
       TransientPropertyData prop =

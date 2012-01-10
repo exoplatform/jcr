@@ -779,15 +779,6 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          return children;
       }
 
-      /**
-       * {@inheritDoc}
-       */
-      public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,
-         IllegalStateException
-      {
-         return getItemData(parentData, name, ItemType.UNKNOWN);
-      }
-
       public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
       {
