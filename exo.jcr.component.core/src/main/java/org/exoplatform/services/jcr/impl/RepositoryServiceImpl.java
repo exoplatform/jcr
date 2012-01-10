@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -33,7 +32,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
-import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
@@ -43,12 +41,8 @@ import org.picocontainer.Startable;
 import java.io.InputStream;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
@@ -75,8 +69,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
    private final List<ComponentPlugin> addNodeTypePlugins;
 
    private final List<ComponentPlugin> addNamespacesPlugins;
-
-   private final ManagerStartChanges managerStartChanges;
 
    private final ExoContainerContext containerContext;
 
@@ -106,7 +98,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       addNamespacesPlugins = new ArrayList<ComponentPlugin>();
       containerContext = context;
       currentRepositoryName.set(config.getDefaultRepositoryName());
-      managerStartChanges = new ManagerStartChanges();
    }
 
    public void addPlugin(ComponentPlugin plugin)
@@ -115,10 +106,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          addNodeTypePlugins.add(plugin);
       else if (plugin instanceof AddNamespacesPlugin)
          addNamespacesPlugins.add(plugin);
-      else if (plugin instanceof RepositoryChangesListenerRegisterPlugin)
-      {
-         managerStartChanges.addPlugin((RepositoryChangesListenerRegisterPlugin)plugin);
-      }
    }
 
    /**
@@ -154,7 +141,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
             {
                public Void run()
                {
-                  managerStartChanges.registerListeners(repositoryContainer);
                   repositoryContainer.start();
                   return null;
                }
@@ -308,7 +294,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       repositoryContainers.clear();
       addNamespacesPlugins.clear();
       addNodeTypePlugins.clear();
-      managerStartChanges.cleanup();
    }
 
    private void init(ExoContainer container) throws RepositoryConfigurationException, RepositoryException
@@ -468,158 +453,5 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       }
 
       return true;
-   }
-
-   /**
-    * Manager start changes plugins.
-    */
-   public class ManagerStartChanges
-   {
-
-      private Map<StorageKey, ItemsPersistenceListener> startChangesListeners =
-         new HashMap<StorageKey, ItemsPersistenceListener>();
-
-      /**
-       * Add new StartChangesPlugin to manager.
-       * 
-       * @param plugin
-       *          The StartChangesPlugin
-       */
-      public void addPlugin(RepositoryChangesListenerRegisterPlugin plugin)
-      {
-         String repositoryName = plugin.getRepositoryName();
-         String workspaces = plugin.getWorkspaces();
-         String listenerClassName = plugin.getListenerClassName();
-
-         if (repositoryName != null && workspaces != null && listenerClassName != null)
-         {
-            StringTokenizer listTokenizer = new StringTokenizer(workspaces, ",");
-            while (listTokenizer.hasMoreTokens())
-            {
-               String wsName = listTokenizer.nextToken();
-               startChangesListeners.put(new StorageKey(repositoryName, wsName, listenerClassName), null);
-            }
-         }
-      }
-
-      /**
-       * Register listeners.
-       * 
-       * @param repositoryContainer
-       * @throws ClassNotFoundException
-       */
-      public void registerListeners(RepositoryContainer repositoryContainer)
-      {
-         Iterator<StorageKey> storageKeys = startChangesListeners.keySet().iterator();
-         while (storageKeys.hasNext())
-         {
-            StorageKey sk = storageKeys.next();
-            if (sk.getRepositoryName().equals(repositoryContainer.getName()))
-            {
-               WorkspaceContainer wc = repositoryContainer.getWorkspaceContainer(sk.getWorkspaceName());
-
-               try
-               {
-                  Class<?> listenerType = ClassLoading.forName(sk.getListenerClassName(), this);
-                  wc.registerComponentImplementation(listenerType);
-                  ItemsPersistenceListener listener =
-                     (ItemsPersistenceListener)wc.getComponentInstanceOfType(listenerType);
-                  startChangesListeners.put(sk, listener);
-               }
-               catch (ClassNotFoundException e)
-               {
-                  log.error("Can not register listener " + e.getMessage());
-               }
-            }
-         }
-      }
-
-      /**
-       * Cleanup changes.
-       * 
-       */
-      public void cleanup()
-      {
-         startChangesListeners.clear();
-      }
-
-      /**
-       * Will be used as key for startChangesListeners.
-       * 
-       */
-      private class StorageKey
-      {
-         private final String repositoryName;
-
-         private final String workspaceName;
-
-         private final String listenerClassName;
-
-         /**
-          * StorageKey constructor.
-          * 
-          * @param repositoryName
-          *          The repository name
-          * @param workspaceName
-          *          The workspace name
-          */
-         public StorageKey(String repositoryName, String workspaceName, String listenerClassName)
-         {
-            this.repositoryName = repositoryName;
-            this.workspaceName = workspaceName;
-            this.listenerClassName = listenerClassName;
-         }
-
-         /**
-          * {@inheritDoc}
-          */
-         @Override
-         public boolean equals(Object o)
-         {
-            StorageKey k = (StorageKey)o;
-
-            return repositoryName.equals(k.repositoryName) && workspaceName.equals(k.workspaceName)
-               && listenerClassName.equals(k.listenerClassName);
-         }
-
-         /**
-          * {@inheritDoc}
-          */
-         @Override
-         public int hashCode()
-         {
-            return repositoryName.hashCode() ^ workspaceName.hashCode() ^ listenerClassName.hashCode();
-         }
-
-         /**
-          * Return repository name.
-          * 
-          * @return The repository name
-          */
-         public String getRepositoryName()
-         {
-            return repositoryName;
-         }
-
-         /**
-          * Return workspace name.
-          * 
-          * @return The workspace name
-          */
-         public String getWorkspaceName()
-         {
-            return workspaceName;
-         }
-
-         /**
-          * Return listener class name.
-          * 
-          * @return The listener class name
-          */
-         public String getListenerClassName()
-         {
-            return listenerClassName;
-         }
-      }
    }
 }
