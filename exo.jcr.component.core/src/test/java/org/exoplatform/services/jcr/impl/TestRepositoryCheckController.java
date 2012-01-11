@@ -365,6 +365,73 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    /**
     *  Usecase: property doens't have have parent node.
     */
+   public void testDBUsecasesSeveralVersionsOfSameItemSingleDB() throws Exception
+   {
+      checkSeveralVersionsOfSameItem(helper.createRepository(container, false, false));
+   }
+
+   /**
+    * Usecase: property doens't have have parent node.
+    */
+   public void testDBUsecasesSeveralVersionsOfSameItemMultiDB() throws Exception
+   {
+      checkSeveralVersionsOfSameItem(helper.createRepository(container, true, false));
+   }
+
+   private void checkSeveralVersionsOfSameItem(ManageableRepository repository) throws Exception
+   {
+      // create repository and add property
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
+      PropertyImpl prop = (PropertyImpl)node.setProperty("prop", "test");
+      session.save();
+      session.logout();
+
+      // repository is consistent
+      checkController = new RepositoryCheckController(repository);
+      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is consistent"));
+      checkController.getLastLogFile().delete();
+
+      WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
+      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+
+      // change ITEM table
+      String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+
+      Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
+
+      // add another item with new persisted version
+      if (isMultiDb)
+      {
+         String propId = IdGenerator.generate();
+         conn.prepareStatement(
+            "INSERT INTO JCR_MITEM VALUES ('" + propId + "','" + prop.getParentIdentifier()
+               + "','[]prop',1,2,1,NULL,1,FALSE)").execute();
+         conn.prepareStatement("ALTER TABLE JCR_MVALUE DROP CONSTRAINT JCR_PK_MVALUE").execute();
+         conn.prepareStatement("INSERT INTO JCR_MVALUE VALUES ('100','data','1','" + propId + "',NULL)").execute();
+      }
+      else
+      {
+         String propId = wsEntry.getName() + IdGenerator.generate();
+         conn.prepareStatement(
+            "INSERT INTO JCR_SITEM VALUES ('" + propId + "','" + wsEntry.getName() + prop.getParentIdentifier()
+               + "','[]prop',1,'" + wsEntry.getName() + "',2,1,NULL,1,FALSE)").execute();
+         conn.prepareStatement("ALTER TABLE JCR_SVALUE DROP CONSTRAINT JCR_PK_SVALUE").execute();
+         conn.prepareStatement("INSERT INTO JCR_SVALUE VALUES ('100','data','1','" + propId + "',NULL)").execute();
+      }
+
+      conn.commit();
+      conn.close();
+
+      // repository is inconsistent
+      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is inconsistent"));
+      checkController.getLastLogFile().delete();
+   }
+
+   /**
+    *  Usecase: property doens't have have parent node.
+    */
    public void testDBUsecasesPropertyWithoutParentSingleDB() throws Exception
    {
       checkDBUsecasesPropertyWithoutParent(helper.createRepository(container, false, false));

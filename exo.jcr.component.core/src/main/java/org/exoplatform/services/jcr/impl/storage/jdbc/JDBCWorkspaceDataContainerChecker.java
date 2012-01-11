@@ -128,6 +128,7 @@ public class JDBCWorkspaceDataContainerChecker
             + "' and NOT EXISTS(select * from JCR_SITEM P where P.ID = I.PARENT_ID)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS},
          "Items that do not have parent nodes", InspectionStatus.ERR));
+      
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM N where N.I_CLASS=1 and NOT EXISTS "
             + "(select * from JCR_MITEM P where P.I_CLASS=2 and P.PARENT_ID=N.ID)"
@@ -136,6 +137,7 @@ public class JDBCWorkspaceDataContainerChecker
             + "where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.CONTAINER_NAME='" + jdbcDataContainer.containerName + "')",
          new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
          "Nodes that do not have at least one property", InspectionStatus.ERR));
+      
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
             + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
@@ -144,6 +146,7 @@ public class JDBCWorkspaceDataContainerChecker
             + jdbcDataContainer.containerName + "' and V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_VPROPERTY_ID},
          "All value records that has not owner-property record", InspectionStatus.ERR));
+      
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM P where P.I_CLASS=2 and NOT EXISTS( select * from JCR_MVALUE V "
             + "where V.PROPERTY_ID=P.ID)" : "select * from JCR_SITEM P where P.CONTAINER_NAME='"
@@ -184,6 +187,7 @@ public class JDBCWorkspaceDataContainerChecker
       }
       queries.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID}, "Incorrect JCR_VALUE records",
          InspectionStatus.ERR));
+      
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM P where P.P_TYPE=9 and NOT EXISTS "
             + "(select * from JCR_MREF R where P.ID=R.PROPERTY_ID)"
@@ -209,6 +213,21 @@ public class JDBCWorkspaceDataContainerChecker
             + jdbcDataContainer.containerName + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "An item is its own parent.",
          InspectionStatus.ERR));
+
+      // Several versions of same item
+      queries
+         .add(new InspectionQuery(
+            jdbcDataContainer.multiDb
+               ? "select * from JCR_MITEM I where EXISTS (select count(VERSION) from JCR_MITEM J"
+                  + " WHERE I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
+                  + " GROUP BY PARENT_ID, NAME, I_INDEX, I_CLASS HAVING count(VERSION) > 1)"
+               : "select * from JCR_SITEM I where I.CONTAINER_NAME='" + jdbcDataContainer.containerName + "' and"
+                  + " EXISTS (select count(VERSION) from JCR_SITEM J WHERE I.CONTAINER_NAME = J.CONTAINER_NAME and"
+                  + " I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
+                  + " GROUP BY CONTAINER_NAME, PARENT_ID, NAME, I_INDEX, I_CLASS HAVING count(VERSION) > 1)", new String[]{
+               DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_VERSION,
+               DBConstants.COLUMN_CLASS, DBConstants.COLUMN_INDEX}, "Several versions of same item.",
+            InspectionStatus.ERR));
 
       // using existing DataSource to get a JDBC Connection.
       Connection jdbcConn = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
