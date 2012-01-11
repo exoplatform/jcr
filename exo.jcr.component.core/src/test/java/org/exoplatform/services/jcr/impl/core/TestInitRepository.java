@@ -22,12 +22,17 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.SystemIdentity;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.MembershipEntry;
+
+import java.util.ArrayList;
 
 import javax.jcr.NamespaceRegistry;
+import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -86,7 +91,6 @@ public class TestInitRepository extends JcrImplBaseTest
 
    public void testInitRegularWorkspace() throws Exception
    {
-
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();
       String sysWs = defRep.getSystemWorkspaceName();
@@ -102,7 +106,9 @@ public class TestInitRepository extends JcrImplBaseTest
          }
       }
       if (wsName == null)
+      {
          fail("not system workspace not found for test!!");
+      }
 
       // TODO
       // defRep.initWorkspace(wsName, "nt:unstructured");
@@ -123,7 +129,6 @@ public class TestInitRepository extends JcrImplBaseTest
 
    public void testAutoInitRootPermition()
    {
-
       WorkspaceEntry wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
       AccessControlList expectedAcl = new AccessControlList();
@@ -142,6 +147,54 @@ public class TestInitRepository extends JcrImplBaseTest
       {
          fail(e.getLocalizedMessage());
       }
+   }
 
+   public void testCanRemoveWorkspaceWhenWorkspaceNotFound() throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      try
+      {
+         repository.canRemoveWorkspace(" ");
+         fail();
+      }
+      catch (NoSuchWorkspaceException e)
+      {         
+      }
+   }
+
+   public void testCreateWorkspaceWhenWorkspaceHaventConfig()
+   {
+      try
+      {
+         repository.createWorkspace("someWorkspace");
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+   }
+
+   public void testGetSystemSessionWhenWorkspaceNotFound()
+   {
+      try
+      {
+         repository.getSystemSession(" ");
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+   }
+
+   public void testGetDynamicSessionWhenWorkspaceNotFound()
+   {
+      try
+      {
+         repository.getDynamicSession(" ", new ArrayList<MembershipEntry>());
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
    }
 }

@@ -189,10 +189,14 @@ public class RepositoryImpl implements ManageableRepository
    public boolean canRemoveWorkspace(String workspaceName) throws NoSuchWorkspaceException
    {
       if (repositoryContainer.getWorkspaceEntry(workspaceName) == null)
+      {
          throw new NoSuchWorkspaceException("No such workspace " + workspaceName);
+      }
 
       if (workspaceName.equals(config.getSystemWorkspaceName()))
+      {
          return false;
+      }
 
       SessionRegistry sessionRegistry =
          (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
@@ -287,8 +291,10 @@ public class RepositoryImpl implements ManageableRepository
       final WorkspaceContainer wsContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
 
       if (wsContainer == null)
+      {
          throw new RepositoryException("Workspace " + workspaceName
             + " is not configured. Use RepositoryImpl.configWorkspace() method");
+      }
 
       repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer().initWorkspace();
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
@@ -388,7 +394,9 @@ public class RepositoryImpl implements ManageableRepository
    {
 
       if (getState() == OFFLINE)
+      {
          LOG.warn("Repository " + getName() + " is OFFLINE.");
+      }
 
       WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
       if (workspaceContainer == null || !workspaceContainer.getWorkspaceInitializer().isWorkspaceInitialized())
@@ -409,7 +417,9 @@ public class RepositoryImpl implements ManageableRepository
    {
 
       if (getState() == OFFLINE)
+      {
          LOG.warn("Repository " + getName() + " is OFFLINE.");
+      }
 
       WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
       if (workspaceContainer == null || !workspaceContainer.getWorkspaceInitializer().isWorkspaceInitialized())
@@ -597,7 +607,9 @@ public class RepositoryImpl implements ManageableRepository
    {
 
       if (getState() == OFFLINE)
+      {
          LOG.warn("Repository " + getName() + " is OFFLINE.");
+      }
 
       ConversationState state;
 
@@ -606,9 +618,13 @@ public class RepositoryImpl implements ManageableRepository
          public ConversationState run() throws Exception
          {
             if (credentials != null)
+            {
                return authenticationPolicy.authenticate(credentials);
+            }
             else
+            {
                return authenticationPolicy.authenticate();
+            }
          }
       };
       try
@@ -653,12 +669,16 @@ public class RepositoryImpl implements ManageableRepository
       {
          workspaceName = config.getDefaultWorkspaceName();
          if (workspaceName == null)
+         {
             throw new NoSuchWorkspaceException("Both workspace and default-workspace name are null! ");
+         }
       }
 
       if (!isWorkspaceInitialized(workspaceName))
+      {
          throw new NoSuchWorkspaceException("Workspace '" + workspaceName + "' not found. "
             + "Probably is not initialized. If so either Initialize it manually or turn on the RepositoryInitializer");
+      }
 
       SessionFactory sessionFactory = repositoryContainer.getWorkspaceContainer(workspaceName).getSessionFactory();
       return sessionFactory.createSession(state);

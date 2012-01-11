@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.api.reading;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
 
 import java.io.ByteArrayInputStream;
@@ -27,12 +28,17 @@ import java.io.InputStream;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.VersionException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -167,6 +173,16 @@ public class TestProperty extends JcrAPIBaseTest
       node.setProperty("long", valueFactory.createValue(15l));
       assertEquals(15, node.getProperty("long").getLong());
       assertEquals(15, node.getProperty("long").getValue().getLong());
+
+      node.setProperty("noLong", "someText");
+      try
+      {
+         node.getProperty("noLong").getLong();
+         fail();
+      }
+      catch (ValueFormatException e)
+      {
+      }
    }
 
    public void testGetDouble() throws RepositoryException
@@ -174,6 +190,7 @@ public class TestProperty extends JcrAPIBaseTest
       node.setProperty("double", session.getValueFactory().createValue(15));
       assertEquals(15, (int)node.getProperty("double").getDouble());
       assertEquals(15, (int)node.getProperty("double").getValue().getDouble());
+
       try
       {
          node.getProperty("multi").getDouble();
@@ -183,6 +200,15 @@ public class TestProperty extends JcrAPIBaseTest
       {
       }
 
+      node.setProperty("noDouble", "someText");
+      try
+      {
+         node.getProperty("noDouble").getDouble();
+         fail();
+      }
+      catch (ValueFormatException e)
+      {
+      }
    }
 
    public void testGetDate() throws RepositoryException
@@ -192,6 +218,16 @@ public class TestProperty extends JcrAPIBaseTest
       node.setProperty("date", session.getValueFactory().createValue(calendar));
       assertEquals(calendar.getTimeInMillis(), node.getProperty("date").getDate().getTimeInMillis());
       assertEquals(calendar.getTimeInMillis(), node.getProperty("date").getValue().getDate().getTimeInMillis());
+
+      node.setProperty("noDate", "someText");
+      try
+      {
+         node.getProperty("noDate").getDate();
+         fail();
+      }
+      catch (ValueFormatException e)
+      {
+      }
    }
 
    public void testGetBoolean() throws RepositoryException
@@ -293,8 +329,28 @@ public class TestProperty extends JcrAPIBaseTest
       assertEquals(refNode.getPath(), node1.getProperty("reference").getNode().getPath());
 
       refNode.remove();
-      node1.remove();
 
+      node1.setProperty("noNode", "someText");
+      try
+      {
+         node1.getProperty("noNode").getNode();
+         fail();
+      }
+      catch (ValueFormatException e)
+      {
+      }
+      finally
+      {
+         node1.remove();
+      }
    }
 
+   public void testEquals() throws ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      Node testNode = root.addNode("testNode");
+      PropertyImpl testProperty = (PropertyImpl)testNode.setProperty("testProperty", "someText");
+      assertFalse(testProperty.equals(new Object()));
+
+   }
 }

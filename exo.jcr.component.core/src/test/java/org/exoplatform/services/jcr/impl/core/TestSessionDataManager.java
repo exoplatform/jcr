@@ -35,8 +35,14 @@ import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.ItemExistsException;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.VersionException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -377,5 +383,73 @@ public class TestSessionDataManager extends JcrImplBaseTest
       // get data by ItemData getItemData(QPath path)
       assertNotNull(modificationManager.getItemData(QPath.makeChildPath(((NodeImpl)root).getData().getQPath(),
          new InternalQName("", "testgetitemNode"))));
+   }
+
+   public void testIsDeleted() throws ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+      String identifier = testNode.getIdentifier();
+      QPath itemPath = testNode.getData().getQPath();
+
+      assertFalse(modificationManager.isDeleted(identifier));
+      assertFalse(modificationManager.isDeleted(itemPath));
+
+      testNode.remove();
+      assertTrue(modificationManager.isDeleted(identifier));
+      assertTrue(modificationManager.isDeleted(itemPath));
+   }
+
+   public void testGetACLWhenNodeIsRoot() throws RepositoryException
+   {
+      NodeImpl rootNode = (NodeImpl)root;
+      assertEquals(rootNode.getACL(), modificationManager.getACL(rootNode.getData().getQPath()));
+   }
+   
+   public void testUpdateWhenStateIsDeleted() throws ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+      ItemState state = ItemState.createDeletedState(testNode.getData());
+
+      try
+      {
+         modificationManager.update(state, false);
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+   }
+
+   public void testUpdateStateWhenStateIsDeleted() throws ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+      ItemState state = ItemState.createDeletedState(testNode.getData());
+
+      try
+      {
+         modificationManager.updateItemState(state);
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+   }
+
+   public void testRefreshWhenNodeHasModifiedStatus() throws ItemExistsException, PathNotFoundException,
+      VersionException, ConstraintViolationException, LockException, RepositoryException
+   {
+      NodeImpl testNode = (NodeImpl)root.addNode("testNode");
+
+      try
+      {
+         modificationManager.refresh(testNode.getData());
+         fail();
+      }
+      catch (InvalidItemStateException e)
+      {
+      }
    }
 }

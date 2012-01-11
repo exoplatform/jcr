@@ -115,4 +115,11 @@ public class TestJCRPath extends TestCase
       assertEquals("/jcr:node", path.makeAncestorPath(2).getAsString(false));
 
    }
+
+   public void testEquals() throws Exception
+   {
+      JCRPath path = factory.parseAbsPath("/jcr:node/node1[2]/exo:node2");
+      assertFalse(path.equals(null));
+      assertFalse(path.equals(new Object()));
+   }
 }
