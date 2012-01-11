@@ -84,6 +84,11 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I force index(PRIMARY)"
             + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
+
+      FIND_ITEM_BY_NAME =
+         "select * from JCR_SITEM"
+            + " where CONTAINER_NAME=? and PARENT_ID=? and NAME=? and I_INDEX=?"
+            + " order by I_CLASS";
    }
 
    /**
