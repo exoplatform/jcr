@@ -79,11 +79,18 @@ JONAS_OPTS="\
 
 # ------------------------- Begin eXo configuration ----------------------------
 cd $JONAS_ROOT/bin
-JONAS_OPTS="$JONAS_OPTS -Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog -Djava.awt.headless=true -Dexo.profiles=$1 -Djava.net.preferIPv4Stack=true -Dexo.jcr.parent.dir=.."
-JAVA_OPTS="$JAVA_OPTS -Xmx512M"
-if [ "$1" = "ispn" ]; then
+
+EXO_PROFILES="-Dexo.profiles="
+if [ "$1" = "jbc" ] || [ "$1" = "ispn" ]; then
+    EXO_PROFILES="$EXO_PROFILES,$1"
     shift
+else
+    EXO_PROFILES="$EXO_PROFILES,jbc"
 fi
+EXO_OPTS="-Dexo.product.developing=true $EXO_PROFILES -Djava.net.preferIPv4Stack=true"
+
+JONAS_OPTS="$JONAS_OPTS -Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog -Djava.awt.headless=true $EXO_PROFILES -Djava.net.preferIPv4Stack=true -Dexo.jcr.parent.dir=.."
+
 
 # -------------------------- End eXo configuration -----------------------------
 
