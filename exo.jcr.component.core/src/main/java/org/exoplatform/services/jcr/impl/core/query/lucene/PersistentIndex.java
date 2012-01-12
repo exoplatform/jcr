@@ -50,15 +50,14 @@ class PersistentIndex extends AbstractIndex
     * @param analyzer the analyzer for text tokenizing.
     * @param similarity the similarity implementation.
     * @param cache the document number cache
-    * @param indexingQueue the indexing queue.
     * @param directoryManager the directory manager.
     * @throws IOException if an error occurs while opening / creating the
     *  index.
     */
    PersistentIndex(String name, Analyzer analyzer, Similarity similarity, DocNumberCache cache,
-      IndexingQueue indexingQueue, final DirectoryManager directoryManager) throws IOException
+      final DirectoryManager directoryManager) throws IOException
    {
-      super(analyzer, similarity, directoryManager.getDirectory(name), cache, indexingQueue);
+      super(analyzer, similarity, directoryManager.getDirectory(name), cache);
       this.name = name;
       if (isExisting())
       {

@@ -884,11 +884,11 @@ public class NodeIndexer
    {
       if (supportHighlighting)
       {
-         return new LazyTextExtractorField(FieldNames.FULLTEXT, value, true, true);
+         return new TextFieldExtractor(FieldNames.FULLTEXT, value, true, true);
       }
       else
       {
-         return new LazyTextExtractorField(FieldNames.FULLTEXT, value, false, false);
+         return new TextFieldExtractor(FieldNames.FULLTEXT, value, false, false);
       }
    }
 

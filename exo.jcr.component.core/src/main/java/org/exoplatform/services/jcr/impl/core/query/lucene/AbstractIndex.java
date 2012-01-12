@@ -31,9 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.StringReader;
 import java.util.BitSet;
-import java.util.Iterator;
 
 /**
  * Implements common functionality for a lucene index.
@@ -99,11 +97,6 @@ abstract class AbstractIndex
    private ReadOnlyIndexReader readOnlyReader;
 
    /**
-    * The indexing queue.
-    */
-   private IndexingQueue indexingQueue;
-
-   /**
     * Flag that indicates whether there was an index present in the directory
     * when this AbstractIndex was created.
     */
@@ -119,17 +112,15 @@ abstract class AbstractIndex
     * @param cache         the document number cache if this index should use
     *                      one; otherwise <code>cache</code> is
     *                      <code>null</code>.
-    * @param indexingQueue the indexing queue.
     * @throws IOException if the index cannot be initialized.
     */
-   AbstractIndex(final Analyzer analyzer, Similarity similarity, final Directory directory, DocNumberCache cache,
-      IndexingQueue indexingQueue) throws IOException
+   AbstractIndex(final Analyzer analyzer, Similarity similarity, final Directory directory, DocNumberCache cache)
+      throws IOException
    {
       this.analyzer = analyzer;
       this.similarity = similarity;
       this.directory = directory;
       this.cache = cache;
-      this.indexingQueue = indexingQueue;
 
       AbstractIndex.this.isExisting = IndexReader.indexExists(directory);
 
@@ -177,8 +168,7 @@ abstract class AbstractIndex
       DynamicPooledExecutor.Command[] commands = new DynamicPooledExecutor.Command[docs.length];
       for (int i = 0; i < docs.length; i++)
       {
-         // check if text extractor completed its work
-         final Document doc = getFinishedDocument(docs[i]);
+         final Document doc = docs[i];
          // create a command for inverting the document
          commands[i] = new DynamicPooledExecutor.Command()
          {
@@ -514,64 +504,6 @@ abstract class AbstractIndex
          sharedReader.release();
          sharedReader = null;
       }
-   }
-
-   /**
-    * Returns a document that is finished with text extraction and is ready to
-    * be added to the index.
-    *
-    * @param doc the document to check.
-    * @return <code>doc</code> if it is finished already or a stripped down
-    *         copy of <code>doc</code> without text extractors.
-    * @throws IOException if the document cannot be added to the indexing
-    *                     queue.
-    */
-   private Document getFinishedDocument(Document doc) throws IOException
-   {
-      if (!Util.isDocumentReady(doc))
-      {
-         Document copy = new Document();
-         // mark the document that reindexing is required
-         copy.add(new Field(FieldNames.REINDEXING_REQUIRED, "", Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
-         Iterator fields = doc.getFields().iterator();
-         while (fields.hasNext())
-         {
-            Fieldable f = (Fieldable)fields.next();
-            Fieldable field = null;
-            Field.TermVector tv = getTermVectorParameter(f);
-            Field.Store stored = getStoreParameter(f);
-            Field.Index indexed = getIndexParameter(f);
-            if (f instanceof LazyTextExtractorField || f.readerValue() != null)
-            {
-               // replace all readers with empty string reader
-               field = new Field(f.name(), new StringReader(""), tv);
-            }
-            else if (f.stringValue() != null)
-            {
-               field = new Field(f.name(), f.stringValue(), stored, indexed, tv);
-            }
-            else if (f.isBinary())
-            {
-               field = new Field(f.name(), f.binaryValue(), stored);
-            }
-            if (field != null)
-            {
-               field.setOmitNorms(f.getOmitNorms());
-               copy.add(field);
-            }
-         }
-         // schedule the original document for later indexing
-         Document existing = indexingQueue.addDocument(doc);
-         if (existing != null)
-         {
-            // the queue already contained a pending document for this
-            // node. -> dispose the document
-            Util.disposeDocument(existing);
-         }
-         // use the stripped down copy for now
-         doc = copy;
-      }
-      return doc;
    }
 
    //-------------------------< properties >-----------------------------------

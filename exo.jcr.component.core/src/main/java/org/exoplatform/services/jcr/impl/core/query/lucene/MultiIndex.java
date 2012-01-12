@@ -217,11 +217,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private RedoLog redoLog = null;
 
    /**
-    * The indexing queue with pending text extraction jobs.
-    */
-   private IndexingQueue indexingQueue;
-
-   /**
     * Set&lt;NodeId> of uuids that should not be indexed.
     */
    private final IndexingTree indexingTree;
@@ -332,19 +327,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             continue;
          }
          PersistentIndex index =
-            new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-               directoryManager);
+            new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager);
          index.setMaxFieldLength(handler.getMaxFieldLength());
          index.setUseCompoundFile(handler.getUseCompoundFile());
          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
          indexes.add(index);
       }
-
-      // this method is run in privileged mode internally
-      IndexingQueueStore store = new IndexingQueueStore(indexDir);
-
-      // initialize indexing queue
-      this.indexingQueue = new IndexingQueue(store);
 
       // init volatile index
       resetVolatileIndex();
@@ -360,7 +348,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          reader.release();
       }
-      indexingQueue.initialize(this);
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
          // will also initialize IndexMerger
@@ -1082,7 +1069,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       try
       {
          index =
-            new PersistentIndex(indexName, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+            new PersistentIndex(indexName, handler.getTextAnalyzer(), handler.getSimilarity(), cache,
                directoryManager);
       }
       catch (IOException e)
@@ -1391,9 +1378,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             (indexes.get(i)).close();
          }
 
-         // close indexing queue
-         indexingQueue.close();
-
          // finally close directory
          try
          {
@@ -1435,16 +1419,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    NamespaceMappings getNamespaceMappings()
    {
       return nsMappings;
-   }
-
-   /**
-    * Returns the indexing queue for this multi index.
-    * 
-    * @return the indexing queue for this multi index.
-    */
-   public IndexingQueue getIndexingQueue()
-   {
-      return indexingQueue;
    }
 
    /**
@@ -1680,8 +1654,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          @Override
          public void run()
          {
-            // check if there are any indexing jobs finished
-            checkIndexingQueue();
             // check if volatile index should be flushed
             checkFlush();
          }
@@ -1696,7 +1668,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private void resetVolatileIndex() throws IOException
    {
-      volatileIndex = new VolatileIndex(handler.getTextAnalyzer(), handler.getSimilarity(), indexingQueue);
+      volatileIndex = new VolatileIndex(handler.getTextAnalyzer(), handler.getSimilarity());
       volatileIndex.setUseCompoundFile(handler.getUseCompoundFile());
       volatileIndex.setMaxFieldLength(handler.getMaxFieldLength());
       volatileIndex.setBufferSize(handler.getBufferSize());
@@ -1847,10 +1819,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
       synchronized (this)
       {
-         if (count.get() % 10 == 0)
-         {
-            checkIndexingQueue(true);
-         }
          checkVolatileCommit();
       }
 
@@ -1977,10 +1945,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
          synchronized (this)
          {
-            if (count.get() % 10 == 0)
-            {
-               checkIndexingQueue(true);
-            }
             checkVolatileCommit();
          }
       }
@@ -2117,76 +2081,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             log.error("Unable to commit volatile index", e);
          }
       }
-   }
-
-   /**
-    * Checks the indexing queue for finished text extrator jobs and updates the
-    * index accordingly if there are any new ones. This method is synchronized
-    * and should only be called by the timer task that periodically checks if
-    * there are documents ready in the indexing queue. A new transaction is
-    * used when documents are transfered from the indexing queue to the index.
-    */
-   private synchronized void checkIndexingQueue()
-   {
-      checkIndexingQueue(false);
-   }
-
-   /**
-    * Checks the indexing queue for finished text extrator jobs and updates the
-    * index accordingly if there are any new ones.
-    * 
-    * @param transactionPresent
-    *            whether a transaction is in progress and the current
-    *            {@link #getTransactionId()} should be used. If
-    *            <code>false</code> a new transaction is created when documents
-    *            are transfered from the indexing queue to the index.
-    */
-   private void checkIndexingQueue(boolean transactionPresent)
-   {
-      // EXOJCR-1337, have been commented since it is not used
-      //      Document[] docs = indexingQueue.getFinishedDocuments();
-      //      Map<String, Document> finished = new HashMap<String, Document>();
-      //      for (int i = 0; i < docs.length; i++)
-      //      {
-      //         String uuid = docs[i].get(FieldNames.UUID);
-      //         finished.put(uuid, docs[i]);
-      //      }
-      //
-      //      // now update index with the remaining ones if there are any
-      //      if (!finished.isEmpty())
-      //      {
-      //         log.info("updating index with {} nodes from indexing queue.", new Long(finished.size()));
-      //
-      //         // remove documents from the queue
-      //         for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
-      //         {
-      //            indexingQueue.removeDocument(it.next().toString());
-      //         }
-      //
-      //         try
-      //         {
-      //            if (transactionPresent)
-      //            {
-      //               for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
-      //               {
-      //                  executeAndLog(new DeleteNode(getTransactionId(), it.next()));
-      //               }
-      //               for (Iterator<Document> it = finished.values().iterator(); it.hasNext();)
-      //               {
-      //                  executeAndLog(new AddNode(getTransactionId(), it.next()));
-      //               }
-      //            }
-      //            else
-      //            {
-      //               update(finished.keySet(), finished.values());
-      //            }
-      //         }
-      //         catch (IOException e)
-      //         {
-      //            // update failed
-      //            log.warn("Failed to update index with deferred text extraction", e);
-      //         }
-      //      }
    }
 
    // ------------------------< Actions
@@ -3001,13 +2895,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       public void execute(MultiIndex index) throws IOException
       {
          String uuidString = uuid.toString();
-         // check if indexing queue is still working on
-         // this node from a previous update
-         Document doc = index.indexingQueue.removeDocument(uuidString);
-         if (doc != null)
-         {
-            Util.disposeDocument(doc);
-         }
          Term idTerm = new Term(FieldNames.UUID, uuidString);
          // if the document cannot be deleted from the volatile index
          // delete it from one of the persistent indexes.
@@ -3363,7 +3250,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                continue;
             }
             PersistentIndex index =
-               new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+               new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache,
                   directoryManager);
             index.setMaxFieldLength(handler.getMaxFieldLength());
             index.setUseCompoundFile(handler.getUseCompoundFile());
@@ -3456,8 +3343,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                merger = null;
             }
             offlineIndex =
-               new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-                  directoryManager);
+               new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager);
             if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
             {
                flush();
