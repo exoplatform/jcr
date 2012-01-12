@@ -862,5 +862,4 @@ public class TestPermissions extends BaseStandaloneTest
       assertEquals(marysNode.getACL().getPermissions("mary").size(), 0);
       assertEquals(((NodeData)marysNode.getData()).getACL().getOwner(), "admin");
    }
-
 }
