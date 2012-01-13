@@ -195,15 +195,7 @@ public class DBRestore implements DataRestore
    {
       try
       {
-         try
-         {
-            // don't care about any exception here
-            dbCleaner.executeCommitScripts();
-         }
-         catch (Exception e)
-         {
-            LOG.error("Can't remove temporary objects after cleaning", e);
-         }
+         dbCleaner.executeCommitScripts();
 
          jdbcConn.commit();
       }

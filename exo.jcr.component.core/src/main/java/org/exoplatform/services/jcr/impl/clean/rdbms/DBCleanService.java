@@ -34,9 +34,7 @@ import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -869,32 +867,6 @@ public class DBCleanService
 
       if (!isMultiDB)
       {
-         boolean cleanWithHelper = false;
-         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
-         {
-            cleanWithHelper = true;
-         }
-         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
-         {
-            cleanWithHelper = true;
-
-            Statement st = jdbcConn.createStatement();
-            st.execute("SELECT ENGINE FROM information_schema.TABLES where TABLE_SCHEMA='" + jdbcConn.getCatalog()
-               + "' and (TABLE_NAME='JCR_SITEM' or TABLE_NAME='JCR_MITEM')");
-            ResultSet result = st.getResultSet();
-            if (result.next())
-            {
-               String engine = result.getString("ENGINE");
-               if (engine.equalsIgnoreCase("MyISAM"))
-               {
-                  cleanWithHelper = false;
-               }
-            }
-         }
-
          String containerName = wsEntry.getName();
          String multiDb = isMultiDB ? "M" : "S";
 
@@ -923,21 +895,8 @@ public class DBCleanService
                + containerName + "')");
          cleanScripts.add("delete from JCR_SREF where PROPERTY_ID IN (select ID from JCR_SITEM where CONTAINER_NAME='"
             + containerName + "')");
-
-         if (cleanWithHelper)
-         {
-            cleanScripts.add("delete from JCR_SITEM where I_CLASS=2 and CONTAINER_NAME='" + containerName + "'");
-
-            String selectItems =
-               "select ID from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME='" + containerName + "' and PARENT_ID=?";
-            String deleteItems =
-               "delete from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME='" + containerName + "' and PARENT_ID=?";
-
-            return new DBCleaner(jdbcConn, cleanScripts, rollbackScripts, commitScripts, new RecursiveDBCleanHelper(
-               jdbcConn, selectItems, deleteItems), dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
-         }
-
          cleanScripts.add("delete from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
+
          return new DBCleaner(jdbcConn, cleanScripts, rollbackScripts, commitScripts,
             dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
       }
@@ -980,15 +939,7 @@ public class DBCleanService
       try
       {
          dbCleaner.executeCleanScripts();
-
-         try
-         {
-            dbCleaner.executeCommitScripts();
-         }
-         catch (SQLException e)
-         {
-            LOG.error("Can't remove temporary objects", e);
-         }
+         dbCleaner.executeCommitScripts();
 
          jdbcConn.commit();
       }

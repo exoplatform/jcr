@@ -35,7 +35,7 @@ public class DummyDBCleaner extends DBCleaner
     */
    public DummyDBCleaner()
    {
-      super(null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), null, false);
+      super(null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), false);
    }
 
    /**

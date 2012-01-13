@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The goal of this class is removing workspace data from database.
+ * The goal of this class is removing data from database.
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: DBCleaner.java 3769 2011-01-04 15:36:06Z areshetnyak $
@@ -63,11 +63,6 @@ public class DBCleaner
    protected final List<String> commitScripts = new ArrayList<String>();
 
    /**
-    * DB clean helper.
-    */
-   protected final DBCleanHelper dbCleanHelper;
-
-   /**
     * Idicates if executing scripts should be done in autoCommit mode.                  
     */
    protected final boolean autoCommit;
@@ -89,34 +84,13 @@ public class DBCleaner
     *          indicates if executing scripts should be done in autoCommit mode                  
     */
    public DBCleaner(Connection connection, List<String> cleanScripts, List<String> rollbackScripts,
-      List<String> commitScripts, DBCleanHelper dbCleanHelper, boolean autoCommit)
+      List<String> commitScripts, boolean autoCommit)
    {
       this.connection = connection;
       this.cleanScripts.addAll(cleanScripts);
       this.rollbackScripts.addAll(rollbackScripts);
       this.commitScripts.addAll(commitScripts);
-      this.dbCleanHelper = dbCleanHelper;
       this.autoCommit = autoCommit;
-   }
-
-   /**
-    * DBCleaner constructor.
-    * 
-    * @param connection 
-    *          connection to database where workspace tables is placed
-    * @param cleanScripts
-    *          scripts for cleaning database
-    * @param rollbackScripts
-    *          scripts for execution when something failed         
-    * @param commitScripts
-    *          scripts for removing temporary objects
-    * @param autoCommit
-    *          indicates if executing scripts should be done in autoCommit mode                  
-    */
-   public DBCleaner(Connection connection, List<String> cleanScripts, List<String> rollbackScripts,
-      List<String> commitScripts, boolean autoCommit)
-   {
-      this(connection, cleanScripts, rollbackScripts, commitScripts, null, autoCommit);
    }
 
    /**
@@ -128,11 +102,6 @@ public class DBCleaner
    public void executeCleanScripts() throws SQLException
    {
       executeScripts(cleanScripts);
-
-      if (dbCleanHelper != null)
-      {
-         dbCleanHelper.executeCleanScripts();
-      }
    }
 
    /** 
