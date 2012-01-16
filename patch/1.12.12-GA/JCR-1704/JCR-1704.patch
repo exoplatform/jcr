@@ -1,0 +1,1023 @@
+Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java
+===================================================================
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java	(revision 5450)
++++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java	(working copy)
+@@ -144,6 +144,39 @@
+       assertEquals(headers.getFirst(HttpHeaders.CONTENT_TYPE), property.getString());
+    }
+ 
++   /**
++    * Testing if read-only mime-types properties, which can be set as initial parameters
++    * for WebDavService, are indeed read-only. 
++    * More info can be found here: https://jira.exoplatform.org/browse/JCR-1704
++    * @throws Exception
++    */
++   public void testReadOnlyMimeTypeProperties() throws Exception
++   {
++      String testMimeTypeProperty = "test/mime-type";
++      String content = TestUtils.getFileContent();
++      String path = TestUtils.getFileName();
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++
++      // setting content-type header
++      // test/mime-type is defined in init params to be read only mime type
++      headers.add(HttpHeaders.CONTENT_TYPE, testMimeTypeProperty);
++      // putting a resource
++      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
++
++      headers.clear();
++      // setting content-type header again
++      // this time we set MediaType.TEXT_HTML to replace previous mime type
++      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML);
++      // putting one mopre time
++      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
++
++      // gettin jcr:content node, which stores jcr:mimeType parameter
++      Node node = session.getRootNode().getNode(TextUtil.relativizePath(path)).getNode("jcr:content");
++
++      assertEquals("Mime-type property should not be changed.", testMimeTypeProperty,
++         node.getProperty("jcr:mimeType").getString());
++   }
++
+    @Override
+    protected String getRepositoryName()
+    {
+Index: exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml
+===================================================================
+--- exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(revision 5450)
++++ exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(working copy)
+@@ -173,7 +173,16 @@
+    <component>
+       <type>org.exoplatform.services.jcr.webdav.WebDavServiceImpl</type>
+       <init-params>
+-
++         
++         <!-- 
++            To test read-only mime-type properties to be correctly fetched and processed during put requests.
++            See more details here: https://jira.exoplatform.org/browse/JCR-1704
++         -->
++	      <value-param>
++            <name>read-only-mime-types</name>
++            <value>test/mime-type</value>
++         </value-param>
++         
+          <value-param>
+             <name>auto-mix-lockable</name>
+             <value>false</value>
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 5450)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(working copy)
+@@ -75,9 +75,12 @@
+ import java.net.URISyntaxException;
+ import java.net.URLEncoder;
+ import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.HashMap;
++import java.util.HashSet;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Set;
+ 
+ import javax.jcr.NoSuchWorkspaceException;
+ import javax.jcr.PathNotFoundException;
+@@ -141,6 +144,8 @@
+ 
+    public static final String FOLDER_ICON_PATH = "folder-icon-path";
+ 
++   public static final String READ_ONLY_MIME_TYPES = "read-only-mime-types";
++
+    /**
+     * Logger.
+     */
+@@ -192,6 +197,12 @@
+    private Map<String, String> xsltParams = new HashMap<String, String>();
+ 
+    /**
++    * Set to keep all 'read-only' mime types. Mime-types listed here  
++    * are not allowed to be changed. 
++    */
++   private Set<String> readOnlyMimeTypes = new HashSet<String>();
++
++   /**
+     * The list of allowed methods.
+     */
+    private static final String ALLOW;
+@@ -300,6 +311,14 @@
+ 
+       }
+ 
++      ValueParam pReadOnlyMimeTypes = params.getValueParam(READ_ONLY_MIME_TYPES);
++      if (pReadOnlyMimeTypes != null)
++      {
++         for (String mimeType : Arrays.asList(pReadOnlyMimeTypes.getValue().split(",")))
++         {
++            readOnlyMimeTypes.add(mimeType.trim());
++         }
++      }
+    }
+ 
+    /**
+@@ -1038,7 +1057,8 @@
+          NodeType nodeType = ntm.getNodeType(contentNodeType);
+          NodeTypeUtil.checkContentResourceType(nodeType);
+ 
+-         return new PutCommand(nullResourceLocks).put(session, path(repoPath), inputStream, fileNodeType,
++         return new PutCommand(nullResourceLocks, readOnlyMimeTypes).put(session, path(repoPath), inputStream,
++            fileNodeType,
+             contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType,
+             autoVersionType, tokens);
+ 
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java	(revision 5450)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java	(working copy)
+@@ -24,7 +24,9 @@
+ 
+ import java.io.InputStream;
+ import java.util.Calendar;
++import java.util.HashSet;
+ import java.util.List;
++import java.util.Set;
+ 
+ import javax.jcr.AccessDeniedException;
+ import javax.jcr.Node;
+@@ -50,6 +52,12 @@
+    private final NullResourceLocksHolder nullResourceLocks;
+ 
+    /**
++    * Set to keep all 'read-only' mime types. Mime-types listed here  
++    * are not allowed to be changed. 
++    */
++   private final Set<String> readOnlyMimeTypes;
++
++   /**
+     * Constructor.
+     * 
+     * @param nullResourceLocks resource locks.
+@@ -57,9 +65,22 @@
+    public PutCommand(final NullResourceLocksHolder nullResourceLocks)
+    {
+       this.nullResourceLocks = nullResourceLocks;
++      this.readOnlyMimeTypes = new HashSet<String>();
+    }
+ 
+    /**
++    * Constructor.
++    * 
++    * @param nullResourceLocks resource locks.
++    * @param readOnlyMimeTypes set of 'read-only' mime types 
++    */
++   public PutCommand(final NullResourceLocksHolder nullResourceLocks, Set<String> readOnlyMimeTypes)
++   {
++      this.nullResourceLocks = nullResourceLocks;
++      this.readOnlyMimeTypes = readOnlyMimeTypes;
++   }
++
++   /**
+     * Webdav Put method implementation.
+     * 
+     * @param session current session
+@@ -205,7 +226,20 @@
+    {
+ 
+       Node content = node.getNode("jcr:content");
+-      content.setProperty("jcr:mimeType", mimeType);
++
++      /* 
++         Workaround created to fix JCR-1704
++
++         1. Check if jcr:mimeType property is not set, if it is not set we can set it without worries
++         1. Check if jcr:mimeType property is in 'read-only' properties list,
++            if not we again can set it without worries
++      */
++      if (!content.hasProperty("jcr:mimeType")
++         || !readOnlyMimeTypes.contains(content.getProperty("jcr:mimeType").getString()))
++      {
++         content.setProperty("jcr:mimeType", mimeType);
++      }
++
+       if (encoding != null)
+       {
+          content.setProperty("jcr:encoding", encoding);
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(revision 5450)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(working copy)
+@@ -1,345 +1,471 @@
+-<?xml version='1.0' encoding='UTF-8'?>
+-<!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+-<chapter id="JCR.WebDAV">
+-<?dbhtml filename="ch-webdav.html"?>  <title>WebDAV</title>
+-  <section>
+-    <title>Related documents</title>
+-    <itemizedlist>
+-      <listitem>
+-        <para><link linkend="JCR.LinkProducerService">Link Producer</link></para>
+-      </listitem>
+-    </itemizedlist>
+-  </section>
+-  <section>
+-    <title>Introduction</title>
+-    <para>The WebDAV protocol enables you to use the third party tools to
+-    communicate with hierarchical content servers via HTTP. It is possible to
+-    add and remove documents or a set of documents from a path on the server.
+-    DeltaV is an extension of the WebDav protocol that allows managing
+-    document versioning. Locking guarantees protection against multiple access
+-    when writing resources. The ordering support allows changing the position
+-    of the resource in the list and sort the directory  to make  the directory tree viewed  conveniently. The full-text search makes it easy to find the
+-    necessary documents. You can search by using two languages: SQL and
+-    XPATH.</para>
+-    <para>In eXo JCR, we plug in the WebDAV layer - based on the code taken
+-    from the extension modules of the reference implementation - on the top of
+-    our JCR implementation so that it is possible to browse a workspace using
+-    the third party tools (it can be Windows folders or Mac ones as well as a
+-    Java WebDAV client, such as DAVExplorer or IE using File-&gt;Open as a Web
+-    Folder).</para>
+-    <para>Now WebDav is an extension of the REST service. To get the WebDav
+-    server ready, you must deploy the REST application. Then, you can access
+-    any workspaces of your repository by using the following URL:</para>
+-    <para>Standalone mode:</para>
+-    <para><uri>http://host:port/rest/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
+-    <para>Portal mode:</para>
+-    <para><uri>http://host:port/portal/rest/private/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
+-    <para>When accessing the WebDAV server with the  URL<uri>http://localhost:8080/rest/jcr/repository/production</uri>, you might
+-    also use &quot;collaboration&quot; (instead of &quot;production&quot;) which is the default
+-    workspace in eXo products. You will be asked to enter your  login and
+-    password. Those will then be checked by using the organization service
+-    that can be implemented thanks to an InMemory (dummy) module or a  DB module
+-    or an LDAP one and the JCR user session will be created with the correct JCR
+-    Credentials.</para>
+-    <note>
+-      <para>If you try the &quot;in ECM&quot;
+-    option, add &quot;@ecm&quot; to the user&apos;s password. Alternatively, you may modify
+-    jaas.conf by adding the <emphasis role="bold">domain=ecm</emphasis> option
+-    as follows:</para>
+-      <programlisting>exo-domain {
+-     org.exoplatform.services.security.jaas.BasicLoginModule required domain=ecm;
+-};</programlisting>
+-    </note>
+-  </section>
+-  <section>
+-    <title>Configuration</title>
+-    <programlisting>&lt;component&gt;
+-  &lt;key&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/key&gt;
+-  &lt;type&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/type&gt;
+-  &lt;init-params&gt;
+-
+-    &lt;!-- this parameter indicates the default login and password values
+-         used as credentials for accessing the repository --&gt;
+-    &lt;!-- value-param&gt;
+-      &lt;name&gt;default-identity&lt;/name&gt;
+-      &lt;value&gt;admin:admin&lt;/value&gt;    
+-    &lt;/value-param --&gt;
+-
+-    &lt;!-- this is the value of WWW-Authenticate header --&gt;
+-    &lt;value-param&gt;
+-      &lt;name&gt;auth-header&lt;/name&gt;
+-      &lt;value&gt;Basic realm=&quot;eXo-Platform Webdav Server 1.6.1&quot;&lt;/value&gt;
+-    &lt;/value-param&gt;
+-
+-    &lt;!-- default node type which is used for the creation of collections --&gt;
+-    &lt;value-param&gt;
+-      &lt;name&gt;def-folder-node-type&lt;/name&gt;
+-      &lt;value&gt;nt:folder&lt;/value&gt;
+-    &lt;/value-param&gt;
+-
+-    &lt;!-- default node type which is used for the creation of files --&gt;
+-    &lt;value-param&gt;
+-      &lt;name&gt;def-file-node-type&lt;/name&gt;
+-      &lt;value&gt;nt:file&lt;/value&gt;
+-    &lt;/value-param&gt;
+-
+-    &lt;!-- if MimeTypeResolver can&apos;t find the required mime type, 
+-         which conforms with the file extension, and the mimeType header is absent
+-         in the HTTP request header, this parameter is used 
+-         as the default mime type--&gt;
+-    &lt;value-param&gt;
+-      &lt;name&gt;def-file-mimetype&lt;/name&gt;
+-      &lt;value&gt;application/octet-stream&lt;/value&gt;
+-    &lt;/value-param&gt;
+-
+-    &lt;!-- This parameter indicates one of the three cases when you update the content of the resource by PUT command.
+-         In case of &quot;create-version&quot;, PUT command creates the new version of the resource if this resource exists.
+-         In case of &quot;replace&quot; - if the resource exists, PUT command updates the content of the resource and its last modification date.
+-         In case of &quot;add&quot;, the PUT command tries to create the new resource with the same name (if the parent node allows same-name siblings).--&gt;
+-
+-    &lt;value-param&gt;
+-      &lt;name&gt;update-policy&lt;/name&gt;
+-      &lt;value&gt;create-version&lt;/value&gt;
+-      &lt;!--value&gt;replace&lt;/value --&gt;
+-      &lt;!-- value&gt;add&lt;/value --&gt;
+-    &lt;/value-param&gt;
+-
+-    &lt;!--
+-        This parameter determines how service responds to a method that attempts to modify file content.
+-        In case of &quot;checkout-checkin&quot; value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout and followed by a checkin operation.
+-        In case of &quot;checkout&quot; value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout operation.
+-    --&gt;         
+-    &lt;value-param&gt;
+-      &lt;name&gt;auto-version&lt;/name&gt;
+-      &lt;value&gt;checkout-checkin&lt;/value&gt;
+-      &lt;!--value&gt;checkout&lt;/value --&gt;
+-    &lt;/value-param&gt;
+-
+-    &lt;!--
+-        This parameter is responsible for managing Cache-Control header value which will be returned to the client.
+-        You can use patterns like &quot;text/*&quot;, &quot;image/*&quot; or wildcard to define the type of content.
+-    --&gt;  
+-    &lt;value-param&gt;
+-      &lt;name&gt;cache-control&lt;/name&gt;
+-      &lt;value&gt;text/xml,text/html:max-age=3600;image/png,image/jpg:max-age=1800;*/*:no-cache;&lt;/value&gt;
+-    &lt;/value-param&gt;
+-    
+-    &lt;!--
+-        This parameter determines the absolute path to the folder icon file, which is shown
+-        during WebDAV view of the contents
+-    --&gt;
+-    &lt;value-param&gt;
+-      &lt;name&gt;folder-icon-path&lt;/name&gt;
+-      &lt;value&gt;/absolute/path/to/file&lt;/value&gt;
+-    &lt;/value-param&gt;
+-
+-  &lt;/init-params
+-&lt;/component&gt;</programlisting>
+-  </section>
+-  <section>
+-    <title>Screenshots</title>
+-    <para>At present, eXo JCR WebDav server is  tested by using MS Internet
+-    Explorer, <ulink url="http://www.ics.uci.edu/~webdav">Dav Explorer</ulink>, <ulink url="http://www.xythos.com/home/xythos/products/xythos_drive.html">Xythos Drive</ulink>, Microsoft Office 2003 (as client), and Ubuntu Linux.</para>
+-    <section>
+-      <title>MS Internet Explorer</title>
+-      <para>(File -&gt; Open as Web Folder)</para>
+-      <mediaobject>
+-        <imageobject>
+-          <imagedata fileref="images/protocols/webdav_explorer.jpg"/>
+-        </imageobject>
+-      </mediaobject>
+-    </section>
+-    <section>
+-      <title>Dav Explorer</title>
+-      <mediaobject>
+-        <imageobject>
+-          <imagedata fileref="images/protocols/webdav_davexplorer.jpg"/>
+-        </imageobject>
+-      </mediaobject>
+-    </section>
+-    <section>
+-      <title>Xythos Drive</title>
+-      <mediaobject>
+-        <imageobject>
+-          <imagedata fileref="images/protocols/webdav_xythosdrive.jpg"/>
+-        </imageobject>
+-      </mediaobject>
+-    </section>
+-    <section>
+-      <title>Microsoft Office 2003</title>
+-      <para>(as client) (File-&gt;Open with typing http://... href in the file
+-      name box)</para>
+-      <mediaobject>
+-        <imageobject>
+-          <imagedata fileref="images/protocols/webdav_msoffice2003.jpg"/>
+-        </imageobject>
+-      </mediaobject>
+-    </section>
+-    <section>
+-      <title>Ubuntu Linux</title>
+-      <mediaobject>
+-        <imageobject>
+-          <imagedata fileref="images/protocols/webdav_ubuntulinux.jpg"/>
+-        </imageobject>
+-      </mediaobject>
+-    </section>
+-  </section>
+-  <section>
+-    <title>Comparison table of WebDav and JCR commands</title>
+-    <table>
+-      <title/>
+-      <tgroup cols="2">
+-        <thead>
+-          <row>
+-            <entry>WebDav</entry>
+-            <entry>JCR</entry>
+-          </row>
+-        </thead>
+-        <tbody>
+-          <row>
+-            <entry>COPY</entry>
+-            <entry>Workspace.copy(...)</entry>
+-          </row>
+-          <row>
+-            <entry>DELETE</entry>
+-            <entry>Node.remove()</entry>
+-          </row>
+-          <row>
+-            <entry>GET</entry>
+-            <entry>Node.getProperty(...); Property.getValue()</entry>
+-          </row>
+-          <row>
+-            <entry>HEAD</entry>
+-            <entry>Node.getProperty(...); Property.getLength()</entry>
+-          </row>
+-          <row>
+-            <entry>MKCOL</entry>
+-            <entry>Node.addNode(...)</entry>
+-          </row>
+-          <row>
+-            <entry>MOVE</entry>
+-            <entry>Session.move(...) or Workspace.move(...)</entry>
+-          </row>
+-          <row>
+-            <entry>PROPFIND</entry>
+-            <entry>Session.getNode(...); Node.getNode(...); Node.getNodes(...); Node.getProperties()</entry>
+-          </row>
+-          <row>
+-            <entry>PROPPATCH</entry>
+-            <entry>Node.setProperty(...); Node.getProperty(...).remove()</entry>
+-          </row>
+-          <row>
+-            <entry>PUT</entry>
+-            <entry>Node.addNode(&quot;node&quot;,&quot;nt:file&quot;); Node.setProperty(&quot;jcr:data&quot;, &quot;data&quot;)</entry>
+-          </row>
+-          <row>
+-            <entry>CHECKIN</entry>
+-            <entry>Node.checkin()</entry>
+-          </row>
+-          <row>
+-            <entry>CHECKOUT</entry>
+-            <entry>Node.checkout()</entry>
+-          </row>
+-          <row>
+-            <entry>REPORT</entry>
+-            <entry>Node.getVersionHistory(); VersionHistory.getAllVersions(); Version.getProperties()</entry>
+-          </row>
+-          <row>
+-            <entry>RESTORE</entry>
+-            <entry>Node.restore(...)</entry>
+-          </row>
+-          <row>
+-            <entry>UNCHECKOUT</entry>
+-            <entry>Node.restore(...)</entry>
+-          </row>
+-          <row>
+-            <entry>VERSION-CONTROL</entry>
+-            <entry>Node.addMixin(&quot;mix:versionable&quot;)</entry>
+-          </row>
+-          <row>
+-            <entry>LOCK</entry>
+-            <entry>Node.lock(...)</entry>
+-          </row>
+-          <row>
+-            <entry>UNLOCK</entry>
+-            <entry>Node.unlock()</entry>
+-          </row>
+-          <row>
+-            <entry>ORDERPATCH</entry>
+-            <entry>Node.orderBefore(...)</entry>
+-          </row>
+-          <row>
+-            <entry>SEARCH</entry>
+-            <entry>Workspace.getQueryManager(); QueryManager.createQuery(); Query.execute()</entry>
+-          </row>
+-        </tbody>
+-      </tgroup>
+-    </table>
+-  </section>
+-  <section>
+-    <title>Restrictions</title>
+-    <para>There are some restrictions for WebDAV in different Operating
+-    systems.</para>
+-    <section>
+-      <title>Windows 7</title>
+-      <para>When you try to set up a web folder by “adding a network location”
+-      or “map a network drive” through My Computer, you can get an error
+-      message saying that either “The folder you entered does not appear to be valid.
+-      Please choose another” or “Windows cannot access… Check the spelling of
+-      the name. Otherwise, there might be…”. These errors may  appear when you are
+-      using SSL or non-SSL.</para>
+-      <para>To fix this,   do as follows:</para>
+-      <orderedlist>
+-        <listitem>
+-          <para>Go to Windows Registry Editor.</para>
+-        </listitem>
+-        <listitem>
+-          <para>Find a key:
+-          \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlset\services\WebClient\Parameters\BasicAuthLevel
+-          .</para>
+-        </listitem>
+-        <listitem>
+-          <para>Change the value to 2.</para>
+-        </listitem>
+-      </orderedlist>
+-    </section>
+-    <section>
+-      <title>Microsoft Office 2010</title>
+-      <para>If you have Microsoft Office 2010 applications or Microsoft Office 2007 applications installed on a client computer. From that client computer, you try to access an Office file that is stored on a web server that is configured for Basic authentication. The connection between your computer and the web server does not use Secure Sockets Layer (SSL). When you try to open or to download the file, you experience the following symptoms:
+-        <itemizedlist>
+-          <listitem>
+-            <para>The Office file does not open or download.</para>
+-          </listitem> 
+-          <listitem>
+-            <para>You do not receive a Basic authentication password prompt when you try to open or to download the file.</para>
+-          </listitem>
+-          <listitem>
+-            <para>You do not receive an error message when you try to open the file. The associated Office application starts. However, the selected file does not open.</para>
+-          </listitem>
+-        </itemizedlist>
+-      </para>
+-      <para>To enable Basic authentication on the client computer, follow these steps:</para>
+-      <orderedlist>
+-        <listitem>
+-          <para>Click Start, type regedit in the Start Search box, and then press Enter.</para>
+-        </listitem>
+-        <listitem>
+-          <para>Locate and then click the following registry subkey: </para>
+-          <para>HKEY_CURRENT_USER\Software\Microsoft\Office\14.0\Common\Internet</para>
+-        </listitem>
+-        <listitem>
+-          <para>On the Edit menu, point to New, and then click DWORD Value.</para>
+-        </listitem>
+-        <listitem>
+-          <para>Type BasicAuthLevel, and then press Enter.</para>
+-        </listitem>
+-        <listitem>
+-          <para>Right-click BasicAuthLevel, and then click Modify.</para>
+-        </listitem>
+-        <listitem>
+-          <para>In the Value data box, type 2, and then click OK.</para>
+-        </listitem>
+-      </orderedlist>
+-    </section>
+-  </section>
+-</chapter>
++<?xml version="1.0" encoding="UTF-8"?>
++<!-- This document was created with Syntext Serna Free. -->
++<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
++"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
++<chapter id="JCR.WebDAV">
++  <?dbhtml filename="ch-webdav.html"?>
++
++  <title>WebDAV</title>
++
++  <section>
++    <title>Related documents</title>
++
++    <itemizedlist>
++      <listitem>
++        <para><link linkend="JCR.LinkProducerService">Link
++        Producer</link></para>
++      </listitem>
++    </itemizedlist>
++  </section>
++
++  <section>
++    <title>Introduction</title>
++
++    <para>The WebDAV protocol enables you to use the third party tools to
++    communicate with hierarchical content servers via HTTP. It is possible to
++    add and remove documents or a set of documents from a path on the server.
++    DeltaV is an extension of the WebDav protocol that allows managing
++    document versioning. Locking guarantees protection against multiple access
++    when writing resources. The ordering support allows changing the position
++    of the resource in the list and sort the directory to make the directory
++    tree viewed conveniently. The full-text search makes it easy to find the
++    necessary documents. You can search by using two languages: SQL and
++    XPATH.</para>
++
++    <para>In eXo JCR, we plug in the WebDAV layer - based on the code taken
++    from the extension modules of the reference implementation - on the top of
++    our JCR implementation so that it is possible to browse a workspace using
++    the third party tools (it can be Windows folders or Mac ones as well as a
++    Java WebDAV client, such as DAVExplorer or IE using File-&gt;Open as a Web
++    Folder).</para>
++
++    <para>Now WebDav is an extension of the REST service. To get the WebDav
++    server ready, you must deploy the REST application. Then, you can access
++    any workspaces of your repository by using the following URL:</para>
++
++    <para>Standalone mode:</para>
++
++    <para><uri>http://host:port/rest/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
++
++    <para>Portal mode:</para>
++
++    <para><uri>http://host:port/portal/rest/private/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
++
++    <para>When accessing the WebDAV server with the
++    URL<uri>http://localhost:8080/rest/jcr/repository/production</uri>, you
++    might also use "collaboration" (instead of "production") which is the
++    default workspace in eXo products. You will be asked to enter your login
++    and password. Those will then be checked by using the organization service
++    that can be implemented thanks to an InMemory (dummy) module or a DB
++    module or an LDAP one and the JCR user session will be created with the
++    correct JCR Credentials.</para>
++
++    <note>
++      <para>If you try the "in ECM" option, add "@ecm" to the user's password.
++      Alternatively, you may modify jaas.conf by adding the <emphasis
++      role="bold">domain=ecm</emphasis> option as follows:</para>
++
++      <programlisting>exo-domain {
++     org.exoplatform.services.security.jaas.BasicLoginModule required domain=ecm;
++};</programlisting>
++    </note>
++  </section>
++
++  <section>
++    <title>Configuration</title>
++
++    <programlisting>&lt;component&gt;
++  &lt;key&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/key&gt;
++  &lt;type&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/type&gt;
++  &lt;init-params&gt;
++
++    &lt;!-- this parameter indicates the default login and password values
++         used as credentials for accessing the repository --&gt;
++    &lt;!-- value-param&gt;
++      &lt;name&gt;default-identity&lt;/name&gt;
++      &lt;value&gt;admin:admin&lt;/value&gt;    
++    &lt;/value-param --&gt;
++
++    &lt;!-- this is the value of WWW-Authenticate header --&gt;
++    &lt;value-param&gt;
++      &lt;name&gt;auth-header&lt;/name&gt;
++      &lt;value&gt;Basic realm="eXo-Platform Webdav Server 1.6.1"&lt;/value&gt;
++    &lt;/value-param&gt;
++
++    &lt;!-- default node type which is used for the creation of collections --&gt;
++    &lt;value-param&gt;
++      &lt;name&gt;def-folder-node-type&lt;/name&gt;
++      &lt;value&gt;nt:folder&lt;/value&gt;
++    &lt;/value-param&gt;
++
++    &lt;!-- default node type which is used for the creation of files --&gt;
++    &lt;value-param&gt;
++      &lt;name&gt;def-file-node-type&lt;/name&gt;
++      &lt;value&gt;nt:file&lt;/value&gt;
++    &lt;/value-param&gt;
++
++    &lt;!-- if MimeTypeResolver can't find the required mime type, 
++         which conforms with the file extension, and the mimeType header is absent
++         in the HTTP request header, this parameter is used 
++         as the default mime type--&gt;
++    &lt;value-param&gt;
++      &lt;name&gt;def-file-mimetype&lt;/name&gt;
++      &lt;value&gt;application/octet-stream&lt;/value&gt;
++    &lt;/value-param&gt;
++
++    &lt;!-- This parameter indicates one of the three cases when you update the content of the resource by PUT command.
++         In case of "create-version", PUT command creates the new version of the resource if this resource exists.
++         In case of "replace" - if the resource exists, PUT command updates the content of the resource and its last modification date.
++         In case of "add", the PUT command tries to create the new resource with the same name (if the parent node allows same-name siblings).--&gt;
++
++    &lt;value-param&gt;
++      &lt;name&gt;update-policy&lt;/name&gt;
++      &lt;value&gt;create-version&lt;/value&gt;
++      &lt;!--value&gt;replace&lt;/value --&gt;
++      &lt;!-- value&gt;add&lt;/value --&gt;
++    &lt;/value-param&gt;
++
++    &lt;!--
++        This parameter determines how service responds to a method that attempts to modify file content.
++        In case of "checkout-checkin" value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout and followed by a checkin operation.
++        In case of "checkout" value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout operation.
++    --&gt;         
++    &lt;value-param&gt;
++      &lt;name&gt;auto-version&lt;/name&gt;
++      &lt;value&gt;checkout-checkin&lt;/value&gt;
++      &lt;!--value&gt;checkout&lt;/value --&gt;
++    &lt;/value-param&gt;
++
++    &lt;!--
++        This parameter is responsible for managing Cache-Control header value which will be returned to the client.
++        You can use patterns like "text/*", "image/*" or wildcard to define the type of content.
++    --&gt;  
++    &lt;value-param&gt;
++      &lt;name&gt;cache-control&lt;/name&gt;
++      &lt;value&gt;text/xml,text/html:max-age=3600;image/png,image/jpg:max-age=1800;*/*:no-cache;&lt;/value&gt;
++    &lt;/value-param&gt;
++    
++    &lt;!--
++        This parameter determines the absolute path to the folder icon file, which is shown
++        during WebDAV view of the contents
++    --&gt;
++    &lt;value-param&gt;
++      &lt;name&gt;folder-icon-path&lt;/name&gt;
++      &lt;value&gt;/absolute/path/to/file&lt;/value&gt;
++    &lt;/value-param&gt;
++
++    &lt;!--
++        This parameter is responsible for definition of read-only mime-type properties.
++        That basically means that all mime-types mentioned here will be set as read-only properties
++        (i. e. you cannot change resource's mime-type after it is set).
++        Use ',' as a delimeter to separate mime-types.
++    --&gt;
++    &lt;value-param&gt;
++      &lt;name&gt;read-only-mime-types&lt;/name&gt;
++      &lt;value&gt;application/vnd.openxmlformats-officedocument.wordprocessingml.document&lt;/value&gt;
++    &lt;/value-param&gt;
++
++  &lt;/init-params
++&lt;/component&gt;</programlisting>
++  </section>
++
++  <section>
++    <title>Screenshots</title>
++
++    <para>At present, eXo JCR WebDav server is tested by using MS Internet
++    Explorer, <ulink url="http://www.ics.uci.edu/~webdav">Dav
++    Explorer</ulink>, <ulink
++    url="http://www.xythos.com/home/xythos/products/xythos_drive.html">Xythos
++    Drive</ulink>, Microsoft Office 2003 (as client), and Ubuntu Linux.</para>
++
++    <section>
++      <title>MS Internet Explorer</title>
++
++      <para>(File -&gt; Open as Web Folder)</para>
++
++      <mediaobject>
++        <imageobject>
++          <imagedata fileref="images/protocols/webdav_explorer.jpg" />
++        </imageobject>
++      </mediaobject>
++    </section>
++
++    <section>
++      <title>Dav Explorer</title>
++
++      <mediaobject>
++        <imageobject>
++          <imagedata fileref="images/protocols/webdav_davexplorer.jpg" />
++        </imageobject>
++      </mediaobject>
++    </section>
++
++    <section>
++      <title>Xythos Drive</title>
++
++      <mediaobject>
++        <imageobject>
++          <imagedata fileref="images/protocols/webdav_xythosdrive.jpg" />
++        </imageobject>
++      </mediaobject>
++    </section>
++
++    <section>
++      <title>Microsoft Office 2003</title>
++
++      <para>(as client) (File-&gt;Open with typing http://... href in the file
++      name box)</para>
++
++      <mediaobject>
++        <imageobject>
++          <imagedata fileref="images/protocols/webdav_msoffice2003.jpg" />
++        </imageobject>
++      </mediaobject>
++    </section>
++
++    <section>
++      <title>Ubuntu Linux</title>
++
++      <mediaobject>
++        <imageobject>
++          <imagedata fileref="images/protocols/webdav_ubuntulinux.jpg" />
++        </imageobject>
++      </mediaobject>
++    </section>
++  </section>
++
++  <section>
++    <title>Comparison table of WebDav and JCR commands</title>
++
++    <table>
++      <title></title>
++
++      <tgroup cols="2">
++        <thead>
++          <row>
++            <entry>WebDav</entry>
++
++            <entry>JCR</entry>
++          </row>
++        </thead>
++
++        <tbody>
++          <row>
++            <entry>COPY</entry>
++
++            <entry>Workspace.copy(...)</entry>
++          </row>
++
++          <row>
++            <entry>DELETE</entry>
++
++            <entry>Node.remove()</entry>
++          </row>
++
++          <row>
++            <entry>GET</entry>
++
++            <entry>Node.getProperty(...); Property.getValue()</entry>
++          </row>
++
++          <row>
++            <entry>HEAD</entry>
++
++            <entry>Node.getProperty(...); Property.getLength()</entry>
++          </row>
++
++          <row>
++            <entry>MKCOL</entry>
++
++            <entry>Node.addNode(...)</entry>
++          </row>
++
++          <row>
++            <entry>MOVE</entry>
++
++            <entry>Session.move(...) or Workspace.move(...)</entry>
++          </row>
++
++          <row>
++            <entry>PROPFIND</entry>
++
++            <entry>Session.getNode(...); Node.getNode(...);
++            Node.getNodes(...); Node.getProperties()</entry>
++          </row>
++
++          <row>
++            <entry>PROPPATCH</entry>
++
++            <entry>Node.setProperty(...);
++            Node.getProperty(...).remove()</entry>
++          </row>
++
++          <row>
++            <entry>PUT</entry>
++
++            <entry>Node.addNode("node","nt:file");
++            Node.setProperty("jcr:data", "data")</entry>
++          </row>
++
++          <row>
++            <entry>CHECKIN</entry>
++
++            <entry>Node.checkin()</entry>
++          </row>
++
++          <row>
++            <entry>CHECKOUT</entry>
++
++            <entry>Node.checkout()</entry>
++          </row>
++
++          <row>
++            <entry>REPORT</entry>
++
++            <entry>Node.getVersionHistory(); VersionHistory.getAllVersions();
++            Version.getProperties()</entry>
++          </row>
++
++          <row>
++            <entry>RESTORE</entry>
++
++            <entry>Node.restore(...)</entry>
++          </row>
++
++          <row>
++            <entry>UNCHECKOUT</entry>
++
++            <entry>Node.restore(...)</entry>
++          </row>
++
++          <row>
++            <entry>VERSION-CONTROL</entry>
++
++            <entry>Node.addMixin("mix:versionable")</entry>
++          </row>
++
++          <row>
++            <entry>LOCK</entry>
++
++            <entry>Node.lock(...)</entry>
++          </row>
++
++          <row>
++            <entry>UNLOCK</entry>
++
++            <entry>Node.unlock()</entry>
++          </row>
++
++          <row>
++            <entry>ORDERPATCH</entry>
++
++            <entry>Node.orderBefore(...)</entry>
++          </row>
++
++          <row>
++            <entry>SEARCH</entry>
++
++            <entry>Workspace.getQueryManager(); QueryManager.createQuery();
++            Query.execute()</entry>
++          </row>
++        </tbody>
++      </tgroup>
++    </table>
++  </section>
++
++  <section>
++    <title>Restrictions</title>
++
++    <para>There are some restrictions for WebDAV in different Operating
++    systems.</para>
++
++    <section>
++      <title>Windows 7</title>
++
++      <para>When you try to set up a web folder by “adding a network location”
++      or “map a network drive” through My Computer, you can get an error
++      message saying that either “The folder you entered does not appear to be
++      valid. Please choose another” or “Windows cannot access… Check the
++      spelling of the name. Otherwise, there might be…”. These errors may
++      appear when you are using SSL or non-SSL.</para>
++
++      <para>To fix this, do as follows:</para>
++
++      <orderedlist>
++        <listitem>
++          <para>Go to Windows Registry Editor.</para>
++        </listitem>
++
++        <listitem>
++          <para>Find a key:
++          \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlset\services\WebClient\Parameters\BasicAuthLevel
++          .</para>
++        </listitem>
++
++        <listitem>
++          <para>Change the value to 2.</para>
++        </listitem>
++      </orderedlist>
++    </section>
++
++    <section>
++      <title>Microsoft Office 2010</title>
++
++      <para>If you have Microsoft Office 2010 applications or Microsoft Office
++      2007 applications installed on a client computer. From that client
++      computer, you try to access an Office file that is stored on a web
++      server that is configured for Basic authentication. The connection
++      between your computer and the web server does not use Secure Sockets
++      Layer (SSL). When you try to open or to download the file, you
++      experience the following symptoms: <itemizedlist>
++          <listitem>
++            <para>The Office file does not open or download.</para>
++          </listitem>
++
++          <listitem>
++            <para>You do not receive a Basic authentication password prompt
++            when you try to open or to download the file.</para>
++          </listitem>
++
++          <listitem>
++            <para>You do not receive an error message when you try to open the
++            file. The associated Office application starts. However, the
++            selected file does not open.</para>
++          </listitem>
++        </itemizedlist></para>
++
++      <para>To enable Basic authentication on the client computer, follow
++      these steps:</para>
++
++      <orderedlist>
++        <listitem>
++          <para>Click Start, type regedit in the Start Search box, and then
++          press Enter.</para>
++        </listitem>
++
++        <listitem>
++          <para>Locate and then click the following registry subkey:</para>
++
++          <para>HKEY_CURRENT_USER\Software\Microsoft\Office\14.0\Common\Internet</para>
++        </listitem>
++
++        <listitem>
++          <para>On the Edit menu, point to New, and then click DWORD
++          Value.</para>
++        </listitem>
++
++        <listitem>
++          <para>Type BasicAuthLevel, and then press Enter.</para>
++        </listitem>
++
++        <listitem>
++          <para>Right-click BasicAuthLevel, and then click Modify.</para>
++        </listitem>
++
++        <listitem>
++          <para>In the Value data box, type 2, and then click OK.</para>
++        </listitem>
++      </orderedlist>
++    </section>
++  </section>
++</chapter>
