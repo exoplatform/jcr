@@ -1,6 +1,6 @@
 Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java
 ===================================================================
---- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java	(revision 5450)
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java	(revision 5453)
 +++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java	(working copy)
 @@ -144,6 +144,39 @@
        assertEquals(headers.getFirst(HttpHeaders.CONTENT_TYPE), property.getString());
@@ -44,7 +44,7 @@ Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webda
     {
 Index: exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml
 ===================================================================
---- exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(revision 5450)
+--- exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(revision 5453)
 +++ exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(working copy)
 @@ -173,7 +173,16 @@
     <component>
@@ -66,7 +66,7 @@ Index: exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configur
              <value>false</value>
 Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java
 ===================================================================
---- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 5450)
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 5453)
 +++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(working copy)
 @@ -75,9 +75,12 @@
  import java.net.URISyntaxException;
@@ -130,7 +130,7 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
  
 Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java
 ===================================================================
---- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java	(revision 5450)
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java	(revision 5453)
 +++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java	(working copy)
 @@ -24,7 +24,9 @@
  
@@ -202,7 +202,7 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
           content.setProperty("jcr:encoding", encoding);
 Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml
 ===================================================================
---- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(revision 5450)
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(revision 5453)
 +++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(working copy)
 @@ -1,345 +1,471 @@
 -<?xml version='1.0' encoding='UTF-8'?>
@@ -717,7 +717,7 @@ Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr
 +      &lt;value&gt;application/vnd.openxmlformats-officedocument.wordprocessingml.document&lt;/value&gt;
 +    &lt;/value-param&gt;
 +
-+  &lt;/init-params
++  &lt;/init-params&gt;
 +&lt;/component&gt;</programlisting>
 +  </section>
 +
