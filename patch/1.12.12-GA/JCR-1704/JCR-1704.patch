@@ -46,33 +46,46 @@ Index: exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configur
 ===================================================================
 --- exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(revision 5453)
 +++ exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(working copy)
-@@ -173,7 +173,16 @@
+@@ -173,7 +173,7 @@
     <component>
        <type>org.exoplatform.services.jcr.webdav.WebDavServiceImpl</type>
        <init-params>
 -
 +         
+          <value-param>
+             <name>auto-mix-lockable</name>
+             <value>false</value>
+@@ -209,6 +209,15 @@
+             <value>/absolute/path/to/file</value>
+          </value-param>
+          
 +         <!-- 
 +            To test read-only mime-type properties to be correctly fetched and processed during put requests.
 +            See more details here: https://jira.exoplatform.org/browse/JCR-1704
 +         -->
-+	      <value-param>
++         <values-param>
 +            <name>read-only-mime-types</name>
 +            <value>test/mime-type</value>
-+         </value-param>
-+         
-          <value-param>
-             <name>auto-mix-lockable</name>
-             <value>false</value>
++         </values-param>
++ 
+       </init-params>
+    </component>
+ 
 Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java
 ===================================================================
 --- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 5453)
 +++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(working copy)
-@@ -75,9 +75,12 @@
- import java.net.URISyntaxException;
+@@ -23,6 +23,7 @@
+ import org.exoplatform.commons.utils.MimeTypeResolver;
+ import org.exoplatform.container.xml.InitParams;
+ import org.exoplatform.container.xml.ValueParam;
++import org.exoplatform.container.xml.ValuesParam;
+ import org.exoplatform.services.jcr.RepositoryService;
+ import org.exoplatform.services.jcr.core.ManageableRepository;
+ import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+@@ -76,8 +77,10 @@
  import java.net.URLEncoder;
  import java.util.ArrayList;
-+import java.util.Arrays;
  import java.util.HashMap;
 +import java.util.HashSet;
  import java.util.List;
@@ -107,12 +120,12 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
  
        }
  
-+      ValueParam pReadOnlyMimeTypes = params.getValueParam(READ_ONLY_MIME_TYPES);
++      ValuesParam pReadOnlyMimeTypes = params.getValuesParam(READ_ONLY_MIME_TYPES);
 +      if (pReadOnlyMimeTypes != null)
 +      {
-+         for (String mimeType : Arrays.asList(pReadOnlyMimeTypes.getValue().split(",")))
++         for (String mimeType : (List<String>)pReadOnlyMimeTypes.getValues())
 +         {
-+            readOnlyMimeTypes.add(mimeType.trim());
++            readOnlyMimeTypes.add(mimeType);
 +         }
 +      }
     }
@@ -178,7 +191,7 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
      * Webdav Put method implementation.
      * 
      * @param session current session
-@@ -205,7 +226,20 @@
+@@ -205,7 +226,23 @@
     {
  
        Node content = node.getNode("jcr:content");
@@ -187,11 +200,14 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
 +      /* 
 +         Workaround created to fix JCR-1704
 +
-+         1. Check if jcr:mimeType property is not set, if it is not set we can set it without worries
-+         1. Check if jcr:mimeType property is in 'read-only' properties list,
-+            if not we again can set it without worries
++         1. If readOnlyMimeTypes is not initialized it is okay to set any mime-type you want
++         2. If readOnlyMimeTypes is empty, it won't be needed to call !content.hasProperty("jcr:mimeType")
++            which represents a potential query, and again it is okay to set any mime-type you want
++         3. If jcr:mimeType property is not set, we can set it without worries
++         4. If jcr:mimeType property isn't in 'read-only' properties list,
++            we can set it
 +      */
-+      if (!content.hasProperty("jcr:mimeType")
++      if (readOnlyMimeTypes == null || readOnlyMimeTypes.isEmpty() || !content.hasProperty("jcr:mimeType")
 +         || !readOnlyMimeTypes.contains(content.getProperty("jcr:mimeType").getString()))
 +      {
 +         content.setProperty("jcr:mimeType", mimeType);
@@ -204,7 +220,7 @@ Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr
 ===================================================================
 --- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(revision 5453)
 +++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(working copy)
-@@ -1,345 +1,471 @@
+@@ -1,345 +1,470 @@
 -<?xml version='1.0' encoding='UTF-8'?>
 -<!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 -<chapter id="JCR.WebDAV">
@@ -710,12 +726,11 @@ Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr
 +        This parameter is responsible for definition of read-only mime-type properties.
 +        That basically means that all mime-types mentioned here will be set as read-only properties
 +        (i. e. you cannot change resource's mime-type after it is set).
-+        Use ',' as a delimeter to separate mime-types.
 +    --&gt;
-+    &lt;value-param&gt;
++    &lt;values-param&gt;
 +      &lt;name&gt;read-only-mime-types&lt;/name&gt;
 +      &lt;value&gt;application/vnd.openxmlformats-officedocument.wordprocessingml.document&lt;/value&gt;
-+    &lt;/value-param&gt;
++    &lt;/values-param&gt;
 +
 +  &lt;/init-params&gt;
 +&lt;/component&gt;</programlisting>
