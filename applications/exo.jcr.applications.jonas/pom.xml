@@ -178,7 +178,7 @@
                      </fileset>
                   </copy>
                   
-                  <delete file="${exo.projects.directory.working}/exo-jonas/externals/commons/jonas/carol/jgroups-all.jar" />
+                  <delete file="${exo.projects.directory.working}/exo-jonas/lib/commons/jonas/carol/jgroups-all.jar" />
                </tasks>
             </configuration>
             <dependencies>
