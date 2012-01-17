@@ -97,7 +97,6 @@ goto endif
 
 :endif
 set JONAS_OPTS=%JONAS_OPTS% -Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog -Djava.awt.headless=true %EXO_PROFILES% -Djava.net.preferIPv4Stack=true -Dexo.jcr.parent.dir=../..
-set JAVA_OPTS=%JAVA_OPTS% -Xmx512M
 
 
 Rem ------------------------ End eXo configuration -----------------------------

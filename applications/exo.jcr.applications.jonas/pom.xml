@@ -177,6 +177,8 @@
                         <include name="**/hsqldb*.jar" />
                      </fileset>
                   </copy>
+                  
+                  <delete file="${exo.projects.directory.working}/exo-jonas/externals/commons/jonas/carol/jgroups-all.jar" />
                </tasks>
             </configuration>
             <dependencies>
