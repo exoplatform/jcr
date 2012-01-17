@@ -29,7 +29,8 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
-import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -113,7 +114,7 @@ public class DBRestore implements DataRestore
    /**
     * Database cleaner.
     */
-   private final DBCleaner dbCleaner;
+   private final DBCleanerTool dbCleaner;
 
    /**
     * Database dialect.
@@ -133,7 +134,7 @@ public class DBRestore implements DataRestore
     * @throws RepositoryConfigurationException 
     */
    public DBRestore(File storageDir, Connection jdbcConn, Map<String, RestoreTableRule> tables,
-      WorkspaceEntry wsConfig, FileCleaner fileCleaner, DBCleaner dbCleaner) throws NamingException,
+      WorkspaceEntry wsConfig, FileCleaner fileCleaner, DBCleanerTool dbCleaner) throws NamingException,
       SQLException, RepositoryConfigurationException
    {
       this.jdbcConn = jdbcConn;
@@ -155,9 +156,9 @@ public class DBRestore implements DataRestore
    {
       try
       {
-         dbCleaner.executeCleanScripts();
+         dbCleaner.clean();
       }
-      catch (SQLException e)
+      catch (DBCleanException e)
       {
          throw new BackupException(e);
       }
@@ -195,11 +196,14 @@ public class DBRestore implements DataRestore
    {
       try
       {
-         dbCleaner.executeCommitScripts();
-
+         dbCleaner.commit();
          jdbcConn.commit();
       }
       catch (SQLException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (DBCleanException e)
       {
          throw new BackupException(e);
       }
@@ -214,10 +218,14 @@ public class DBRestore implements DataRestore
       {
          jdbcConn.rollback();
 
-         dbCleaner.executeRollbackScripts();
+         dbCleaner.rollback();
          jdbcConn.commit();
       }
       catch (SQLException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (DBCleanException e)
       {
          throw new BackupException(e);
       }

@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 /**
@@ -27,35 +26,35 @@ import java.util.ArrayList;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: DummyDBCleaner.java 111 2011-11-11 11:11:11Z rainf0x $
  */
-public class DummyDBCleaner extends DBCleaner
+public class DummyDBCleanerTool extends DBCleanerTool
 {
 
    /**
-    * DummyDBCleaner constructor.
+    * DummyDBCleanerTool constructor.
     */
-   public DummyDBCleaner()
+   public DummyDBCleanerTool()
    {
-      super(null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), false);
+      super(null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>());
    }
 
    /**
     * {@inheritDoc}
     */
-   public void executeCleanScripts() throws SQLException
-   {
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void executeCommitScripts() throws SQLException
+   public void clean() throws DBCleanException
    {
    }
 
    /**
     * {@inheritDoc}
     */
-   public void executeRollbackScripts() throws SQLException
+   public void commit() throws DBCleanException
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void rollback() throws DBCleanException
    {
    }
 }

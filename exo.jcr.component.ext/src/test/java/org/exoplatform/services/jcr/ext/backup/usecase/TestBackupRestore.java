@@ -39,8 +39,9 @@ import org.exoplatform.services.jcr.ext.backup.impl.JobExistingWorkspaceSameConf
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
-import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -703,28 +704,38 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       Connection conn = ds.getConnection();
       conn.setAutoCommit(false);
 
-      DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(conn, repository.getConfiguration());
       try
       {
          if (repositoryName.equals("db3"))
          {
+            DBCleanerTool repositoryDBCleaner =
+               DBCleanService.getRepositoryDBCleaner(conn, repository.getConfiguration());
+
             // clean and rollback first
-            repositoryDBCleaner.executeCleanScripts();
+            repositoryDBCleaner.clean();
             conn.rollback();
 
-            repositoryDBCleaner.executeRollbackScripts();
+            repositoryDBCleaner.rollback();
             conn.commit();
 
             checkConent(repositoryName);
 
             // clean
-            repositoryDBCleaner.executeCleanScripts();
-            repositoryDBCleaner.executeCommitScripts();
+            repositoryDBCleaner.clean();
+            repositoryDBCleaner.commit();
             conn.commit();
          }
          else
          {
-            assertNull(repositoryDBCleaner);
+            try
+            {
+               DBCleanerTool repositoryDBCleaner =
+                  DBCleanService.getRepositoryDBCleaner(conn, repository.getConfiguration());
+               fail("Exception should be thrown");
+            }
+            catch (DBCleanException e)
+            {
+            }
          }
       }
       finally
@@ -752,22 +763,22 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          conn = ds.getConnection();
          conn.setAutoCommit(false);
 
-         DBCleaner workspaceDBCleaner = DBCleanService.getWorkspaceDBCleaner(conn, wsEntry);
+         DBCleanerTool workspaceDBCleaner = DBCleanService.getWorkspaceDBCleaner(conn, wsEntry);
 
          try
          {
             // clean and rollback first
-            workspaceDBCleaner.executeCleanScripts();
+            workspaceDBCleaner.clean();
             conn.rollback();
 
-            workspaceDBCleaner.executeRollbackScripts();
+            workspaceDBCleaner.rollback();
             conn.commit();
 
             checkConent(repositoryName);
 
             // clean
-            workspaceDBCleaner.executeCleanScripts();
-            workspaceDBCleaner.executeCommitScripts();
+            workspaceDBCleaner.clean();
+            workspaceDBCleaner.commit();
             conn.commit();
          }
          finally

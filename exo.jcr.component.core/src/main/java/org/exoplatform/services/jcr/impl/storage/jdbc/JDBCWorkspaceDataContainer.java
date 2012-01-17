@@ -39,8 +39,9 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
-import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.core.query.Reindexable;
@@ -1032,15 +1033,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          throw new BackupException(e);
       }
-      catch (NamingException e)
-      {
-         throw new BackupException(e);
-      }
-      catch (SQLException e)
-      {
-         throw new BackupException(e);
-      }
       catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (DBCleanException e)
       {
          throw new BackupException(e);
       }
@@ -1275,14 +1272,21 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          tables.put(dstTableName, restoreTableRule);
 
-         DBCleaner dbCleaner = null;
+         DBCleanerTool dbCleaner;
          if (context.getObject(DataRestoreContext.DB_CLEANER) != null)
          {
-            dbCleaner = (DBCleaner)context.getObject(DataRestoreContext.DB_CLEANER);
+            dbCleaner = (DBCleanerTool)context.getObject(DataRestoreContext.DB_CLEANER);
          }
          else
          {
-            dbCleaner = DBCleanService.getWorkspaceDBCleaner(jdbcConn, wsConfig);
+            try
+            {
+               dbCleaner = DBCleanService.getWorkspaceDBCleaner(jdbcConn, wsConfig);
+            }
+            catch (DBCleanException e)
+            {
+               throw new BackupException(e);
+            }
          }
 
          restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));

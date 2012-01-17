@@ -32,8 +32,8 @@ import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
-import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
-import org.exoplatform.services.jcr.impl.clean.rdbms.DummyDBCleaner;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DummyDBCleanerTool;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
@@ -89,7 +89,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          Connection jdbcConn = null;
          
          // define one common database cleaner for all restores for single db case
-         DBCleaner dbCleaner = null;
+         DBCleanerTool dbCleaner = null;
          
          Boolean isMultiDb =
             Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
@@ -143,11 +143,9 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
 
             if (jdbcConn != null)
             {
-               if (dbCleaner != null)
+               if (!isMultiDb)
                {
-                  if (isSharedDbCleaner)
-                  {
-                     context = new DataRestoreContext(
+                  context = new DataRestoreContext(
                                  new String[]{
                                     DataRestoreContext.STORAGE_DIR, 
                                     DataRestoreContext.DB_CONNECTION, 
@@ -155,22 +153,9 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                                  new Object[]{
                                     fullBackupDir, 
                                     jdbcConn, 
-                                    new DummyDBCleaner()});
-                  }
-                  else
-                  {
-                     context = new DataRestoreContext(
-                        new String[]{
-                           DataRestoreContext.STORAGE_DIR, 
-                           DataRestoreContext.DB_CONNECTION, 
-                           DataRestoreContext.DB_CLEANER}, 
-                        new Object[]{
-                           fullBackupDir, 
-                           jdbcConn, 
-                           dbCleaner});
+                                    isSharedDbCleaner ? new DummyDBCleanerTool() : dbCleaner});
    
-                     isSharedDbCleaner = true;
-                  }
+                  isSharedDbCleaner = true;
                }
                else
                {

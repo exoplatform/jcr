@@ -16,30 +16,25 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms;
 
-import org.exoplatform.commons.utils.IOUtil;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.DialectConstants;
 import org.exoplatform.services.database.utils.DialectDetecter;
-import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.impl.clean.rdbms.scripts.DBCleaningScripts;
+import org.exoplatform.services.jcr.impl.clean.rdbms.scripts.DBCleaningScriptsFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -59,55 +54,42 @@ public class DBCleanService
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleanService");
 
    /**
-    * Old object suffix. Will using in rename.
-    */
-   public static final String OLD_OBJECT_SUFFIX = "_OLD";
-
-   /**
-    * The constraint name is limited by 18 symbols.  
-    */
-   private static final int DB2_CONSTRAINT_NAME_LENGTH_LIMIT = 18;
-
-   /**
     * Cleans workspace data from database.
     * 
     * @param wsEntry
     *          workspace configuration
-    * @throws RepositoryConfigurationException
-    * @throws NamingException
-    * @throws SQLException
+    * @throws DBCleanException         
     */
-   public static void cleanWorkspaceData(WorkspaceEntry wsEntry) throws RepositoryConfigurationException,
-      NamingException, SQLException
+   public static void cleanWorkspaceData(WorkspaceEntry wsEntry) throws DBCleanException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
+      SecurityHelper
+         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
+
+      Connection jdbcConn = getConnection(wsEntry);
+      boolean autoCommit = DialectConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(resolveDialect(wsEntry));
+
+      try
       {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+         jdbcConn.setAutoCommit(autoCommit);
+
+         DBCleanerTool dbCleaner = getWorkspaceDBCleaner(jdbcConn, wsEntry);
+         doClean(dbCleaner);
       }
-
-      String dsName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-
-      final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-      if (ds == null)
+      catch (SQLException e)
       {
-         throw new NameNotFoundException("Data source " + dsName + " not found");
+         throw new DBCleanException(e);
       }
-
-      Connection jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+      finally
       {
-         public Connection run() throws Exception
+         try
          {
-            return ds.getConnection();
-
+            jdbcConn.close();
          }
-      });
-
-      jdbcConn.setAutoCommit(false);
-      DBCleaner dbCleaner = getWorkspaceDBCleaner(jdbcConn, wsEntry);
-
-      processingClean(dbCleaner, jdbcConn);
+         catch (SQLException e)
+         {
+            LOG.error("Can not close connection", e);
+         }
+      }
    }
 
    /**
@@ -115,831 +97,123 @@ public class DBCleanService
     * 
     * @param rEntry
     *          the repository configuration
-    * @throws RepositoryConfigurationException
-    * @throws NamingException
-    * @throws SQLException
+    * @throws DBCleanException          
     */
-   public static void cleanRepositoryData(RepositoryEntry rEntry) throws RepositoryConfigurationException,
-      NamingException, SQLException
+   public static void cleanRepositoryData(RepositoryEntry rEntry) throws DBCleanException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
+      SecurityHelper
+         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
 
-      if (rEntry.getWorkspaceEntries().size() == 0)
-      {
-         // nothing to clean
-         return;
-      }
+      WorkspaceEntry wsEntry = rEntry.getWorkspaceEntries().get(0);
 
-      String dsName =
-         rEntry.getWorkspaceEntries().get(0).getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-
-      final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-      if (ds == null)
+      boolean multiDB = getMultiDbParameter(wsEntry);
+      if (multiDB)
       {
-         throw new NameNotFoundException("Data source " + dsName + " not found");
-      }
-
-      Connection jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-      {
-         public Connection run() throws Exception
+         for (WorkspaceEntry entry : rEntry.getWorkspaceEntries())
          {
-            return ds.getConnection();
-
+            cleanWorkspaceData(entry);
          }
-      });
-
-      jdbcConn.setAutoCommit(false);
-      DBCleaner dbCleaner = getRepositoryDBCleaner(jdbcConn, rEntry);
-      if (dbCleaner != null)
-      {
-         processingClean(dbCleaner, jdbcConn);
       }
       else
       {
-         for (WorkspaceEntry wsEntry : rEntry.getWorkspaceEntries())
+         Connection jdbcConn = getConnection(wsEntry);
+         boolean autoCommit = DialectConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(resolveDialect(wsEntry));
+
+         try
          {
-            cleanWorkspaceData(wsEntry);
+            jdbcConn.setAutoCommit(autoCommit);
+
+            DBCleanerTool dbCleaner = getRepositoryDBCleaner(jdbcConn, rEntry);
+            doClean(dbCleaner);
+         }
+         catch (SQLException e)
+         {
+            throw new DBCleanException(e);
+         }
+         finally
+         {
+            try
+            {
+               jdbcConn.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can not close connection", e);
+            }
          }
       }
    }
 
    /**
-    * Returns database cleaner of repository. 
+    * Returns database cleaner for repository. 
+    * 
+    * @param jdbcConn
+    *          database connection which need to use
+    * @param rEntry
+    *          repository configuration
+    * @return DBCleanerTool
+    * @throws DBCleanException
+    */
+   public static DBCleanerTool getRepositoryDBCleaner(Connection jdbcConn, RepositoryEntry rEntry)
+      throws DBCleanException
+   {
+      SecurityHelper
+         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
+
+      WorkspaceEntry wsEntry = rEntry.getWorkspaceEntries().get(0);
+
+      boolean multiDb = getMultiDbParameter(wsEntry);
+      if (multiDb)
+      {
+         throw new DBCleanException(
+            "It is not possible to create cleaner with common connection for multi database repository configuration");
+      }
+
+      String dialect = resolveDialect(wsEntry);
+
+      DBCleaningScripts scripts = DBCleaningScriptsFactory.prepareScripts(dialect, rEntry);
+
+      return new DBCleanerTool(jdbcConn, scripts.getCleaningScripts(), scripts.getCommittingScripts(),
+         scripts.getRollbackingScripts());
+   }
+
+   /**
+    * Returns database cleaner for workspace.  
     * 
     * @param jdbcConn
     *          database connection which need to use
     * @param wsEntry
     *          workspace configuration
-    * @return database cleaner or null in case of multi-db configuration
-    * @throws SQLException
-    * @throws RepositoryConfigurationException
+    * @return DBCleanerTool
+    * @throws DBCleanException
     */
-   public static DBCleaner getRepositoryDBCleaner(Connection jdbcConn, RepositoryEntry repoEntry) throws SQLException,
-      RepositoryConfigurationException
+   public static DBCleanerTool getWorkspaceDBCleaner(Connection jdbcConn, WorkspaceEntry wsEntry) throws DBCleanException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
+      SecurityHelper
+         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
 
-      final boolean isMultiDB =
-         Boolean.parseBoolean(repoEntry.getWorkspaceEntries().get(0).getContainer()
-            .getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
+      boolean multiDb = getMultiDbParameter(wsEntry);
 
-      if (isMultiDB)
-      {
-         return null;
-      }
+      String dialect = resolveDialect(wsEntry);
+      
+      DBCleaningScripts scripts = DBCleaningScriptsFactory.prepareScripts(dialect, wsEntry);
 
-      String dialect =
-         repoEntry.getWorkspaceEntries().get(0).getContainer()
-            .getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
-      if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
-      {
-         dialect = DialectDetecter.detect(jdbcConn.getMetaData());
-      }
-
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
-      {
-         List<String> dbCleanerScripts = new ArrayList<String>();
-         dbCleanerScripts.addAll(getDropTableScripts(isMultiDB, dialect));
-         dbCleanerScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
-         dbCleanerScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
-
-         return new DBCleaner(jdbcConn, dbCleanerScripts, new ArrayList<String>(), getRestoreIndexesScripts(isMultiDB,
-            dialect), false);
-      }
-
-      List<String> dbCleanerScripts = new ArrayList<String>();
-      dbCleanerScripts.addAll(getRenameScripts(isMultiDB, dialect));
-      dbCleanerScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
-      dbCleanerScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
-
-      List<String> afterRestoreScript = new ArrayList<String>();
-      afterRestoreScript.addAll(getRemoveOldObjectsScripts(isMultiDB, dialect));
-      afterRestoreScript.addAll(getRestoreIndexesScripts(isMultiDB, dialect));
-
-      return new DBCleaner(jdbcConn, dbCleanerScripts, getRollbackScripts(isMultiDB, dialect), afterRestoreScript,
-         dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
+      return new DBCleanerTool(jdbcConn, scripts.getCleaningScripts(), scripts.getCommittingScripts(),
+         scripts.getRollbackingScripts());
    }
 
    /**
-    * Prepare of restore tables. (Drop constraint, etc...)
+    * Cleaning.
     * 
-    * @param isMultiDb
-    *          boolean
-    * @param dialect
-    *          String, dialect of DB
+    * @throws SQLException 
     */
-   private static List<String> getRemoveIndexesScripts(boolean isMultiDB, String dialect)
+   private static void doClean(DBCleanerTool dbCleaner) throws DBCleanException, SQLException
    {
-      ArrayList<String> dropScript = new ArrayList<String>();
-
-      String multiDb = isMultiDB ? "M" : "S";
-      String constraintName;
-
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
-      {
-         return dropScript;
-      }
-
-      constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
-      dropScript.add("ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(false, constraintName, dialect));
-
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
-      {
-         constraintName = validateConstraintName("JCR_PK_" + multiDb + "VALUE", dialect);
-         dropScript.add("ALTER TABLE JCR_" + multiDb + "VALUE " + dropCommand(true, constraintName, dialect));
-
-         constraintName = validateConstraintName("JCR_FK_" + multiDb + "VALUE_PROPERTY", dialect);
-         dropScript.add("ALTER TABLE JCR_" + multiDb + "VALUE " + dropCommand(false, constraintName, dialect));
-
-         constraintName = validateConstraintName("JCR_PK_" + multiDb + "ITEM", dialect);
-         dropScript.add("ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(true, constraintName, dialect));
-
-         constraintName = validateConstraintName("JCR_PK_" + multiDb + "REF", dialect);
-         dropScript.add("ALTER TABLE JCR_" + multiDb + "REF " + dropCommand(true, constraintName, dialect));
-
-         dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "ITEM_PARENT_FK");
-         dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "ITEM_PARENT");
-         dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "ITEM_PARENT_ID");
-         dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "ITEM_N_ORDER_NUM");
-         dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "VALUE_PROPERTY");
-         dropScript.add("DROP INDEX JCR_IDX_" + multiDb + "REF_PROPERTY");
-      }
-      else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
-      {
-         dropScript.add("ALTER TABLE  JCR_" + multiDb + "VALUE DROP CONSTRAINT JCR_FK_" + multiDb + "VALUE_PROPERTY");
-         dropScript.add("ALTER TABLE  JCR_" + multiDb + "ITEM DROP CONSTRAINT JCR_PK_" + multiDb + "ITEM");
-         dropScript.add("ALTER TABLE  JCR_" + multiDb + "VALUE DROP CONSTRAINT JCR_PK_" + multiDb + "VALUE");
-         dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_PARENT");
-         dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_PARENT_ID");
-         dropScript.add("DROP INDEX JCR_" + multiDb + "ITEM.JCR_IDX_" + multiDb + "ITEM_N_ORDER_NUM");
-         dropScript.add("DROP INDEX JCR_" + multiDb + "VALUE.JCR_IDX_" + multiDb + "VALUE_PROPERTY");
-         dropScript.add("DROP INDEX JCR_" + multiDb + "REF.JCR_IDX_" + multiDb + "REF_PROPERTY");
-      }
-
-      return dropScript;
-   }
-
-   /**
-    * After of restore tables. (Add constraint, etc...)
-    * 
-    * @param isMultiDb
-    *          boolean
-    * @param dialect
-    *          String, dialect of DB
-    */
-   private static List<String> getRestoreIndexesScripts(boolean isMultiDB, String dialect)
-      throws RepositoryConfigurationException
-   {
-      ArrayList<String> addScript = new ArrayList<String>();
-
-      String multiDb = isMultiDB ? "M" : "S";
-
-      String constraintName;
-      String constraint;
-
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
-      {
-         addScript.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD CONSTRAINT JCR_PK_" + multiDb
-            + "ITEM PRIMARY KEY(ID)");
-         addScript.add("ALTER TABLE JCR_" + multiDb + "VALUE ADD CONSTRAINT JCR_PK_" + multiDb
-            + "VALUE PRIMARY KEY(ID)");
-
-         constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
-         constraint = "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
-         addScript.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
-
-         addScript.add("ALTER TABLE JCR_" + multiDb + "VALUE ADD CONSTRAINT JCR_FK_" + multiDb
-            + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)");
-
-         addScript.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
-            + "ITEM_PARENT ON JCR_" + multiDb + "ITEM", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
-            + "ITEM_PARENT_ID ON JCR_" + multiDb + "ITEM", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
-            + "ITEM_N_ORDER_NUM ON JCR_" + multiDb + "ITEM", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
-            + "VALUE_PROPERTY ON JCR_" + multiDb + "VALUE", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
-            + "REF_PROPERTY ON JCR_" + multiDb + "REF", isMultiDB, dialect));
-
-         return addScript;
-      }
-
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
-      {
-         constraintName = validateConstraintName("JCR_FK_" + multiDb + "VALUE_PROPERTY", dialect);
-         constraint =
-            "CONSTRAINT " + constraintName + " FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
-         addScript.add("ALTER TABLE JCR_" + multiDb + "VALUE ADD " + constraint);
-      }
-
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
-      {
-         constraintName = validateConstraintName("JCR_PK_" + multiDb + "VALUE", dialect);
-         constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(ID)";
-         addScript.add("ALTER TABLE JCR_" + multiDb + "VALUE ADD " + constraint);
-
-         constraintName = validateConstraintName("JCR_PK_" + multiDb + "ITEM", dialect);
-         constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(ID)";
-         addScript.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
-
-         constraintName = validateConstraintName("JCR_FK_" + multiDb + "VALUE_PROPERTY", dialect);
-         constraint =
-            "CONSTRAINT " + constraintName + " FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
-         addScript.add("ALTER TABLE JCR_" + multiDb + "VALUE ADD " + constraint);
-
-         constraintName = validateConstraintName("JCR_PK_" + multiDb + "REF", dialect);
-         constraint = "CONSTRAINT " + constraintName + " PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)";
-         addScript.add("ALTER TABLE JCR_" + multiDb + "REF ADD " + constraint);
-
-         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT_FK ON JCR_" + multiDb
-            + "ITEM", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT ON JCR_" + multiDb
-            + "ITEM", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_PARENT_ID ON JCR_" + multiDb
-            + "ITEM", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "ITEM_N_ORDER_NUM ON JCR_" + multiDb
-            + "ITEM", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "VALUE_PROPERTY ON JCR_" + multiDb
-            + "VALUE", isMultiDB, dialect));
-         addScript.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + multiDb + "REF_PROPERTY ON JCR_" + multiDb
-            + "REF", isMultiDB, dialect));
-      }
-
-      constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
-      constraint = "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
-      addScript.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
-
-      return addScript;
-   }
-
-   /**
-    * Validate name of constraint. For some DBs constrains name is limited.
-    * 
-    * @param string
-    *          the constraint name
-    * @param dialect
-    *          String, dialect of DB
-    * @return the constraint name accepted for specific DB
-    */
-   private static String validateConstraintName(String string, String dialect)
-   {
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8))
-      {
-         return string.substring(0, DB2_CONSTRAINT_NAME_LENGTH_LIMIT);
-      }
-      else
-      {
-         return string;
-      }
-   }
-
-   /**
-    * Return the SQL script for drop primary or foreign key.  
-    * 
-    * @param isPrimaryKey
-    *          boolean
-    * @param dialect
-    *          String, dialect of DB
-    * @return String
-    */
-   protected static String dropCommand(boolean isPrimaryKey, String constraintName, String dialect)
-   {
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
-      {
-         return isPrimaryKey == true ? "DROP PRIMARY KEY" : "DROP FOREIGN KEY " + constraintName;
-      }
-      else
-      {
-         return "DROP CONSTRAINT " + constraintName;
-      }
-   }
-
-   /**
-    * Create list with queries to drop tables, etc...
-    * 
-    * @param multiDb
-    * @return List 
-    *           return list with query
-    */
-   protected static List<String> getDropTableScripts(boolean multiDb, String dialect)
-   {
-      final String isMultiDB = (multiDb ? "M" : "S");
-
-      List<String> cleanScripts = new ArrayList<String>();
-
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
-      {
-         cleanScripts.add("DROP TRIGGER BI_JCR_" + isMultiDB + "VALUE");
-         cleanScripts.add("DROP SEQUENCE JCR_" + isMultiDB + "VALUE_SEQ");
-      }
-
-      cleanScripts.add("DROP TABLE JCR_" + isMultiDB + "VALUE");
-      cleanScripts.add("DROP TABLE JCR_" + isMultiDB + "ITEM");
-      cleanScripts.add("DROP TABLE JCR_" + isMultiDB + "REF");
-
-      return cleanScripts;
-   }
-
-   /**
-    * Create script to rename tables, indexes, etc...   
-    * 
-    * @param multiDb
-    *          boolean
-    * @param dialect
-    *          string
-    * @return List 
-    *           return list with query
-    */
-   protected static List<String> getRenameScripts(boolean multiDb, String dialect)
-   {
-      final String isMultiDB = (multiDb ? "M" : "S");
-
-      List<String> renameScripts = new ArrayList<String>();
-
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
-      {
-         // JCR_[S,M]VALUE
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE RENAME TO JCR_" + isMultiDB + "VALUE"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " RENAME CONSTRAINT JCR_PK_"
-            + isMultiDB + "VALUE TO JCR_PK_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " RENAME CONSTRAINT JCR_FK_"
-            + isMultiDB + "VALUE_PROPERTY TO JCR_FK_" + isMultiDB + "VALUE_PROPERTY" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER INDEX JCR_PK_" + isMultiDB + "VALUE RENAME TO JCR_PK_" + isMultiDB + "VALUE"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "VALUE_PROPERTY RENAME TO JCR_IDX_" + isMultiDB
-            + "VALUE_PROPERTY" + OLD_OBJECT_SUFFIX);
-
-         renameScripts.add("RENAME JCR_" + isMultiDB + "VALUE_SEQ TO JCR_" + isMultiDB + "VALUE_SEQ"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER TRIGGER BI_JCR_" + isMultiDB + "VALUE RENAME TO BI_JCR_" + isMultiDB + "VALUE"
-            + OLD_OBJECT_SUFFIX);
-
-         // JCR_[S,M]ITEM
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM RENAME TO JCR_" + isMultiDB + "ITEM"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " RENAME CONSTRAINT JCR_PK_"
-            + isMultiDB + "ITEM TO JCR_PK_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " RENAME CONSTRAINT JCR_FK_"
-            + isMultiDB + "ITEM_PARENT TO JCR_FK_" + isMultiDB + "ITEM_PARENT" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER INDEX JCR_PK_" + isMultiDB + "ITEM RENAME TO JCR_PK_" + isMultiDB + "ITEM"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_PARENT_FK RENAME TO JCR_IDX_" + isMultiDB
-            + "ITEM_PARENT_FK" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_PARENT RENAME TO JCR_IDX_" + isMultiDB
-            + "ITEM_PARENT" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID RENAME TO JCR_IDX_" + isMultiDB
-            + "ITEM_PARENT_ID" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM RENAME TO JCR_IDX_" + isMultiDB
-            + "ITEM_N_ORDER_NUM" + OLD_OBJECT_SUFFIX);
-
-         // JCR_[S,M]REF
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF RENAME TO JCR_" + isMultiDB + "REF"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + " RENAME CONSTRAINT JCR_PK_"
-            + isMultiDB + "REF TO JCR_PK_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER INDEX JCR_PK_" + isMultiDB + "REF RENAME TO JCR_PK_" + isMultiDB + "REF"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "REF_PROPERTY RENAME TO JCR_IDX_" + isMultiDB
-            + "REF_PROPERTY" + OLD_OBJECT_SUFFIX);
-      }
-      else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
-      {
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE RENAME TO JCR_" + isMultiDB + "VALUE"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM RENAME TO JCR_" + isMultiDB + "ITEM"
-            + OLD_OBJECT_SUFFIX);
-
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF RENAME TO JCR_" + isMultiDB + "REF"
-            + OLD_OBJECT_SUFFIX);
-      }
-      else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
-      {
-         renameScripts.add("sp_rename JCR_" + isMultiDB + "VALUE, JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("sp_rename JCR_" + isMultiDB + "ITEM, JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("sp_rename JCR_" + isMultiDB + "REF, JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX);
-         renameScripts.add("sp_rename JCR_FK_" + isMultiDB + "VALUE_PROPERTY, JCR_FK_" + isMultiDB + "VALUE_PROPERTY"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("sp_rename JCR_FK_" + isMultiDB + "ITEM_PARENT, JCR_FK_" + isMultiDB + "ITEM_PARENT_OLD");
-      }
-      else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
-      {
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE RENAME TO JCR_" + isMultiDB + "VALUE"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM RENAME TO JCR_" + isMultiDB + "ITEM"
-            + OLD_OBJECT_SUFFIX);
-         renameScripts
-            .add("ALTER TABLE JCR_" + isMultiDB + "REF RENAME TO JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX);
-
-         renameScripts.add("ALTER TABLE  JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " DROP CONSTRAINT JCR_FK_"
-            + isMultiDB + "VALUE_PROPERTY");
-
-         renameScripts.add("ALTER TABLE  JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " DROP CONSTRAINT JCR_FK_"
-            + isMultiDB + "ITEM_PARENT");
-
-         renameScripts.add("ALTER TABLE  JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " DROP CONSTRAINT JCR_PK_"
-            + isMultiDB + "ITEM");
-
-         renameScripts.add("ALTER TABLE  JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " DROP CONSTRAINT JCR_PK_"
-            + isMultiDB + "VALUE");
-
-         renameScripts.add("ALTER TABLE  JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + " DROP CONSTRAINT JCR_PK_"
-            + isMultiDB + "REF");
-
-         renameScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_PARENT RENAME TO JCR_IDX_" + isMultiDB
-            + "ITEM_PARENT" + OLD_OBJECT_SUFFIX);
-
-         renameScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID RENAME TO JCR_IDX_" + isMultiDB
-            + "ITEM_PARENT_ID" + OLD_OBJECT_SUFFIX);
-
-         renameScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM RENAME TO JCR_IDX_" + isMultiDB
-            + "ITEM_N_ORDER_NUM" + OLD_OBJECT_SUFFIX);
-
-         renameScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "VALUE_PROPERTY RENAME TO JCR_IDX_" + isMultiDB
-            + "VALUE_PROPERTY" + OLD_OBJECT_SUFFIX);
-
-         renameScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "REF_PROPERTY RENAME TO JCR_IDX_" + isMultiDB
-            + "REF_PROPERTY" + OLD_OBJECT_SUFFIX);
-      }
-
-      return renameScripts;
-   }
-
-   /**
-    * Create script to rollback changes after rename.
-    * 
-    * @param multiDb
-    *          boolean
-    * @param dialect
-    *          string
-    * @return List 
-    *           return list with query
-    * @throws RepositoryConfigurationException 
-    */
-   protected static List<String> getRollbackScripts(boolean multiDb, String dialect)
-      throws RepositoryConfigurationException
-   {
-      final String isMultiDB = (multiDb ? "M" : "S");
-
-      List<String> rollbackScripts = new ArrayList<String>();
-
-      rollbackScripts.addAll(getDropTableScripts(multiDb, dialect));
-
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
-      {
-         // JCR_[S,M]VALUE
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_" + isMultiDB
-            + "VALUE");
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE RENAME CONSTRAINT JCR_PK_" + isMultiDB
-            + "VALUE" + OLD_OBJECT_SUFFIX + " TO JCR_PK_" + isMultiDB + "VALUE");
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE RENAME CONSTRAINT JCR_FK_" + isMultiDB
-            + "VALUE_PROPERTY" + OLD_OBJECT_SUFFIX + " TO JCR_FK_" + isMultiDB + "VALUE_PROPERTY");
-         rollbackScripts.add("ALTER INDEX JCR_PK_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_PK_"
-            + isMultiDB + "VALUE");
-         rollbackScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "VALUE_PROPERTY" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "VALUE_PROPERTY");
-
-         rollbackScripts.add("RENAME JCR_" + isMultiDB + "VALUE_SEQ" + OLD_OBJECT_SUFFIX + " TO JCR_" + isMultiDB
-            + "VALUE_SEQ");
-         rollbackScripts.add("ALTER TRIGGER BI_JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " RENAME TO BI_JCR_"
-            + isMultiDB + "VALUE");
-   
-         // JCR_[S,M]ITEM
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_" + isMultiDB
-            + "ITEM");
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM RENAME CONSTRAINT JCR_PK_" + isMultiDB
-            + "ITEM" + OLD_OBJECT_SUFFIX + " TO JCR_PK_" + isMultiDB + "ITEM");
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM RENAME CONSTRAINT JCR_FK_" + isMultiDB
-            + "ITEM_PARENT" + OLD_OBJECT_SUFFIX + " TO JCR_FK_" + isMultiDB + "ITEM_PARENT");
-         rollbackScripts.add("ALTER INDEX JCR_PK_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_PK_"
-            + isMultiDB + "ITEM");
-         rollbackScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_PARENT_FK" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_PARENT_FK");
-         rollbackScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_PARENT" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_PARENT");
-         rollbackScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID");
-         rollbackScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM");
-   
-         // JCR_[S,M]REF
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_" + isMultiDB
-            + "REF");
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF RENAME CONSTRAINT JCR_PK_" + isMultiDB
-            + "REF" + OLD_OBJECT_SUFFIX + " TO JCR_PK_" + isMultiDB + "REF");
-         rollbackScripts.add("ALTER INDEX JCR_PK_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_PK_"
-            + isMultiDB + "REF");
-         rollbackScripts.add("ALTER INDEX JCR_IDX_" + isMultiDB + "REF_PROPERTY" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "REF_PROPERTY");
-      }
-      else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
-      {
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_"
-            + isMultiDB + "ITEM");
-
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_"
-            + isMultiDB + "VALUE");
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_" + isMultiDB
-            + "REF");
-      }
-      else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
-      {
-         rollbackScripts.add("sp_rename JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + ", JCR_" + isMultiDB
-            + "VALUE");
-         rollbackScripts.add("sp_rename JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + ", JCR_" + isMultiDB + "ITEM");
-         rollbackScripts.add("sp_rename JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + ", JCR_" + isMultiDB + "REF");
-
-         rollbackScripts.add("sp_rename JCR_FK_" + isMultiDB + "VALUE_PROPERTY" + OLD_OBJECT_SUFFIX + ", JCR_FK_"
-            + isMultiDB + "VALUE_PROPERTY");
-
-         rollbackScripts.add("sp_rename JCR_FK_" + isMultiDB + "ITEM_PARENT" + OLD_OBJECT_SUFFIX + ", JCR_FK_"
-            + isMultiDB + "ITEM_PARENT");
-      }
-      else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
-      {
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "VALUE" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_"
-            + isMultiDB + "VALUE");
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "ITEM" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_"
-            + isMultiDB + "ITEM");
-         rollbackScripts.add("ALTER TABLE JCR_" + isMultiDB + "REF" + OLD_OBJECT_SUFFIX + " RENAME TO JCR_" + isMultiDB
-            + "REF");
-
-         rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "ITEM ADD CONSTRAINT JCR_PK_" + isMultiDB
-            + "ITEM PRIMARY KEY(ID)");
-
-         rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "VALUE ADD CONSTRAINT JCR_FK_" + isMultiDB
-            + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + isMultiDB + "ITEM(ID)");
-
-         rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "ITEM ADD CONSTRAINT JCR_FK_" + isMultiDB
-            + "ITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + isMultiDB + "ITEM(ID)");
-
-         rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "VALUE ADD CONSTRAINT JCR_PK_" + isMultiDB
-            + "VALUE PRIMARY KEY(ID)");
-
-         rollbackScripts.add("ALTER TABLE  JCR_" + isMultiDB + "REF ADD CONSTRAINT JCR_PK_" + isMultiDB
-            + "REF PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)");
-
-         rollbackScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_PARENT" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_PARENT");
-
-         rollbackScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_PARENT_ID");
-
-         rollbackScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "ITEM_N_ORDER_NUM");
-
-         rollbackScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "VALUE_PROPERTY" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "VALUE_PROPERTY");
-
-         rollbackScripts.add("ALTER INDEX  JCR_IDX_" + isMultiDB + "REF_PROPERTY" + OLD_OBJECT_SUFFIX
-            + " RENAME TO JCR_IDX_" + isMultiDB + "REF_PROPERTY");
-      }
-
-      return rollbackScripts;
-   }
-
-   /**
-    * Create script to drop old tables, indexes, etc...after successful restore DB. 
-    * 
-    * @param multiDb
-    *          boolean
-    * @param dialect
-    *         string  
-    * @return List 
-    *           return list with query
-    */
-   protected static List<String> getRemoveOldObjectsScripts(boolean multiDb, String dialect)
-   {
-      List<String> afterRetoreScripts = new ArrayList<String>();
-
-      for (String query : getDropTableScripts(multiDb, dialect))
-      {
-         afterRetoreScripts.add(query + OLD_OBJECT_SUFFIX);
-      }
-
-      return afterRetoreScripts;
-   }
-
-   /**
-    * Create list with queries to initialization database.
-    * 
-    * @param isMultiDb
-    * @param dialect
-    * @return
-    * @throws RepositoryConfigurationException
-    */
-   protected static List<String> getInitializationDBScripts(boolean isMultiDb, String dialect)
-      throws RepositoryConfigurationException
-   {
-      String multiDb = isMultiDb ? "M" : "S";
-
-      String scriptsPath = DBInitializerHelper.scriptPath(dialect, isMultiDb);
-      String script;
+      Connection jdbcConn = dbCleaner.getConnection();
       try
       {
-         script = IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(scriptsPath));
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryConfigurationException("Can not read script file " + scriptsPath, e);
-      }
-
-      List<String> scripts = new ArrayList<String>();
-      for (String query : JDBCUtils.splitWithSQLDelimiter(script))
-      {
-         // Skip creation JCR_S(M)CONTAINER TABLE
-         if (!query.contains("CREATE TABLE JCR_" + multiDb + "CONTAINER"))
-         {
-            scripts.add(JDBCUtils.cleanWhitespaces(query));
-         }
-      }
-
-      scripts.add(DBInitializerHelper.getRootNodeInitializeScript(isMultiDb));
-
-      // Filter scripts
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
-      {
-         for (int i = 0; i < scripts.size(); i++)
-         {
-            String query = scripts.get(i);
-            if (query.contains("JCR_PK_" + multiDb + "ITEM PRIMARY KEY(ID),"))
-            {
-               // removing foreign key creation from initialization scripts for table JCR_S(M)ITEM
-               // it is not possible to create table with such foreign key if the same key exists in
-               // another table of database
-               query =
-                  query.replace("JCR_PK_" + multiDb + "ITEM PRIMARY KEY(ID),", "JCR_PK_" + multiDb
-                     + "ITEM PRIMARY KEY(ID)");
-               query =
-                  query.replace("CONSTRAINT JCR_FK_" + multiDb + "ITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_"
-                     + multiDb + "ITEM(ID)", "");
-               scripts.set(i, query);
-            }
-            else if (query.contains("CONSTRAINT JCR_PK_" + multiDb + "VALUE PRIMARY KEY(ID),"))
-            {
-               // removing foreign key creation for table JCR_S(M)VALUE
-               // it is not possible to create table with such foreign key if the same key exists in
-               // another table of database
-               query =
-                  query.replace("CONSTRAINT JCR_PK_" + multiDb + "VALUE PRIMARY KEY(ID),", "CONSTRAINT JCR_PK_"
-                     + multiDb + "VALUE PRIMARY KEY(ID)");
-               query =
-                  query.replace("CONSTRAINT JCR_FK_" + multiDb
-                     + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)", "");
-               scripts.set(i, query);
-            }
-         }
-      }
-
-      return scripts;
-   }
-
-   /**
-    * Returns database cleaner of workspace.  
-    * 
-    * @param jdbcConn
-    *          database connection which need to use
-    * @param wsEntry
-    *          workspace configuration
-    * @return
-    * @throws SQLException
-    * @throws RepositoryConfigurationException
-    */
-   public static DBCleaner getWorkspaceDBCleaner(Connection jdbcConn, WorkspaceEntry wsEntry) throws SQLException,
-      RepositoryConfigurationException
-   {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
-
-      boolean isMultiDB =
-         Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
-
-      String dialect =
-         wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
-      if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
-      {
-         dialect = DialectDetecter.detect(jdbcConn.getMetaData());
-      }
-
-      if (!isMultiDB)
-      {
-         String containerName = wsEntry.getName();
-         String multiDb = isMultiDB ? "M" : "S";
-
-         List<String> cleanScripts = new ArrayList<String>();
-         List<String> commitScripts = new ArrayList<String>();
-         List<String> rollbackScripts = new ArrayList<String>();
-
-         String constraintName = validateConstraintName("JCR_FK_" + multiDb + "ITEM_PARENT", dialect);
-         cleanScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM " + dropCommand(false, constraintName, dialect));
-
-         String constraint =
-            "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
-         commitScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
-
-         // PostgreSQL, DB2 and MSSQL on connection.rollback() will restore all removed constrains
-         if (!dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
-            && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
-            && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8)
-            && !dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
-         {
-            rollbackScripts.add("ALTER TABLE JCR_" + multiDb + "ITEM ADD " + constraint);
-         }
-
-         cleanScripts
-            .add("delete from JCR_SVALUE where PROPERTY_ID IN (select ID from JCR_SITEM where CONTAINER_NAME='"
-               + containerName + "')");
-         cleanScripts.add("delete from JCR_SREF where PROPERTY_ID IN (select ID from JCR_SITEM where CONTAINER_NAME='"
-            + containerName + "')");
-         cleanScripts.add("delete from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
-
-         return new DBCleaner(jdbcConn, cleanScripts, rollbackScripts, commitScripts,
-            dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
-      }
-      else
-      {
-         // PostgreSQL, DB2 and MSSQL on connection.rollback() will restore all removed tables
-         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
-         {
-            List<String> cleanScripts = new ArrayList<String>();
-
-            cleanScripts.addAll(getDropTableScripts(isMultiDB, dialect));
-            cleanScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
-            cleanScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
-
-            return new DBCleaner(jdbcConn, cleanScripts, new ArrayList<String>(), getRestoreIndexesScripts(isMultiDB,
-               dialect), false);
-         }
-         else
-         {
-            ArrayList<String> cleanScripts = new ArrayList<String>();
-            cleanScripts.addAll(getRenameScripts(isMultiDB, dialect));
-            cleanScripts.addAll(getInitializationDBScripts(isMultiDB, dialect));
-            cleanScripts.addAll(getRemoveIndexesScripts(isMultiDB, dialect));
-
-            ArrayList<String> commitScript = new ArrayList<String>();
-            commitScript.addAll(getRemoveOldObjectsScripts(isMultiDB, dialect));
-            commitScript.addAll(getRestoreIndexesScripts(isMultiDB, dialect));
-
-            return new DBCleaner(jdbcConn, cleanScripts, getRollbackScripts(isMultiDB, dialect), commitScript,
-               dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE));
-         }
-      }
-   }
-
-   private static void processingClean(DBCleaner dbCleaner, Connection jdbcConn) throws SQLException
-   {
-      try
-      {
-         dbCleaner.executeCleanScripts();
-         dbCleaner.executeCommitScripts();
+         dbCleaner.clean();
+         dbCleaner.commit();
 
          jdbcConn.commit();
       }
@@ -947,12 +221,114 @@ public class DBCleanService
       {
          jdbcConn.rollback();
 
-         dbCleaner.executeRollbackScripts();
+         dbCleaner.rollback();
+
          jdbcConn.commit();
       }
-      finally
+   }
+
+   /**
+    * Opens connection to database underlying a workspace.
+    */
+   private static Connection getConnection(WorkspaceEntry wsEntry) throws DBCleanException
+   {
+      String dsName = getSourceNameParameter(wsEntry);
+
+      DataSource ds;
+      try
       {
-         jdbcConn.close();
+         ds = (DataSource)new InitialContext().lookup(dsName);
       }
+      catch (NamingException e)
+      {
+         throw new DBCleanException(e);
+      }
+
+      if (ds == null)
+      {
+         throw new DBCleanException("Data source " + dsName + " not found");
+      }
+
+      final DataSource dsF = ds;
+
+      Connection jdbcConn;
+      try
+      {
+         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+         {
+            public Connection run() throws Exception
+            {
+               return dsF.getConnection();
+            }
+         });
+      }
+      catch (SQLException e)
+      {
+         throw new DBCleanException(e);
+      }
+
+      return jdbcConn;
+   }
+
+   /**
+    * Return {@link JDBCWorkspaceDataContainer#SOURCE_NAME} parameter from workspace configuration.
+    */
+   private static String getSourceNameParameter(WorkspaceEntry wsEntry) throws DBCleanException
+   {
+      try
+      {
+         return wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new DBCleanException(e);
+      }
+   }
+
+   /**
+    * Return {@link JDBCWorkspaceDataContainer#MULTIDB} parameter from workspace configuration.
+    */
+   private static boolean getMultiDbParameter(WorkspaceEntry wsEntry) throws DBCleanException
+   {
+      try
+      {
+         return Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new DBCleanException(e);
+      }
+   }
+
+   /**
+    * Resolves dialect which it is used in workspace configuration. First of all, 
+    * method will try to get parameter {@link JDBCWorkspaceDataContainer#DB_DIALECT} from 
+    * a configuration. And only then method will try to detect dialect using {@link DialectDetecter} in case 
+    * if dialect is set as {@link DialectConstants#DB_DIALECT_AUTO}.  
+    * 
+    * @param wsEntry
+    *          workspace configuration
+    * @return dialect
+    * @throws DBCleanException
+    */
+   private static String resolveDialect(WorkspaceEntry wsEntry) throws DBCleanException
+   {
+      String dialect =
+         wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
+
+      if (DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
+      {
+         try
+         {
+            Connection jdbcConn = getConnection(wsEntry);
+            dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+         }
+         catch (SQLException e)
+         {
+            throw new DBCleanException(e);
+         }
+      }
+
+      return dialect;
    }
 }
