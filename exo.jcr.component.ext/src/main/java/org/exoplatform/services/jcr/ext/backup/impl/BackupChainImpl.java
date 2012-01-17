@@ -122,7 +122,8 @@ public class BackupChainImpl implements BackupChain
       {
          try
          {
-            this.incrementalBackup = (AbstractIncrementalBackupJob)ClassLoading.forName(incrementalBackupType, this).newInstance();
+            this.incrementalBackup =
+               (AbstractIncrementalBackupJob)ClassLoading.forName(incrementalBackupType, this).newInstance();
          }
          catch (Exception e)
          {

@@ -18,8 +18,6 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -551,80 +549,6 @@ abstract class AbstractIndex
    }
 
    //------------------------------< internal >--------------------------------
-
-   /**
-    * Returns the index parameter set on <code>f</code>.
-    *
-    * @param f a lucene field.
-    * @return the index parameter on <code>f</code>.
-    */
-   private Field.Index getIndexParameter(Fieldable f)
-   {
-      if (!f.isIndexed())
-      {
-         return Field.Index.NO;
-      }
-      else if (f.isTokenized())
-      {
-         return Field.Index.ANALYZED;
-      }
-      else
-      {
-         return Field.Index.NOT_ANALYZED;
-      }
-   }
-
-   /**
-    * Returns the store parameter set on <code>f</code>.
-    *
-    * @param f a lucene field.
-    * @return the store parameter on <code>f</code>.
-    */
-   private Field.Store getStoreParameter(Fieldable f)
-   {
-      if (f.isCompressed())
-      {
-         return Field.Store.COMPRESS;
-      }
-      else if (f.isStored())
-      {
-         return Field.Store.YES;
-      }
-      else
-      {
-         return Field.Store.NO;
-      }
-   }
-
-   /**
-    * Returns the term vector parameter set on <code>f</code>.
-    *
-    * @param f a lucene field.
-    * @return the term vector parameter on <code>f</code>.
-    */
-   private Field.TermVector getTermVectorParameter(Fieldable f)
-   {
-      if (f.isStorePositionWithTermVector() && f.isStoreOffsetWithTermVector())
-      {
-         return Field.TermVector.WITH_POSITIONS_OFFSETS;
-      }
-      else if (f.isStorePositionWithTermVector())
-      {
-         return Field.TermVector.WITH_POSITIONS;
-      }
-      else if (f.isStoreOffsetWithTermVector())
-      {
-         return Field.TermVector.WITH_OFFSETS;
-      }
-      else if (f.isTermVectorStored())
-      {
-         return Field.TermVector.YES;
-      }
-      else
-      {
-         return Field.TermVector.NO;
-      }
-   }
 
    /**
     * Adapter to pipe info messages from lucene into log messages.

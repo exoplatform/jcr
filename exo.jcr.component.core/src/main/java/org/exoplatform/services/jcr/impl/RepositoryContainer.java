@@ -18,8 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.commons.utils.ClassLoading;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
@@ -289,7 +289,8 @@ public class RepositoryContainer extends ExoContainer
                workspaceContainer.registerComponentImplementation(StandaloneStoragePluginProvider.class);
                try
                {
-                  final Class<?> containerType = ClassLoading.forName(wsConfig.getContainer().getType(), RepositoryContainer.class);
+                  final Class<?> containerType =
+                     ClassLoading.forName(wsConfig.getContainer().getType(), RepositoryContainer.class);
                   workspaceContainer.registerComponentImplementation(containerType);
                   if (isSystem)
                   {
@@ -309,7 +310,8 @@ public class RepositoryContainer extends ExoContainer
                   String className = wsConfig.getCache().getType();
                   if (className != null && className.length() > 0)
                   {
-                     workspaceContainer.registerComponentImplementation(ClassLoading.forName(className, RepositoryContainer.class));
+                     workspaceContainer.registerComponentImplementation(ClassLoading.forName(className,
+                        RepositoryContainer.class));
                   }
                   else
                      workspaceContainer.registerComponentImplementation(LinkedWorkspaceStorageCacheImpl.class);
@@ -329,7 +331,8 @@ public class RepositoryContainer extends ExoContainer
                {
                   try
                   {
-                     final Class<?> lockManagerType = ClassLoading.forName(wsConfig.getLockManager().getType(), RepositoryContainer.class);
+                     final Class<?> lockManagerType =
+                        ClassLoading.forName(wsConfig.getLockManager().getType(), RepositoryContainer.class);
                      workspaceContainer.registerComponentImplementation(lockManagerType);
                   }
                   catch (ClassNotFoundException e)
@@ -630,7 +633,8 @@ public class RepositoryContainer extends ExoContainer
                }
                try
                {
-                  final Class<?> authenticationPolicyClass = ClassLoading.forName(config.getAuthenticationPolicy(), RepositoryContainer.class);
+                  final Class<?> authenticationPolicyClass =
+                     ClassLoading.forName(config.getAuthenticationPolicy(), RepositoryContainer.class);
                   registerComponentImplementation(authenticationPolicyClass);
                }
                catch (ClassNotFoundException e)

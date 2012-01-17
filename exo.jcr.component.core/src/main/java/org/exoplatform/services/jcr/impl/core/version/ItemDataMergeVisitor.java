@@ -41,7 +41,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -153,14 +152,6 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       public int getResult()
       {
          return result;
-      }
-   }
-
-   private class VersionableStateComparator implements Comparator<VersionableState>
-   {
-      public int compare(VersionableState nc1, VersionableState nc2)
-      {
-         return nc1.getPath().compareTo(nc2.getPath());
       }
    }
 
