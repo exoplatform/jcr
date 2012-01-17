@@ -713,9 +713,11 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
             // clean and rollback first
             repositoryDBCleaner.clean();
+
             conn.rollback();
 
             repositoryDBCleaner.rollback();
+
             conn.commit();
 
             checkConent(repositoryName);
@@ -723,6 +725,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
             // clean
             repositoryDBCleaner.clean();
             repositoryDBCleaner.commit();
+
             conn.commit();
          }
          else
@@ -769,9 +772,11 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          {
             // clean and rollback first
             workspaceDBCleaner.clean();
+
             conn.rollback();
 
             workspaceDBCleaner.rollback();
+
             conn.commit();
 
             checkConent(repositoryName);
@@ -779,6 +784,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
             // clean
             workspaceDBCleaner.clean();
             workspaceDBCleaner.commit();
+
             conn.commit();
          }
          finally

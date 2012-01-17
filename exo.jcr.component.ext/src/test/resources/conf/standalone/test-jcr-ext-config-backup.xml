@@ -234,7 +234,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr6" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr8" />
                      <property name="jbosscache-shareable" value="true" />
                   </properties>
                </lock-manager>
