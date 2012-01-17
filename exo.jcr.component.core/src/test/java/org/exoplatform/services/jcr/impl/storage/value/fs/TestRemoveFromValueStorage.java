@@ -139,7 +139,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
             }
          }
 
-         for (int i = 0; i < count; i++)
+         for (int i = 0; i < channels.size(); i++)
          {
             try
             {
@@ -155,7 +155,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
          mySession.save();
 
          // checking whether values are still in value storage.
-         for (int i = 0; i < count; i++)
+         for (int i = 0; i < channels.size(); i++)
          {
             try
             {
