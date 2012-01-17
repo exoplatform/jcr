@@ -116,22 +116,19 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
      * The list of allowed methods.
      */
     private static final String ALLOW;
-@@ -300,6 +311,14 @@
+@@ -300,6 +311,11 @@
  
        }
  
 +      ValuesParam pReadOnlyMimeTypes = params.getValuesParam(READ_ONLY_MIME_TYPES);
 +      if (pReadOnlyMimeTypes != null)
 +      {
-+         for (String mimeType : (List<String>)pReadOnlyMimeTypes.getValues())
-+         {
-+            readOnlyMimeTypes.add(mimeType);
-+         }
++         readOnlyMimeTypes.addAll((List<String>)pReadOnlyMimeTypes.getValues());
 +      }
     }
  
     /**
-@@ -1038,7 +1057,8 @@
+@@ -1038,7 +1054,8 @@
           NodeType nodeType = ntm.getNodeType(contentNodeType);
           NodeTypeUtil.checkContentResourceType(nodeType);
  
