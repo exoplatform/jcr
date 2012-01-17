@@ -45,6 +45,8 @@ public class DBCleanerTool
 
    protected final Connection connection;
 
+   protected final boolean autoCommit;
+
    protected final List<String> rollbackingScripts = new ArrayList<String>();
 
    protected final List<String> committingScripts = new ArrayList<String>();
@@ -57,11 +59,14 @@ public class DBCleanerTool
     * @param connection 
     *          connection to database which will be used in cleaning, take in account DBCleanerTool does not
     *          close connection
+    * @param autoCommit 
+    *          auto commit mode which will be set during script execution         
     */
-   DBCleanerTool(Connection connection, Collection<String> cleaningScripts, Collection<String> committingScripts,
-      Collection<String> rollbackingScripts)
+   DBCleanerTool(Connection connection, boolean autoCommit, Collection<String> cleaningScripts,
+      Collection<String> committingScripts, Collection<String> rollbackingScripts)
    {
       this.connection = connection;
+      this.autoCommit = autoCommit;
 
       this.cleaningScripts.addAll(cleaningScripts);
       this.committingScripts.addAll(committingScripts);
@@ -86,7 +91,7 @@ public class DBCleanerTool
       }
       catch (SQLException e)
       {
-         throw new DBCleanException(e);
+         throw new DBCleanException(JDBCUtils.getFullMessage(e), e);
       }
    }
 
@@ -108,7 +113,7 @@ public class DBCleanerTool
       }
       catch (SQLException e)
       {
-         throw new DBCleanException(e);
+         throw new DBCleanException(JDBCUtils.getFullMessage(e), e);
       }
    }
 
@@ -129,7 +134,7 @@ public class DBCleanerTool
       }
       catch (SQLException e)
       {
-         throw new DBCleanException(e);
+         throw new DBCleanException(JDBCUtils.getFullMessage(e), e);
       }
    }
 
@@ -142,7 +147,7 @@ public class DBCleanerTool
    }
 
    /**
-    * Execute script on database.  
+    * Execute script on database. Set auto commit mode if needed.  
     * 
     * @param scripts
     *          the scripts for execution 
@@ -150,10 +155,14 @@ public class DBCleanerTool
     */
    protected void execute(List<String> scripts) throws SQLException
    {
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
+      SecurityHelper
+         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
+
+      // set needed auto commit mode
+      boolean autoCommit = connection.getAutoCommit();
+      if (autoCommit != this.autoCommit)
       {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+         connection.setAutoCommit(this.autoCommit);
       }
 
       Statement st = connection.createStatement();
@@ -183,18 +192,32 @@ public class DBCleanerTool
          {
             LOG.error("Can't close the Statement." + e);
          }
+
+         // restore previous auto commit mode
+         if (autoCommit != this.autoCommit)
+         {
+            connection.setAutoCommit(autoCommit);
+         }
       }
    }
 
    protected void executeQuery(final Statement statement, final String sql) throws SQLException
    {
-      SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+      try
       {
-         public Object run() throws Exception
+         SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
          {
-            statement.executeUpdate(sql);
-            return null;
-         }
-      });
+            public Object run() throws Exception
+            {
+               statement.executeUpdate(sql);
+               return null;
+            }
+         });
+      }
+      catch (SQLException e)
+      {
+         LOG.error("Query execution \"" + sql + "\" failed");
+         throw e;
+      }
    }
 }

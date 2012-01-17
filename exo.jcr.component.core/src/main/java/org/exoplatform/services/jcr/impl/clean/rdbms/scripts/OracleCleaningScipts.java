@@ -63,37 +63,48 @@ public class OracleCleaningScipts extends DBCleaningScripts
    }
    
    /**
-    * {@inheritDoc}
+    * R{@inheritDoc}
     */
-   protected void prepareRenamingApproachScripts() throws DBCleanException
+   protected Collection<String> getConstraintsAddingScripts()
    {
-      super.prepareRenamingApproachScripts();
+      Collection<String> scripts = new ArrayList<String>();
 
-      String constraintName = "JCR_PK_" + tablePrefix + "VALUE";
-      cleaningScripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
-
-      constraintName = "JCR_FK_" + tablePrefix + "VALUE_PROPERTY";
-      cleaningScripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
-
-      constraintName = "JCR_PK_" + tablePrefix + "ITEM";
-      cleaningScripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM DROP CONSTRAINT " + constraintName);
-
-      constraintName = "JCR_PK_" + tablePrefix + "REF";
-      cleaningScripts.add("ALTER TABLE JCR_" + tablePrefix + "REF DROP CONSTRAINT " + constraintName);
-
-      constraintName = "JCR_PK_" + tablePrefix + "VALUE PRIMARY KEY(ID)";
-      committingScripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
+      String constraintName = "JCR_PK_" + tablePrefix + "VALUE PRIMARY KEY(ID)";
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
 
       constraintName = "JCR_PK_" + tablePrefix + "ITEM PRIMARY KEY(ID)";
-      committingScripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM ADD CONSTRAINT " + constraintName);
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM ADD CONSTRAINT " + constraintName);
 
       constraintName =
-         "JCR_FK_" + multiDb + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)";
-      committingScripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
+         "JCR_FK_" + tablePrefix + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)";
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
 
       constraintName = "JCR_PK_" + tablePrefix + "REF PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)";
-      committingScripts.add("ALTER TABLE JCR_" + tablePrefix + "REF ADD CONSTRAINT " + constraintName);
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "REF ADD CONSTRAINT " + constraintName);
 
+      return scripts;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getConstraintsRemovingScripts()
+   {
+      Collection<String> scripts = new ArrayList<String>();
+
+      String constraintName = "JCR_PK_" + tablePrefix + "VALUE";
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_FK_" + tablePrefix + "VALUE_PROPERTY";
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_PK_" + tablePrefix + "ITEM";
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM DROP CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_PK_" + tablePrefix + "REF";
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "REF DROP CONSTRAINT " + constraintName);
+
+      return scripts;
    }
 
    /**
@@ -146,12 +157,29 @@ public class OracleCleaningScipts extends DBCleaningScripts
    /**
     * {@inheritDoc}
     */
-   protected Collection<String> getTableDroppingScripts()
+   protected Collection<String> getTablesDroppingScripts()
    {
-      Collection<String> scripts = super.getTableDroppingScripts();
+      Collection<String> scripts = new ArrayList<String>();
 
       scripts.add("DROP TRIGGER BI_JCR_" + tablePrefix + "VALUE");
       scripts.add("DROP SEQUENCE JCR_" + tablePrefix + "VALUE_SEQ");
+
+      scripts.addAll(super.getTablesDroppingScripts());
+
+      return scripts;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getOldTablesDroppingScripts()
+   {
+      Collection<String> scripts = new ArrayList<String>();
+
+      scripts.add("DROP TRIGGER BI_JCR_" + tablePrefix + "VALUE_OLD");
+      scripts.add("DROP SEQUENCE JCR_" + tablePrefix + "VALUE_SEQ_OLD");
+
+      scripts.addAll(super.getOldTablesDroppingScripts());
 
       return scripts;
    }
@@ -161,7 +189,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
     */
    protected Collection<String> getTablesRenamingScripts()
    {
-      Collection<String> scripts = super.getTableDroppingScripts();
+      Collection<String> scripts = new ArrayList<String>();
 
       // JCR_VALUE
       scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE RENAME TO JCR_" + tablePrefix + "VALUE_OLD");

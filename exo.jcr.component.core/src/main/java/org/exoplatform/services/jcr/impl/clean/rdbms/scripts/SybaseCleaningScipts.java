@@ -65,28 +65,40 @@ public class SybaseCleaningScipts extends DBCleaningScripts
    /**
     * {@inheritDoc}
     */
-   protected void prepareRenamingApproachScripts() throws DBCleanException
+   protected Collection<String> getConstraintsAddingScripts()
    {
-      super.prepareRenamingApproachScripts();
+      Collection<String> scripts = new ArrayList<String>();
 
-      String constraintName = "JCR_FK_" + tablePrefix + "VALUE_PROPERTY";
-      cleaningScripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
-
-      constraintName = "JCR_PK_" + tablePrefix + "ITEM";
-      cleaningScripts.add("ALTER TABLE  JCR_" + tablePrefix + "ITEM DROP CONSTRAINT " + constraintName);
-
-      constraintName = "JCR_PK_" + tablePrefix + "VALUE";
-      cleaningScripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
-
-      constraintName = "JCR_PK_" + tablePrefix + "ITEM PRIMARY KEY(ID)";
-      committingScripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM ADD CONSTRAINT " + constraintName);
+      String constraintName = "JCR_PK_" + tablePrefix + "ITEM PRIMARY KEY(ID)";
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM ADD CONSTRAINT " + constraintName);
 
       constraintName = "JCR_PK_" + tablePrefix + "VALUE PRIMARY KEY(ID)";
-      committingScripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
 
       constraintName =
          "JCR_FK_" + tablePrefix + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)";
-      committingScripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
+      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
+
+      return scripts;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getConstraintsRemovingScripts()
+   {
+      Collection<String> scripts = new ArrayList<String>();
+
+      String constraintName = "JCR_FK_" + tablePrefix + "VALUE_PROPERTY";
+      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_PK_" + tablePrefix + "ITEM";
+      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "ITEM DROP CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_PK_" + tablePrefix + "VALUE";
+      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
+
+      return scripts;
    }
 
    /**
@@ -114,16 +126,16 @@ public class SybaseCleaningScipts extends DBCleaningScripts
 
       try
       {
-         scripts.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + tablePrefix
-            + "ITEM_PARENT ON JCR_" + tablePrefix + "ITEM", multiDb, dialect));
-         scripts.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
-            + "ITEM_PARENT_ID ON JCR_" + tablePrefix + "ITEM", multiDb, dialect));
-         scripts.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
-            + "ITEM_N_ORDER_NUM ON JCR_" + tablePrefix + "ITEM", multiDb, dialect));
-         scripts.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
-            + "VALUE_PROPERTY ON JCR_" + tablePrefix + "VALUE", multiDb, dialect));
-         scripts.add(DBInitializerHelper.getObjectScript("CREATE UNIQUE INDEX JCR_IDX_" + multiDb
-            + "REF_PROPERTY ON JCR_" + tablePrefix + "REF", multiDb, dialect));
+         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + tablePrefix + "ITEM_PARENT ON JCR_"
+            + tablePrefix + "ITEM", multiDb, dialect));
+         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + tablePrefix + "ITEM_PARENT_ID ON JCR_"
+            + tablePrefix + "ITEM", multiDb, dialect));
+         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + tablePrefix + "ITEM_N_ORDER_NUM ON JCR_"
+            + tablePrefix + "ITEM", multiDb, dialect));
+         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + tablePrefix + "VALUE_PROPERTY ON JCR_"
+            + tablePrefix + "VALUE", multiDb, dialect));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + tablePrefix + "REF_PROPERTY ON JCR_"
+            + tablePrefix + "REF", multiDb, dialect));
       }
       catch (RepositoryConfigurationException e)
       {
@@ -138,7 +150,7 @@ public class SybaseCleaningScipts extends DBCleaningScripts
     */
    protected Collection<String> getTablesRenamingScripts()
    {
-      Collection<String> scripts = super.getTableDroppingScripts();
+      Collection<String> scripts = new ArrayList<String>();
 
       scripts.add("sp_rename JCR_" + tablePrefix + "VALUE, JCR_" + tablePrefix + "VALUE_OLD");
       scripts.add("sp_rename JCR_" + tablePrefix + "ITEM, JCR_" + tablePrefix + "ITEM_OLD");
@@ -155,7 +167,7 @@ public class SybaseCleaningScipts extends DBCleaningScripts
     */
    protected Collection<String> getOldTablesRenamingScripts()
    {
-      Collection<String> scripts = super.getTableDroppingScripts();
+      Collection<String> scripts = new ArrayList<String>();
 
       scripts.add("sp_rename JCR_" + tablePrefix + "VALUE_OLD, JCR_" + tablePrefix + "VALUE");
       scripts.add("sp_rename JCR_" + tablePrefix + "ITEM_OLD, JCR_" + tablePrefix + "ITEM");

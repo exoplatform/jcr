@@ -74,8 +74,8 @@ public class MySQLCleaningScipts extends DBCleaningScripts
       cleaningScripts.addAll(getIndexesDroppingScripts());
 
       String constraintName =
-         "JCR_FK_" + tablePrefix + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + multiDb + "ITEM(ID)";
-      committingScripts.add("ALTER TABLE JCR_" + multiDb + "VALUE ADD CONSTRAINT " + constraintName);
+         "JCR_FK_" + tablePrefix + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)";
+      committingScripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
    }
 
    /**

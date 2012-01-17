@@ -170,10 +170,11 @@ public class DBCleanService
       }
 
       String dialect = resolveDialect(wsEntry);
+      boolean autoCommit = dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE);
 
       DBCleaningScripts scripts = DBCleaningScriptsFactory.prepareScripts(dialect, rEntry);
 
-      return new DBCleanerTool(jdbcConn, scripts.getCleaningScripts(), scripts.getCommittingScripts(),
+      return new DBCleanerTool(jdbcConn, autoCommit, scripts.getCleaningScripts(), scripts.getCommittingScripts(),
          scripts.getRollbackingScripts());
    }
 
@@ -195,10 +196,11 @@ public class DBCleanService
       boolean multiDb = getMultiDbParameter(wsEntry);
 
       String dialect = resolveDialect(wsEntry);
+      boolean autoCommit = dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE);
       
       DBCleaningScripts scripts = DBCleaningScriptsFactory.prepareScripts(dialect, wsEntry);
 
-      return new DBCleanerTool(jdbcConn, scripts.getCleaningScripts(), scripts.getCommittingScripts(),
+      return new DBCleanerTool(jdbcConn, autoCommit, scripts.getCleaningScripts(), scripts.getCommittingScripts(),
          scripts.getRollbackingScripts());
    }
 

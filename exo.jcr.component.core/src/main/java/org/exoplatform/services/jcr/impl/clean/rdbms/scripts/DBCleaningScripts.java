@@ -116,14 +116,16 @@ public abstract class DBCleaningScripts
    {
       cleaningScripts.addAll(getTablesRenamingScripts());
       cleaningScripts.addAll(getDBInitializationScripts());
-      cleaningScripts.addAll(getConstraintRemovingScripts());
+      cleaningScripts.addAll(getFKRemovingScripts());
+      cleaningScripts.addAll(getConstraintsRemovingScripts());
       cleaningScripts.addAll(getIndexesDroppingScripts());
 
       committingScripts.addAll(getOldTablesDroppingScripts());
       committingScripts.addAll(getIndexesAddingScripts());
-      committingScripts.addAll(getConstraintAddingScripts());
+      committingScripts.addAll(getConstraintsAddingScripts());
+      committingScripts.addAll(getFKAddingScripts());
 
-      rollbackingScripts.addAll(getTableDroppingScripts());
+      rollbackingScripts.addAll(getTablesDroppingScripts());
       rollbackingScripts.addAll(getOldTablesRenamingScripts());
    }
 
@@ -134,13 +136,13 @@ public abstract class DBCleaningScripts
     */
    protected void prepareDroppingTablesApproachScripts() throws DBCleanException
    {
-      cleaningScripts.addAll(getTableDroppingScripts());
+      cleaningScripts.addAll(getTablesDroppingScripts());
       cleaningScripts.addAll(getDBInitializationScripts());
-      cleaningScripts.addAll(getConstraintRemovingScripts());
+      cleaningScripts.addAll(getFKRemovingScripts());
       cleaningScripts.addAll(getIndexesDroppingScripts());
 
       committingScripts.addAll(getIndexesAddingScripts());
-      committingScripts.addAll(getConstraintAddingScripts());
+      committingScripts.addAll(getFKAddingScripts());
    }
 
    /**
@@ -148,12 +150,28 @@ public abstract class DBCleaningScripts
     */
    protected void prepareSimpleCleaningApproachScripts()
    {
-      cleaningScripts.addAll(getConstraintRemovingScripts());
+      cleaningScripts.addAll(getFKRemovingScripts());
       cleaningScripts.addAll(getSingleDbWorkspaceCleaningScripts());
 
-      committingScripts.addAll(getConstraintAddingScripts());
+      committingScripts.addAll(getFKAddingScripts());
 
-      rollbackingScripts.addAll(getConstraintAddingScripts());
+      rollbackingScripts.addAll(getFKAddingScripts());
+   }
+
+   /**
+    * Returns SQL scripts for adding constraints.
+    */
+   protected Collection<String> getConstraintsAddingScripts()
+   {
+      return new ArrayList<String>();
+   }
+
+   /**
+    * Returns SQL scripts for removing constraints.
+    */
+   protected Collection<String> getConstraintsRemovingScripts()
+   {
+      return new ArrayList<String>();
    }
 
    /**
@@ -191,9 +209,9 @@ public abstract class DBCleaningScripts
    }
 
    /**
-    * Returns SQL scripts for removing constraint.
+    * Returns SQL scripts for removing FK on JCR_ITEM table.
     */
-   protected Collection<String> getConstraintRemovingScripts()
+   protected Collection<String> getFKRemovingScripts()
    {
       List<String> scripts = new ArrayList<String>();
 
@@ -204,9 +222,9 @@ public abstract class DBCleaningScripts
    }
 
    /**
-    * Returns SQL scripts for adding constraint.
+    * Returns SQL scripts for adding FK on JCR_ITEM table.
     */
-   protected Collection<String> getConstraintAddingScripts()
+   protected Collection<String> getFKAddingScripts()
    {
       List<String> scripts = new ArrayList<String>();
 
@@ -234,7 +252,7 @@ public abstract class DBCleaningScripts
    /**
     * Returns SQL scripts for dropping existed JCR tables.
     */
-   protected Collection<String> getTableDroppingScripts()
+   protected Collection<String> getTablesDroppingScripts()
    {
       List<String> scripts = new ArrayList<String>();
 

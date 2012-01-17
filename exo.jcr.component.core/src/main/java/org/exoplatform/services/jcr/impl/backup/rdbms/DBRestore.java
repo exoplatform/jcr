@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.backup.rdbms;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.services.database.utils.DialectConstants;
 import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -126,6 +127,8 @@ public class DBRestore implements DataRestore
     */
    protected List<String> successfulExecuted;
 
+   protected boolean dbCleanerInAutoCommit;
+
    /**
     * Constructor DBRestore.
     * 
@@ -147,6 +150,7 @@ public class DBRestore implements DataRestore
       this.tables = tables;
       this.dbCleaner = dbCleaner;
       this.dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+      this.dbCleanerInAutoCommit = dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE);
    }
 
    /**
@@ -197,6 +201,7 @@ public class DBRestore implements DataRestore
       try
       {
          dbCleaner.commit();
+
          jdbcConn.commit();
       }
       catch (SQLException e)
@@ -219,6 +224,7 @@ public class DBRestore implements DataRestore
          jdbcConn.rollback();
 
          dbCleaner.rollback();
+
          jdbcConn.commit();
       }
       catch (SQLException e)

@@ -34,7 +34,7 @@ public class DummyDBCleanerTool extends DBCleanerTool
     */
    public DummyDBCleanerTool()
    {
-      super(null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>());
+      super(null, false, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>());
    }
 
    /**

@@ -44,7 +44,7 @@ public class DBCleaningScriptsFactory
       else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2)
          || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2V8))
       {
-         return new DB2CleanScipts(dialect, wsEntry);
+         return new DB2CleaningScipts(dialect, wsEntry);
       }
       else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MSSQL))
       {
@@ -88,7 +88,7 @@ public class DBCleaningScriptsFactory
       else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2)
          || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2V8))
       {
-         return new DB2CleanScipts(dialect, rEntry);
+         return new DB2CleaningScipts(dialect, rEntry);
       }
       else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MSSQL))
       {
