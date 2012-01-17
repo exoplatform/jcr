@@ -240,8 +240,8 @@ session.logout();
         <title>Can I use Session after loging out?</title>
 
         <para>No. Any instance of Session or Node (acquired through session)
-        shouldn't be used after loging out anymore. At least, it is highly
-        recommended not to use.</para>
+        shouldn't be used after loging out anymore. If you use Session or Node
+        after logging out then you get an exception.</para>
       </section>
 
       <section>
