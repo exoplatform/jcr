@@ -184,6 +184,39 @@ public class TestPut extends BaseStandaloneTest
          .toString());
    }
 
+   /**
+    * Testing if read-only mime-types properties, which can be set as initial parameters
+    * for WebDavService, are indeed read-only. 
+    * More info can be found here: https://jira.exoplatform.org/browse/JCR-1704
+    * @throws Exception
+    */
+   public void testReadOnlyMimeTypeProperties() throws Exception
+   {
+      String testMimeTypeProperty = "test/mime-type";
+      String content = TestUtils.getFileContent();
+      String path = TestUtils.getFileName();
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+
+      // setting content-type header
+      // test/mime-type is defined in init params to be read only mime type
+      headers.add(HttpHeaders.CONTENT_TYPE, testMimeTypeProperty);
+      // putting a resource
+      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
+
+      headers.clear();
+      // setting content-type header again
+      // this time we set MediaType.TEXT_HTML to replace previous mime type
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML);
+      // putting one mopre time
+      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
+
+      // gettin jcr:content node, which stores jcr:mimeType parameter
+      Node node = session.getRootNode().getNode(TextUtil.relativizePath(path)).getNode("jcr:content");
+
+      assertEquals("Mime-type property should not be changed.", testMimeTypeProperty, node.getProperty("jcr:mimeType")
+         .getString());
+   }
+
    @Override
    protected String getRepositoryName()
    {

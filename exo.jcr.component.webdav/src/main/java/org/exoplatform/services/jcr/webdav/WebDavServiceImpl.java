@@ -23,6 +23,7 @@ import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.commons.utils.MimeTypeResolver;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
@@ -78,8 +79,10 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.PathNotFoundException;
@@ -143,10 +146,18 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
    public static final String FOLDER_ICON_PATH = "folder-icon-path";
 
+   public static final String READ_ONLY_MIME_TYPES = "read-only-mime-types";
+
    /**
     * Logger.
     */
    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.WebDavServiceImpl");
+
+   /**
+    * Set to keep all 'read-only' mime types. Mime-types listed here  
+    * are not allowed to be changed. 
+    */
+   private Set<String> readOnlyMimeTypes = new HashSet<String>();
 
    /**
     * Local Thread SessionProvider.
@@ -305,6 +316,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       }
       this.mimeTypeResolver = new MimeTypeResolver();
       this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
+
+      ValuesParam pReadOnlyMimeTypes = params.getValuesParam(READ_ONLY_MIME_TYPES);
+      if (pReadOnlyMimeTypes != null)
+      {
+         readOnlyMimeTypes.addAll((List<String>)pReadOnlyMimeTypes.getValues());
+      }
    }
 
    /**
@@ -386,6 +403,24 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
 
       }
+
+      /*
+       * As this constructor receives Map<String, String> instead of InitParams
+       * we cannot pass multi-valued parameters in the form of 
+       * String -> Collection  
+       * We pass a set of 'read-only' mime types as a single String
+       * with mime types separated by comma (",")
+       * i.e. "mimeType1, mimeType2, mimeType3"
+       */
+      paramValue = params.get(READ_ONLY_MIME_TYPES);
+      if (paramValue != null)
+      {
+         for (String mimeType : paramValue.split(","))
+         {
+            readOnlyMimeTypes.add(mimeType.trim());
+         }
+      }
+
       this.mimeTypeResolver = new MimeTypeResolver();
       this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
    }
@@ -1174,8 +1209,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          NodeType nodeType = ntm.getNodeType(contentNodeType);
          NodeTypeUtil.checkContentResourceType(nodeType);
 
-         return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).put(
-            session, path(repoPath), inputStream, fileNodeType, contentNodeType,
+         return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName),
+            readOnlyMimeTypes).put(session, path(repoPath), inputStream, fileNodeType, contentNodeType,
             NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType, autoVersionType, tokens);
 
       }
