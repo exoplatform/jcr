@@ -79,7 +79,8 @@ public class DBCleanerTool
     * data without any violations.
     * 
     * <br>
-    * This method does not invoke commit or rollback on {@link Connection}.
+    * This method does not invoke commit or rollback on {@link Connection} but
+    * needed autocommit mode can be set.
     * 
     * @throws DBCleanException
     */
@@ -101,7 +102,8 @@ public class DBCleanerTool
     * (related to specific database) or does nothing.
     * 
     * <br>
-    * This method does not invoke commit or rollback on {@link Connection}. 
+    * This method does not invoke commit or rollback on {@link Connection} but
+    * needed autocommit mode can be set.
     * 
     * @throws DBCleanException
     */
@@ -122,7 +124,8 @@ public class DBCleanerTool
     * (related to specific database) or does nothing.
     * 
     * <br>
-    * This method does not invoke commit or rollback on {@link Connection}.
+    * This method does not invoke commit or rollback on {@link Connection} but
+    * needed autocommit mode can be set.
     * 
     * @throws DBCleanException
     */
