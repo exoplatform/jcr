@@ -442,7 +442,6 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
     */
    public VersionHistoryImpl getContainingHistory() throws RepositoryException
    {
-
       checkValid();
 
       VersionHistoryImpl vhistory =
@@ -459,7 +458,6 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
    public SessionChangesLog restoreLog(NodeData destParent, InternalQName name, VersionHistoryDataHelper historyData,
       SessionImpl restoreSession, boolean removeExisting, SessionChangesLog delegatedLog) throws RepositoryException
    {
-
       checkValid();
 
       if (LOG.isDebugEnabled())
@@ -484,7 +482,6 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
    public void restore(SessionImpl restoreSession, NodeData destParent, InternalQName name, boolean removeExisting)
       throws RepositoryException
    {
-
       checkValid();
 
       DataManager dmanager = restoreSession.getTransientNodesManager().getTransactManager();

@@ -112,7 +112,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public String getVersionableUUID() throws RepositoryException
    {
-
       checkValid();
 
       PropertyData versionableUuid =
@@ -143,7 +142,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public Version getRootVersion() throws RepositoryException
    {
-
       checkValid();
 
       VersionImpl version =
@@ -193,7 +191,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public Version version(String versionName, boolean pool) throws VersionException, RepositoryException
    {
-
       JCRName jcrVersionName = locationFactory.parseJCRName(versionName);
       VersionImpl version =
          (VersionImpl)dataManager.getItem(nodeData(), new QPathEntry(jcrVersionName.getInternalName(), 1), pool,

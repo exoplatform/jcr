@@ -64,7 +64,6 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
       ServletException
    {
-
       ExoContainer container = getContainer();
 
       providerService = (SessionProviderService)container.getComponentInstanceOfType(SessionProviderService.class);
@@ -82,7 +81,9 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
       if (state == null)
       {
          if (log.isDebugEnabled())
+         {
             log.debug("Current conversation state is not set");
+         }
 
          if (httpSession != null)
          {
@@ -90,9 +91,13 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
             // initialize thread local SessionProvider
             state = stateRegistry.getState(stateKey);
             if (state != null)
+            {
                provider = new SessionProvider(state);
+            }
             else if (log.isDebugEnabled())
+            {
                log.debug("WARN: Conversation State is null, id  " + httpSession.getId());
+            }
          }
       }
       else
@@ -103,13 +108,17 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
       if (provider == null)
       {
          if (log.isDebugEnabled())
+         {
             log.debug("Create SessionProvider for anonymous.");
+         }
          provider = SessionProvider.createAnonimProvider();
       }
       try
       {
          if (ConversationState.getCurrent() != null)
+         {
             ConversationState.getCurrent().setAttribute(SessionProvider.SESSION_PROVIDER, provider);
+         }
 
          providerService.setSessionProvider(null, provider);
 

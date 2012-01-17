@@ -571,6 +571,11 @@
                            <name>jgroups.stack</name>
                            <value>udp</value>
                         </property>
+                        <!-- Need for TCK tests -->
+                        <property>
+                           <name>exo.jcr.allow.closed.session.usage</name>
+                           <value>true</value>
+                        </property>
                      </systemProperties>
                      <includes>
                         <include>org/apache/jackrabbit/test/api/*Test.java</include>
@@ -656,6 +661,11 @@
                         <property>
                            <name>jgroups.stack</name>
                            <value>udp</value>
+                        </property>
+                        <!-- Need for TCK tests -->
+                        <property>
+                           <name>exo.jcr.allow.closed.session.usage</name>
+                           <value>true</value>
                         </property>
                      </systemProperties>
                      <includes>

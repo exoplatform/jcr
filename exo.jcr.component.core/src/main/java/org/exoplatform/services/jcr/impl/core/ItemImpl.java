@@ -156,7 +156,6 @@ public abstract class ItemImpl implements Item
    {
       try
       {
-         // Currently it only warns, but newer jcr versions (1.15+) will throw an exception
          session.checkLive();
       }
       catch (RepositoryException e)

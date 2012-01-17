@@ -388,6 +388,11 @@
                            <name>jgroups.bind_addr</name>
                            <value>127.0.0.1</value>
                         </property>
+                        <!-- Need for TCK tests -->
+                        <property>
+                           <name>exo.jcr.allow.closed.session.usage</name>
+                           <value>true</value>
+                        </property>
                      </systemProperties>
                      <includes>
                         <include>org/apache/jackrabbit/test/api/*Test.java</include>
@@ -465,6 +470,11 @@
                         <property>
                            <name>jgroups.bind_addr</name>
                            <value>127.0.0.1</value>
+                        </property>
+                        <!-- Need for TCK tests -->
+                        <property>
+                           <name>exo.jcr.allow.closed.session.usage</name>
+                           <value>true</value>
                         </property>
                      </systemProperties>
                      <includes>

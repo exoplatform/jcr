@@ -202,6 +202,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       SessionImpl session =
          (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
       NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
+      String nodeIdentifier = node.getIdentifier();
       session.save();
       session.logout();
 
@@ -222,7 +223,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
       NodeData data =
          new TransientNodeData(QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName("", "testNode")),
-            node.getIdentifier(), -1, Constants.NT_UNSTRUCTURED, null, 0, null, new AccessControlList());
+            nodeIdentifier, -1, Constants.NT_UNSTRUCTURED, null, 0, null, new AccessControlList());
 
       TransientPropertyData primaryType =
          new TransientPropertyData(QPath.makeChildPath(data.getQPath(), Constants.JCR_PRIMARYTYPE),
@@ -261,6 +262,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       SessionImpl session =
          (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
       NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
+      String nodeIdentifier = node.getIdentifier();
       session.save();
       session.logout();
 
@@ -281,7 +283,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
       NodeData data =
          new TransientNodeData(QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName("", "testNode")),
-            node.getIdentifier(), -1, Constants.NT_UNSTRUCTURED, null, 0, null, new AccessControlList());
+            nodeIdentifier, -1, Constants.NT_UNSTRUCTURED, null, 0, null, new AccessControlList());
 
       TransientPropertyData primaryType =
          new TransientPropertyData(QPath.makeChildPath(data.getQPath(), Constants.JCR_PRIMARYTYPE),
