@@ -385,7 +385,7 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       if (backLog.exists())
       {
          BackupChainLog bchLog = new BackupChainLog(backLog);
-         backup.restore(bchLog, re.getName(), ws1back);
+         backup.restore(bchLog, re.getName(), ws1back, false);
 
          // check
          SessionImpl back1 = null;
