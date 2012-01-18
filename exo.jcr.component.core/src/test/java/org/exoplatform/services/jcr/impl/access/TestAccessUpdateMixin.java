@@ -18,9 +18,9 @@ package org.exoplatform.services.jcr.impl.access;
 
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.security.IdentityConstants;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
@@ -79,10 +79,10 @@ public class TestAccessUpdateMixin extends BaseStandaloneTest
 
       testRoot.setPermission("mary", PermissionType.ALL);
       testRoot.setPermission("john", PermissionType.ALL);
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
 
       subNode.setPermission("mary", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY});
-      subNode.removePermission(SystemIdentity.ANY);
+      subNode.removePermission(IdentityConstants.ANY);
       sessJohn.save();
       sessJohn.logout();
 
@@ -118,10 +118,10 @@ public class TestAccessUpdateMixin extends BaseStandaloneTest
 
       testRoot.setPermission("mary", new String[]{PermissionType.READ});
       testRoot.setPermission("john", PermissionType.ALL);
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
 
       subNode.setPermission("mary", PermissionType.ALL);
-      subNode.removePermission(SystemIdentity.ANY);
+      subNode.removePermission(IdentityConstants.ANY);
       sessJohn.save();
       sessJohn.logout();
 

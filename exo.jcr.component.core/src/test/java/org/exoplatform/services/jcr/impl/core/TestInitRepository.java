@@ -21,12 +21,12 @@ package org.exoplatform.services.jcr.impl.core;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.access.AccessControlList;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.MembershipEntry;
 
 import java.util.ArrayList;
@@ -136,7 +136,7 @@ public class TestInitRepository extends JcrImplBaseTest
       {
          if (wsEntry.getAutoInitPermissions() != null)
          {
-            expectedAcl.removePermissions(SystemIdentity.ANY);
+            expectedAcl.removePermissions(IdentityConstants.ANY);
             expectedAcl.addPermissions(wsEntry.getAutoInitPermissions());
          }
          AccessControlList acl = ((ExtendedNode)session.getRootNode()).getACL();

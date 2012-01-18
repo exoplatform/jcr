@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.core;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
@@ -65,6 +64,7 @@ import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -581,7 +581,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       List<AccessControlEntry> aces = new ArrayList<AccessControlEntry>();
       for (String perm : PermissionType.ALL)
       {
-         AccessControlEntry ace = new AccessControlEntry(SystemIdentity.ANY, perm);
+         AccessControlEntry ace = new AccessControlEntry(IdentityConstants.ANY, perm);
          aces.add(ace);
       }
       AccessControlList acl = new AccessControlList(getACL().getOwner(), aces);
@@ -2591,7 +2591,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       //         SystemIdentity.SYSTEM));
 
       return (session.getLockManager().checkLocking(this.nodeData()) || session.getUserID().equals(
-         SystemIdentity.SYSTEM));
+         IdentityConstants.SYSTEM));
 
    }
 

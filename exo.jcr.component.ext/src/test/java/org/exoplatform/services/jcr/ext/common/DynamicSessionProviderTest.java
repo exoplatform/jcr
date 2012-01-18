@@ -18,12 +18,12 @@ package org.exoplatform.services.jcr.ext.common;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public class DynamicSessionProviderTest
          maryNode.setPermission("mary", PermissionType.ALL);
          maryNode.removePermission(session.getUserID());
       }
-      maryNode.removePermission(SystemIdentity.ANY);
+      maryNode.removePermission(IdentityConstants.ANY);
       testRoot.save();
 
       Session marySession =

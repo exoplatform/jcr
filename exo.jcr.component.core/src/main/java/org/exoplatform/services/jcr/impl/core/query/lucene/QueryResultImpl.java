@@ -18,12 +18,12 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.security.IdentityConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,7 +188,7 @@ public abstract class QueryResultImpl implements QueryResult
       this.docOrder = orderProps.length == 0 && documentOrder;
       this.offset = offset;
       this.limit = limit;
-      this.isSystemSession = SystemIdentity.SYSTEM.equals(session.getUserID());
+      this.isSystemSession = IdentityConstants.SYSTEM.equals(session.getUserID());
    }
 
    /**

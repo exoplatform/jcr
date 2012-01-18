@@ -18,9 +18,9 @@ package org.exoplatform.services.jcr.impl.access;
 
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.security.IdentityConstants;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
@@ -83,7 +83,7 @@ public class TestAccessChildNodes extends BaseStandaloneTest
 
       subNode.setPermission("mary", PermissionType.ALL);
       subNode.removePermission("john");
-      subNode.removePermission(SystemIdentity.ANY);
+      subNode.removePermission(IdentityConstants.ANY);
       sessMary.save();
       sessMary.logout();
 
@@ -123,7 +123,7 @@ public class TestAccessChildNodes extends BaseStandaloneTest
       sessMary = repository.login(new CredentialsImpl("mary", "exo".toCharArray()));
       testRoot = sessMary.getRootNode().getNode("testRoot");
       subNode = (NodeImpl)testRoot.getNode("subNode");
-      subNode.setPermission(SystemIdentity.ANY, PermissionType.ALL);
+      subNode.setPermission(IdentityConstants.ANY, PermissionType.ALL);
       sessMary.save();
       sessMary.logout();
 
@@ -151,13 +151,13 @@ public class TestAccessChildNodes extends BaseStandaloneTest
       //set permissions
       subNode.setPermission("mary", PermissionType.ALL);
       subNode.removePermission("john");
-      subNode.removePermission(SystemIdentity.ANY);
+      subNode.removePermission(IdentityConstants.ANY);
       sessMary.save();
 
       testRoot.setPermission("john", PermissionType.ALL);
       testRoot.removePermission("mary");
       testRoot.setPermission("mary", new String[]{PermissionType.READ});
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
       sessMary.save();
       sessMary.logout();
 
@@ -196,7 +196,7 @@ public class TestAccessChildNodes extends BaseStandaloneTest
 
       testRoot.removePermission("mary");
       testRoot.setPermission("mary", new String[]{PermissionType.READ});
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
       sessMary.save();
       sessMary.logout();
 
@@ -231,7 +231,7 @@ public class TestAccessChildNodes extends BaseStandaloneTest
 
       testRoot.removePermission("mary");
       testRoot.setPermission("mary", PermissionType.ALL);
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
       sessMary.save();
       sessMary.logout();
 

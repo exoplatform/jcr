@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.api.reading;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+import org.exoplatform.services.jcr.impl.xml.importing.dataflow.PropertyInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -352,5 +353,12 @@ public class TestProperty extends JcrAPIBaseTest
       PropertyImpl testProperty = (PropertyImpl)testNode.setProperty("testProperty", "someText");
       assertFalse(testProperty.equals(new Object()));
 
+   }
+
+   public void testPropertyInfoGetValuesSize()
+   {
+      PropertyInfo propertInfo = new PropertyInfo();
+
+      assertEquals(0, propertInfo.getValuesSize());
    }
 }

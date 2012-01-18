@@ -20,9 +20,9 @@ package org.exoplatform.services.jcr.impl.access;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.MembershipEntry;
 
 import java.security.AccessControlException;
@@ -83,7 +83,7 @@ public class TestUserAccess extends JcrImplBaseTest
          maryNode.setPermission("mary", PermissionType.ALL);
          maryNode.removePermission(session.getUserID());
       }
-      maryNode.removePermission(SystemIdentity.ANY);
+      maryNode.removePermission(IdentityConstants.ANY);
       testRoot.save();
 
       try
@@ -119,7 +119,7 @@ public class TestUserAccess extends JcrImplBaseTest
          rootNode.setPermission("root", PermissionType.ALL);
          rootNode.removePermission(session.getUserID());
       }
-      rootNode.removePermission(SystemIdentity.ANY);
+      rootNode.removePermission(IdentityConstants.ANY);
       testRoot.save();
 
       try
@@ -155,8 +155,8 @@ public class TestUserAccess extends JcrImplBaseTest
 
       // set any to read only
       rootNode.setPermission(session.getUserID(), PermissionType.ALL); // temp all for current user
-      rootNode.removePermission(SystemIdentity.ANY);
-      rootNode.setPermission(SystemIdentity.ANY, new String[]{PermissionType.READ});
+      rootNode.removePermission(IdentityConstants.ANY);
+      rootNode.setPermission(IdentityConstants.ANY, new String[]{PermissionType.READ});
       rootNode.removePermission(session.getUserID()); // clean temp rights
 
       testRoot.save();
@@ -195,7 +195,7 @@ public class TestUserAccess extends JcrImplBaseTest
          maryNode.setPermission("mary", PermissionType.ALL);
          maryNode.removePermission(session.getUserID());
       }
-      maryNode.removePermission(SystemIdentity.ANY);
+      maryNode.removePermission(IdentityConstants.ANY);
       testRoot.save();
 
       Session marySession =

@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.core;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.access.AuthenticationPolicy;
 import org.exoplatform.services.jcr.access.DynamicIdentity;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -46,6 +45,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.MembershipEntry;
 import org.picocontainer.ComponentAdapter;
 
@@ -88,7 +88,7 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * SYSTEM credentials.
     */
-   private static final CredentialsImpl SYSTEM_CREDENTIALS = new CredentialsImpl(SystemIdentity.SYSTEM,
+   private static final CredentialsImpl SYSTEM_CREDENTIALS = new CredentialsImpl(IdentityConstants.SYSTEM,
       "".toCharArray());
    
    /**

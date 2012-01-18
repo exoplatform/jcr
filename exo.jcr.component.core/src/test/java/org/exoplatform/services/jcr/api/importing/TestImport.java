@@ -18,6 +18,20 @@
  */
 package org.exoplatform.services.jcr.api.importing;
 
+import org.exoplatform.services.jcr.BaseStandaloneTest;
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.AccessManager;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ExtendedNode;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.util.VersionHistoryImporter;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityConstants;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -44,21 +58,6 @@ import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 import javax.jcr.util.TraversingItemVisitor;
 import javax.jcr.version.Version;
-import javax.jcr.version.VersionIterator;
-
-import org.exoplatform.services.jcr.BaseStandaloneTest;
-import org.exoplatform.services.jcr.access.AccessControlEntry;
-import org.exoplatform.services.jcr.access.AccessManager;
-import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.core.ExtendedNode;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.util.VersionHistoryImporter;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.security.Identity;
 
 /**
  * Created by The eXo Platform SAS.
@@ -105,7 +104,7 @@ public class TestImport extends AbstractImportTest
 
       testRoot.setPermission(testRoot.getSession().getUserID(), PermissionType.ALL);
       testRoot.setPermission("exo", new String[]{PermissionType.SET_PROPERTY});
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
       session.save();
       assertTrue(accessManager.hasPermission(testRoot.getACL(), PermissionType.SET_PROPERTY, new Identity("exo")));
       assertFalse(accessManager.hasPermission(testRoot.getACL(), PermissionType.READ, new Identity("exo")));
@@ -150,7 +149,7 @@ public class TestImport extends AbstractImportTest
 
       testRoot.setPermission(testRoot.getSession().getUserID(), PermissionType.ALL);
       testRoot.setPermission("exo", new String[]{PermissionType.SET_PROPERTY});
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
       session.save();
       assertTrue(accessManager.hasPermission(testRoot.getACL(), PermissionType.SET_PROPERTY, new Identity("exo")));
       assertFalse(accessManager.hasPermission(testRoot.getACL(), PermissionType.READ, new Identity("exo")));

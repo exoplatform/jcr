@@ -7,3 +7,4 @@
 * Index JCR_XITEM_PARENT_NAME removed (JCR_IDX_MITEM_PN - for DB2)
 * Index JCR_IDX_XITEM_PARENT_N_ORDER_NUM from MySQL scripts.
 * We will have RepositoryException when use Session or Node after session.logout
+* Removed SystemIdentity class

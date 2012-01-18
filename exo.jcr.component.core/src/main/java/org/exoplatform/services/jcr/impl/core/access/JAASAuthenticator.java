@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.access;
 
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.IdentityRegistry;
 import org.exoplatform.services.security.MembershipEntry;
 import org.exoplatform.services.security.jaas.BasicCallbackHandler;
@@ -76,9 +76,9 @@ public class JAASAuthenticator extends BaseAuthenticator
             "Credentials for the authentication should be CredentialsImpl or SimpleCredentials type");
 
       // SYSTEM
-      if (thisCredentials.getUserID().equals(SystemIdentity.SYSTEM))
+      if (thisCredentials.getUserID().equals(IdentityConstants.SYSTEM))
       {
-         Identity sid = new Identity(SystemIdentity.SYSTEM, new HashSet<MembershipEntry>());
+         Identity sid = new Identity(IdentityConstants.SYSTEM, new HashSet<MembershipEntry>());
          return new ConversationState(sid);
       }
 

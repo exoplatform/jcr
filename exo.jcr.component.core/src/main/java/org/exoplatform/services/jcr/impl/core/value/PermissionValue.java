@@ -20,10 +20,10 @@ package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -96,7 +96,7 @@ public class PermissionValue extends BaseValue
       }
       else
       {
-         persArray[0] = SystemIdentity.ANY;
+         persArray[0] = IdentityConstants.ANY;
       }
       if (permissionString != null)
       {
@@ -121,7 +121,7 @@ public class PermissionValue extends BaseValue
    static protected String asString(String identity, String permission)
    {
       if (identity != null || permission != null) // SystemIdentity.ANY, PermissionType.ALL
-         return (identity != null ? identity : SystemIdentity.ANY) + AccessControlEntry.DELIMITER
+         return (identity != null ? identity : IdentityConstants.ANY) + AccessControlEntry.DELIMITER
             + (permission != null ? permission : PermissionType.READ);
       else
          return "";

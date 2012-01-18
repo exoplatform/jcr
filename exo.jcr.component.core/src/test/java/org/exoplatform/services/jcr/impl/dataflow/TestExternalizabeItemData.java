@@ -76,5 +76,4 @@ public class TestExternalizabeItemData extends JcrImplBaseTest
 
       assertNotNull(idDest);
    }
-
 }

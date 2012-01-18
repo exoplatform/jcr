@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,7 +107,7 @@ public abstract class AccessManager
 
       String userId = user.getUserId();
 
-      if (userId.equals(SystemIdentity.SYSTEM))
+      if (userId.equals(IdentityConstants.SYSTEM))
       {
          // SYSTEM has permission everywhere
          return true;
@@ -116,9 +117,9 @@ public abstract class AccessManager
          // Current user is owner of node so has all privileges
          return true;
       }
-      else if (userId.equals(SystemIdentity.ANONIM))
+      else if (userId.equals(IdentityConstants.ANONIM))
       {
-         List<String> anyPermissions = acl.getPermissions(SystemIdentity.ANY);
+         List<String> anyPermissions = acl.getPermissions(IdentityConstants.ANY);
 
          if (anyPermissions.size() < permission.length)
             return false;
@@ -182,7 +183,7 @@ public abstract class AccessManager
          if (ace.getPermission().equals(testPermission))
          {
             // match any
-            if (ace.getIdentity().equals(SystemIdentity.ANY))
+            if (ace.getIdentity().equals(IdentityConstants.ANY))
                return true;
             else if (ace.getIdentity().indexOf(":") == -1)
             {
