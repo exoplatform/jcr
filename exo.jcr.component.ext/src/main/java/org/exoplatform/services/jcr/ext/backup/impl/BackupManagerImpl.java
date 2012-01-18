@@ -19,10 +19,10 @@
 package org.exoplatform.services.jcr.ext.backup.impl;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -641,68 +641,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
       return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Deprecated
-   public void restore(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry)
-      throws BackupOperationException, RepositoryException, RepositoryConfigurationException,
-      BackupConfigurationException
-   {
-      List<JobEntryInfo> list = log.getJobEntryInfos();
-      BackupConfig config = log.getBackupConfig();
-
-      String reposytoryName = (repositoryName == null ? config.getRepository() : repositoryName);
-      String workspaceName = workspaceEntry.getName();
-
-      // ws should be registered not created
-      if (!workspaceAlreadyExist(reposytoryName, workspaceName))
-      {
-
-         for (int i = 0; i < list.size(); i++)
-         {
-            if (i == 0)
-            {
-               try
-               {
-                  fullRestore(list.get(i).getURL().getPath(), reposytoryName, workspaceName, workspaceEntry);
-               }
-               catch (FileNotFoundException e)
-               {
-                  throw new BackupOperationException("Restore of full backup file error " + e, e);
-               }
-               catch (IOException e)
-               {
-                  throw new BackupOperationException("Restore of full backup file I/O error " + e, e);
-               }
-            }
-            else
-            {
-               try
-               {
-                  incrementalRestore(list.get(i).getURL().getPath(), reposytoryName, workspaceName);
-               }
-               catch (FileNotFoundException e)
-               {
-                  throw new BackupOperationException("Restore of incremental backup file error " + e, e);
-               }
-               catch (IOException e)
-               {
-                  throw new BackupOperationException("Restore of incremental backup file I/O error " + e, e);
-               }
-               catch (ClassNotFoundException e)
-               {
-                  throw new BackupOperationException("Restore of incremental backup error " + e, e);
-               }
-            }
-         }
-      }
-      else
-      {
-         throw new BackupConfigurationException("Workspace should exists " + workspaceName);
-      }
    }
 
    protected void restoreOverInitializer(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry)

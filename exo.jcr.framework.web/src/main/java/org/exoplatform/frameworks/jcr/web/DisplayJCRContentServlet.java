@@ -43,7 +43,6 @@ import javax.servlet.http.HttpServletResponse;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: DisplayJCRContentServlet.java 14756 2008-05-26 14:47:15Z pnedonosko $
  */
-@Deprecated
 public class DisplayJCRContentServlet extends HttpServlet
 {
 

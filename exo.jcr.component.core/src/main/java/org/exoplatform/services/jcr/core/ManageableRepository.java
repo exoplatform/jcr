@@ -76,7 +76,6 @@ public interface ManageableRepository extends Repository
     * 
     * @param workspaceName - name of workspace
     * @param listener Item persistence listener
-    * @deprecated
     */
    void addItemPersistenceListener(String workspaceName, ItemsPersistenceListener listener);
 

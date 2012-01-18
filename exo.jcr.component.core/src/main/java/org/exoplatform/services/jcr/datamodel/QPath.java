@@ -400,33 +400,6 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * Makes child path from existed path and child name. Assumed that parent path belongs to node so
-    * it should have some index. If not sets index=1 automatically.
-    * 
-    * @param parent
-    *          path
-    * @param name
-    *          child name
-    * @return new InternalQPath
-    */
-   @Deprecated
-   public static QPath makeChildPath(QPath parent, String name) throws IllegalPathException
-   {
-
-      QPathEntry[] parentEntries = parent.getEntries();
-      QPathEntry[] names = new QPathEntry[parentEntries.length + 1];
-      int index = 0;
-      for (QPathEntry pname : parentEntries)
-      {
-         names[index++] = pname;
-      }
-
-      names[index] = parseEntry(name);
-      QPath path = new QPath(names);
-      return path;
-   }
-
-   /**
     * Make child path using JCR internal QName and index 1. <br/>
     * 
     * @param parent

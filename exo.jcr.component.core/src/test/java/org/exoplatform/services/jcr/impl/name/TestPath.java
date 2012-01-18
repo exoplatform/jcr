@@ -90,11 +90,10 @@ public class TestPath extends TestCase
    public void testMakeQPath() throws Exception
    {
       QPath root = QPath.parse(Constants.ROOT_URI);
-      QPath path = QPath.makeChildPath(root, "[http://www.exoplatform.com/jcr/exo/1.0]test");
+      QPath path = QPath.makeChildPath(root, InternalQName.parse("[http://www.exoplatform.com/jcr/exo/1.0]test"));
       assertEquals(1, path.getIndex());
       assertEquals("test", path.getName().getName());
       assertTrue(path.isDescendantOf(root, true));
       assertEquals(root, path.makeParentPath());
    }
-
 }

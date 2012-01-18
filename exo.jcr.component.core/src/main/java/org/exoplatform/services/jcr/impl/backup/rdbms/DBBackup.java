@@ -55,13 +55,11 @@ public class DBBackup
    /**
     * Suffix for content file.
     */
-   @Deprecated
    public static final String CONTENT_FILE_SUFFIX = ".dump";
 
    /**
     * Suffix for content length file.
     */
-   @Deprecated
    public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
 
    /**

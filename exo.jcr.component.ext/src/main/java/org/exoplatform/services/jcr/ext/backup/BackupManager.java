@@ -181,29 +181,6 @@ public interface BackupManager
     *          String, repository name
     * @param workspaceEntry
     *          WorkspaceEntry, the workspace entry
-    * @throws BackupOperationException
-    *           will be generate the exception BackupOperationException 
-    * @throws BackupConfigurationException
-    *           will be generate the exception BackupConfigurationException 
-    * @throws RepositoryException
-    *           will be generate the exception RepositoryException 
-    * @throws RepositoryConfigurationException
-    *           will be generate the exception RepositoryConfigurationException 
-    */
-   @Deprecated
-   void restore(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry)
-      throws BackupOperationException, BackupConfigurationException, RepositoryException,
-      RepositoryConfigurationException;
-
-   /**
-    * Restore from backup.
-    *
-    * @param log
-    *          BackupChainLog, the backup log
-    * @param repositoryName
-    *          String, repository name
-    * @param workspaceEntry
-    *          WorkspaceEntry, the workspace entry
     * @param asynchronous
     *          boolean, in 'true' then asynchronous restore.   
     * @throws BackupOperationException
