@@ -91,12 +91,12 @@
                <formats>
                   <format>
                      <formatName>html</formatName>
-                     <stylesheetResource>classpath:/xslt/org/exojcr/xhtml.xsl</stylesheetResource>
+                     <stylesheetResource>classpath:xslt/org/exojcr/xhtml.xsl</stylesheetResource>
                      <finalName>index.html</finalName>
                   </format>
                   <format>
                      <formatName>html_single</formatName>
-                     <stylesheetResource>classpath:/xslt/org/exojcr/xhtml-single.xsl</stylesheetResource>
+                     <stylesheetResource>classpath:xslt/org/exojcr/xhtml-single.xsl</stylesheetResource>
                      <finalName>index.html</finalName>
                   </format>
                   <!--format>
