@@ -432,8 +432,6 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       ws1back.setUniqueName(repoNmae + "_" + wsName);
 
       ws1back.setAccessManager(defWEntry.getAccessManager());
-      ws1back.setAutoInitializedRootNt(defWEntry.getAutoInitializedRootNt());
-      ws1back.setAutoInitPermissions(defWEntry.getAutoInitPermissions());
       ws1back.setCache(defWEntry.getCache());
       ws1back.setLockManager(defWEntry.getLockManager());
 

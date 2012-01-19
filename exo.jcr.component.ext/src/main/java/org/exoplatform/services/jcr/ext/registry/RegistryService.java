@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -370,8 +371,8 @@ public class RegistryService extends Registry implements Startable
 
                try
                {
-                  repositoryService.getRepository(repName).getNodeTypeManager().registerNodeTypes(xml,
-                     ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+                  repositoryService.getRepository(repName).getNodeTypeManager()
+                     .registerNodeTypes(xml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
                }
                finally
                {

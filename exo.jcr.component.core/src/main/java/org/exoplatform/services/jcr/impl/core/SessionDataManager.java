@@ -1519,7 +1519,6 @@ public class SessionDataManager implements ItemDataConsumer
    public void commit(QPath path) throws RepositoryException, AccessDeniedException, ReferentialIntegrityException,
       InvalidItemStateException, ItemExistsException
    {
-
       // validate all, throw an exception if validation failed
       validate(path);
 

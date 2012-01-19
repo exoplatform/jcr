@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -78,12 +77,6 @@ public class EntityCollection implements NodeIterator, PropertyIterator, NodeTyp
       this.list = new ArrayList();
       this.iter = list.iterator();
       this.pos = 0;
-   }
-
-   @Deprecated
-   public void reverse()
-   {
-      Collections.reverse(list);
    }
 
    /**
@@ -237,20 +230,6 @@ public class EntityCollection implements NodeIterator, PropertyIterator, NodeTyp
       iter = list.iterator();
    }
 
-   @Deprecated
-   public void remove(Object obj)
-   {
-      pos = 0;
-      list.remove(obj);
-      iter = list.iterator();
-   }
-
-   @Deprecated
-   public long size()
-   {
-      return getSize();
-   }
-
    /**
     * For TESTs only.
     * 
@@ -260,5 +239,4 @@ public class EntityCollection implements NodeIterator, PropertyIterator, NodeTyp
    {
       return list;
    }
-
 }

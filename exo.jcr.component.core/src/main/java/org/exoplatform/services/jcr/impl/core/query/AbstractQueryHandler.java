@@ -209,22 +209,6 @@ public abstract class AbstractQueryHandler implements QueryHandler
    }
 
    /**
-    * Sets the query handler idle time.
-    * @deprecated
-    * This parameter is not supported any more.
-    * Please use 'maxIdleTime' in the repository configuration.
-    * 
-    * @param idleTime the query handler idle time.
-    */
-   @Deprecated
-   public void setIdleTime(String idleTime)
-   {
-      log.warn("Parameter 'idleTime' is not supported anymore. "
-         + "Please use 'maxIdleTime' in the repository configuration.");
-      this.idleTime = idleTime;
-   }
-
-   /**
     * @return the query handler idle time.
     */
    public String getIdleTime()

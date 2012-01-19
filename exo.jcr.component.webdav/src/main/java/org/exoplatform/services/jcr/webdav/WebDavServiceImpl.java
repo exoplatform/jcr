@@ -859,16 +859,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * {@inheritDoc}
     */
-   @Deprecated
-   public Response mkcol(String repoName, String repoPath, String lockTokenHeader, String ifHeader,
-      String nodeTypeHeader, String mixinTypesHeader)
-   {
-      return mkcol(repoName, repoPath, lockTokenHeader, ifHeader, nodeTypeHeader, mixinTypesHeader, null);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    @MKCOL
    @Path("/{repoName}/{repoPath:.*}/")
    public Response mkcol(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
@@ -876,7 +866,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String nodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypesHeader, @Context UriInfo uriInfo)
    {
-
       if (log.isDebugEnabled())
       {
          log.debug("MKCOL " + repoName + "/" + repoPath);
@@ -1146,18 +1135,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          log.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Deprecated
-   public Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader,
-      String fileNodeTypeHeader, String contentNodeTypeHeader, String mixinTypes, MediaType mediatype,
-      InputStream inputStream)
-   {
-      return put(repoName, repoPath, lockTokenHeader, ifHeader, fileNodeTypeHeader, contentNodeTypeHeader, mixinTypes,
-         mediatype, inputStream, null);
    }
 
    /**

@@ -16,14 +16,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
 
 /**
  * Implements a query node that defines the order of nodes according to the
@@ -183,17 +183,6 @@ public class OrderQueryNode extends QueryNode
       {
          this.property = property;
          this.ascending = ascending;
-      }
-
-      /**
-       * Returns the name of the property.
-       *
-       * @return the name of the property.
-       * @deprecated use {@link #getPropertyPath()} instead.
-       */
-      public InternalQName getProperty()
-      {
-         return property.getName();
       }
 
       /**

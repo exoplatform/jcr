@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException;
 
 import java.io.InputStream;
 import java.util.List;
@@ -56,16 +57,6 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
     * @throws RepositoryException
     */
    NodeType registerNodeType(NodeTypeValue nodeTypeValue, int alreadyExistsBehaviour) throws RepositoryException;
-
-   /**
-    * Registers all node types using XML binding value objects from xml stream.
-    * 
-    * @param xml a InputStream
-    * @param alreadyExistsBehaviour a int
-    * @throws RepositoryException
-    */
-   @Deprecated
-   NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour) throws RepositoryException;
 
    /**
     * Registers all node types using XML binding value objects from xml stream.

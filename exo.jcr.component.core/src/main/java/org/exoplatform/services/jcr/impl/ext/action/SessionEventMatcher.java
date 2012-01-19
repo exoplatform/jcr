@@ -49,12 +49,6 @@ public class SessionEventMatcher implements ActionMatcher
     */
    public static final String PATH_KEY = "paths";
 
-   @Deprecated
-   public static final String NODETYPE_KEY = "nodeType";
-
-   @Deprecated
-   public static final String PARENT_NODETYPES_KEY = "parentNodeTypes";
-
    /**
     * Key describe an InternalQName[] array of current node NodeType names.
     */

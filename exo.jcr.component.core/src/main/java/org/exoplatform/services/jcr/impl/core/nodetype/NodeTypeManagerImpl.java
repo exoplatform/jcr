@@ -280,26 +280,6 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
 
    /**
     * {@inheritDoc}
-    * 
-    * @return
-    * @deprecated use   registerNodeTypes(InputStream xml, int alreadyExistsBehaviour, String contentType)
-    */
-   @Deprecated
-   public NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour) throws RepositoryException
-   {
-
-      Collection<NodeTypeData> nts =
-         typesManager.registerNodeTypes(xml, alreadyExistsBehaviour, NodeTypeDataManager.TEXT_XML);
-      EntityCollection types = new EntityCollection();
-      for (NodeTypeData ntdata : nts)
-      {
-         types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory, dataManager));
-      }
-      return types;
-   }
-
-   /**
-    * {@inheritDoc}
     */
    public void unregisterNodeType(String name) throws UnsupportedRepositoryOperationException, NoSuchNodeTypeException,
       RepositoryException

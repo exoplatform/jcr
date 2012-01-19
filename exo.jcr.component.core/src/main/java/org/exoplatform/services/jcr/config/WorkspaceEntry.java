@@ -32,9 +32,6 @@ public class WorkspaceEntry
    
    protected int lazyReadThreshold;
 
-   @Deprecated
-   protected String autoInitializedRootNt;
-
    protected ContainerEntry container;
 
    protected QueryHandlerEntry queryHandler;
@@ -49,18 +46,8 @@ public class WorkspaceEntry
 
    protected WorkspaceInitializerEntry initializer;
 
-   @Deprecated
-   protected String autoInitPermissions;
-
    public WorkspaceEntry()
    {
-   }
-
-   @Deprecated
-   public WorkspaceEntry(String name, String rootNt)
-   {
-      this.name = name;
-      this.autoInitializedRootNt = rootNt;
    }
 
    public String getName()
@@ -71,25 +58,6 @@ public class WorkspaceEntry
    public void setName(String name)
    {
       this.name = name;
-   }
-
-   /**
-    * @return Returns the autoInitializedRootNt.
-    */
-   @Deprecated
-   public String getAutoInitializedRootNt()
-   {
-      return autoInitializedRootNt;
-   }
-
-   /**
-    * @param autoInitializedRootNt
-    *          The autoInitializedRootNt to set.
-    */
-   @Deprecated
-   public void setAutoInitializedRootNt(String autoInitializedRootNt)
-   {
-      this.autoInitializedRootNt = autoInitializedRootNt;
    }
 
    /**
@@ -151,18 +119,6 @@ public class WorkspaceEntry
    public void setAccessManager(AccessManagerEntry accessManager)
    {
       this.accessManager = accessManager;
-   }
-
-   @Deprecated
-   public String getAutoInitPermissions()
-   {
-      return autoInitPermissions;
-   }
-
-   @Deprecated
-   public void setAutoInitPermissions(String autoInitPermissions)
-   {
-      this.autoInitPermissions = autoInitPermissions;
    }
 
    public LockManagerEntry getLockManager()

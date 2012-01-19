@@ -25,7 +25,7 @@
          <access-control>disable</access-control>
          <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
          <workspaces>
-            <workspace name="ws" auto-init-root-nodetype="nt:unstructured">
+            <workspace name="ws">
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>

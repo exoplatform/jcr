@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.usecases.nodetypes;
 
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
@@ -59,7 +60,7 @@ public class TestNodeTypeRegisterReferenced extends BaseUsecasesTest
       ByteArrayInputStream xmlInput = new ByteArrayInputStream(xmlData);
 
       NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
-      ntManager.registerNodeTypes(xmlInput, 0);
+      ntManager.registerNodeTypes(xmlInput, 0, NodeTypeDataManager.TEXT_XML);
 
       String ntName = "exojcrtest:testNodeType__1";
       assertNotNull(ntManager.getNodeType(ntName));

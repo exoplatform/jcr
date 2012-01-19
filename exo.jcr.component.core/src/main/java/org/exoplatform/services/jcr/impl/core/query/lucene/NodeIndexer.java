@@ -504,7 +504,7 @@ public class NodeIndexer
                         // never fulltext index jcr:uuid String
                         if (name.equals(Constants.JCR_UUID))
                         {
-                           addStringValue(doc, fieldName, val.getString(), false, false, DEFAULT_BOOST);
+                           addStringValue(doc, fieldName, val.getString(), false, false, DEFAULT_BOOST, true);
                         }
                         else
                         {
@@ -696,21 +696,6 @@ public class NodeIndexer
       doc.add(createFieldWithoutNorms(fieldName, pathString.toString(), PropertyType.PATH));
    }
 
-   /**
-    * Adds the string value to the document both as the named field and for
-    * full text indexing.
-    *
-    * @param doc           The document to which to add the field
-    * @param fieldName     The name of the field to add
-    * @param internalValue The value for the field to add to the document.
-    * @deprecated Use {@link #addStringValue(Document, String, Object, boolean)
-    *             addStringValue(Document, String, Object, boolean)} instead.
-    */
-   @Deprecated
-   protected void addStringValue(Document doc, String fieldName, Object internalValue)
-   {
-      addStringValue(doc, fieldName, internalValue, true, true, DEFAULT_BOOST);
-   }
 
    /**
     * Adds the string value to the document both as the named field and
@@ -725,31 +710,7 @@ public class NodeIndexer
     */
    protected void addStringValue(Document doc, String fieldName, Object internalValue, boolean tokenized)
    {
-      addStringValue(doc, fieldName, internalValue, tokenized, true, DEFAULT_BOOST);
-   }
-
-   /**
-    * Adds the string value to the document both as the named field and
-    * optionally for full text indexing if <code>tokenized</code> is
-    * <code>true</code>.
-    *
-    * @param doc                The document to which to add the field
-    * @param fieldName          The name of the field to add
-    * @param internalValue      The value for the field to add to the
-    *                           document.
-    * @param tokenized          If <code>true</code> the string is also
-    *                           tokenized and fulltext indexed.
-    * @param includeInNodeIndex If <code>true</code> the string is also
-    *                           tokenized and added to the node scope fulltext
-    *                           index.
-    * @param boost              the boost value for this string field.
-    * @deprecated use {@link #addStringValue(Document, String, Object, boolean, boolean, float, boolean)} instead.
-    */
-   @Deprecated
-   protected void addStringValue(Document doc, String fieldName, Object internalValue, boolean tokenized,
-      boolean includeInNodeIndex, float boost)
-   {
-      addStringValue(doc, fieldName, internalValue, tokenized, includeInNodeIndex, boost, true);
+      addStringValue(doc, fieldName, internalValue, tokenized, true, DEFAULT_BOOST, true);
    }
 
    /**
@@ -820,19 +781,6 @@ public class NodeIndexer
    protected void addNameValue(Document doc, String fieldName, Object internalValue)
    {
       doc.add(createFieldWithoutNorms(fieldName, internalValue.toString(), PropertyType.NAME));
-   }
-
-   /**
-    * Creates a fulltext field for the string <code>value</code>.
-    *
-    * @param value the string value.
-    * @return a lucene field.
-    * @deprecated use {@link #createFulltextField(String, boolean, boolean)} instead.
-    */
-   @Deprecated
-   protected Field createFulltextField(String value)
-   {
-      return createFulltextField(value, supportHighlighting, supportHighlighting);
    }
 
    /**

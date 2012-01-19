@@ -116,22 +116,6 @@ public abstract class AbstractSessionLockManager implements SessionLockManager
    /**
     * {@inheritDoc}
     */
-   public boolean isLockHolder(NodeData node) throws RepositoryException
-   {
-      //check is parent node also new
-      if (transientManager.isNew(node.getIdentifier()) && transientManager.isNew(node.getParentIdentifier()))
-      {
-         return true;
-      }
-      else
-      {
-         return isPersistedLockHolder(node);
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    public boolean isLocked(NodeData data) throws LockException
    {
       if (transientManager.isNew(data.getIdentifier()))

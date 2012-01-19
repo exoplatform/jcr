@@ -103,33 +103,6 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
          rootNodeType = config.getInitializer().getParameterValue(WorkspaceInitializer.ROOT_NODETYPE_PARAMETER, null);
       }
 
-      if (config.getAutoInitializedRootNt() != null)
-      {
-         if (rootNodeType == null)
-         {
-            rootNodeType = config.getAutoInitializedRootNt();
-            log.warn("[" + workspaceName + "] auto-init-root-nodetype (" + rootNodeType
-               + ") parameter is DEPRECATED ! Use <initializer .../> instead.");
-         }
-         else
-         {
-            log.warn("[" + workspaceName + "] auto-init-root-nodetype parameter is DEPRECATED ! Skipped.");
-         }
-      }
-      if (config.getAutoInitPermissions() != null)
-      {
-         if (rootPermissions == null)
-         {
-            rootPermissions = config.getAutoInitPermissions();
-            log.warn("[" + workspaceName + "] auto-init-permissions (" + rootPermissions
-               + ") parameter is DEPRECATED ! Use <initializer .../> instead.");
-         }
-         else
-         {
-            log.warn("[" + workspaceName + "] auto-init-permissions parameter is DEPRECATED ! Skipped.");
-         }
-      }
-
       // default behaviour root-nodetype=nt:unstructured, root-permissions will be
       // managed by
       // AccessControlList class

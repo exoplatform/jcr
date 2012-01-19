@@ -100,8 +100,6 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
       ws1back.setUniqueName(((RepositoryImpl)session.getRepository()).getName() + "_" + ws1back.getName());
 
       ws1back.setAccessManager(ws1e.getAccessManager());
-      ws1back.setAutoInitializedRootNt(ws1e.getAutoInitializedRootNt());
-      ws1back.setAutoInitPermissions(ws1e.getAutoInitPermissions());
       ws1back.setCache(ws1e.getCache());
       ws1back.setContainer(ws1e.getContainer());
       ws1back.setLockManager(ws1e.getLockManager());

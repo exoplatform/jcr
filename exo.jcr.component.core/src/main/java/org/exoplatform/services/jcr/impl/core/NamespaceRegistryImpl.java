@@ -165,21 +165,6 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
    }
 
    /**
-    * Return
-    * 
-    * @param nodeType
-    * @return
-    * @throws RepositoryException
-    */
-   @Deprecated
-   public Set<String> getNodes(String uri) throws RepositoryException
-   {
-      validate();
-
-      return indexSearcherHolder.getNodesByUri(uri);
-   }
-
-   /**
     * {@inheritDoc}
     */
    public String getPrefix(String uri) throws NamespaceException

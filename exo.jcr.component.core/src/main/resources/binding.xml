@@ -32,8 +32,6 @@
     <value name="lazy-read-threshold" field="lazyReadThreshold" style="attribute" usage="optional"
         serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeInt"
         deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" />
-    <value name="auto-init-root-nodetype" field="autoInitializedRootNt" style="attribute" usage="optional" />
-    <value name="auto-init-permissions" field="autoInitPermissions" style="attribute" usage="optional" />
     <structure name="container" field="container">
       <value name="class" field="type" style="attribute" />
       <collection name="properties" field="parameters" usage="optional"

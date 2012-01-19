@@ -16,11 +16,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+
+import javax.jcr.RepositoryException;
 
 
 
@@ -88,31 +87,6 @@ public class TextsearchQueryNode extends QueryNode {
      */
     public String getQuery() {
         return query;
-    }
-
-    /**
-     * Returns a property name if the scope is limited to just a single property
-     * or <code>null</code> if the scope is spawned across all properties of a
-     * node. Please note that this method does not return the full relative path
-     * that reference the item to match, but only the name of the final name
-     * element of the path returned by {@link #getRelativePath()}.
-     *
-     * @return property name or <code>null</code>.
-     * @deprecated Use {@link #getRelativePath()} instead.
-     */
-    public InternalQName getPropertyName() {
-       return relPath == null ? null : relPath.getName();
-    }
-
-    /**
-     * Sets a new name as the search scope for this fulltext query.
-     *
-     * @param property the name of the property.
-     * @deprecated Use {@link #setRelativePath(Path)} instead.
-     */
-    public void setPropertyName(InternalQName property) {
-       this.relPath = QPath.makeChildPath(relPath, property);
-       this.propertyRef = true;
     }
 
     /**

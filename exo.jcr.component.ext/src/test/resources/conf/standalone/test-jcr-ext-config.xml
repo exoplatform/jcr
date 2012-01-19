@@ -112,7 +112,7 @@
                </lock-manager>
             </workspace>
 
-            <workspace name="ws2" auto-init-root-nodetype="nt:unstructured">
+            <workspace name="ws2">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr2" />
@@ -150,7 +150,7 @@
                </lock-manager>
             </workspace>
 
-            <workspace name="ws3" auto-init-root-nodetype="nt:unstructured">
+            <workspace name="ws3">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr3" />
@@ -188,7 +188,7 @@
                </lock-manager>
             </workspace>
 
-            <workspace name="ws4" auto-init-root-nodetype="nt:unstructured">
+            <workspace name="ws4">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr4" />
@@ -226,7 +226,7 @@
                </lock-manager>
             </workspace>
 
-            <workspace name="ws5" auto-init-root-nodetype="nt:unstructured">
+            <workspace name="ws5">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr5" />

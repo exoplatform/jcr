@@ -16,6 +16,14 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.config.ContainerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -24,14 +32,6 @@ import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.config.ContainerEntry;
-import org.exoplatform.services.jcr.config.QueryHandlerEntry;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
-import org.exoplatform.services.jcr.datamodel.NodeData;
 
 /**
  * Created by The eXo Platform SAS.
@@ -193,9 +193,8 @@ public class TestSVNodeDataOptimization
       ws1back.setName(name);
       ws1back.setUniqueName(((RepositoryImpl) ses.getRepository()).getName() + "_" + ws1back.getName());
 
+
       ws1back.setAccessManager(ws1e.getAccessManager());
-      ws1back.setAutoInitializedRootNt(ws1e.getAutoInitializedRootNt());
-      ws1back.setAutoInitPermissions(ws1e.getAutoInitPermissions());
       ws1back.setCache(ws1e.getCache());
       ws1back.setContainer(ws1e.getContainer());
       ws1back.setLockManager(ws1e.getLockManager());

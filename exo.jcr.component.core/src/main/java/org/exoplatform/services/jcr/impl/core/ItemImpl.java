@@ -633,7 +633,6 @@ public abstract class ItemImpl implements Item
    public void save() throws ReferentialIntegrityException, AccessDeniedException, LockException,
       ConstraintViolationException, InvalidItemStateException, ReferentialIntegrityException, RepositoryException
    {
-
       checkValid();
 
       if (isNew())

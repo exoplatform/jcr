@@ -215,10 +215,6 @@
     <para><emphasis role="bold">name</emphasis>: The name of a
     workspace</para>
 
-    <para><emphasis role="bold">auto-init-root-nodetype</emphasis>: DEPRECATED
-    in JCR 1.9 (use initializer). The node type for root node
-    initialization.</para>
-
     <para><emphasis role="bold">container</emphasis>: Workspace data container
     (physical storage) configuration.</para>
 
@@ -275,7 +271,7 @@
             <entry>acl-bloomfilter-false-positive-probability</entry>
 
             <entry>ACL Bloom-filter desired false positive probability. Range
-            [0..1]. Default value 0.1d. (See the note below) </entry>
+            [0..1]. Default value 0.1d. (See the note below)</entry>
           </row>
 
           <row>
@@ -341,9 +337,7 @@
     permissions and other users have only a 'read' permission.</para>
 
     <para>Configurable initializer adds a capability to override workspace
-    initial startup procedure (used for Clustering). Also it replaces
-    workspace element parameters auto-init-root-nodetype and
-    auto-init-permissions with root-nodetype and root-permissions.</para>
+    initial startup procedure (used for Clustering). </para>
   </section>
 
   <section>

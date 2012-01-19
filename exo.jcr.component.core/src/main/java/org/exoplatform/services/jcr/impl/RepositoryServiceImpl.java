@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
@@ -337,7 +338,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
                {
                   log.debug("Trying register node types from xml-file " + nodeTypeFilesName);
                }
-               ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+               ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS,
+                  NodeTypeDataManager.TEXT_XML);
                if (log.isDebugEnabled())
                {
                   log.debug("Node types is registered from xml-file " + nodeTypeFilesName);
@@ -360,7 +362,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
                   }
 
                   log.info("Trying register node types (" + repositoryName + ") from xml-file " + nodeTypeFilesName);
-                  ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+                  ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS,
+                     NodeTypeDataManager.TEXT_XML);
                   log.info("Node types is registered (" + repositoryName + ") from xml-file " + nodeTypeFilesName);
                }
             }

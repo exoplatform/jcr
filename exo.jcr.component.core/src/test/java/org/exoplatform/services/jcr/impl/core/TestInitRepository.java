@@ -26,7 +26,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.MembershipEntry;
 
 import java.util.ArrayList;
@@ -134,11 +133,6 @@ public class TestInitRepository extends JcrImplBaseTest
       AccessControlList expectedAcl = new AccessControlList();
       try
       {
-         if (wsEntry.getAutoInitPermissions() != null)
-         {
-            expectedAcl.removePermissions(IdentityConstants.ANY);
-            expectedAcl.addPermissions(wsEntry.getAutoInitPermissions());
-         }
          AccessControlList acl = ((ExtendedNode)session.getRootNode()).getACL();
          assertTrue(expectedAcl.equals(acl));
 

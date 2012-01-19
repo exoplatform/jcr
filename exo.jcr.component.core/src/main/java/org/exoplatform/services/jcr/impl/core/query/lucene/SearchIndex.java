@@ -35,10 +35,10 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -137,16 +137,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * the default value for property {@link #maxFieldLength}.
     */
    public static final int DEFAULT_MAX_FIELD_LENGTH = 10000;
-
-   /**
-    * The default value for property {@link #extractorPoolSize}.
-    * 
-    * @deprecated this value is not used anymore. Instead the default value is
-    *             calculated as follows: 2 *
-    *             Runtime.getRuntime().availableProcessors().
-    */
-   @Deprecated
-   public static final int DEFAULT_EXTRACTOR_POOL_SIZE = 0;
 
    /**
     * The default value for property {@link #extractorBackLog}.
