@@ -205,15 +205,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       return getRepository(config.getDefaultRepositoryName());
    }
 
-   /**
-    * @deprecated use getDefaultRepository() instead
-    */
-   @Deprecated
-   public ManageableRepository getRepository() throws RepositoryException
-   {
-      return getDefaultRepository();
-   }
-
    // ------------------- Startable ----------------------------
 
    public ManageableRepository getRepository(String name) throws RepositoryException

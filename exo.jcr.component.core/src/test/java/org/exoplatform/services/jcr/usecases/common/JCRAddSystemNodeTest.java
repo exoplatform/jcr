@@ -56,7 +56,7 @@ public class JCRAddSystemNodeTest extends BaseUsecasesTest
       jcrSystem.addNode("Node1", "nt:unstructured");
       jcrSystem.save();
       session2.save();
-      session2 = repositoryService.getRepository().getSystemSession(repository.getSystemWorkspaceName());
+      session2 = repositoryService.getDefaultRepository().getSystemSession(repository.getSystemWorkspaceName());
       assertTrue(session2.getRootNode().getNode("jcr:system").hasNodes());
       Node node1 = (Node)session2.getItem("/jcr:system/Node1");
       jcrSystem.save();

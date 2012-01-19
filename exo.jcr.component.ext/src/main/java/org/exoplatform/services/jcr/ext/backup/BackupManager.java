@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupMessage;
-import org.exoplatform.services.jcr.ext.backup.impl.BackupScheduler;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 
@@ -195,14 +194,6 @@ public interface BackupManager
    void restore(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)
       throws BackupOperationException, BackupConfigurationException, RepositoryException,
       RepositoryConfigurationException;
-
-   /**
-    * Getting the scheduler.
-    *
-    * @return BackupScheduler
-    *           return the BackupScheduler 
-    */
-   BackupScheduler getScheduler();
 
    /**
     * Getting the backup messages.

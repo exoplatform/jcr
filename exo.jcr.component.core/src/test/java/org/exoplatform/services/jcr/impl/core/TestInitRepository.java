@@ -52,7 +52,7 @@ public class TestInitRepository extends JcrImplBaseTest
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       assertNotNull(service);
-      RepositoryImpl defRep = (RepositoryImpl)service.getRepository();
+      RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();
       assertNotNull(defRep);
       String sysWs = defRep.getSystemWorkspaceName();
       assertFalse("Sys ws should not be    initialized for this test!!", defRep.isWorkspaceInitialized(sysWs)); // Default Namespaces
@@ -69,7 +69,7 @@ public class TestInitRepository extends JcrImplBaseTest
    {
 
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep = (RepositoryImpl)service.getRepository();
+      RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();
       String sysWs = defRep.getSystemWorkspaceName();
       assertFalse("Sys ws should not be initialized for this test!!", defRep.isWorkspaceInitialized(sysWs));
 

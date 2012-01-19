@@ -215,8 +215,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
    private final RegistryService registryService;
 
-   private BackupScheduler scheduler;
-
    private final BackupMessagesLog messages;
 
    private final MessagesListener messagesListener;
@@ -254,7 +252,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
          if (job != null)
          {
-
             switch (job.getType())
             {
                case BackupJob.FULL : {
@@ -314,7 +311,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       public String printStackTrace(Throwable error)
       {
-
          ByteArrayOutputStream out = new ByteArrayOutputStream();
          PrintWriter writer = new PrintWriter(out);
          error.printStackTrace(writer);
@@ -517,8 +513,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       messages = new BackupMessagesLog(MESSAGES_MAXSIZE);
 
-      scheduler = new BackupScheduler(this, messages);
-
       this.restoreJobs = new ArrayList<JobWorkspaceRestore>();
       this.restoreRepositoryJobs = new ArrayList<JobRepositoryRestore>();
 
@@ -647,7 +641,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       throws BackupOperationException, RepositoryException, RepositoryConfigurationException,
       BackupConfigurationException
    {
-
       List<JobEntryInfo> list = log.getJobEntryInfos();
       BackupConfig config = log.getBackupConfig();
 
@@ -681,7 +674,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       // ws should not exists.
       if (!workspaceAlreadyExist(reposytoryName, workspaceName))
       {
-
          for (int i = 0; i < list.size(); i++)
          {
             if (i == 0)
@@ -754,7 +746,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    public BackupChain startBackup(BackupConfig config) throws BackupOperationException, BackupConfigurationException,
       RepositoryException, RepositoryConfigurationException
    {
-
       return startBackup(config, null);
    }
 
@@ -836,7 +827,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public void start()
    {
-
       //remove if exists all old jcrrestorewi*.tmp files.
       File[] files = PrivilegedFileHelper.listFiles(tempDir, new JcrRestoreWiFilter());
       for (int i = 0; i < files.length; i++)
@@ -873,36 +863,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       {
          readParamsFromFile();
       }
-
-      // scan for task files
-      File[] tasks = PrivilegedFileHelper.listFiles(this.logsDirectory, new TaskFilter());
-      for (File task : tasks)
-      {
-         try
-         {
-            scheduler.restore(task);
-         }
-         catch (BackupSchedulerException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-         catch (BackupOperationException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-         catch (BackupConfigurationException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-         catch (RepositoryException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-         catch (RepositoryConfigurationException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-      }
    }
 
    /**
@@ -912,7 +872,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    {
       workspaceBackupStopper.close();
       repositoryBackupStopper.close();
-      scheduler.cancelTimer();
 
       // 1. stop current backup chains
       // for (Iterator iterator = currentBackups.iterator(); iterator.hasNext();) {
@@ -922,17 +881,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       //    
       // // 2. stop all scheduled tasks
       // scheduler = null;
-   }
-
-   @Deprecated
-   private void fullRestore(String pathBackupFile, String repositoryName, String workspaceName,
-      WorkspaceEntry workspaceEntry) throws FileNotFoundException, IOException, RepositoryException,
-      RepositoryConfigurationException
-   {
-
-      RepositoryImpl defRep = (RepositoryImpl)repoService.getRepository(repositoryName);
-
-      defRep.importWorkspace(workspaceEntry.getName(), PrivilegedFileHelper.fileInputStream(pathBackupFile));
    }
 
    private void fullRestoreOverInitializer(String pathBackupFile, String repositoryName, WorkspaceEntry workspaceEntry,
@@ -1190,14 +1138,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
       }
       return null;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public BackupScheduler getScheduler()
-   {
-      return scheduler;
    }
 
    /**
@@ -2072,5 +2012,4 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
    }
-
 }

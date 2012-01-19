@@ -18,11 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import org.exoplatform.services.jcr.ext.backup.impl.BackupScheduler;
-
 import java.io.File;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by The eXo Platform SAS
@@ -49,54 +45,6 @@ public class TestBackupRestart extends AbstractBackupTestCase
       return (ExtendedBackupManager) container.getComponentInstanceOfType(BackupManager.class);
    }
 
-   /**
-    * 4. startTime, endTime + incrementalPeriod - run during a given period (with incremental backup)
-    */
-   public void _testPeriodicSchedulerPrepare() throws Exception
-   {
-      Date startTime;
-      Date stopTime;
-
-      Calendar calendar = Calendar.getInstance();
-      calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) + 10);
-      startTime = calendar.getTime();
-
-      calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE) + 10); // 10 min to stop
-      stopTime = calendar.getTime();
-
-      File backDir = new File("target/backup/ws1.restored");
-      backDir.mkdirs();
-
-      BackupConfig config = new BackupConfig();
-      config.setRepository(repository.getName());
-      config.setWorkspace("ws1");
-      config.setBackupType(BackupManager.FULL_AND_INCREMENTAL);
-      config.setIncrementalJobPeriod(2 * 60); // incrementalPeriod = 2 min
-      config.setBackupDir(backDir);
-
-      BackupScheduler scheduler = backup.getScheduler();
-
-      scheduler.schedule(config, startTime, stopTime, 0, 0);
-
-      // wait till backup will be started
-      waitTime(startTime);
-
-      BackupChain bch = backup.getCurrentBackups().iterator().next();
-
-      // wait till full backup will be stopped
-      while (bch.getFullBackupState() != BackupJob.FINISHED)
-      {
-         Thread.yield();
-         Thread.sleep(50);
-      }
-
-      // play with incremental during 50 sec
-      addContent(ws1TestRoot, 1, 50, 1000);
-
-      // stop to be restarted
-      Thread.sleep(1000);
-   }
-
    public void _testPeriodicSchedulerRestore() throws Exception
    {
       BackupChain bch = backup.getCurrentBackups().iterator().next();
@@ -112,5 +60,4 @@ public class TestBackupRestart extends AbstractBackupTestCase
       // restore
       restoreAndCheck("ws1back.restored", "jdbcjcr9", bch.getLogFilePath(), backDir, 1, 50);
    }
-
 }

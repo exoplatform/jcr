@@ -193,8 +193,7 @@
             <excludes>
               <exclude>**/BaseStandaloneTest.java</exclude>
               <exclude>**/backup/AbstractBackupTestCase.java</exclude>
-              <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>
-              <exclude>**/backup/TestBackupScheduler.java</exclude>
+              <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>              
               <exclude>**/backup/TestBackupRestart.java</exclude>
               <exclude>**/replication/**</exclude>
               <exclude>**/repository/creation/cluster/**</exclude>
