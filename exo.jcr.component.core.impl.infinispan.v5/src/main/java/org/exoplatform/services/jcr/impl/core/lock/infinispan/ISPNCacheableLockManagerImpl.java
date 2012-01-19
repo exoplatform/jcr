@@ -86,7 +86,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    /**
     * Logger
     */
-   private final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanLockManagerImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanLockManagerImpl");//NOSONAR
 
    private Cache<Serializable, Object> cache;
 
@@ -240,7 +240,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                   Throwable cause = pae.getCause();
                   if (cause instanceof SQLException)
                   {
-                     throw (SQLException)cause;
+                     throw (SQLException)cause;//NOSONAR
                   }
                   else if (cause instanceof RuntimeException)
                   {
@@ -248,7 +248,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                   else
                   {
-                     throw new RuntimeException(cause);
+                     throw new RuntimeException(cause);//NOSONAR
                   }
                }
 
@@ -269,7 +269,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                }
             }
          }
-         catch (Exception e)
+         catch (Exception e)//NOSONAR
          {
             throw new RepositoryException("Error configuring JDBC cache loader", e);
          }

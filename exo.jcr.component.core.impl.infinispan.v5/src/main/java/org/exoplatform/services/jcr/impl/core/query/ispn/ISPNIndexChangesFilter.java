@@ -56,7 +56,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    /**
     * Logger instance for this class.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexChangesFilter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexChangesFilter");//NOSONAR
 
    public static final String PARAM_INFINISPAN_CACHESTORE_CLASS = "infinispan-cachestore-classname";
 
@@ -162,7 +162,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    
    protected Log getLogger()
    {
-      return log;
+      return LOG;
    }
 
    protected void doUpdateIndex(ChangesFilterListsWrapper changes)

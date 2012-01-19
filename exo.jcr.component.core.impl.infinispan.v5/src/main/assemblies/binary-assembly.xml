@@ -1,0 +1,76 @@
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+   <id>binary</id>
+   <formats>
+      <format>zip</format>
+   </formats>
+   <includeBaseDirectory>false</includeBaseDirectory>
+   <dependencySets>
+      <dependencySet>
+         <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
+         <outputDirectory>lib</outputDirectory>
+         <excludes>
+            <exclude>org.jboss.cache:jbosscache-core</exclude>
+            <exclude>junit:junit</exclude>
+            <exclude>javax.servlet:servlet-api</exclude>
+            <exclude>javax.faces:jsf-api</exclude>
+            <exclude>javax.portlet:portlet-api</exclude>
+            <exclude>jmock:jmock</exclude>
+            <exclude>xdoclet:*</exclude>
+            <exclude>org.exoplatform.tool:exo.tool.framework.junit</exclude>
+            <exclude>org.jacorb:*</exclude>
+            <exclude>quartz:quartz</exclude>
+            <exclude>javax.mail:mail</exclude>
+            <exclude>com.experlog:xapool</exclude>
+            <exclude>antlr:antlr</exclude>
+            <exclude>org.jboss.javaee:jboss-transaction-api</exclude>
+            <exclude>org.jboss:jboss-common-core</exclude>
+            <exclude>org.hibernate:*</exclude>
+         </excludes>
+      </dependencySet>
+      <dependencySet>
+         <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
+         <outputDirectory>lib</outputDirectory>
+         <scope>test</scope>
+         <includes>
+            <include>org.slf4j:slf4j-log4j12</include>
+         </includes>
+      </dependencySet>
+   </dependencySets>
+   <files>
+      <file>
+         <source>${basedir}/src/main/doc/readme.txt</source>
+         <destName>readme.txt</destName>
+      </file>
+   </files>
+   <fileSets>
+      <fileSet>
+         <directory>${basedir}/bin</directory>
+         <outputDirectory>/</outputDirectory>
+         <includes>
+            <include>*.cmd</include>
+            <include>*.sh</include>
+         </includes>
+      </fileSet>
+   </fileSets>
+</assembly>
