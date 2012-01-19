@@ -92,7 +92,7 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
          findNodesAndProperties.clearParameters();
       }
 
-      findNodesAndProperties.setString(1, lastNodeId);
+      findNodesAndProperties.setString(1, getInternalId(lastNodeId));
       findNodesAndProperties.setInt(2, offset);
       findNodesAndProperties.setInt(3, limit);
 

@@ -133,7 +133,7 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
    @Override
    public boolean isIDNeededForPaging()
    {
-      return false;
+      return true;
    }
    
    /**
