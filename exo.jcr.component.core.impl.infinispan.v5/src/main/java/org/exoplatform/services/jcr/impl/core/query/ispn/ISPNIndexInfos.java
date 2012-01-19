@@ -61,7 +61,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
    /**
     * Logger.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexInfos");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexInfos");//NOSONAR
 
    private static final String INDEX_NAMES = "$names".intern();
 
@@ -98,7 +98,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
          }
 
          @Override
-         protected Void execute(Void arg) throws RuntimeException
+         protected Void execute(Void arg)
          {
             PrivilegedISPNCacheHelper.put(cache, namesKey, getNames());
             return null;
@@ -170,7 +170,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
          }
          catch (IOException e)
          {
-            log.error("Cannot read the list of index names", e);
+            LOG.error("Cannot read the list of index names", e);
          }
       }
       else
@@ -225,7 +225,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
             }
             catch (IOException e)
             {
-               log.error("Failed to update indexes! " + e.getMessage(), e);
+               LOG.error("Failed to update indexes! " + e.getMessage(), e);
             }
          }
       }

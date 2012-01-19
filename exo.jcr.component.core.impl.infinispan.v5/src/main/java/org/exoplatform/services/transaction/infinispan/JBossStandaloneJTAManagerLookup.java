@@ -49,7 +49,7 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
     * The logger 
     */
    private static final Log LOG =
-      ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.JBossStandaloneJTAManagerLookup");
+      ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.JBossStandaloneJTAManagerLookup");//NOSONAR
 
    private Method manager, user;
 
@@ -60,9 +60,9 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
          manager = loadClassStrict("com.arjuna.ats.jta.TransactionManager").getMethod("transactionManager");
          user = loadClassStrict("com.arjuna.ats.jta.UserTransaction").getMethod("userTransaction");
       }
-      catch (Exception e)
+      catch (Exception e)//NOSONAR
       {
-         throw new RuntimeException(e);
+         throw new RuntimeException(e);//NOSONAR
       }
    }
 

@@ -53,7 +53,7 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
    /**
     * Logger instance for this class
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexUpdateMonitor");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexUpdateMonitor");//NOSONAR
 
    /**
     * ISPN cache.
@@ -84,7 +84,7 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
          }
 
          @Override
-         protected Void execute(Boolean updateInProgress) throws RuntimeException
+         protected Void execute(Boolean updateInProgress)
          {
             PrivilegedISPNCacheHelper.put(cache, updateKey, updateInProgress);
             return null;
@@ -188,7 +188,7 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
       }
       catch (CacheException e)
       {
-         log.error("Fail to change updateInProgress mode to " + updateInProgress, e);
+         LOG.error("Fail to change updateInProgress mode to " + updateInProgress, e);
       }
    }
 

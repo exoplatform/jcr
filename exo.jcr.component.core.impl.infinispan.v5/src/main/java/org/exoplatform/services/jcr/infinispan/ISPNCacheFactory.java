@@ -76,8 +76,8 @@ public class ISPNCacheFactory<K, V>
 
    private final TemplateConfigurationHelper configurationHelper;
 
-   private static final Log log = ExoLogger
-      .getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanCacheFactory");
+   private static final Log LOG = ExoLogger
+      .getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanCacheFactory");//NOSONAR
 
    /**
     * A Map that contains all the registered CacheManager order by cluster name.
@@ -132,7 +132,7 @@ public class ISPNCacheFactory<K, V>
    {
       // get Infinispan configuration file path
       final String configurationPath = parameterEntry.getParameterValue(INFINISPAN_CONFIG);
-      log.info("Infinispan Cache configuration used: " + configurationPath);
+      LOG.info("Infinispan Cache configuration used: " + configurationPath);
       // avoid dashes in cache name. Some SQL servers doesn't allow dashes in table names
       final String regionIdEscaped = regionId.replace("-", "_");
       // prepare configuration
@@ -221,9 +221,9 @@ public class ISPNCacheFactory<K, V>
          // template to define a new configuration
          manager = new DefaultCacheManager(gc);
          CACHE_MANAGERS.put(clusterName, manager);
-         if (log.isInfoEnabled())
+         if (LOG.isInfoEnabled())
          {
-            log.info("A new ISPN Cache Manager instance has been registered for the region " + regionId
+            LOG.info("A new ISPN Cache Manager instance has been registered for the region " + regionId
                + " and the container " + container.getContext().getName());
          }
       }
@@ -251,9 +251,9 @@ public class ISPNCacheFactory<K, V>
       Configuration conf = holder.getDefaultConfigurationBuilder().build();
       // Define the configuration of the cache
       manager.defineConfiguration(regionId, conf);
-      if (log.isInfoEnabled())
+      if (LOG.isInfoEnabled())
       {
-         log.info("The region " + regionId + " has been registered for the container "
+         LOG.info("The region " + regionId + " has been registered for the container "
             + container.getContext().getName());
       }
       return manager;
