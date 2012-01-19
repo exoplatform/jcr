@@ -214,7 +214,15 @@
       </value-param>
     </init-params>   
   </component>
-  
+	<component>
+		<type>org.exoplatform.services.ispn.DistributedCacheManager</type>
+		<init-params>
+			<value-param>
+				<name>infinispan-configuration</name>
+				<value>jar:/conf/standalone/cluster/distributed-cache-configuration.xml</value>
+			</value-param>
+		</init-params>
+	</component>  
   <component>
     <key>org.exoplatform.services.rpc.RPCService</key>
     <type>org.exoplatform.services.rpc.jgv3.RPCServiceImpl</type>

@@ -22,30 +22,38 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.services.ispn.Utils;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.TemplateConfigurationHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
-import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
+import org.infinispan.configuration.parsing.Parser;
+import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.ch.DefaultConsistentHash;
 import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.transaction.lookup.TransactionManagerLookup;
+import org.infinispan.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.net.URL;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.management.MBeanServer;
+import javax.transaction.TransactionManager;
 
 /**
  * Factory that creates and starts pre-configured instances of Infinispan.
@@ -64,16 +72,17 @@ public class ISPNCacheFactory<K, V>
 
    private final ConfigurationManager configurationManager;
 
+   private final TransactionManager transactionManager;
+
    private final TemplateConfigurationHelper configurationHelper;
 
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanCacheFactory");
+   private static final Log log = ExoLogger
+      .getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanCacheFactory");
 
    /**
-    * A Map that contains all the registered CacheManager order by {@link ExoContainer} 
-    * instances and {@link GlobalConfiguration}.
+    * A Map that contains all the registered CacheManager order by cluster name.
     */
-   private static Map<GlobalConfiguration, EmbeddedCacheManager> CACHE_MANAGERS =
-      new HashMap<GlobalConfiguration, EmbeddedCacheManager>();
+   private static Map<String, EmbeddedCacheManager> CACHE_MANAGERS = new HashMap<String, EmbeddedCacheManager>();
 
    private static final MBeanServerLookup MBEAN_SERVER_LOOKUP = new MBeanServerLookup()
    {
@@ -88,11 +97,23 @@ public class ISPNCacheFactory<K, V>
     * Transaction manager will later be injected to cache instance. 
     * 
     * @param configurationManager
+    * @param transactionManager
     */
-   public ISPNCacheFactory(ConfigurationManager configurationManager)
+   public ISPNCacheFactory(ConfigurationManager configurationManager, TransactionManager transactionManager)
    {
       this.configurationManager = configurationManager;
       this.configurationHelper = new ISPNCacheHelper(configurationManager);
+      this.transactionManager = transactionManager;
+   }
+
+   /**
+    * Creates InfinispanCacheFactory with provided configuration transaction managers.
+    * 
+    * @param configurationManager
+    */
+   public ISPNCacheFactory(ConfigurationManager configurationManager)
+   {
+      this(configurationManager, null);
    }
 
    /**
@@ -132,20 +153,24 @@ public class ISPNCacheFactory<K, V>
       {
          // creating new CacheManager using SecurityHelper
 
-         manager = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<EmbeddedCacheManager>()
+         manager = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<EmbeddedCacheManager>()
          {
-            public EmbeddedCacheManager run() throws IOException
+            public EmbeddedCacheManager run() throws Exception
             {
-               DefaultCacheManager manager = new DefaultCacheManager(configStream, false);
-               loadJGroupsConfig(manager);
-               return getUniqueInstance(regionIdEscaped, manager);
+               Parser parser = new Parser(Thread.currentThread().getContextClassLoader());
+               // Loads the configuration from the input stream
+               ConfigurationBuilderHolder holder = parser.parse(configStream);
+               GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
+               Utils.loadJGroupsConfig(configurationManager, configBuilder.build(), configBuilder);
+               return getUniqueInstance(regionIdEscaped, holder, transactionManager);
             }
          });
 
       }
-      catch (IOException e)
+      catch (PrivilegedActionException pae)
       {
-         throw new RepositoryConfigurationException(e);
+         Throwable cause = pae.getCause();
+         throw new RepositoryConfigurationException(cause);
       }
 
       PrivilegedAction<Cache<K, V>> action = new PrivilegedAction<Cache<K, V>>()
@@ -161,95 +186,69 @@ public class ISPNCacheFactory<K, V>
    }
 
    /**
-    * This method is used to load the file corresponding to the path set on the property 
-    * <tt>configurationFile</tt> using the configuration manager, then set the XML content
-    *  as value of the property <tt>configurationXml</tt>.
-    * @param manager the manager from which we extract the transport properties in which
-    * we will find the path of the JGroups configuration
-    * @throws IOException if the configuration file cannot be read
-    */
-   private void loadJGroupsConfig(DefaultCacheManager manager) throws IOException
-   {
-      Properties p = manager.getGlobalConfiguration().getTransportProperties();
-      if (p != null && p.containsKey("configurationFile"))
-      {
-         URL jgroupsConfigURL = null;
-         InputStream jgroupsConfigInputStream = null;
-         try
-         {
-            // Trying to get the configuration from the configuration manager
-            String configurationFile = p.getProperty("configurationFile");
-            jgroupsConfigInputStream = configurationManager.getInputStream(configurationFile);
-            jgroupsConfigURL = configurationManager.getResource(configurationFile);
-         }
-         catch (Exception e)
-         {
-            // ignore me
-         }
-         if (jgroupsConfigInputStream != null)
-         {
-            try
-            {
-               log.info("Custom JGroups configuration set: " + jgroupsConfigURL);
-
-               // Read stream content into StringWriter
-               StringWriter sw = new StringWriter();
-               InputStreamReader in = new InputStreamReader(jgroupsConfigInputStream);
-
-               char[] buffer = new char[1024];
-               int n = 0;
-               while (-1 != (n = in.read(buffer)))
-               {
-                  sw.write(buffer, 0, n);
-               }
-
-               p.setProperty("configurationXml", sw.toString());
-               p.remove("configurationFile");
-            }
-            finally
-            {
-               jgroupsConfigInputStream.close();
-            }
-         }
-      }
-   }
-
-   /**
-    * Try to find if a {@link EmbeddedCacheManager} of the same type (i.e. their {@link GlobalConfiguration} are equals)
+    * Try to find if a {@link EmbeddedCacheManager} of the same type (i.e. the cluster names are equal)
     * has already been registered for the same current container.
     * If no cache manager has been registered, we register the given cache manager otherwise we
     * use the previously registered cache manager and we define a dedicated region for the related cache.
     * @param regionId the unique id of the cache region to create
-    * @param manager the current cache manager of the cache to create
+    * @param holder the configuration holder of the the cache to create
+    * @param tm the transaction manager to put into the configuration of the cache
     * @return the given cache manager if it has not been registered otherwise the cache manager of the same
     * type that has already been registered..
     */
-   private static synchronized EmbeddedCacheManager getUniqueInstance(String regionId, EmbeddedCacheManager manager)
+   private static synchronized EmbeddedCacheManager getUniqueInstance(String regionId,
+      ConfigurationBuilderHolder holder, final TransactionManager tm)
    {
-      GlobalConfiguration gc = manager.getGlobalConfiguration();
+      GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
+      GlobalConfiguration gc = configBuilder.build();
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       // Ensure that the cluster name won't be used between 2 ExoContainers
-      gc.fluent().transport().clusterName(gc.getClusterName() + "_" + container.getContext().getName())
-         .globalJmxStatistics().cacheManagerName(gc.getCacheManagerName() + "_" + container.getContext().getName()).
+      configBuilder.transport().clusterName(gc.transport().clusterName() + "_" + container.getContext().getName())
+         .globalJmxStatistics()
+         .cacheManagerName(gc.globalJmxStatistics().cacheManagerName() + "_" + container.getContext().getName()).
          // Configure the MBeanServerLookup
          mBeanServerLookup(MBEAN_SERVER_LOOKUP);
-      Configuration conf = manager.getDefaultConfiguration();
-      if (CACHE_MANAGERS.containsKey(gc))
+      EmbeddedCacheManager manager;
+      gc = configBuilder.build();
+      String clusterName = gc.transport().clusterName();
+      if (CACHE_MANAGERS.containsKey(clusterName))
       {
-         manager = CACHE_MANAGERS.get(gc);
+         manager = CACHE_MANAGERS.get(clusterName);
       }
       else
       {
          // Reset the manager before storing it into the map since the default config is used as
          // template to define a new configuration
          manager = new DefaultCacheManager(gc);
-         CACHE_MANAGERS.put(gc, manager);
+         CACHE_MANAGERS.put(clusterName, manager);
          if (log.isInfoEnabled())
          {
             log.info("A new ISPN Cache Manager instance has been registered for the region " + regionId
                + " and the container " + container.getContext().getName());
          }
       }
+      ConfigurationBuilder confBuilder = holder.getDefaultConfigurationBuilder();
+      if (tm != null)
+      {
+         TransactionManagerLookup tml = new TransactionManagerLookup()
+         {
+            public TransactionManager getTransactionManager() throws Exception
+            {
+               return tm;
+            }
+         };
+         confBuilder.transaction().transactionManagerLookup(tml);         
+      }
+      //TODO remove it once ISPN-1687 will be fixed
+      confBuilder.storeAsBinary().enabled(false);
+      //TODO remove it once ISPN-1689 will be fixed
+      confBuilder
+         .clustering()
+         .hash()
+         .consistentHash(
+            Util.<ConsistentHash> getInstance(DefaultConsistentHash.class.getName(), Thread.currentThread()
+               .getContextClassLoader()));
+      Configuration conf = holder.getDefaultConfigurationBuilder().build();
       // Define the configuration of the cache
       manager.defineConfiguration(regionId, conf);
       if (log.isInfoEnabled())

@@ -21,12 +21,12 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.infinispan.CacheKey;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
-import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -53,7 +53,7 @@ import javax.transaction.TransactionManager;
  * @version $Id: BufferedISPNCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  * 
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "deprecation"})
 public class BufferedISPNCache implements Cache<CacheKey, Object>
 {
    /**
@@ -151,20 +151,9 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
       protected AdvancedCache<CacheKey, Object> setCacheLocalMode()
       {
-         if (localMode)
+         if (localMode && allowLocalChanges)
          {
-            if (allowLocalChanges == null)
-            {
-               CacheMode cacheMode = cache.getConfiguration().getCacheMode();
-               if (cacheMode != CacheMode.DIST_ASYNC && cacheMode != CacheMode.DIST_SYNC)
-               {
-                  return cache.withFlags(Flag.CACHE_MODE_LOCAL);
-               }
-            }
-            else if (allowLocalChanges)
-            {
-               return cache.withFlags(Flag.CACHE_MODE_LOCAL);
-            }
+            return cache.withFlags(Flag.CACHE_MODE_LOCAL);
          }
          return cache;
       }
@@ -264,8 +253,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Set, but found:"
                + existingObject.getClass().getName());
          }
-         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL
-            && cache.getCacheManager().getMembers().size() > 1)
+         else if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -327,8 +315,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Map, but found:"
                + existingObject.getClass().getName());
          }
-         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL
-            && cache.getCacheManager().getMembers().size() > 1)
+         else if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
@@ -866,9 +853,15 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    /**
     * {@inheritDoc}
     */
-   public Object get(Object key)
+   public Object get(final Object key)
    {
-      return parentCache.get(key);
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            return parentCache.get(key);
+         }
+      });
    }
 
    /**
@@ -892,6 +885,14 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public Object put(CacheKey key, Object value)
    {
       return put(key, value, false);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public org.infinispan.configuration.cache.Configuration getCacheConfiguration()
+   {
+      return parentCache.getCacheConfiguration();
    }
 
    /**

@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
+package org.exoplatform.services.jcr.infinispan;
 
 import org.exoplatform.services.jcr.impl.Constants;
 import org.infinispan.distribution.group.Group;
@@ -38,6 +38,15 @@ import java.io.ObjectOutput;
 public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
 {
 
+   /**
+    * This id will be the unique identifier of the workspace in case the
+    * distributed mode is enabled as the cache will be then shared so we
+    * need this id to prevent mixing data of different workspace. In case
+    * the workspace is not distributed the value of this variable will be
+    * null to avoid consuming more memory for nothing 
+    */
+   protected String ownerId;
+   
    protected String id;
 
    protected int hash;
@@ -47,20 +56,34 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
     */
    protected String group;
    
+   /**
+    * The full name of the group
+    */
+   protected String fullGroupName;
+   
    public CacheKey()
    {
    }
 
-   public CacheKey(String id)
+   public CacheKey(String ownerId, String id)
    {
-      this(id, null);
+      this(ownerId, id, null);
    }
 
-   public CacheKey(String id, String group)
+   public CacheKey(String ownerId, String id, String group)
    {
+      this.ownerId = ownerId;
       this.id = id;
       this.hash = id.hashCode();
       this.group = group;
+   }
+   
+   /**
+    * @return the ownerId
+    */
+   public String getOwnerId()
+   {
+      return ownerId;
    }
 
    /**
@@ -78,7 +101,7 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
    @Override
    public String toString()
    {
-      return this.getClass().getSimpleName() + "-" + this.id + "-" + this.group;
+      return getClass().getSimpleName() + "-" + (ownerId == null ? "" : (ownerId + "-")) + id + "-" + group;
    }
 
    /**
@@ -87,6 +110,11 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
    public int compareTo(CacheKey o)
    {
       int result = getClass().getName().compareTo(o.getClass().getName());
+      if (result == 0 && ownerId != null)
+      {
+         // The key is of the same type and we assume that the distributed mode is enabled
+         result = ownerId.compareTo(o.ownerId);
+      }
       return result == 0 ? id.compareTo(o.id) : result;
    }
    
@@ -99,7 +127,16 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
    @Group
    public String getGroup()
    {
-      return group == null ? id : group;
+      if (fullGroupName != null)
+      {
+         return fullGroupName;
+      }
+      StringBuilder sb = new StringBuilder();
+      if (ownerId != null)
+      {
+         sb.append(ownerId).append('-');
+      }
+      return fullGroupName = sb.append(group == null ? id : group).toString();
    }
 
    /**
@@ -108,6 +145,16 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
    public void writeExternal(ObjectOutput out) throws IOException
    {
       byte[] buf;
+      if (ownerId == null)
+      {
+         out.writeInt(-1);
+      }
+      else
+      {
+         buf = ownerId.getBytes(Constants.DEFAULT_ENCODING);
+         out.writeInt(buf.length);
+         out.write(buf);
+      }
       if (group == null)
       {
          out.writeInt(-1);
@@ -136,9 +183,15 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
       {
          buf = new byte[length];
          in.readFully(buf);
+         ownerId = new String(buf, Constants.DEFAULT_ENCODING);         
+      }
+      length = in.readInt();
+      if (length >= 0)
+      {
+         buf = new byte[length];
+         in.readFully(buf);
          group = new String(buf, Constants.DEFAULT_ENCODING);         
       }
-
       buf = new byte[in.readInt()];
       in.readFully(buf);
       id = new String(buf, Constants.DEFAULT_ENCODING);
@@ -149,5 +202,19 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
     * {@inheritDoc}
     */
    @Override
-   public abstract boolean equals(Object obj);
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      CacheKey cacheKey = (CacheKey)obj;
+      if (cacheKey.hash == hash && cacheKey.id.equals(id))
+      {
+         return ownerId != null ? ownerId.equals(cacheKey.ownerId) : true;
+      }
+      return false;
+   }
 }

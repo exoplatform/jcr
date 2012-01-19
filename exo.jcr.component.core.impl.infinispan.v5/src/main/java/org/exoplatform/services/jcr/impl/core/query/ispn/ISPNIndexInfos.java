@@ -203,8 +203,9 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
     * @param event
     *          CacheEntryModifiedEvent
     */
+   @SuppressWarnings("unchecked")
    @CacheEntryModified
-   public void cacheEntryModified(CacheEntryModifiedEvent event)
+   public void cacheEntryModified(CacheEntryModifiedEvent<Serializable, Object> event)
    {
       if (!event.isPre() && event.getKey().equals(namesKey))
       {

@@ -21,8 +21,10 @@ package org.exoplatform.services.jcr.lab.infinispan;
 import junit.framework.TestCase;
 
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
-import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -62,13 +64,13 @@ public class TestISPNCache extends TestCase
    public void testGetCache() throws Exception
    {
       // Create cache manager
-      GlobalConfiguration myGlobalConfig = new GlobalConfiguration();
+      GlobalConfiguration myGlobalConfig = new GlobalConfigurationBuilder().build();
       EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig);
 
       // Create a cache
-      Configuration config = new Configuration();
+      Configuration config = new ConfigurationBuilder().build();
       manager.defineConfiguration("cache", config);
-      Cache cache = manager.getCache("cache");
+      Cache<String, String> cache = manager.getCache("cache");
 
       cache.put("key", "value");
       assertTrue(cache.size() == 1);
@@ -98,11 +100,12 @@ public class TestISPNCache extends TestCase
     */
    public void testGetClusterCache() throws Exception
    {
+      GlobalConfiguration myGlobalConfig = new GlobalConfigurationBuilder().clusteredDefault().build();
       // Create cache manager
-      EmbeddedCacheManager manager = new DefaultCacheManager(GlobalConfiguration.getClusteredDefault());
+      EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig);
 
       // Create a cache
-      Cache cache = manager.getCache();
+      Cache<String, String> cache = manager.getCache();
 
       cache.put("key", "value");
       assertTrue(cache.size() == 1);

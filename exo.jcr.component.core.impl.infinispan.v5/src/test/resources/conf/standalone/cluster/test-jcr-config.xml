@@ -58,6 +58,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
+                     <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -117,6 +118,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
+                     <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -184,6 +186,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
+                     <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -275,6 +278,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
+                     <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -359,6 +363,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
+                     <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -424,6 +429,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
+                     <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -500,6 +506,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
+                     <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -575,6 +582,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
+                     <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -649,6 +657,7 @@
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
+                     <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">

@@ -169,7 +169,7 @@ public class ByteArrayPersistedValueData extends AbstractPersistedValueData impl
       orderNumber = in.readInt();
       
       data = new byte[in.readInt()];
-      in.readFully(data);
+      if (data.length > 0) in.readFully(data);
    }
 
    /**

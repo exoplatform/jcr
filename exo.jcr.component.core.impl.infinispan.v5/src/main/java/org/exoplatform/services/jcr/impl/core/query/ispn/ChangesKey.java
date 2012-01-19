@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.impl.core.query.ispn;
 
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey;
+import org.exoplatform.services.jcr.infinispan.CacheKey;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -44,7 +44,7 @@ public class ChangesKey extends CacheKey
 
    ChangesKey(String wsId, String id)
    {
-      super(id);
+      super(null, id);
       this.wsId = wsId;
    }
 
@@ -78,22 +78,5 @@ public class ChangesKey extends CacheKey
       byte[] buf = new byte[in.readInt()];
       in.readFully(buf);
       wsId = new String(buf, Constants.DEFAULT_ENCODING);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof ChangesKey)
-      {
-         ChangesKey key = (ChangesKey)obj;
-         return (key.hash == hash && key.id.equals(id));
-      }
-      else
-      {
-         return false;
-      }
    }
 }

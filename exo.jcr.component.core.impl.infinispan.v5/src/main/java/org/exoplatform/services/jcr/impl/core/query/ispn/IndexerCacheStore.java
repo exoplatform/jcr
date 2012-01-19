@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -43,8 +42,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Implements Cache Store for clustered environment. It gives control of Index for coordinator and
@@ -102,7 +101,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
             {
                this.modeHandler =
                   new IndexerIoModeHandler(cacheManager.isCoordinator()
-                     || cache.getConfiguration().getCacheMode() == CacheMode.LOCAL ? IndexerIoMode.READ_WRITE
+                     || cache.getAdvancedCache().getRpcManager() == null ? IndexerIoMode.READ_WRITE
                      : IndexerIoMode.READ_ONLY);
             }
          }
@@ -166,6 +165,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
    /**
     *  Flushes all cache content to underlying CacheStore
     */
+   @SuppressWarnings({"rawtypes", "unchecked"})
    protected void doPushState()
    {
       final boolean debugEnabled = log.isDebugEnabled();

@@ -18,9 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.services.ispn.DistributedCacheManager;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -49,11 +53,20 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.infinispan.AbstractMapper;
+import org.exoplatform.services.jcr.infinispan.CacheKey;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.ActionNonTxAware;
+import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.context.Flag;
+import org.infinispan.distexec.mapreduce.Collector;
+import org.infinispan.distexec.mapreduce.MapReduceTask;
+import org.infinispan.distexec.mapreduce.Reducer;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
@@ -61,6 +74,9 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -75,6 +91,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 /**
@@ -98,23 +117,42 @@ import javax.transaction.TransactionManager;
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: ISPNCacheWorkspaceStorageCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  */
+@SuppressWarnings("unchecked")
 public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable
 {
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNCacheWorkspaceStorageCache");
+   private static final Log LOG = ExoLogger
+      .getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNCacheWorkspaceStorageCache");
+
+   /**
+    * Name of the cache in case of the distributed cache
+    */
+   private static final String CACHE_NAME = "JCRCache";
+
+   /**
+    * This id will be the unique identifier of the workspace in case the
+    * distributed mode is enabled as the cache will be then shared so we
+    * need this id to prevent mixing data of different workspace. In case
+    * the workspace is not distributed the value of this variable will be
+    * null to avoid consuming more memory for nothing 
+    */
+   protected final String ownerId;
 
    private final boolean enabled;
-   
+
    protected final BufferedISPNCache cache;
-   
+
+   private final GlobalOperationCaller caller;
+
    /**
     * The list of all the listeners
     */
-   private final List<WorkspaceStorageCacheListener> listeners = new CopyOnWriteArrayList<WorkspaceStorageCacheListener>();
+   private final List<WorkspaceStorageCacheListener> listeners =
+      new CopyOnWriteArrayList<WorkspaceStorageCacheListener>();
 
    private final CacheActionNonTxAware<Void, Void> commitTransaction = new CacheActionNonTxAware<Void, Void>()
    {
       @Override
-      protected Void execute(Void arg) throws RuntimeException
+      protected Void execute(Void arg)
       {
          cache.commitTransaction();
          return null;
@@ -125,9 +163,9 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       new CacheActionNonTxAware<ItemData, String>()
       {
          @Override
-         protected ItemData execute(String id) throws RuntimeException
+         protected ItemData execute(String id)
          {
-            return id == null ? null : (ItemData)cache.get(new CacheId(id));
+            return id == null ? null : (ItemData)cache.get(new CacheId(getOwnerId(), id));
          }
       };
 
@@ -135,10 +173,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       new CacheActionNonTxAware<List<NodeData>, NodeData>()
       {
          @Override
-         protected List<NodeData> execute(NodeData parent) throws RuntimeException
+         protected List<NodeData> execute(NodeData parent)
          {
             // get list of children uuids
-            final Set<String> set = (Set<String>)cache.get(new CacheNodesId(parent.getIdentifier()));
+            final Set<String> set = (Set<String>)cache.get(new CacheNodesId(getOwnerId(), parent.getIdentifier()));
 
             if (set != null)
             {
@@ -146,7 +184,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
                for (String childId : set)
                {
-                  NodeData child = (NodeData)cache.get(new CacheId(childId));
+                  NodeData child = (NodeData)cache.get(new CacheId(getOwnerId(), childId));
                   if (child == null)
                   {
                      return null;
@@ -170,7 +208,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       new CacheActionNonTxAware<ItemData, Object>()
       {
          @Override
-         protected ItemData execute(Object... args) throws RuntimeException
+         protected ItemData execute(Object... args)
          {
             String parentIdentifier = (String)args[0];
             QPathEntry name = (QPathEntry)args[1];
@@ -180,12 +218,13 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             if (itemType == ItemType.UNKNOWN)
             {
                // Try as node first.
-               itemId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.NODE));
+               itemId = (String)cache.get(new CacheQPath(getOwnerId(), parentIdentifier, name, ItemType.NODE));
 
                if (itemId == null || itemId.equals(NullItemData.NULL_ID))
                {
                   // node with such a name is not found or marked as not-exist, so check the properties
-                  String propId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.PROPERTY));
+                  String propId =
+                     (String)cache.get(new CacheQPath(getOwnerId(), parentIdentifier, name, ItemType.PROPERTY));
                   if (propId != null)
                   {
                      itemId = propId;
@@ -194,11 +233,11 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             }
             else if (itemType == ItemType.NODE)
             {
-               itemId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.NODE));;
+               itemId = (String)cache.get(new CacheQPath(getOwnerId(), parentIdentifier, name, ItemType.NODE));;
             }
             else
             {
-               itemId = (String)cache.get(new CacheQPath(parentIdentifier, name, ItemType.PROPERTY));;
+               itemId = (String)cache.get(new CacheQPath(getOwnerId(), parentIdentifier, name, ItemType.PROPERTY));;
             }
 
             if (itemId != null)
@@ -227,9 +266,9 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       new CacheActionNonTxAware<Integer, NodeData>()
       {
          @Override
-         protected Integer execute(NodeData parent) throws RuntimeException
+         protected Integer execute(NodeData parent)
          {
-            Set<String> list = (Set<String>)cache.get(new CacheNodesId(parent.getIdentifier()));
+            Set<String> list = (Set<String>)cache.get(new CacheNodesId(getOwnerId(), parent.getIdentifier()));
             return list != null ? list.size() : -1;
          }
       };
@@ -238,19 +277,19 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       new CacheActionNonTxAware<List<PropertyData>, Object>()
       {
          @Override
-         protected List<PropertyData> execute(Object... args) throws RuntimeException
+         protected List<PropertyData> execute(Object... args)
          {
             String parentId = (String)args[0];
             boolean withValue = (Boolean)args[1];
             // get list of children uuids
-            final Set<String> set = (Set<String>)cache.get(new CachePropsId(parentId));
+            final Set<String> set = (Set<String>)cache.get(new CachePropsId(getOwnerId(), parentId));
             if (set != null)
             {
                final List<PropertyData> childs = new ArrayList<PropertyData>();
 
                for (String childId : set)
                {
-                  PropertyData child = (PropertyData)cache.get(new CacheId(childId));
+                  PropertyData child = (PropertyData)cache.get(new CacheId(getOwnerId(), childId));
 
                   if (child == null)
                   {
@@ -275,17 +314,17 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       new CacheActionNonTxAware<List<PropertyData>, String>()
       {
          @Override
-         protected List<PropertyData> execute(String identifier) throws RuntimeException
+         protected List<PropertyData> execute(String identifier)
          {
             // get list of children uuids
-            final Set<String> set = (Set<String>)cache.get(new CacheRefsId(identifier));
+            final Set<String> set = (Set<String>)cache.get(new CacheRefsId(getOwnerId(), identifier));
             if (set != null)
             {
                final List<PropertyData> props = new ArrayList<PropertyData>();
 
                for (String childId : set)
                {
-                  PropertyData prop = (PropertyData)cache.get(new CacheId(childId));
+                  PropertyData prop = (PropertyData)cache.get(new CacheId(getOwnerId(), childId));
 
                   if (prop == null || prop instanceof NullItemData)
                   {
@@ -327,9 +366,9 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    private final CacheActionNonTxAware<Long, Void> getSize = new CacheActionNonTxAware<Long, Void>()
    {
       @Override
-      protected Long execute(Void arg) throws RuntimeException
+      protected Long execute(Void arg)
       {
-         return (long)cache.size();
+         return (long)caller.getCacheSize();
       }
    };
 
@@ -377,7 +416,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             T n = null;
             do
             {
-               n = (T)cache.get(new CacheId(childs.next()));
+               n = (T)cache.get(new CacheId(getOwnerId(), childs.next()));
             }
             while (n == null && childs.hasNext());
             next = n;
@@ -415,7 +454,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       ChildNodesIterator(String parentId)
       {
-         super(new CacheNodesId(parentId));
+         super(new CacheNodesId(getOwnerId(), parentId));
       }
 
       @Override
@@ -430,7 +469,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
       ChildPropertiesIterator(String parentId)
       {
-         super(new CachePropsId(parentId));
+         super(new CachePropsId(getOwnerId(), parentId));
       }
 
       @Override
@@ -441,39 +480,128 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    }
 
    /**
-    * Cache constructor with eXo TransactionService support.
+    * Cache constructor.
     * 
-    * @param wsConfig WorkspaceEntry workspace config
+    * @param wsConfig WorkspaceEntry workspace configuration
+    * @param cfm The configuration manager
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
    public ISPNCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, ConfigurationManager cfm) throws RepositoryException,
       RepositoryConfigurationException
    {
+      this(null, wsConfig, cfm, null, null);
+   }
+
+   /**
+    * Cache constructor.
+    * 
+    * @param ctx The {@link ExoContainerContext} that owns the current component
+    * @param wsConfig WorkspaceEntry workspace configuration
+    * @param cfm The configuration manager
+    * @param ts TransactionService external transaction service
+    * @throws RepositoryException if error of initialization
+    * @throws RepositoryConfigurationException if error of configuration
+    */
+   public ISPNCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, ConfigurationManager cfm,
+      TransactionService ts) throws RepositoryException, RepositoryConfigurationException
+   {
+      this(ctx, wsConfig, cfm, null, ts);
+   }
+
+   /**
+    * Cache constructor.
+    * 
+    * @param ctx The {@link ExoContainerContext} that owns the current component
+    * @param wsConfig WorkspaceEntry workspace configuration
+    * @param cfm The configuration manager
+    * @param dcm The distributed cache manager
+    * @throws RepositoryException if error of initialization
+    * @throws RepositoryConfigurationException if error of configuration
+    */
+   public ISPNCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, ConfigurationManager cfm,
+      DistributedCacheManager dcm) throws RepositoryException, RepositoryConfigurationException
+   {
+      this(ctx, wsConfig, cfm, dcm, null);
+   }
+
+   /**
+    * Cache constructor.
+    * 
+    * @param ctx The {@link ExoContainerContext} that owns the current component
+    * @param wsConfig WorkspaceEntry workspace configuration
+    * @param cfm The configuration manager
+    * @param dcm The distributed cache manager
+    * @param ts TransactionService external transaction service
+    * @throws RepositoryException if error of initialization
+    * @throws RepositoryConfigurationException if error of configuration
+    */
+   public ISPNCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, ConfigurationManager cfm,
+      DistributedCacheManager dcm, TransactionService ts) throws RepositoryException, RepositoryConfigurationException
+   {
       if (wsConfig.getCache() == null)
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
       this.enabled = wsConfig.getCache().isEnabled();
-      
+
       // create cache using custom factory
-      ISPNCacheFactory<CacheKey, Object> factory = new ISPNCacheFactory<CacheKey, Object>(cfm);
+      ISPNCacheFactory<CacheKey, Object> factory =
+         new ISPNCacheFactory<CacheKey, Object>(cfm, ts == null ? null : ts.getTransactionManager());
 
       // create parent Infinispan instance
       CacheEntry cacheEntry = wsConfig.getCache();
-      Cache<CacheKey, Object> parentCache = factory.createCache("Data_" + wsConfig.getUniqueName(), cacheEntry);
-
-      Boolean allowLocalChanges = null;
-      try
+      boolean useDistributedCache = cacheEntry.getParameterBoolean("use-distributed-cache", false);
+      Cache<CacheKey, Object> parentCache;
+      if (useDistributedCache)
       {
-         allowLocalChanges = cacheEntry.getParameterBoolean("allow-local-changes");
+         // We expect a distributed cache
+         if (dcm == null)
+         {
+            throw new IllegalArgumentException("The DistributedCacheManager has not been defined in the configuration,"
+               + " please configure it at root container level if you want to use a distributed cache.");
+         }
+         parentCache = dcm.getCache(CACHE_NAME);
+         this.ownerId = ctx.getName();
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("The distributed cache has been enabled for the workspace whose unique id is " + ownerId);
+         }
       }
-      catch (RepositoryConfigurationException e)
+      else
       {
-         // do n't nothing
+         parentCache = factory.createCache("Data_" + wsConfig.getUniqueName(), cacheEntry);
+         Configuration config = parentCache.getCacheConfiguration();
+         if (config.clustering().cacheMode() == CacheMode.DIST_SYNC
+            || config.clustering().cacheMode() == CacheMode.DIST_ASYNC)
+         {
+            throw new IllegalArgumentException("Cache configuration not allowed, if you want to use the distributed "
+               + "cache please enable the parameter 'use-distributed-cache' and configure the DistributedCacheManager.");
+         }
+         this.ownerId = null;
       }
+      Boolean allowLocalChanges =
+         useDistributedCache ? cacheEntry.getParameterBoolean("allow-local-changes", Boolean.TRUE) : Boolean.TRUE;
       this.cache = new BufferedISPNCache(parentCache, allowLocalChanges);
-      cache.addListener(new CacheEventListener());
+      if (useDistributedCache)
+      {
+         this.caller = new DistributedOperationCaller();
+      }
+      else
+      {
+         this.caller = new GlobalOperationCaller();
+         cache.addListener(new CacheEventListener());
+      }
+   }
+
+   private boolean isDistributedMode()
+   {
+      return ownerId != null;
+   }
+
+   private String getOwnerId()
+   {
+      return ownerId;
    }
 
    /**
@@ -615,7 +743,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
          cache.setLocal(true);
 
-         CacheNodesByPageId cacheId = new CacheNodesByPageId(parent.getIdentifier());
+         CacheNodesByPageId cacheId = new CacheNodesByPageId(getOwnerId(), parent.getIdentifier());
          Map<Integer, Set<String>> pages = (Map<Integer, Set<String>>)cache.get(cacheId);
          if (pages == null)
          {
@@ -673,12 +801,12 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                putNode(child, ModifyChildOption.NOT_MODIFY);
                set.add(child.getIdentifier());
             }
-            cache.putIfAbsent(new CacheNodesId(parent.getIdentifier()), set);
+            cache.putIfAbsent(new CacheNodesId(getOwnerId(), parent.getIdentifier()), set);
          }
          else
          {
             // cache fact of empty childs list
-            cache.putIfAbsent(new CacheNodesId(parent.getIdentifier()), new HashSet<Object>());
+            cache.putIfAbsent(new CacheNodesId(getOwnerId(), parent.getIdentifier()), new HashSet<Object>());
          }
       }
       finally
@@ -713,7 +841,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             set.add(child.getIdentifier());
          }
 
-         CachePatternNodesId cacheId = new CachePatternNodesId(parent.getIdentifier());
+         CachePatternNodesId cacheId = new CachePatternNodesId(getOwnerId(), parent.getIdentifier());
          Map<QPathEntryFilter, Set<String>> patterns = (Map<QPathEntryFilter, Set<String>>)cache.get(cacheId);
          if (patterns == null)
          {
@@ -754,7 +882,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                putProperty(child, ModifyChildOption.NOT_MODIFY);
                set.add(child.getIdentifier());
             }
-            cache.putIfAbsent(new CachePropsId(parent.getIdentifier()), set);
+            cache.putIfAbsent(new CachePropsId(getOwnerId(), parent.getIdentifier()), set);
 
          }
          else
@@ -795,7 +923,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                set.add(child.getIdentifier());
             }
 
-            CachePatternPropsId cacheId = new CachePatternPropsId(parent.getIdentifier());
+            CachePatternPropsId cacheId = new CachePatternPropsId(getOwnerId(), parent.getIdentifier());
             Map<QPathEntryFilter, Set<String>> patterns = (Map<QPathEntryFilter, Set<String>>)cache.get(cacheId);
             if (patterns == null)
             {
@@ -862,7 +990,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       // get list of children uuids
       final Map<Integer, Set<String>> pages =
-         (Map<Integer, Set<String>>)cache.get(new CacheNodesByPageId(parent.getIdentifier()));
+         (Map<Integer, Set<String>>)cache.get(new CacheNodesByPageId(getOwnerId(), parent.getIdentifier()));
 
       if (pages == null)
       {
@@ -878,7 +1006,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       final List<NodeData> childs = new ArrayList<NodeData>();
       for (String childId : set)
       {
-         NodeData child = (NodeData)cache.get(new CacheId(childId));
+         NodeData child = (NodeData)cache.get(new CacheId(getOwnerId(), childId));
          if (child == null)
          {
             return null;
@@ -899,7 +1027,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       // get list of children uuids
       final Map<QPathEntryFilter, Set<String>> patterns =
-         (Map<QPathEntryFilter, Set<String>>)cache.get(new CachePatternNodesId(parent.getIdentifier()));
+         (Map<QPathEntryFilter, Set<String>>)cache.get(new CachePatternNodesId(getOwnerId(), parent.getIdentifier()));
 
       if (patterns == null)
       {
@@ -916,7 +1044,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
       for (String childId : set)
       {
-         NodeData child = (NodeData)cache.get(new CacheId(childId));
+         NodeData child = (NodeData)cache.get(new CacheId(getOwnerId(), childId));
          if (child == null)
          {
             return null;
@@ -951,7 +1079,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       // get list of children uuids
       final Map<QPathEntryFilter, Set<String>> patterns =
-         (Map<QPathEntryFilter, Set<String>>)cache.get(new CachePatternPropsId(parent.getIdentifier()));
+         (Map<QPathEntryFilter, Set<String>>)cache.get(new CachePatternPropsId(getOwnerId(), parent.getIdentifier()));
 
       if (patterns == null)
       {
@@ -968,7 +1096,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
       for (String childId : set)
       {
-         PropertyData child = (PropertyData)cache.get(new CacheId(childId));
+         PropertyData child = (PropertyData)cache.get(new CacheId(getOwnerId(), childId));
 
          if (child == null)
          {
@@ -1027,7 +1155,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       return true;
    }
-  
+
    /**
     * {@inheritDoc}
     */
@@ -1079,32 +1207,33 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       {
          if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
          {
-            cache.putIfAbsent(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node
-                     .getIdentifier());
+            cache.putIfAbsent(new CacheQPath(getOwnerId(), node.getParentIdentifier(), node.getQPath(), ItemType.NODE),
+               node.getIdentifier());
          }
          else
          {
-            cache.put(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node.getIdentifier());
+            cache.put(new CacheQPath(getOwnerId(), node.getParentIdentifier(), node.getQPath(), ItemType.NODE),
+               node.getIdentifier());
          }
 
          // if MODIFY and List present OR FORCE_MODIFY, then write
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
-            cache.addToPatternList(new CachePatternNodesId(node.getParentIdentifier()), node);
-            cache.addToList(new CacheNodesId(node.getParentIdentifier()), node.getIdentifier(),
+            cache.addToPatternList(new CachePatternNodesId(getOwnerId(), node.getParentIdentifier()), node);
+            cache.addToList(new CacheNodesId(getOwnerId(), node.getParentIdentifier()), node.getIdentifier(),
                modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
 
-            cache.remove(new CacheNodesByPageId(node.getParentIdentifier()));
+            cache.remove(new CacheNodesByPageId(getOwnerId(), node.getParentIdentifier()));
          }
       }
 
       if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
       {
-         return (ItemData)cache.putIfAbsent(new CacheId(node.getIdentifier()), node);
+         return (ItemData)cache.putIfAbsent(new CacheId(getOwnerId(), node.getIdentifier()), node);
       }
       else
       {
-         return (ItemData)cache.put(new CacheId(node.getIdentifier()), node, true);
+         return (ItemData)cache.put(new CacheId(getOwnerId(), node.getIdentifier()), node, true);
       }
    }
 
@@ -1112,18 +1241,19 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       if (node.getParentIdentifier() != null)
       {
-         cache.put(new CacheQPath(node.getParentIdentifier(), node.getQPath(), ItemType.NODE), node.getIdentifier());
+         cache.put(new CacheQPath(getOwnerId(), node.getParentIdentifier(), node.getQPath(), ItemType.NODE),
+            node.getIdentifier());
 
          // if MODIFY and List present OR FORCE_MODIFY, then write
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
-            cache.addToList(new CacheNodesId(node.getParentIdentifier()), node.getIdentifier(),
+            cache.addToList(new CacheNodesId(getOwnerId(), node.getParentIdentifier()), node.getIdentifier(),
                modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
          }
       }
 
       // NullNodeData must never be returned inside internal cache operations. 
-      ItemData itemData = (ItemData)cache.putInBuffer(new CacheId(node.getIdentifier()), node);
+      ItemData itemData = (ItemData)cache.putInBuffer(new CacheId(getOwnerId(), node.getIdentifier()), node);
       return (itemData instanceof NullItemData) ? null : itemData;
    }
 
@@ -1145,11 +1275,12 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
          if (!item.getIdentifier().equals(NullItemData.NULL_ID))
          {
-            cache.putIfAbsent(new CacheId(item.getIdentifier()), item);
+            cache.putIfAbsent(new CacheId(getOwnerId(), item.getIdentifier()), item);
          }
          else if (item.getName() != null && item.getParentIdentifier() != null)
          {
-            cache.putIfAbsent(new CacheQPath(item.getParentIdentifier(), item.getName(), ItemType.getItemType(item)),
+            cache.putIfAbsent(
+               new CacheQPath(getOwnerId(), item.getParentIdentifier(), item.getName(), ItemType.getItemType(item)),
                NullItemData.NULL_ID);
          }
       }
@@ -1174,19 +1305,21 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       // if MODIFY and List present OR FORCE_MODIFY, then write
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
       {
-         cache.addToPatternList(new CachePatternPropsId(prop.getParentIdentifier()), prop);
-         cache.addToList(new CachePropsId(prop.getParentIdentifier()), prop.getIdentifier(),
+         cache.addToPatternList(new CachePatternPropsId(getOwnerId(), prop.getParentIdentifier()), prop);
+         cache.addToList(new CachePropsId(getOwnerId(), prop.getParentIdentifier()), prop.getIdentifier(),
             modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
       }
       if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
       {
-         cache.putIfAbsent(new CacheQPath(prop.getParentIdentifier(), prop.getQPath(), ItemType.PROPERTY), prop.getIdentifier());
+         cache.putIfAbsent(
+            new CacheQPath(getOwnerId(), prop.getParentIdentifier(), prop.getQPath(), ItemType.PROPERTY),
+            prop.getIdentifier());
       }
       else
       {
-         cache.put(new CacheQPath(prop.getParentIdentifier(), prop.getQPath(), ItemType.PROPERTY), prop.getIdentifier());
+         cache.put(new CacheQPath(getOwnerId(), prop.getParentIdentifier(), prop.getQPath(), ItemType.PROPERTY),
+            prop.getIdentifier());
       }
-
 
       // add referenced property
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY && prop.getType() == PropertyType.REFERENCE)
@@ -1208,7 +1341,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             {
                // Do nothing. Never happens.
             }
-            cache.addToList(new CacheRefsId(nodeIdentifier), prop.getIdentifier(),
+            cache.addToList(new CacheRefsId(getOwnerId(), nodeIdentifier), prop.getIdentifier(),
                modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
          }
       }
@@ -1216,41 +1349,42 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       PropertyData propData;
       if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
       {
-         propData = (PropertyData)cache.putIfAbsent(new CacheId(prop.getIdentifier()), prop);
+         propData = (PropertyData)cache.putIfAbsent(new CacheId(getOwnerId(), prop.getIdentifier()), prop);
       }
       else
       {
-         propData = (PropertyData)cache.put(new CacheId(prop.getIdentifier()), prop, true);
+         propData = (PropertyData)cache.put(new CacheId(getOwnerId(), prop.getIdentifier()), prop, true);
       }
-      
+
       return (propData instanceof NullPropertyData) ? null : propData;
    }
 
    protected void removeItem(ItemData item)
    {
-      cache.remove(new CacheId(item.getIdentifier()));
-      cache.remove(new CacheQPath(item.getParentIdentifier(), item.getQPath(), ItemType.getItemType(item)));
+      cache.remove(new CacheId(getOwnerId(), item.getIdentifier()));
+      cache
+         .remove(new CacheQPath(getOwnerId(), item.getParentIdentifier(), item.getQPath(), ItemType.getItemType(item)));
 
       if (item.isNode())
       {
          if (item.getParentIdentifier() != null)
          {
-            cache.removeFromPatternList(new CachePatternNodesId(item.getParentIdentifier()), item);
-            cache.removeFromList(new CacheNodesId(item.getParentIdentifier()), item.getIdentifier());
-            cache.remove(new CacheNodesByPageId(item.getParentIdentifier()));
+            cache.removeFromPatternList(new CachePatternNodesId(getOwnerId(), item.getParentIdentifier()), item);
+            cache.removeFromList(new CacheNodesId(getOwnerId(), item.getParentIdentifier()), item.getIdentifier());
+            cache.remove(new CacheNodesByPageId(getOwnerId(), item.getParentIdentifier()));
          }
 
-         cache.remove(new CacheNodesId(item.getIdentifier()));
-         cache.remove(new CachePropsId(item.getIdentifier()));
-         cache.remove(new CacheNodesByPageId(item.getIdentifier()));
-         cache.remove(new CachePatternNodesId(item.getIdentifier()));
-         cache.remove(new CachePatternPropsId(item.getIdentifier()));
-         cache.remove(new CacheRefsId(item.getIdentifier()));
+         cache.remove(new CacheNodesId(getOwnerId(), item.getIdentifier()));
+         cache.remove(new CachePropsId(getOwnerId(), item.getIdentifier()));
+         cache.remove(new CacheNodesByPageId(getOwnerId(), item.getIdentifier()));
+         cache.remove(new CachePatternNodesId(getOwnerId(), item.getIdentifier()));
+         cache.remove(new CachePatternPropsId(getOwnerId(), item.getIdentifier()));
+         cache.remove(new CacheRefsId(getOwnerId(), item.getIdentifier()));
       }
       else
       {
-         cache.removeFromPatternList(new CachePatternPropsId(item.getParentIdentifier()), item);
-         cache.removeFromList(new CachePropsId(item.getParentIdentifier()), item.getIdentifier());
+         cache.removeFromPatternList(new CachePatternPropsId(getOwnerId(), item.getParentIdentifier()), item);
+         cache.removeFromList(new CachePropsId(getOwnerId(), item.getParentIdentifier()), item.getIdentifier());
       }
    }
 
@@ -1261,7 +1395,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    protected void updateMixin(NodeData node)
    {
-      NodeData prevData = (NodeData)cache.put(new CacheId(node.getIdentifier()), node, true);
+      NodeData prevData = (NodeData)cache.put(new CacheId(getOwnerId(), node.getIdentifier()), node, true);
       // prevent update NullNodeData
       if (!(prevData instanceof NullNodeData))
       {
@@ -1291,7 +1425,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    protected void updateInBuffer(final NodeData node, final NodeData prevNode)
    {
       // I expect that NullNodeData will never update existing NodeData.
-      CacheQPath prevKey = new CacheQPath(node.getParentIdentifier(), prevNode.getQPath(), ItemType.NODE);
+      CacheQPath prevKey = new CacheQPath(getOwnerId(), node.getParentIdentifier(), prevNode.getQPath(), ItemType.NODE);
       if (node.getIdentifier().equals(cache.getFromBuffer(prevKey)))
       {
          cache.remove(prevKey);
@@ -1316,75 +1450,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath, final AccessControlList acl)
    {
-      boolean inheritACL = acl != null;
-
-      // check all ITEMS in cache 
-      Iterator<CacheKey> keys = cache.keySet().iterator();
-
-      while (keys.hasNext())
-      {
-         CacheKey key = keys.next();
-         if (key instanceof CacheId)
-         {
-            ItemData data = (ItemData)cache.get(key);
-
-            if (data != null)
-            {
-               // check is this descendant of prevRootPath
-               QPath nodeQPath = data.getQPath();
-               if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
-               {
-                  //make relative path
-                  QPathEntry[] relativePath = null;
-                  try
-                  {
-                     relativePath = nodeQPath.getRelPath(nodeQPath.getDepth() - prevRootPath.getDepth());
-                  }
-                  catch (IllegalPathException e)
-                  {
-                     // Do nothing. Never happens.
-                  }
-
-                  // make new path - no matter  node or property
-                  QPath newPath = QPath.makeChildPath(newRootPath, relativePath);
-
-                  if (data.isNode())
-                  {
-                     // update node
-                     NodeData prevNode = (NodeData)data;
-
-                     TransientNodeData newNode =
-                        new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
-                           prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
-                           prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL());
-
-                     // update this node
-                     cache.put(new CacheId(newNode.getIdentifier()), newNode);
-                  }
-                  else
-                  {
-                     //update property
-                     PropertyData prevProp = (PropertyData)data;
-
-                     if (inheritACL
-                        && (prevProp.getQPath().getName().equals(Constants.EXO_PERMISSIONS) || prevProp.getQPath()
-                           .getName().equals(Constants.EXO_OWNER)))
-                     {
-                        inheritACL = false;
-                     }
-
-                     TransientPropertyData newProp =
-                        new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(),
-                           prevProp.getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp
-                              .getValues());
-
-                     // update this property
-                     cache.put(new CacheId(newProp.getIdentifier()), newProp);
-                  }
-               }
-            }
-         }
-      }
+      caller.updateTreePath(prevRootPath, newRootPath, acl);
    }
 
    /**
@@ -1393,33 +1459,9 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     * @param parentId String - root node id of JCR subtree.
     * @param acl AccessControlList
     */
-   protected void updateChildsACL(final String parentId, final AccessControlList acl)
+   protected void updateChildsACL(String parentId, AccessControlList acl)
    {
-      loop: for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
-      {
-         NodeData prevNode = iter.next();
-
-         // is ACL changes on this node (i.e. ACL inheritance brokes)
-         for (InternalQName mixin : prevNode.getMixinTypeNames())
-         {
-            if (mixin.equals(Constants.EXO_PRIVILEGEABLE) || mixin.equals(Constants.EXO_OWNEABLE))
-            {
-               continue loop;
-            }
-         }
-
-         // recreate with new path for child Nodes only
-         TransientNodeData newNode =
-            new TransientNodeData(prevNode.getQPath(), prevNode.getIdentifier(), prevNode.getPersistedVersion(),
-               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
-                  .getParentIdentifier(), acl);
-
-         // update this node
-         cache.put(new CacheId(newNode.getIdentifier()), newNode);
-
-         // update childs recursive
-         updateChildsACL(newNode.getIdentifier(), acl);
-      }
+      caller.updateChildsACL(parentId, acl);
    }
 
    public void beginTransaction()
@@ -1485,7 +1527,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             putProperty(prop, ModifyChildOption.NOT_MODIFY);
             set.add(prop.getIdentifier());
          }
-         cache.putIfAbsent(new CacheRefsId(identifier), set);
+         cache.putIfAbsent(new CacheRefsId(getOwnerId(), identifier), set);
       }
       finally
       {
@@ -1504,7 +1546,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       return getReferencedProperties.run(identifier);
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -1516,12 +1558,12 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     * {@inheritDoc}
     */
    @Managed
-   @ManagedDescription("Remove all the existing items from the cache")   
+   @ManagedDescription("Remove all the existing items from the cache")
    public void clean() throws BackupException
    {
       if (cache.getStatus() == ComponentStatus.RUNNING)
       {
-         cache.clear();
+         caller.clearCache();
       }
    }
 
@@ -1537,7 +1579,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
           */
          public void clean() throws BackupException
          {
-            cache.clear();
+            caller.clearCache();
          }
 
          /**
@@ -1576,6 +1618,11 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public void addListener(WorkspaceStorageCacheListener listener)
    {
+      if (isDistributedMode())
+      {
+         throw new UnsupportedOperationException("The cache listeners are not supported by the "
+            + "ISPNCacheWorkspaceStorageCache in case of the distributed mode");
+      }
       listeners.add(listener);
    }
 
@@ -1584,9 +1631,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    public void removeListener(WorkspaceStorageCacheListener listener)
    {
+      if (isDistributedMode())
+      {
+         throw new UnsupportedOperationException("The cache listeners are not supported by the "
+            + "ISPNCacheWorkspaceStorageCache in case of the distributed mode");
+      }
       listeners.remove(listener);
    }
-   
+
    /**
     * Called when a cache entry corresponding to the given node has item updated
     * @param data the item corresponding to the updated cache entry
@@ -1596,7 +1648,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       if (data == null || data instanceof NullItemData)
       {
          return;
-      }      
+      }
       for (WorkspaceStorageCacheListener listener : listeners)
       {
          try
@@ -1607,9 +1659,71 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          {
             LOG.warn("The method onCacheEntryUpdated fails for the listener " + listener.getClass(), e);
          }
-      }      
+      }
    }
-   
+
+   private static void updateTreePath(Cache<CacheKey, Object> cache, String ownerId, ItemData data, QPath prevRootPath,
+      QPath newRootPath, AccessControlList acl)
+   {
+      if (data == null)
+      {
+         return;
+      }
+
+      boolean inheritACL = acl != null;
+      // check is this descendant of prevRootPath
+      QPath nodeQPath = data.getQPath();
+      if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
+      {
+         //make relative path
+         QPathEntry[] relativePath = null;
+         try
+         {
+            relativePath = nodeQPath.getRelPath(nodeQPath.getDepth() - prevRootPath.getDepth());
+         }
+         catch (IllegalPathException e)
+         {
+            // Do nothing. Never happens.
+         }
+
+         // make new path - no matter  node or property
+         QPath newPath = QPath.makeChildPath(newRootPath, relativePath);
+
+         if (data.isNode())
+         {
+            // update node
+            NodeData prevNode = (NodeData)data;
+
+            TransientNodeData newNode =
+               new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
+                  prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+                  prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL());
+
+            // update this node
+            cache.put(new CacheId(ownerId, newNode.getIdentifier()), newNode);
+         }
+         else
+         {
+            //update property
+            PropertyData prevProp = (PropertyData)data;
+
+            if (inheritACL
+               && (prevProp.getQPath().getName().equals(Constants.EXO_PERMISSIONS) || prevProp.getQPath().getName()
+                  .equals(Constants.EXO_OWNER)))
+            {
+               inheritACL = false;
+            }
+
+            TransientPropertyData newProp =
+               new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(),
+                  prevProp.getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
+
+            // update this property
+            cache.put(new CacheId(ownerId, newProp.getIdentifier()), newProp);
+         }
+      }
+   }
+
    /**
     * Actions that are not supposed to be called within a transaction
     * 
@@ -1628,7 +1742,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          return ISPNCacheWorkspaceStorageCache.this.getTransactionManager();
       }
    }
-   
+
    @SuppressWarnings("rawtypes")
    @Listener
    public class CacheEventListener
@@ -1643,5 +1757,546 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             onCacheEntryUpdated(value);
          }
       }
-   }   
+   }
+
+   /**
+    * This class defines all the methods that could change between the replicated and the distributed mode. By default it implements
+    * the methods for the local and replicated mode.
+    *
+    */
+   private class GlobalOperationCaller
+   {
+      protected int getCacheSize()
+      {
+         return cache.size();
+      }
+
+      protected void clearCache()
+      {
+         cache.clear();
+      }
+
+      /**
+       * Update child Nodes ACLs.
+       *
+       * @param parentId String - root node id of JCR subtree.
+       * @param acl AccessControlList
+       */
+      protected void updateChildsACL(String parentId, AccessControlList acl)
+      {
+         loop : for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
+         {
+            NodeData prevNode = iter.next();
+
+            // is ACL changes on this node (i.e. ACL inheritance brokes)
+            for (InternalQName mixin : prevNode.getMixinTypeNames())
+            {
+               if (mixin.equals(Constants.EXO_PRIVILEGEABLE) || mixin.equals(Constants.EXO_OWNEABLE))
+               {
+                  continue loop;
+               }
+            }
+
+            // recreate with new path for child Nodes only
+            TransientNodeData newNode =
+               new TransientNodeData(prevNode.getQPath(), prevNode.getIdentifier(), prevNode.getPersistedVersion(),
+                  prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+                  prevNode.getParentIdentifier(), acl);
+
+            // update this node
+            cache.put(new CacheId(getOwnerId(), newNode.getIdentifier()), newNode);
+
+            // update childs recursive
+            updateChildsACL(newNode.getIdentifier(), acl);
+         }
+      }
+
+      /**
+       * Check all items in cache - is it descendant of prevRootPath, and update path according newRootPath.
+       * 
+       * @param prevRootPath
+       * @param newRootPath
+       * @param acl
+       */
+      protected void updateTreePath(QPath prevRootPath, QPath newRootPath, AccessControlList acl)
+      {
+
+         // check all ITEMS in cache 
+         Iterator<CacheKey> keys = cache.keySet().iterator();
+
+         while (keys.hasNext())
+         {
+            CacheKey key = keys.next();
+            if (key instanceof CacheId)
+            {
+               ItemData data = (ItemData)cache.get(key);
+               ISPNCacheWorkspaceStorageCache.updateTreePath(cache, getOwnerId(), data, prevRootPath, newRootPath, acl);
+            }
+         }
+      }
+   }
+
+   /**
+    * This class implements all the global operations for the distributed mode
+    *
+    */
+   private class DistributedOperationCaller extends GlobalOperationCaller
+   {
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected int getCacheSize()
+      {
+         Map<String, Integer> map = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Map<String, Integer>>()
+         {
+            public Map<String, Integer> run()
+            {
+               MapReduceTask<CacheKey, Object, String, Integer> task =
+                  new MapReduceTask<CacheKey, Object, String, Integer>(cache);
+               task.mappedWith(new GetSizeMapper(getOwnerId())).reducedWith(new GetSizeReducer<String>());
+               return task.execute();
+            }
+
+         });
+         int sum = 0;
+         for (Integer i : map.values())
+         {
+            sum += i;
+         }
+         return sum;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected void clearCache()
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               MapReduceTask<CacheKey, Object, Void, Void> task =
+                  new MapReduceTask<CacheKey, Object, Void, Void>(cache);
+               task.mappedWith(new ClearCacheMapper(getOwnerId())).reducedWith(new IdentityReducer());
+               task.execute();
+               return null;
+            }
+         });
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath, final AccessControlList acl)
+      {
+         final TransactionManager tm = getTransactionManager();
+         if (tm != null)
+         {
+            try
+            {
+               // Add the action out of the current transaction to avoid deadlocks
+               tm.getTransaction().registerSynchronization(new Synchronization()
+               {
+
+                  public void beforeCompletion()
+                  {
+                  }
+
+                  public void afterCompletion(int status)
+                  {
+                     if (status == Status.STATUS_COMMITTED)
+                     {
+                        try
+                        {
+                           // Since the tx is successfully committed we can call components non tx aware
+
+                           // The listeners will need to be executed outside the current tx so we suspend
+                           // the current tx we can face enlistment issues on product like ISPN
+                           tm.suspend();
+                           _updateTreePath(prevRootPath, newRootPath, acl);                        
+                        }
+                        catch (SystemException e)
+                        {
+                           LOG.warn("Cannot suspend the transaction", e);
+                        }                        
+                     }
+                  }
+               });
+               return;
+            }
+            catch (Exception e)
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("Cannot register the synchronization to the current transaction in order to update"
+                     + " the path out of the transaction", e);
+               }
+            }
+         }
+         _updateTreePath(prevRootPath, newRootPath, acl);
+      }
+
+      private void _updateTreePath(final QPath prevRootPath, final QPath newRootPath, final AccessControlList acl)
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               MapReduceTask<CacheKey, Object, Void, Void> task =
+                  new MapReduceTask<CacheKey, Object, Void, Void>(cache);
+               task.mappedWith(new UpdateTreePathMapper(getOwnerId(), prevRootPath, newRootPath, acl))
+                  .reducedWith(new IdentityReducer());
+               task.execute();
+               return null;
+            }
+         });         
+      }
+      
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected void updateChildsACL(String parentId, final AccessControlList acl)
+      {
+         ItemData parentItem = get(parentId);
+         if (!(parentItem instanceof NodeData))
+         {
+            return;
+         }
+         final QPath parentPath = ((NodeData)parentItem).getQPath();
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               MapReduceTask<CacheKey, Object, Void, Void> task =
+                  new MapReduceTask<CacheKey, Object, Void, Void>(cache);
+               task.mappedWith(new UpdateChildsACLMapper(getOwnerId(), parentPath, acl)).reducedWith(
+                  new IdentityReducer());
+               task.execute();
+               return null;
+            }
+         });
+      }
+   }
+
+   public static class GetSizeMapper extends AbstractMapper<String, Integer>
+   {
+
+      public GetSizeMapper()
+      {
+      }
+
+      public GetSizeMapper(String ownerId)
+      {
+         super(ownerId);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected void _map(CacheKey key, Object value, Collector<String, Integer> collector)
+      {
+         collector.emit("total", Integer.valueOf(1));
+      }
+   }
+
+   public static class GetSizeReducer<K> implements Reducer<K, Integer>
+   {
+
+      /**
+       * The serial version UID
+       */
+      private static final long serialVersionUID = 7877781449514234007L;
+
+      /**
+       * @see org.infinispan.distexec.mapreduce.Reducer#reduce(java.lang.Object, java.util.Iterator)
+       */
+      public Integer reduce(K reducedKey, Iterator<Integer> iter)
+      {
+         int sum = 0;
+         while (iter.hasNext())
+         {
+            Integer i = iter.next();
+            sum += i;
+         }
+         return sum;
+      }
+   }
+
+   public static class ClearCacheMapper extends AbstractMapper<Void, Void>
+   {
+      public ClearCacheMapper()
+      {
+      }
+
+      public ClearCacheMapper(String ownerId)
+      {
+         super(ownerId);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected void _map(CacheKey key, Object value, Collector<Void, Void> collector)
+      {
+         ExoContainer container = ExoContainerContext.getTopContainer();
+         if (container == null)
+         {
+            LOG.error("The top container could not be found");
+            return;
+         }
+         DistributedCacheManager dcm =
+            (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
+         if (dcm == null)
+         {
+            LOG.error("The DistributedCacheManager could not be found at top container level, please configure it.");
+            return;
+         }
+         Cache<CacheKey, Object> cache = dcm.getCache(CACHE_NAME);
+         cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.FAIL_SILENTLY).remove(key);
+      }
+   }
+
+   public static class IdentityReducer implements Reducer<Void, Void>
+   {
+
+      /**
+       * The serial version UID
+       */
+      private static final long serialVersionUID = -6193360351201912040L;
+
+      /**
+       * @see org.infinispan.distexec.mapreduce.Reducer#reduce(java.lang.Object, java.util.Iterator)
+       */
+      public Void reduce(Void reducedKey, Iterator<Void> iter)
+      {
+         return null;
+      }
+   }
+
+   public static class UpdateTreePathMapper extends AbstractMapper<Void, Void>
+   {
+      private QPath prevRootPath, newRootPath;
+
+      private AccessControlList acl;
+
+      public UpdateTreePathMapper()
+      {
+      }
+
+      public UpdateTreePathMapper(String ownerId, QPath prevRootPath, QPath newRootPath, AccessControlList acl)
+      {
+         super(ownerId);
+         this.prevRootPath = prevRootPath;
+         this.newRootPath = newRootPath;
+         this.acl = acl;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected boolean isValid(CacheKey key)
+      {
+         return super.isValid(key) && key instanceof CacheId;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public void writeExternal(ObjectOutput out) throws IOException
+      {
+         super.writeExternal(out);
+         byte[] buf = prevRootPath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
+         out.writeInt(buf.length);
+         out.write(buf);
+
+         buf = newRootPath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
+         out.writeInt(buf.length);
+         out.write(buf);
+
+         out.writeBoolean(acl != null);
+         if (acl != null)
+         {
+            acl.writeExternal(out);
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+      {
+         super.readExternal(in);
+         byte[] buf;
+
+         try
+         {
+            buf = new byte[in.readInt()];
+            in.readFully(buf);
+            String sQPath = new String(buf, Constants.DEFAULT_ENCODING);
+            prevRootPath = QPath.parse(sQPath);
+            buf = new byte[in.readInt()];
+            in.readFully(buf);
+            sQPath = new String(buf, Constants.DEFAULT_ENCODING);
+            newRootPath = QPath.parse(sQPath);
+         }
+         catch (IllegalPathException e)
+         {
+            throw new IOException("Deserialization error. ", e);
+         }
+         if (in.readBoolean())
+         {
+            this.acl = new AccessControlList();
+            acl.readExternal(in);
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected void _map(CacheKey key, Object value, Collector<Void, Void> collector)
+      {
+         ExoContainer container = ExoContainerContext.getTopContainer();
+         if (container == null)
+         {
+            LOG.error("The top container could not be found");
+            return;
+         }
+         DistributedCacheManager dcm =
+            (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
+         if (dcm == null)
+         {
+            LOG.error("The DistributedCacheManager could not be found at top container level, please configure it.");
+            return;
+         }
+         Cache<CacheKey, Object> cache = dcm.getCache(CACHE_NAME);
+         ISPNCacheWorkspaceStorageCache.updateTreePath(cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP), ownerId, (ItemData)value, prevRootPath, newRootPath, acl);
+      }
+   }
+
+   public static class UpdateChildsACLMapper extends AbstractMapper<Void, Void>
+   {
+      private QPath parentPath;
+
+      private AccessControlList acl;
+
+      public UpdateChildsACLMapper()
+      {
+      }
+
+      public UpdateChildsACLMapper(String ownerId, QPath parentPath, AccessControlList acl)
+      {
+         super(ownerId);
+         this.parentPath = parentPath;
+         this.acl = acl;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected boolean isValid(CacheKey key)
+      {
+         return super.isValid(key) && key instanceof CacheId;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public void writeExternal(ObjectOutput out) throws IOException
+      {
+         super.writeExternal(out);
+         byte[] buf = parentPath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
+         out.writeInt(buf.length);
+         out.write(buf);
+
+         out.writeBoolean(acl != null);
+         if (acl != null)
+         {
+            acl.writeExternal(out);
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+      {
+         super.readExternal(in);
+         byte[] buf;
+
+         try
+         {
+            buf = new byte[in.readInt()];
+            in.readFully(buf);
+            String sQPath = new String(buf, Constants.DEFAULT_ENCODING);
+            parentPath = QPath.parse(sQPath);
+         }
+         catch (IllegalPathException e)
+         {
+            throw new IOException("Deserialization error. ", e);
+         }
+         if (in.readBoolean())
+         {
+            this.acl = new AccessControlList();
+            acl.readExternal(in);
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected void _map(CacheKey key, Object value, Collector<Void, Void> collector)
+      {
+         if (!(value instanceof NodeData))
+         {
+            return;
+         }
+         NodeData prevNode = (NodeData)value;
+         // check is this descendant of parentPath
+         QPath nodeQPath = prevNode.getQPath();
+         if (nodeQPath == null || !nodeQPath.isDescendantOf(parentPath))
+         {
+            return;
+         }
+
+         // is ACL changes on this node (i.e. ACL inheritance brokes)
+         for (InternalQName mixin : prevNode.getMixinTypeNames())
+         {
+            if (mixin.equals(Constants.EXO_PRIVILEGEABLE) || mixin.equals(Constants.EXO_OWNEABLE))
+            {
+               return;
+            }
+         }
+         ExoContainer container = ExoContainerContext.getTopContainer();
+         if (container == null)
+         {
+            LOG.error("The top container could not be found");
+            return;
+         }
+         DistributedCacheManager dcm =
+            (DistributedCacheManager)container.getComponentInstanceOfType(DistributedCacheManager.class);
+         if (dcm == null)
+         {
+            LOG.error("The DistributedCacheManager could not be found at top container level, please configure it.");
+            return;
+         }
+         Cache<CacheKey, Object> cache = dcm.getCache(CACHE_NAME);
+         // we force the reloading
+         cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.FAIL_SILENTLY).remove(key);
+      }
+   }
 }

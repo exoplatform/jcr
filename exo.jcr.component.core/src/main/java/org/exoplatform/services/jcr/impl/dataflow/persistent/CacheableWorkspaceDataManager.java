@@ -497,7 +497,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       try
       {
          transactionManager =
-            (TransactionManager)cache.getClass().getMethod("getTransactionManager", null).invoke(null, null);
+            (TransactionManager)cache.getClass().getMethod("getTransactionManager", (Class<?>[])null)
+               .invoke(cache, (Object[])null);
       }
       catch (Exception e)
       {
@@ -1369,6 +1370,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                            while (patternIterator.hasNext())
                            {
                               QPathEntryFilter pattern = patternIterator.next();
+                              @SuppressWarnings("unchecked")
                               List<NodeData> persistedNodeData = (List<NodeData>)pattern.accept(persistedItemList);
                               if (pattern.isExactName())
                               {
@@ -1667,6 +1669,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                            while (patternIterator.hasNext())
                            {
                               QPathEntryFilter pattern = patternIterator.next();
+                              @SuppressWarnings("unchecked")
                               List<PropertyData> persistedPropData =
                                  (List<PropertyData>)pattern.accept(persistedItemList);
                               if (pattern.isExactName())
