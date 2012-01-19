@@ -93,7 +93,7 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
       }
 
       findNodesAndProperties.setString(1, containerName);
-      findNodesAndProperties.setString(2, lastNodeId);
+      findNodesAndProperties.setString(2, getInternalId(lastNodeId));
       findNodesAndProperties.setInt(3, offset);
       findNodesAndProperties.setInt(4, limit);
       findNodesAndProperties.setString(5, containerName);
