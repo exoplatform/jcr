@@ -2491,6 +2491,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void stop()
    {
+      if (filtersEnabled.get())
+      {
+         cache.removeListener(this);
+      }
    }
 
    /**
