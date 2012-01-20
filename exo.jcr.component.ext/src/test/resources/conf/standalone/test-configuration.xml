@@ -465,6 +465,29 @@
                                  </field>
                               </object>
                            </value>
+                           <value>
+                              <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
+                                 <field name="eventTypes">
+                                    <string>addNode</string>
+                                 </field>
+                                 <field name="path">
+                                    <string>/testPath</string>
+                                 </field>
+                                 <field name="isDeep">
+                                    <boolean>false</boolean>
+                                 </field>
+                                 <field name="action">
+                                    <object type="org.exoplatform.services.jcr.ext.backup.usecase.SetPropertyAction">
+                                    	<field name="addPropertyName">
+                                    		<string>myProperty</string>
+                                    	</field>
+                                    	<field name="addPropertyValue">
+                                    		<string>myValue</string>
+                                    	</field>                                   
+                                    </object>
+                                 </field>
+                              </object>
+                           </value>
                         </collection>
                      </field>
                   </object>
