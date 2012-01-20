@@ -43,6 +43,7 @@ import org.exoplatform.services.jcr.impl.core.version.VersionHistoryImpl;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataMoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
@@ -1149,34 +1150,6 @@ public class SessionDataManager implements ItemDataConsumer
       }
    }
 
-   void reloadPool(ItemData fromItem) throws RepositoryException
-   {
-      Collection<ItemImpl> pooledItems = itemsPool.getAll();
-      for (ItemImpl item : pooledItems)
-      {
-         if (item != null)
-         {
-            if (item.getInternalPath().isDescendantOf(fromItem.getQPath())
-               || item.getInternalPath().equals(fromItem.getQPath()))
-            {
-               ItemData ri = getItemData(item.getInternalIdentifier());
-               if (ri != null)
-               {
-                  itemsPool.reload(ri);
-               }
-               else
-               {
-                  // the item is invalid, case of version restore - the item from non
-                  // current version
-                  item.invalidate();
-               }
-
-               invalidated.add(item);
-            }
-         }
-      }
-   }
-
    /**
     * Reloads item in pool.
     *
@@ -1207,6 +1180,10 @@ public class SessionDataManager implements ItemDataConsumer
             {
                invalidated.add(item);
             }
+         }
+         else if (state.isPathChanged())
+         {
+            reloadDescendants(state.getOldPath(), state.getData().getQPath());
          }
       }
    }
@@ -1433,6 +1410,10 @@ public class SessionDataManager implements ItemDataConsumer
       while (nextSibling != null && !nextSibling.getIdentifier().equals(cause.getIdentifier())
          && !nextSibling.getIdentifier().equals(reindexedId))
       {
+         QPath siblingOldPath =
+            QPath.makeChildPath(nextSibling.getQPath().makeParentPath(), nextSibling.getQPath().getName(), nextSibling
+               .getQPath().getIndex());
+
          // update with new index
          QPath siblingPath =
             QPath.makeChildPath(nextSibling.getQPath().makeParentPath(), nextSibling.getQPath().getName(), nextSibling
@@ -1449,6 +1430,8 @@ public class SessionDataManager implements ItemDataConsumer
          changes.add(reindexedState);
 
          itemsPool.reload(reindexed);
+
+         reloadDescendants(siblingOldPath, siblingPath);
 
          // next...
          nextSibling =
@@ -1797,12 +1780,9 @@ public class SessionDataManager implements ItemDataConsumer
     */
    void rollback(ItemData item) throws InvalidItemStateException, RepositoryException
    {
-
       // remove from changes log (Session pending changes)
       PlainChangesLog slog = changesLog.pushLog(item.getQPath());
       SessionChangesLog changes = new SessionChangesLog(slog.getAllStates(), session);
-
-      StringBuilder exceptions = new StringBuilder();
 
       for (Iterator<ItemImpl> removedIter = invalidated.iterator(); removedIter.hasNext();)
       {
@@ -1811,45 +1791,45 @@ public class SessionDataManager implements ItemDataConsumer
          QPath removedPath = removed.getLocation().getInternalPath();
          ItemState rstate = changes.getItemState(removedPath);
 
-         if (rstate == null)
+         if (rstate != null)
          {
-            exceptions.append("Can't find removed item ").append(removed.getLocation().getAsString(false))
-               .append(" in changes for rollback.\n");
-            continue;
-         }
-
-         if (rstate.isRenamed())
-         {
-            // find DELETED
-            rstate = changes.findItemState(rstate.getData().getIdentifier(), false, new int[]{ItemState.DELETED});
-            if (rstate == null)
+            if (rstate.isRenamed() || rstate.isPathChanged())
             {
-               exceptions.append("Can't find removed item (of move operation) ")
-                  .append(removed.getLocation().getAsString(false)).append(" in changes for rollback.\n");
-               continue;
+               // find DELETED
+               rstate = changes.findItemState(rstate.getData().getIdentifier(), false, new int[]{ItemState.DELETED});
+               if (rstate == null)
+               {
+                  continue;
+               }
             }
-         }
 
-         NodeData parent = (NodeData)transactionableManager.getItemData(rstate.getData().getParentIdentifier());
-         if (parent != null)
+            NodeData parent = (NodeData)transactionableManager.getItemData(rstate.getData().getParentIdentifier());
+            if (parent != null)
+            {
+               ItemData persisted =
+                  transactionableManager.getItemData(parent, rstate.getData().getQPath().getEntries()[rstate.getData()
+                     .getQPath().getEntries().length - 1], ItemType.getItemType(rstate.getData()));
+
+               if (persisted != null)
+               {
+                  // reload item data
+                  removed.loadData(persisted);
+               }
+            } // else it's transient item
+         }
+         else
          {
-            ItemData persisted =
-               transactionableManager.getItemData(parent, rstate.getData().getQPath().getEntries()[rstate.getData()
-                  .getQPath().getEntries().length - 1], ItemType.getItemType(rstate.getData()));
+            // No states for items left usecase
+            ItemData persisted = transactionableManager.getItemData(removed.getData().getIdentifier());
 
             if (persisted != null)
             {
                // reload item data
                removed.loadData(persisted);
             }
-         } // else it's transient item
+         }
 
          removedIter.remove();
-      }
-
-      if (exceptions.length() > 0 && log.isDebugEnabled())
-      {
-         log.warn(exceptions);
       }
    }
 
@@ -2307,6 +2287,50 @@ public class SessionDataManager implements ItemDataConsumer
             {
                ret.add(childProp);
             }
+         }
+      }
+   }
+
+   /**
+    * Reload item's descendants in item reference pool
+    * 
+    * @param parentOld old item's QPath to get descendants out of item reference pool
+    * @param parent new item's QPath to set for reloaded descendants
+    * @throws RepositoryException
+    */
+   private void reloadDescendants(QPath parentOld, QPath parent) throws RepositoryException
+   {
+      List<ItemImpl> items = itemsPool.getDescendats(parentOld);
+
+      for (ItemImpl item : items)
+      {
+         ItemData oldItemData = item.getData();
+
+         int relativeDegree = oldItemData.getQPath().getDepth() - parentOld.getDepth();
+         QPath newQPath = QPath.makeChildPath(parent, oldItemData.getQPath().getRelPath(relativeDegree));
+
+         ItemData newItemData;
+         if (oldItemData.isNode())
+         {
+            NodeData oldNodeData = (NodeData)oldItemData;
+            newItemData =
+               new TransientNodeData(newQPath, oldNodeData.getIdentifier(), oldNodeData.getPersistedVersion(),
+                  oldNodeData.getPrimaryTypeName(), oldNodeData.getMixinTypeNames(), oldNodeData.getOrderNumber(),
+                  oldNodeData.getParentIdentifier(), oldNodeData.getACL());
+         }
+         else
+         {
+            PropertyData oldPropertyData = (PropertyData)oldItemData;
+            newItemData =
+               new TransientPropertyData(newQPath, oldPropertyData.getIdentifier(),
+                  oldPropertyData.getPersistedVersion(), oldPropertyData.getType(),
+                  oldPropertyData.getParentIdentifier(), oldPropertyData.isMultiValued(), oldPropertyData.getValues());
+         }
+
+         ItemImpl reloadedItem = reloadItem(newItemData);
+         if (reloadedItem != null)
+         {
+            invalidated.add(reloadedItem);
          }
       }
    }

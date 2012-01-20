@@ -19,8 +19,13 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -271,5 +276,38 @@ public class TestMoveNode extends JcrImplBaseTest
          Node contentNode = localBigFile.getNode("jcr:content");
          compareStream(new FileInputStream(filesList.get(i)), contentNode.getProperty("jcr:data").getStream());
       }
+   }
+
+   /**
+    * We have A/B moved to C/B without generation events for B.
+    * Will checked if B reloaded its data.
+    */
+   public void testMoveWithoutGenerationChangesForAllSubTree() throws Exception
+   {
+      TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      wsEntry.getContainer().getParameters()
+         .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME, "false"));
+      
+      ManageableRepository repository = helper.createRepository(container, true, null);
+      helper.addWorkspace(repository, wsEntry);
+
+      SessionImpl session = (SessionImpl)repository.login(credentials, wsEntry.getName());
+
+      Node nodeA = session.getRootNode().addNode("A");
+      Node nodeB = nodeA.addNode("B");
+      session.save();
+
+      assertEquals("/A/B", nodeB.getPath());
+
+      session.move("/A", "/C");
+
+      assertEquals("/C/B", nodeB.getPath());
+      assertEquals("/C", nodeA.getPath());
+
+      session.refresh(false);
+
+      assertEquals("/A/B", nodeB.getPath());
+      assertEquals("/A", nodeA.getPath());
    }
 }

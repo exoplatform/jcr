@@ -135,8 +135,6 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
       session.save();
 
       assertEquals("Same-name siblings path must be reindexed", "/u1/child[2]", n3.getPath());
-      assertEquals("Same-name siblings path must be reindexed", "/u1/child[3]/n1/n2", n3_n1n2.getPath());
-      session.refresh(true);
       assertEquals("Same-name siblings path must be reindexed", "/u1/child[2]/n1/n2", n3_n1n2.getPath());
 
       n3_n1n2 = n3.getNode("n1").getNode("n2");
