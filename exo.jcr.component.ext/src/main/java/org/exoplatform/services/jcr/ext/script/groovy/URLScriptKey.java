@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.ext.script.groovy;
 
 import org.exoplatform.services.rest.ext.groovy.BaseResourceId;
+import org.exoplatform.services.rest.ext.groovy.ResourceId;
 
 import java.net.URL;
 
@@ -26,7 +27,7 @@ import java.net.URL;
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: URLScriptKey.java 34445 2009-07-24 07:51:18Z dkatayev $
  */
-public class URLScriptKey extends BaseResourceId implements ScriptKey
+public class URLScriptKey extends BaseResourceId implements ResourceId
 {
    public URLScriptKey(URL url)
    {
