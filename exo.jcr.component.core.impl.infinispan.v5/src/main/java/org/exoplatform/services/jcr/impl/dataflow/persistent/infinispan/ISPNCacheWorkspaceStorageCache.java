@@ -120,7 +120,7 @@ import javax.transaction.TransactionManager;
 @SuppressWarnings("unchecked")
 public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable
 {
-   private static final Log LOG = ExoLogger
+   private static final Log LOG = ExoLogger//NOSONAR
       .getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNCacheWorkspaceStorageCache");//NOSONAR
 
    /**
@@ -1769,8 +1769,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    }
 
    /**
-    * This class defines all the methods that could change between the replicated and the distributed mode. By default it implements
-    * the methods for the local and replicated mode.
+    * This class defines all the methods that could change between the replicated and the distributed mode.
+    * By default it implements the methods for the local and replicated mode.
     *
     */
    private class GlobalOperationCaller
@@ -1926,18 +1926,18 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                            // The listeners will need to be executed outside the current tx so we suspend
                            // the current tx we can face enlistment issues on product like ISPN
                            tm.suspend();
-                           _updateTreePath(prevRootPath, newRootPath, acl);                        
+                           _updateTreePath(prevRootPath, newRootPath, acl);
                         }
                         catch (SystemException e)
                         {
                            LOG.warn("Cannot suspend the transaction", e);
-                        }                        
+                        }
                      }
                   }
                });
                return;
             }
-            catch (Exception e)
+            catch (Exception e) //NOSONAR
             {
                if (LOG.isDebugEnabled())
                {
@@ -1957,14 +1957,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             {
                MapReduceTask<CacheKey, Object, Void, Void> task =
                   new MapReduceTask<CacheKey, Object, Void, Void>(cache);
-               task.mappedWith(new UpdateTreePathMapper(getOwnerId(), prevRootPath, newRootPath, acl))
-                  .reducedWith(new IdentityReducer());
+               task.mappedWith(new UpdateTreePathMapper(getOwnerId(), prevRootPath, newRootPath, acl)).reducedWith(
+                  new IdentityReducer());
                task.execute();
                return null;
             }
-         });         
+         });
       }
-      
+
       /**
        * {@inheritDoc}
        */
@@ -2189,7 +2189,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             return;
          }
          Cache<CacheKey, Object> cache = dcm.getCache(CACHE_NAME);
-         ISPNCacheWorkspaceStorageCache.updateTreePath(cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP), ownerId, (ItemData)value, prevRootPath, newRootPath, acl);
+         ISPNCacheWorkspaceStorageCache.updateTreePath(cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP),
+            ownerId, (ItemData)value, prevRootPath, newRootPath, acl);
       }
    }
 

@@ -76,7 +76,7 @@ public class ISPNCacheFactory<K, V>
 
    private final TemplateConfigurationHelper configurationHelper;
 
-   private static final Log LOG = ExoLogger
+   private static final Log LOG = ExoLogger//NOSONAR
       .getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanCacheFactory");//NOSONAR
 
    /**

@@ -42,7 +42,7 @@ public class CacheServer
 {
 
    private static final String DEFAULT_CONFIG_FILE_PATH = "/conf/cache-server-configuration.xml";
-   
+
    /**
     * @param args
     */
@@ -52,19 +52,16 @@ public class CacheServer
       if (args == null || args.length == 0)
       {
          configPath = DEFAULT_CONFIG_FILE_PATH;
-         //NOSONAR
-         System.out.println("The configuration file will be loaded from '" + DEFAULT_CONFIG_FILE_PATH + "'");
+         System.out.println("The configuration file will be loaded from '" + DEFAULT_CONFIG_FILE_PATH + "'");//NOSONAR
       }
       else if (args.length == 1)
       {
          configPath = args[0];
-         //NOSONAR
-         System.out.println("The configuration file will be loaded from '" + args[0] + "'");         
+         System.out.println("The configuration file will be loaded from '" + args[0] + "'");//NOSONAR         
       }
       else
       {
-         //NOSONAR
-         System.err.println("Too many arguments, the expected syntax is: java CacheServer <configuration-file-path>");
+         System.err.println("Too many arguments, the expected syntax is: java CacheServer <configuration-file-path>");//NOSONAR
          return;
       }
 

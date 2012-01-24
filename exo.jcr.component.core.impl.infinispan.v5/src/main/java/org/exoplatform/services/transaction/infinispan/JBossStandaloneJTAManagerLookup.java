@@ -48,7 +48,7 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
    /**
     * The logger 
     */
-   private static final Log LOG =
+   private static final Log LOG = //NOSONAR
       ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.JBossStandaloneJTAManagerLookup");//NOSONAR
 
    private Method manager, user;
