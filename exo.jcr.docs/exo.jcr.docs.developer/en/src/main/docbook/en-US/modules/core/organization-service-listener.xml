@@ -178,5 +178,13 @@
 
     <para>Now, simply deploy the jar under $TOMCAT_HOME/lib and your listeners
     are ready!</para>
+
+    <para><note>
+        <para>Be aware that you need to set proper RuntimePermission to be
+        able to add or remove Listeners. To do that you need to grant the
+        following permission for your code</para>
+
+        <programlisting>permission java.lang.RuntimePermission "manageListeners"</programlisting>
+      </note></para>
   </section>
 </chapter>
