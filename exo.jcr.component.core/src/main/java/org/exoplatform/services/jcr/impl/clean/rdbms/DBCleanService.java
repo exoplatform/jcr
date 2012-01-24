@@ -62,8 +62,7 @@ public class DBCleanService
     */
    public static void cleanWorkspaceData(WorkspaceEntry wsEntry) throws DBCleanException
    {
-      SecurityHelper
-         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       Connection jdbcConn = getConnection(wsEntry);
       boolean autoCommit = DialectConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(resolveDialect(wsEntry));
@@ -101,8 +100,7 @@ public class DBCleanService
     */
    public static void cleanRepositoryData(RepositoryEntry rEntry) throws DBCleanException
    {
-      SecurityHelper
-         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       WorkspaceEntry wsEntry = rEntry.getWorkspaceEntries().get(0);
 
@@ -157,8 +155,7 @@ public class DBCleanService
    public static DBCleanerTool getRepositoryDBCleaner(Connection jdbcConn, RepositoryEntry rEntry)
       throws DBCleanException
    {
-      SecurityHelper
-         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       WorkspaceEntry wsEntry = rEntry.getWorkspaceEntries().get(0);
 
@@ -190,8 +187,7 @@ public class DBCleanService
     */
    public static DBCleanerTool getWorkspaceDBCleaner(Connection jdbcConn, WorkspaceEntry wsEntry) throws DBCleanException
    {
-      SecurityHelper
-         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       boolean multiDb = getMultiDbParameter(wsEntry);
 

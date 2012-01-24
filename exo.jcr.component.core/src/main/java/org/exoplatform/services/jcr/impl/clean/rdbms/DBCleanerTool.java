@@ -158,8 +158,7 @@ public class DBCleanerTool
     */
    protected void execute(List<String> scripts) throws SQLException
    {
-      SecurityHelper
-         .validateSecurityPermissions(new RuntimePermission[]{JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION});
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       // set needed auto commit mode
       boolean autoCommit = connection.getAutoCommit();
