@@ -1048,20 +1048,4 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          con.close();
       }
    }
-
-   /**
-    * {@inheritDoc}true
-    */
-   public boolean isReadOnly()
-   {
-      return readOnly;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void setReadOnly(boolean status)
-   {
-      this.readOnly = status;
-   }
 }

@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.dataflow;
 
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListenerFilter;
-import org.exoplatform.services.jcr.impl.ReadOnlySupport;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,7 +29,7 @@ import org.exoplatform.services.jcr.impl.ReadOnlySupport;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
  * @version $Id: PersistentDataManager.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public interface PersistentDataManager extends DataManager, ReadOnlySupport
+public interface PersistentDataManager extends DataManager
 {
 
    void addItemPersistenceListener(ItemsPersistenceListener listener);

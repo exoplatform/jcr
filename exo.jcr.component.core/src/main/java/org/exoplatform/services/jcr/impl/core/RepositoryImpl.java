@@ -763,8 +763,6 @@ public class RepositoryImpl implements ManageableRepository
             return "online";
          case OFFLINE :
             return "offline";
-         case READONLY :
-            return "readonly";
          case SUSPENDED :
             return "suspended";
          default :
