@@ -13,3 +13,4 @@
 * Not supported fields autoInitializedRootNt and autoInitPermissions
 * Removed ValueStorageCleanHelper class
 * Removed BackupSchedulerException class
+* EXOJCR-1728: Remove ReadOnly support for WorkspacePersistentDataManager
