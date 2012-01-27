@@ -55,7 +55,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    /**
     * Logger.
     */
-   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.RdbmsWorkspaceInitializer");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RdbmsWorkspaceInitializer");
 
    /**
     * The repository service.
@@ -155,7 +155,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             }
             catch (BackupException e1)
             {
-               log.error("Can't rollback restorer", e1);
+               LOG.error("Can't rollback restorer", e1);
             }
          }
 
@@ -171,7 +171,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             }
             catch (BackupException e)
             {
-               log.error("Can't close restorer", e);
+               LOG.error("Can't close restorer", e);
             }
          }
 
@@ -186,7 +186,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          {
             if (throwable == null)
             {
-               log.error("Con not set ONLYNE state for repository " + repository.getConfiguration().getName(), e);
+               LOG.error("Con not set ONLYNE state for repository " + repository.getConfiguration().getName(), e);
             }
             else
             {

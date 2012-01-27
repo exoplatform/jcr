@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.sql.Connection;
@@ -40,6 +42,9 @@ import javax.sql.DataSource;
  */
 public class DB2ConnectionFactory extends GenericCQConnectionFactory
 {
+
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2ConnectionFactory");
 
    private Boolean isReindexingSupport;
 
@@ -217,7 +222,10 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
                }
                catch (SQLException e)
                {
-                  // ignore me
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
                }
             }
          }

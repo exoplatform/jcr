@@ -30,16 +30,16 @@ class MatchAllQuery extends Query {
 
     private final String field;
 
-    /**
-     * Creates a new <code>MatchAllQuery</code> .
-     * <p/>
-     *
-     * @param field the field name.
-     * @throws NullPointerException if <code>field</code> is null.
-     */
-    MatchAllQuery(String field) throws NullPointerException {
+   /**
+    * Creates a new <code>MatchAllQuery</code> .
+    * <p/>
+    *
+    * @param field the field name.
+    * @throws IllegalArgumentException if <code>field</code> is null.
+    */
+    MatchAllQuery(String field) throws IllegalArgumentException {
         if (field == null) {
-            throw new NullPointerException("field");
+            throw new IllegalArgumentException("parameter field cannot be null");
         }
         this.field = field.intern();
     }

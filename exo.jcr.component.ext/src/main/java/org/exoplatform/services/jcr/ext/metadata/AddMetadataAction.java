@@ -114,7 +114,9 @@ public class AddMetadataAction implements Action
             (DocumentReaderService)((ExoContainer)ctx.get("exocontainer"))
                .getComponentInstanceOfType(DocumentReaderService.class);
          if (readerService == null)
-            throw new NullPointerException("No DocumentReaderService configured for current container");
+         {
+            throw new IllegalArgumentException("No DocumentReaderService configured for current container");
+         }
 
          Properties props = new Properties();
          try

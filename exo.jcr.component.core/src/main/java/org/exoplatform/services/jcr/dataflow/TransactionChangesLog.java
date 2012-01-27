@@ -23,6 +23,8 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -40,6 +42,8 @@ import java.util.List;
 
 public class TransactionChangesLog implements CompositeChangesLog, Externalizable
 {
+
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.dataflow.TransactionChangesLog");
 
    private static final long serialVersionUID = 4866736965040228027L;
 

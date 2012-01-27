@@ -94,6 +94,10 @@ public class EditableValueData extends TransientValueData
             }
             catch (Exception e1)
             {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e1.getMessage());
+               }
             }
             throw new IOException("init error " + e.getMessage())
             {
@@ -145,6 +149,10 @@ public class EditableValueData extends TransientValueData
             }
             catch (Exception e1)
             {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e1.getMessage());
+               }
             }
             throw new IOException("init error " + e.getMessage())
             {
@@ -299,6 +307,10 @@ public class EditableValueData extends TransientValueData
                   }
                   catch (Exception e1)
                   {
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace("An exception occurred: " + e1.getMessage());
+                     }
                   }
                   throw new IOException("update error " + e.getMessage())
                   {
@@ -384,6 +396,10 @@ public class EditableValueData extends TransientValueData
                   }
                   catch (Exception e1)
                   {
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace("An exception occurred: " + e1.getMessage());
+                     }
                   }
                   throw new IOException("setLength(" + size + ") error. " + e.getMessage())
                   {

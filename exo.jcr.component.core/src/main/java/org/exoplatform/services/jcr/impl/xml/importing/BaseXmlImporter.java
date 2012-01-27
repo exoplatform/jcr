@@ -106,7 +106,7 @@ public abstract class BaseXmlImporter implements ContentImporter
 
    protected final ValueFactoryImpl valueFactory;
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ImporterBase");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ImporterBase");
 
    public BaseXmlImporter(NodeData parent, QPath ancestorToSave, int uuidBehavior, ItemDataConsumer dataConsumer,
       NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
@@ -153,7 +153,7 @@ public abstract class BaseXmlImporter implements ContentImporter
 
       Collections.sort(changesLog.getAllStates(), new PathSorter());
 
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          StringBuilder str = new StringBuilder();
          for (int i = 0; i < changesLog.getAllStates().size(); i++)
@@ -165,7 +165,7 @@ public abstract class BaseXmlImporter implements ContentImporter
             str.append(changesLog.getAllStates().get(i).isInternallyCreated()).append("\t");
             str.append(changesLog.getAllStates().get(i).getData().getQPath().getAsString()).append("\n");
          }
-         log.debug(str);
+         LOG.debug(str);
       }
       if (isNeedReloadAncestorToSave)
       {
@@ -523,7 +523,10 @@ public abstract class BaseXmlImporter implements ContentImporter
          }
          catch (ItemNotFoundException e)
          {
-            // node not found, it's ok - willing create one new
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
 
       }

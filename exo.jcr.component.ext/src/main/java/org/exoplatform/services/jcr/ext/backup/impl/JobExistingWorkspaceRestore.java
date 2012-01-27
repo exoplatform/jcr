@@ -46,7 +46,7 @@ public class JobExistingWorkspaceRestore extends JobWorkspaceRestore
    /**
     * The logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobExistedWorkspaceRestore");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.JobExistedWorkspaceRestore");
 
    /**
     * JobExistingWorkspaceRestore constructor.

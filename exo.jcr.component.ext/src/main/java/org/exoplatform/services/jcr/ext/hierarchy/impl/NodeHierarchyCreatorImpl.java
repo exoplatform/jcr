@@ -53,7 +53,7 @@ import javax.jcr.Session;
 public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
 {
 
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.NodeHierarchyCreatorImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.NodeHierarchyCreatorImpl");
 
    private static final String USERS_PATH = "usersPath";
 
@@ -102,7 +102,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       
       if (PropertyManager.isDevelopping() && !oldDistribution)
       {
-         log.info("The NodeHierarchyCreator is configured to use the new distribution mechanism for the"
+         LOG.info("The NodeHierarchyCreator is configured to use the new distribution mechanism for the"
             + " users directories, if you prefer to use the old mechanism set the value parameter "
             + "'old-user-distribution' to 'true'.");
       }
@@ -119,7 +119,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       }
       catch (Exception e)
       {
-         log.error("An error occurs while processing the plugins", e);
+         LOG.error("An error occurs while processing the plugins", e);
       }
 
       if (isNeededToMigrate())
@@ -130,7 +130,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
          }
          catch (RepositoryException e)
          {
-            log.error("An error occurs while upgrading JCR structure", e);
+            LOG.error("An error occurs while upgrading JCR structure", e);
          }
       }
    }
@@ -210,7 +210,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
             }
             catch (Exception e)
             {
-               log.error("An error occurs while processing the JCR path which alias is "
+               LOG.error("An error occurs while processing the JCR path which alias is "
                   + (currentjcrPath == null ? null : currentjcrPath.getAlias()) + " with the workspace "
                   + workspaceName, e);
             }
@@ -270,7 +270,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
             }
             catch (Exception e)
             {
-               log.error("An error occurs while processing the JCR path which alias is "
+               LOG.error("An error occurs while processing the JCR path which alias is "
                   + (currentjcrPath == null ? null : currentjcrPath.getAlias()) + " with the workspace "
                   + workspaceName, e);
             }
@@ -339,7 +339,10 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       }
       catch (PathNotFoundException e)
       {
-         // ignore me
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
    }
 

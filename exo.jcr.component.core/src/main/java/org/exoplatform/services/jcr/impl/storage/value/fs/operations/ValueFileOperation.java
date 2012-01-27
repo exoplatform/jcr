@@ -72,7 +72,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
       }
       catch (UnknownHostException e)
       {
-         LOG.warn("Cannot read host address " + e);
+         LOG.warn("Cannot read host address " + e.getMessage());
          LOCAL_ADDRESS = "no address, " + e;
       }      
    }

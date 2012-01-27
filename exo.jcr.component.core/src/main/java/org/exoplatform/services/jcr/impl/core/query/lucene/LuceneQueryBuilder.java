@@ -20,9 +20,9 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.commons.utils.ISO8601;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -102,7 +102,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
    /**
     * Logger for this class
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.LuceneQueryBuilder");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LuceneQueryBuilder");
 
    /**
     * Root node of the abstract query tree
@@ -340,7 +340,10 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       }
       catch (RepositoryException e)
       {
-         // will never happen, prefixes are created when unknown
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return new JcrTermQuery(new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(field, value)));
    }
@@ -495,7 +498,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       }
       catch (RepositoryException e)
       {
-         log.error(e.getLocalizedMessage(), e);
+         LOG.error(e.getLocalizedMessage(), e);
       }
       return null;
    }
@@ -1173,20 +1176,20 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                {
                   InternalQName n = session.getLocationFactory().parseJCRName(literal).getInternalName();
                   values.add(nsMappings.translateName(n));
-                  log.debug("Coerced " + literal + " into NAME.");
+                  LOG.debug("Coerced " + literal + " into NAME.");
                }
                catch (RepositoryException e)
                {
                   if (types.length == 1)
                   {
-                     log.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                     LOG.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
                   }
                }
                catch (IllegalNameException e)
                {
                   if (types.length == 1)
                   {
-                     log.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                     LOG.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
                   }
                }
                break;
@@ -1196,13 +1199,13 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                {
                   QPath p = session.getLocationFactory().parseJCRPath(literal).getInternalPath();
                   values.add(resolver.createJCRPath(p).getAsString(true));
-                  log.debug("Coerced " + literal + " into PATH.");
+                  LOG.debug("Coerced " + literal + " into PATH.");
                }
                catch (RepositoryException e)
                {
                   if (types.length == 1)
                   {
-                     log.warn("Unable to coerce '" + literal + "' into a PATH: " + e.toString());
+                     LOG.warn("Unable to coerce '" + literal + "' into a PATH: " + e.toString());
                   }
                }
                break;
@@ -1212,13 +1215,13 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                if (c != null)
                {
                   values.add(DateField.timeToString(c.getTimeInMillis()));
-                  log.debug("Coerced " + literal + " into DATE.");
+                  LOG.debug("Coerced " + literal + " into DATE.");
                }
                else
                {
                   if (types.length == 1)
                   {
-                     log.warn("Unable to coerce '" + literal + "' into a DATE.");
+                     LOG.warn("Unable to coerce '" + literal + "' into a DATE.");
                   }
                }
                break;
@@ -1228,13 +1231,13 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                {
                   double d = Double.parseDouble(literal);
                   values.add(DoubleField.doubleToString(d));
-                  log.debug("Coerced " + literal + " into DOUBLE.");
+                  LOG.debug("Coerced " + literal + " into DOUBLE.");
                }
                catch (NumberFormatException e)
                {
                   if (types.length == 1)
                   {
-                     log.warn("Unable to coerce '" + literal + "' into a DOUBLE: " + e.toString());
+                     LOG.warn("Unable to coerce '" + literal + "' into a DOUBLE: " + e.toString());
                   }
                }
                break;
@@ -1244,19 +1247,19 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                {
                   long l = Long.parseLong(literal);
                   values.add(LongField.longToString(l));
-                  log.debug("Coerced " + literal + " into LONG.");
+                  LOG.debug("Coerced " + literal + " into LONG.");
                }
                catch (NumberFormatException e)
                {
                   if (types.length == 1)
                   {
-                     log.warn("Unable to coerce '" + literal + "' into a LONG: " + e.toString());
+                     LOG.warn("Unable to coerce '" + literal + "' into a LONG: " + e.toString());
                   }
                }
                break;
             case PropertyType.STRING :
                values.add(literal);
-               log.debug("Using literal " + literal + " as is.");
+               LOG.debug("Using literal " + literal + " as is.");
                break;
          }
       }
@@ -1274,11 +1277,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             {
                QPath p = session.getLocationFactory().parseJCRPath(literal).getInternalPath();
                values.add(resolver.createJCRPath(p).getAsString(true));
-               log.debug("Coerced " + literal + " into PATH.");
+               LOG.debug("Coerced " + literal + " into PATH.");
             }
             catch (Exception e)
             {
-               // not a path
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
          if (XMLChar.isValidName(literal))
@@ -1288,11 +1294,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             {
                InternalQName n = session.getLocationFactory().parseJCRName(literal).getInternalName();
                values.add(nsMappings.translateName(n));
-               log.debug("Coerced " + literal + " into NAME.");
+               LOG.debug("Coerced " + literal + " into NAME.");
             }
             catch (Exception e)
             {
-               // not a name
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
          if (literal.indexOf(':') > -1)
@@ -1302,7 +1311,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             if (c != null)
             {
                values.add(DateField.timeToString(c.getTimeInMillis()));
-               log.debug("Coerced " + literal + " into DATE.");
+               LOG.debug("Coerced " + literal + " into DATE.");
             }
          }
          else
@@ -1311,7 +1320,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             try
             {
                values.add(LongField.longToString(Long.parseLong(literal)));
-               log.debug("Coerced " + literal + " into LONG.");
+               LOG.debug("Coerced " + literal + " into LONG.");
             }
             catch (NumberFormatException e)
             {
@@ -1320,11 +1329,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                try
                {
                   values.add(DoubleField.doubleToString(Double.parseDouble(literal)));
-                  log.debug("Coerced " + literal + " into DOUBLE.");
+                  LOG.debug("Coerced " + literal + " into DOUBLE.");
                }
                catch (NumberFormatException e1)
                {
-                  // not a double
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
                }
             }
          }
@@ -1333,7 +1345,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       if (values.size() == 0)
       {
          values.add(literal);
-         log.debug("Using literal " + literal + " as is.");
+         LOG.debug("Using literal " + literal + " as is.");
       }
       return values.toArray(new String[values.size()]);
    }

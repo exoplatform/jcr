@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.config;
 
 import org.exoplatform.services.jcr.util.StringNumberParser;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,9 @@ import java.util.List;
 
 public abstract class MappedParametrizedObjectEntry
 {
+
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry");
 
    protected String type;
 
@@ -129,7 +134,10 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               //LOG.warn(name + ": unparseable Integer. " + e);
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
       }
@@ -199,7 +207,10 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               //LOG.warn(name + ": unparseable Long. " + e);
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
       }
@@ -248,7 +259,10 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               //LOG.warn(name + ": unparseable Long. " + e);
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
       }
@@ -298,7 +312,10 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               //LOG.warn(name + ": unparseable time (as Long). " + e);
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
       }

@@ -39,7 +39,7 @@ import java.net.SocketException;
 public class FtpDataTransiverImpl implements FtpDataTransiver
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpDataTransiverImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.FtpDataTransiverImpl");
 
    protected Socket dataSocket = null;
 
@@ -65,7 +65,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
       }
       catch (Exception exc)
       {
-         log.info("Can't open active mode. PORT is busy. " + exc.getMessage(), exc);
+         LOG.info("Can't open active mode. PORT is busy. " + exc.getMessage(), exc);
       }
       return false;
    }
@@ -94,7 +94,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
       }
       catch (Exception exc)
       {
-         log.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
+         LOG.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
       }
    }
 
@@ -123,11 +123,14 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
       }
       catch (SocketException exc)
       {
-         // ..
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + exc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.error(exc.getLocalizedMessage(), exc);
+         LOG.error(exc.getLocalizedMessage(), exc);
       }
 
       try
@@ -139,7 +142,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       return outStream.toByteArray();
@@ -157,7 +160,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
          }
          catch (Exception exc)
          {
-            log.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
+            LOG.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
          }
       }
       return false;

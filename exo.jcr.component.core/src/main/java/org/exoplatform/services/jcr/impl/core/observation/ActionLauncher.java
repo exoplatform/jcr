@@ -130,7 +130,7 @@ public class ActionLauncher implements ItemsPersistenceListener
                      catch (RepositoryException e)
                      {
                         log.error("Can not fire ActionLauncher.onSaveItems() for " + item.getQPath().getAsString()
-                           + " reason: " + e);
+                           + " reason: " + e.getMessage());
                      }
                   }
                }

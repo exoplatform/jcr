@@ -49,7 +49,7 @@ import javax.jcr.Session;
 public class CmdStor extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdStor");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdStor");
 
    public CmdStor()
    {
@@ -74,7 +74,7 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       if (params.length < 2)
@@ -219,7 +219,7 @@ public class CmdStor extends FtpCommandImpl
          }
          catch (Exception exc)
          {
-            log.info("Failurinc closing input stream");
+            LOG.info("Failurinc closing input stream");
          }
 
          if (cacheFileName != null)
@@ -238,10 +238,14 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (RepositoryException rexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + rexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       clientSession().closeDataTransiver();
@@ -261,10 +265,14 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (RepositoryException rexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + rexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       return null;
    }
@@ -308,10 +316,14 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (PathNotFoundException pexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + pexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       return null;
    }

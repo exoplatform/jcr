@@ -16,6 +16,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.search.FilteredTermEnum;
+import org.apache.lucene.search.MultiTermQuery;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,17 +31,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.search.FilteredTermEnum;
-import org.apache.lucene.search.MultiTermQuery;
-
 /**
  * <code>CaseTermQuery</code> implements a term query which convert the term
  * from the index either to upper or lower case before it is matched.
  */
-abstract class CaseTermQuery extends MultiTermQuery implements TransformConstants {
+abstract class CaseTermQuery extends MultiTermQuery implements TransformConstants
+{
+    private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.impl.core.query.lucene.CaseTermQuery");
 
     /**
      * Indicates whether terms from the index should be lower-cased or
@@ -68,7 +73,8 @@ abstract class CaseTermQuery extends MultiTermQuery implements TransformConstant
 
     }
 
-    private final class CaseTermEnum extends FilteredTermEnum {
+   private final class CaseTermEnum extends FilteredTermEnum
+   {
 
         private final int nameLength;
 
@@ -152,7 +158,10 @@ abstract class CaseTermQuery extends MultiTermQuery implements TransformConstant
                     try {
                         terms.close();
                     } catch (IOException e) {
-                        // ignore
+                       if (LOG.isTraceEnabled())
+                       {
+                           LOG.trace("An exception occurred: " + e.getMessage());
+                       }
                     }
                 }
             }

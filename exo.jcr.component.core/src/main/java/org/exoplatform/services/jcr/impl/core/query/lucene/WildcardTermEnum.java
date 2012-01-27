@@ -16,6 +16,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.search.FilteredTermEnum;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,18 +31,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.search.FilteredTermEnum;
-
 /**
  * Implements a wildcard term enum that optionally supports embedded property
  * names in lucene term texts.
  */
-class WildcardTermEnum extends FilteredTermEnum implements TransformConstants {
+class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
+{
 
-    /**
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.impl.core.query.lucene.WildcardTermEnum");
+
+   /**
      * The pattern matcher.
      */
     private final Matcher pattern;
@@ -246,10 +252,16 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants {
                     Iterator it = rangeScans.iterator();
                     while (it.hasNext()) {
                         RangeScan scan = (RangeScan) it.next();
-                        try {
+                        try 
+                        {
                             scan.close();
-                        } catch (IOException e) {
-                            // ignore
+                        } 
+                        catch (IOException e) 
+                        {
+                           if (LOG.isTraceEnabled())
+                           {
+                              LOG.trace("An exception occurred: " + e.getMessage());
+                           }
                         }
                     }
                 }

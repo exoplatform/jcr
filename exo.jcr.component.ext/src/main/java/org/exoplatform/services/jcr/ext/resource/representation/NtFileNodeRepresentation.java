@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.ext.resource.representation;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.ext.resource.NodeRepresentation;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +43,9 @@ import javax.jcr.Value;
  */
 public class NtFileNodeRepresentation implements NodeRepresentation
 {
+
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.ext.resource.representation.NtFileNodeRepresentation");
 
    private Node node;
 
@@ -191,8 +196,10 @@ public class NtFileNodeRepresentation implements NodeRepresentation
       }
       catch (PathNotFoundException e)
       {
-         //e.printStackTrace();
-         //return null;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return props;
    }

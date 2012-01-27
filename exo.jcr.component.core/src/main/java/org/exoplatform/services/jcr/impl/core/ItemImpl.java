@@ -83,7 +83,7 @@ public abstract class ItemImpl implements Item
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemImpl");
 
    /**
     * Session object.
@@ -284,7 +284,7 @@ public abstract class ItemImpl implements Item
          }
          catch (Exception e)
          {
-            log.debug("Item.isSame() failed " + e);
+            LOG.debug("Item.isSame() failed " + e.getMessage());
             return false;
          }
       }
@@ -573,9 +573,9 @@ public abstract class ItemImpl implements Item
             }
             else
             {
-               if (log.isDebugEnabled())
+               if (LOG.isDebugEnabled())
                {
-                  log.debug("Set null value (" + getPath() + ", multivalued: " + multiValue + ")");
+                  LOG.debug("Set null value (" + getPath() + ", multivalued: " + multiValue + ")");
                }
             }
          }
@@ -1008,9 +1008,9 @@ public abstract class ItemImpl implements Item
                   strVal = "PropertyType.BINARY";
                }
             }
-            catch (Throwable e)
+            catch (IOException e)
             {
-               log.error("Error of value read: " + e.getMessage(), e);
+               LOG.error("Error of value read: " + e.getMessage(), e);
             }
             throw new ConstraintViolationException("Can not set value '" + strVal + "' to " + getPath()
                + " due to value constraints ");

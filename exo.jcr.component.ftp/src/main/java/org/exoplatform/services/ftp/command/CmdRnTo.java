@@ -39,7 +39,7 @@ import javax.jcr.Session;
 public class CmdRnTo extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdRnTo");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdRnTo");
 
    public CmdRnTo()
    {
@@ -101,13 +101,21 @@ public class CmdRnTo extends FtpCommandImpl
       }
       catch (PathNotFoundException pexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + pexc.getMessage());
+         }
       }
       catch (NoSuchWorkspaceException wexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + wexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exceprion. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exceprion. " + exc.getMessage(), exc);
       }
 
       reply(String.format(FtpConst.Replyes.REPLY_550, pathName));

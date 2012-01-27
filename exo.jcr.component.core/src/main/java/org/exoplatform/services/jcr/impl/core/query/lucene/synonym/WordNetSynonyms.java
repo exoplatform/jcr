@@ -16,12 +16,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene.synonym;
 
+import org.apache.lucene.index.memory.SynonymMap;
+import org.exoplatform.services.jcr.impl.core.query.lucene.SynonymProvider;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
-
-import org.apache.lucene.index.memory.SynonymMap;
-
-import org.exoplatform.services.jcr.impl.core.query.lucene.SynonymProvider;
 
 /**
  * <code>WordNetSynonyms</code> implements a {@link SynonymProvider} that is backed by the WordNet
@@ -29,6 +30,9 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.SynonymProvider;
  */
 public class WordNetSynonyms implements SynonymProvider
 {
+
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.impl.core.query.lucene.synonym.WordNetSynonyms");
 
    /**
     * The synonym map or <code>null</code> if an error occurred while reading the prolog file.
@@ -48,7 +52,10 @@ public class WordNetSynonyms implements SynonymProvider
       }
       catch (IOException e)
       {
-         // ignore
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       SYNONYM_MAP = sm;
    }

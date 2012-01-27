@@ -260,7 +260,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                }
                catch (SQLException e)
                {
-                  LOG.error("Can't close the Statement: " + e);
+                  LOG.error("Can't close the Statement: " + e.getMessage());
                }
             }
 
@@ -475,7 +475,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                }
                catch (SQLException e)
                {
-                  LOG.error("Can't close the ResultSet: " + e);
+                  LOG.error("Can't close the ResultSet: " + e.getMessage());
                }
             }
 
@@ -487,7 +487,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                }
                catch (SQLException e)
                {
-                  LOG.error("Can't close the Statement: " + e);
+                  LOG.error("Can't close the Statement: " + e.getMessage());
                }
             }
 
@@ -565,7 +565,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                }
                catch (SQLException e)
                {
-                  LOG.error("Can't close the ResultSet: " + e);
+                  LOG.error("Can't close the ResultSet: " + e.getMessage());
                }
             }
 
@@ -577,7 +577,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                }
                catch (SQLException e)
                {
-                  LOG.error("Can't close the Statement: " + e);
+                  LOG.error("Can't close the Statement: " + e.getMessage());
                }
             }
 
@@ -615,7 +615,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                }
                catch (SQLException e)
                {
-                  LOG.error("Can't close the Statement: " + e);
+                  LOG.error("Can't close the Statement: " + e.getMessage());
                }
             }
 

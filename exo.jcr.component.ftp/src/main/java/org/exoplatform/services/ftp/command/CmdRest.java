@@ -19,6 +19,8 @@
 package org.exoplatform.services.ftp.command;
 
 import org.exoplatform.services.ftp.FtpConst;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 
@@ -30,6 +32,8 @@ import java.io.IOException;
 
 public class CmdRest extends FtpCommandImpl
 {
+
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.ftp.command.CmdRest");
 
    public CmdRest()
    {
@@ -53,6 +57,10 @@ public class CmdRest extends FtpCommandImpl
       }
       catch (Exception exc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + exc.getMessage());
+         }
       }
       reply(String.format(FtpConst.Replyes.REPLY_500, FtpConst.Commands.CMD_REST));
    }
