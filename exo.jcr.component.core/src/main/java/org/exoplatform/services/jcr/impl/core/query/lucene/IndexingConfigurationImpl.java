@@ -66,7 +66,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.IndexingConfigurationImpl");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.IndexingConfigurationImpl");
 
    /**
     * A namespace resolver for parsing QNames in the configuration.
@@ -120,7 +120,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          {
             IndexingRule element = new IndexingRule(configNode);
             // register under node type and all its sub types
-            log.debug("Found rule '{}' for NodeType '{}'", element, element.getNodeTypeName());
+            LOG.debug("Found rule '{}' for NodeType '{}'", element, element.getNodeTypeName());
             Set<InternalQName> subs = ntReg.getSubtypes(element.getNodeTypeName());
             subs.add(element.getNodeTypeName());
             for (InternalQName subTypeName : subs)
@@ -131,7 +131,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                   perNtConfig = new ArrayList<IndexingRule>();
                   configElements.put(subTypeName, perNtConfig);
                }
-               log.debug("Registering it for name '{}'", subTypeName);
+               LOG.debug("Registering it for name '{}'", subTypeName);
                perNtConfig.add(new IndexingRule(element, subTypeName));
 
             }
@@ -155,7 +155,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                      Class<?> clazz = ClassLoading.forName(analyzerClassName, this);
                      if (clazz == JcrStandartAnalyzer.class)
                      {
-                        log.warn("Not allowed to configure " + JcrStandartAnalyzer.class.getName()
+                        LOG.warn("Not allowed to configure " + JcrStandartAnalyzer.class.getName()
                            + " for a property. " + "Using default analyzer for that property.");
                      }
                      else if (Analyzer.class.isAssignableFrom(clazz))
@@ -180,7 +180,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                               Object prevAnalyzer = analyzers.put(fieldName, analyzer);
                               if (prevAnalyzer != null)
                               {
-                                 log.warn("Property " + propName.getName()
+                                 LOG.warn("Property " + propName.getName()
                                     + " has been configured for multiple analyzers. "
                                     + " Last configured analyzer is used");
                               }
@@ -189,13 +189,13 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                      }
                      else
                      {
-                        log.warn("org.apache.lucene.analysis.Analyzer is not a superclass of " + analyzerClassName
+                        LOG.warn("org.apache.lucene.analysis.Analyzer is not a superclass of " + analyzerClassName
                            + ". Ignoring this configure analyzer");
                      }
                   }
                   catch (ClassNotFoundException e)
                   {
-                     log.warn("Analyzer class not found: " + analyzerClassName, e);
+                     LOG.warn("Analyzer class not found: " + analyzerClassName, e);
                   }
                }
             }
@@ -452,7 +452,10 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                }
                catch (NumberFormatException e)
                {
-                  // use default
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
                }
             }
 
@@ -936,7 +939,10 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
             }
             catch (NumberFormatException e)
             {
-               // return default boost
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
          return DEFAULT_BOOST;
@@ -1163,13 +1169,13 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                }
                catch (IOException e)
                {
-                  log.error(e.getLocalizedMessage());
+                  LOG.error(e.getLocalizedMessage());
                }
 
             }
             catch (RepositoryException e)
             {
-               log.error(e.getLocalizedMessage());
+               LOG.error(e.getLocalizedMessage());
             }
          }
          return false;

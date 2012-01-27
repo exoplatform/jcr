@@ -43,7 +43,7 @@ import javax.jcr.RepositoryException;
 public class SessionFactory
 {
 
-   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionFactory");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionFactory");
 
    private final ExoContainer container;
 
@@ -76,7 +76,10 @@ public class SessionFactory
             }
             catch (NumberFormatException e)
             {
-               //
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
          if (maxAgeMillis <= 0)

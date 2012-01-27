@@ -48,7 +48,7 @@ public abstract class QueryResultImpl implements QueryResult
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.QueryResultImpl");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.QueryResultImpl");
 
    /**
     * The search index to execute the query.
@@ -209,7 +209,7 @@ public abstract class QueryResultImpl implements QueryResult
       catch (NamespaceException npde)
       {
          String msg = "encountered invalid property name";
-         log.debug(msg);
+         LOG.debug(msg);
          throw new RepositoryException(msg, npde);
       }
    }
@@ -292,9 +292,9 @@ public abstract class QueryResultImpl implements QueryResult
     */
    protected void getResults(long size) throws RepositoryException
    {
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("getResults({}) limit={}", new Long(size), new Long(limit));
+         LOG.debug("getResults({}) limit={}", new Long(size), new Long(limit));
       }
 
       long maxResultSize = size;
@@ -316,14 +316,14 @@ public abstract class QueryResultImpl implements QueryResult
       try
       {
          long time = 0;
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
             time = System.currentTimeMillis();
          }
          result = executeQuery(maxResultSize);
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("query executed in {} ms", new Long(System.currentTimeMillis() - time));
+            LOG.debug("query executed in {} ms", new Long(System.currentTimeMillis() - time));
          }
          // set selector names
          selectorNames = result.getSelectorNames();
@@ -339,14 +339,14 @@ public abstract class QueryResultImpl implements QueryResult
             result.skip(start);
          }
 
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
             time = System.currentTimeMillis();
          }
          collectScoreNodes(result, resultNodes, maxResultSize);
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("retrieved ScoreNodes in {} ms", new Long(System.currentTimeMillis() - time));
+            LOG.debug("retrieved ScoreNodes in {} ms", new Long(System.currentTimeMillis() - time));
          }
 
          // update numResults
@@ -358,7 +358,7 @@ public abstract class QueryResultImpl implements QueryResult
       }
       catch (IOException e)
       {
-         log.error("Exception while executing query: ", e);
+         LOG.error("Exception while executing query: ", e);
          // todo throw?
       }
       finally
@@ -371,7 +371,7 @@ public abstract class QueryResultImpl implements QueryResult
             }
             catch (IOException e)
             {
-               log.warn("Unable to close query result: " + e);
+               LOG.warn("Unable to close query result: " + e);
             }
          }
       }
@@ -445,7 +445,10 @@ public abstract class QueryResultImpl implements QueryResult
          }
          catch (ItemNotFoundException e)
          {
-            // node deleted while query was executed
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
       }
       return true;
@@ -656,7 +659,7 @@ public abstract class QueryResultImpl implements QueryResult
                }
                catch (RepositoryException e)
                {
-                  log.warn("Exception getting more results: " + e);
+                  LOG.warn("Exception getting more results: " + e);
                }
                // check again
                if (nextPos >= resultNodes.size())
@@ -673,16 +676,16 @@ public abstract class QueryResultImpl implements QueryResult
                   next = null;
                   invalid++;
                   resultNodes.remove(nextPos);
-                  if (log.isDebugEnabled())
+                  if (LOG.isDebugEnabled())
                   {
-                     log.debug("The node is invalid since we don't have sufficient rights to access it, "
+                     LOG.debug("The node is invalid since we don't have sufficient rights to access it, "
                         + "it will be removed from the results set");
                   }
                }
             }
             catch (RepositoryException e)
             {
-               log.error("Could not check access permission", e);
+               LOG.error("Could not check access permission", e);
                break;
             }
          }

@@ -305,6 +305,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       catch (RepositoryConfigurationException e)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       if (pDbUrl != null)
@@ -553,6 +557,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          catch (RepositoryConfigurationException e)
          {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
 
          if (wsSourceName != null && newWsSourceName != null)
@@ -587,6 +595,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          catch (RepositoryConfigurationException e)
          {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
 
          if (wsUri != null && newWsUri != null)
@@ -878,7 +890,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             }
             catch (SQLException e)
             {
-               // ignore me
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
       }

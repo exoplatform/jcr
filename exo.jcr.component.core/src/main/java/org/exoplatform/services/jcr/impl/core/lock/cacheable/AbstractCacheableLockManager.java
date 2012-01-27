@@ -200,7 +200,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return -1;
    }
@@ -216,7 +219,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return true;
    }
@@ -232,7 +238,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return false;
    }
@@ -256,7 +265,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return false;
    }
@@ -272,7 +284,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return null;
    }
@@ -288,7 +303,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return null;
    }

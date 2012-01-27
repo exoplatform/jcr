@@ -100,7 +100,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class BackupManagerImpl implements ExtendedBackupManager, Startable
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.BackupManagerImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.BackupManagerImpl");
 
    /**
     *  Name of default incremental job period parameter in configuration. 
@@ -234,15 +234,15 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       public void onError(BackupJob job, String message, Throwable error)
       {
          messages.addError(makeJobInfo(job, error) + message, error);
-         log.error(makeJobInfo(job, error) + message, error);
+         LOG.error(makeJobInfo(job, error) + message, error);
       }
 
       public void onStateChanged(BackupJob job)
       {
          messages.addMessage(makeJobInfo(job, null));
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug(makeJobInfo(job, null));
+            LOG.debug(makeJobInfo(job, null));
          }
       }
 
@@ -298,7 +298,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             catch (BackupOperationException e)
             {
-               // skip URL
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
             finally
             {
@@ -377,11 +380,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             catch (InterruptedException e)
             {
-               log.error("The interapted this thread.", e);
+               LOG.error("The interapted this thread.", e);
             }
             catch (Throwable e)
             {
-               log.error("The unknown error", e);
+               LOG.error("The unknown error", e);
             }
          }
       }
@@ -434,11 +437,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             catch (InterruptedException e)
             {
-               log.error("The interapted this thread.", e);
+               LOG.error("The interapted this thread.", e);
             }
             catch (Throwable e)
             {
-               log.error("The unknown error", e);
+               LOG.error("The unknown error", e);
             }
          }
       }
@@ -559,7 +562,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          catch (BackupOperationException e)
          {
-            log.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
+            LOG.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
                e);
          }
       }
@@ -588,7 +591,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          catch (BackupOperationException e)
          {
-            log.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
+            LOG.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
                e);
          }
       }
@@ -851,7 +854,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             catch (Exception exc)
             {
-               log.error("Cannot write init configuration to RegistryService.", exc);
+               LOG.error("Cannot write init configuration to RegistryService.", exc);
             }
          }
          finally
@@ -998,10 +1001,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       fullBackupType = getAttributeSmart(element, FULL_BACKUP_TYPE);
       incrementalBackupType = getAttributeSmart(element, INCREMENTAL_BACKUP_TYPE);
 
-      log.info("Backup dir from RegistryService: " + backupDir);
-      log.info("Default incremental job period from RegistryService: " + defIncrPeriod);
-      log.info("Full backup type from RegistryService: " + fullBackupType);
-      log.info("Incremental backup type from RegistryService: " + incrementalBackupType);
+      LOG.info("Backup dir from RegistryService: " + backupDir);
+      LOG.info("Default incremental job period from RegistryService: " + defIncrPeriod);
+      LOG.info("Full backup type from RegistryService: " + fullBackupType);
+      LOG.info("Incremental backup type from RegistryService: " + incrementalBackupType);
 
       checkParams();
    }
@@ -1063,10 +1066,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          pps.getProperty(INCREMENTAL_BACKUP_TYPE) == null ? DEFAULT_VALUE_INCREMENTAL_BACKUP_TYPE : pps
             .getProperty(INCREMENTAL_BACKUP_TYPE);
 
-      log.info("Backup dir from configuration file: " + backupDir);
-      log.info("Full backup type from configuration file: " + fullBackupType);
-      log.info("(Experimental) Incremental backup type from configuration file: " + incrementalBackupType);
-      log.info("(Experimental) Default incremental job period from configuration file: " + defIncrPeriod);
+      LOG.info("Backup dir from configuration file: " + backupDir);
+      LOG.info("Full backup type from configuration file: " + fullBackupType);
+      LOG.info("(Experimental) Incremental backup type from configuration file: " + incrementalBackupType);
+      LOG.info("(Experimental) Default incremental job period from configuration file: " + defIncrPeriod);
 
       checkParams();
    }
@@ -1313,6 +1316,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       catch (RepositoryException e)
       {
          //OK. Repository with "repositoryEntry.getName" is not exists.
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       Map<String, BackupChainLog> workspacesMapping = new HashedMap();
@@ -1572,19 +1579,19 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
       catch (JsonException e)
       {
-         this.log.error("Can't get JSON object from wokrspace configuration", e);
+         this.LOG.error("Can't get JSON object from wokrspace configuration", e);
       }
       catch (RepositoryException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
       catch (RepositoryConfigurationException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
       catch (ClassNotFoundException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
 
       JobRepositoryRestore jobExistedRepositoryRestore =
@@ -1684,19 +1691,19 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
       catch (JsonException e)
       {
-         this.log.error("Can't get JSON object from wokrspace configuration", e);
+         this.LOG.error("Can't get JSON object from wokrspace configuration", e);
       }
       catch (RepositoryException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
       catch (RepositoryConfigurationException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
       catch (ClassNotFoundException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
 
       JobWorkspaceRestore jobRestore =

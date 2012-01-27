@@ -36,6 +36,8 @@ import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.EOFException;
 import java.io.Externalizable;
@@ -69,6 +71,8 @@ import javax.jcr.RepositoryException;
  */
 public class JCRRestore
 {
+
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.impl.backup.JCRRestore");
 
    private final DataManager dataManager;
 
@@ -181,7 +185,10 @@ public class JCRRestore
       }
       catch (EOFException ioe)
       {
-         // ok - reading all data from backup file;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + ioe.getMessage());
+         }
       }
    }
 

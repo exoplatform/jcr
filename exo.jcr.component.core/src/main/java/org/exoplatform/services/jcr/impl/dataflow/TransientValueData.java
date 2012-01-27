@@ -214,7 +214,7 @@ public class TransientValueData implements ValueData
                }
                else
                {
-                  throw new NullPointerException("Stream already consumed");
+                  throw new IllegalArgumentException("Stream already consumed");
                }
             }
          }
@@ -234,7 +234,7 @@ public class TransientValueData implements ValueData
             }
             else
             {
-               throw new NullPointerException("Null Stream data ");
+               throw new IllegalArgumentException("Null Stream data ");
             }
          }
       }

@@ -69,7 +69,7 @@ public class RepositorySuspendController extends AbstractRepositorySuspender imp
       }
       catch (RepositoryException e)
       {
-         log.error(e);
+         log.error("An exception occured: " + e.getMessage());
       }
       return getRepositoryStateTitle();
    }
@@ -89,7 +89,7 @@ public class RepositorySuspendController extends AbstractRepositorySuspender imp
       }
       catch (RepositoryException e)
       {
-         log.error(e);
+         log.error("An exception occured: " + e.getMessage());
       }
       return getRepositoryStateTitle();
    }

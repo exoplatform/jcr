@@ -110,7 +110,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionImpl");
 
    /**
     * Indicates if it must fail in case we use a closed session.
@@ -125,11 +125,11 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    {
       if (!ALLOW_CLOSED_SESSION_USAGE)
       {
-         log.info("The JCR will throw an exception anytime we will try to use a dead session.");
+         LOG.info("The JCR will throw an exception anytime we will try to use a dead session.");
       }
       if (FORCE_USE_GET_NODES_LAZILY)
       {
-         log.warn("EXPERIMENTAL! The JCR will use ExtendedNode.getNodesLazily() for each Node.getNodes() "
+         LOG.warn("EXPERIMENTAL! The JCR will use ExtendedNode.getNodesLazily() for each Node.getNodes() "
             + "invocation. This is an experimental feauture and should be used with care.");
       }
    }
@@ -947,6 +947,10 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
       catch (RepositoryException e)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return false;
    }

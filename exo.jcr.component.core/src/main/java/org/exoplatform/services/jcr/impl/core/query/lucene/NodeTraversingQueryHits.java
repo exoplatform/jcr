@@ -16,6 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.commons.collections.iterators.IteratorChain;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,16 +31,17 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.collections.iterators.IteratorChain;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-
 /**
  * <code>NodeTraversingQueryHits</code> implements query hits that traverse
  * a node hierarchy.
  */
-public class NodeTraversingQueryHits extends AbstractQueryHits {
+public class NodeTraversingQueryHits extends AbstractQueryHits
+{
 
-    /**
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.impl.core.query.lucene.NodeTraversingQueryHits");
+
+   /**
      * The nodes to traverse.
      */
     private final Iterator nodes;
@@ -144,32 +150,52 @@ public class NodeTraversingQueryHits extends AbstractQueryHits {
         /**
          * Initializes the iterator chain once.
          */
-        private void init() {
-            if (selfAndChildren == null) {
-                List allIterators = new ArrayList();
-                Iterator current = Collections.singletonList(currentNode).iterator();
-                allIterators.add(current);
-                if (maxDepth == 0) {
-                    // only current node
-                } else if (maxDepth == 1) {
-                    try {
-                        allIterators.add(currentNode.getNodes());
-                    } catch (RepositoryException e) {
-                        // currentNode is probably stale
-                    }
-                } else {
-                    // create new TraversingNodeIterator for each child
-                    try {
-                        NodeIterator children = currentNode.getNodes();
-                        while (children.hasNext()) {
-                            allIterators.add(new TraversingNodeIterator(children.nextNode(), maxDepth - 1));
-                        }
-                    } catch (RepositoryException e) {
-                        // currentNode is probably stale
-                    }
-                }
-                selfAndChildren = new IteratorChain(allIterators);
+      private void init()
+      {
+         if (selfAndChildren == null)
+         {
+            List allIterators = new ArrayList();
+            Iterator current = Collections.singletonList(currentNode).iterator();
+            allIterators.add(current);
+            if (maxDepth == 0)
+            {
+               // only current node
             }
-        }
+            else if (maxDepth == 1)
+            {
+               try
+               {
+                  allIterators.add(currentNode.getNodes());
+               }
+               catch (RepositoryException e)
+               {
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
+               }
+            }
+            else
+            {
+               // create new TraversingNodeIterator for each child
+               try
+               {
+                  NodeIterator children = currentNode.getNodes();
+                  while (children.hasNext())
+                  {
+                     allIterators.add(new TraversingNodeIterator(children.nextNode(), maxDepth - 1));
+                  }
+               }
+               catch (RepositoryException e)
+               {
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
+               }
+            }
+            selfAndChildren = new IteratorChain(allIterators);
+         }
+      }
     }
 }

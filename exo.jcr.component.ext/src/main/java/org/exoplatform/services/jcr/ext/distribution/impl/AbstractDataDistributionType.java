@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.ext.distribution.impl;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.ext.distribution.DataDistributionType;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,10 @@ import javax.jcr.RepositoryException;
  */
 public abstract class AbstractDataDistributionType implements DataDistributionType
 {
+
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.ext.distribution.impl.AbstractDataDistributionType");
+
    /**
     * The default node type to use when we create a new node
     */
@@ -95,7 +101,11 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
       }
       catch (PathNotFoundException e)
       {
-         // ignore me
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
+
       }
       // The node could not be found so we need to create it
       Node node = rootNode;
@@ -110,7 +120,11 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
          }
          catch (PathNotFoundException e)
          {
-            // ignore me
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+
          }
          // The node doesn't exist we need to create it
          node = createNode(node, nodeName, nodeType, mixinTypes, permissions, i == length - 1, true);
@@ -134,7 +148,11 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
       }
       catch (PathNotFoundException e)
       {
-         // ignore me
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
+
       }
       finally 
       {
@@ -186,7 +204,11 @@ public abstract class AbstractDataDistributionType implements DataDistributionTy
          }
          catch (PathNotFoundException e)
          {
-            // ignore me
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+
          }
          
          boolean useParameters = !useParametersOnLeafOnly() || (useParametersOnLeafOnly() && isLeaf);

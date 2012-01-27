@@ -42,7 +42,7 @@ public class FileCleaner extends WorkerThread
 
    protected static final long DEFAULT_TIMEOUT = 30000;
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.FileCleaner");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.FileCleaner");
 
    protected final ConcurrentLinkedQueue<File> files = new ConcurrentLinkedQueue<File>();
 
@@ -112,9 +112,9 @@ public class FileCleaner extends WorkerThread
       };
       SecurityHelper.doPrivilegedAction(action);
 
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("FileCleaner instantiated name= " + getName() + " timeout= " + timeout);
+         LOG.debug("FileCleaner instantiated name= " + getName() + " timeout= " + timeout);
       }
    }
 
@@ -138,6 +138,10 @@ public class FileCleaner extends WorkerThread
       }
       catch (Exception e)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       // Remove the hook for final cleaning up
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
@@ -150,15 +154,16 @@ public class FileCleaner extends WorkerThread
             }
             catch (IllegalStateException e)
             {
-               // can't register shutdown hook because
-               // jvm shutdown sequence has already begun,
-               // silently ignore...
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
             return null;
          }
       });
       if (files != null && files.size() > 0)
-         log.warn("There are uncleared files: " + files.size());
+         LOG.warn("There are uncleared files: " + files.size());
 
       super.halt();
    }
@@ -179,13 +184,13 @@ public class FileCleaner extends WorkerThread
             {
                notRemovedFiles.add(file);
 
-               if (log.isDebugEnabled())
-                  log.debug("Could not delete " + (file.isDirectory() ? "directory" : "file")
+               if (LOG.isDebugEnabled())
+                  LOG.debug("Could not delete " + (file.isDirectory() ? "directory" : "file")
                      + ". Will try next time: " + PrivilegedFileHelper.getAbsolutePath(file));
             }
-            else if (log.isDebugEnabled())
+            else if (LOG.isDebugEnabled())
             {
-               log.debug((file.isDirectory() ? "Directory" : "File") + " deleted : "
+               LOG.debug((file.isDirectory() ? "Directory" : "File") + " deleted : "
                   + PrivilegedFileHelper.getAbsolutePath(file));
             }
          }
@@ -207,9 +212,10 @@ public class FileCleaner extends WorkerThread
       }
       catch (IllegalStateException e)
       {
-         // can't register shutdown hook because
-         // jvm shutdown sequence has already begun,
-         // silently ignore...
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
    }
 }

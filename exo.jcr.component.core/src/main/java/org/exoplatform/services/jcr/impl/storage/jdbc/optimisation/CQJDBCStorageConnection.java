@@ -238,7 +238,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -305,7 +305,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -378,7 +378,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -446,7 +446,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -540,7 +540,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -743,7 +743,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -844,7 +844,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -943,7 +943,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -1188,7 +1188,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                }
                catch (SQLException e)
                {
-                  LOG.error("Can't close the ResultSet: " + e);
+                  LOG.error("Can't close the ResultSet: " + e.getMessage());
                }
             }
          }
@@ -1280,7 +1280,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       }
       catch (SQLException e)
       {
-         LOG.error("Can't close the Statement: " + e);
+         LOG.error("Can't close the Statement: " + e.getMessage());
       }
    }
 

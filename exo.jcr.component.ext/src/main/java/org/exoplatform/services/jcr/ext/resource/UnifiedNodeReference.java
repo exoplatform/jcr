@@ -18,9 +18,11 @@
  */
 package org.exoplatform.services.jcr.ext.resource;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.ClassLoading;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.datamodel.Identifier;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -38,6 +40,8 @@ import java.util.StringTokenizer;
 
 public class UnifiedNodeReference
 {
+
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference");
 
    public static final String JCR_SCHEME = "jcr";
 
@@ -277,6 +281,10 @@ public class UnifiedNodeReference
          {
             // exceptions can get thrown here if class not be loaded y system ClassLoader
             // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
       }
       return handler;

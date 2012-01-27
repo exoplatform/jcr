@@ -198,6 +198,10 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
                }
                catch (IOException e)
                {
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
                }
             }
          }

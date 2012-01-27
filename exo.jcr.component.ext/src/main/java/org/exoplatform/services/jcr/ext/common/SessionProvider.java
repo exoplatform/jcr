@@ -170,7 +170,7 @@ public class SessionProvider implements SessionLifecycleListener
 
       if (workspaceName == null)
       {
-         throw new NullPointerException("Workspace Name is null");
+         throw new IllegalArgumentException("Workspace Name is null");
       }
 
       ExtendedSession session = cache.get(key(repository, workspaceName));

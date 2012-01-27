@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.core.nodetype;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import javax.jcr.version.OnParentVersionAction;
 
 /**
@@ -27,6 +30,9 @@ import javax.jcr.version.OnParentVersionAction;
  */
 public class OnParentVersionActionConversion
 {
+
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.core.nodetype.OnParentVersionActionConversion");
 
    public static String serializeType(int propertyType)
    {
@@ -39,10 +45,18 @@ public class OnParentVersionActionConversion
       catch (IllegalArgumentException e)
       {
          // r = PropertyType.TYPENAME_UNDEFINED;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       catch (Exception e)
       {
          // r = PropertyType.TYPENAME_UNDEFINED;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return r;
    }
@@ -58,10 +72,18 @@ public class OnParentVersionActionConversion
       catch (IllegalArgumentException e)
       {
          // r = PropertyType.TYPENAME_UNDEFINED;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       catch (Exception e)
       {
          // r = PropertyType.TYPENAME_UNDEFINED;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return r;
    }

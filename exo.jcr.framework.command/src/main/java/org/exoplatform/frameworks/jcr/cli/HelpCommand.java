@@ -18,6 +18,9 @@
  */
 package org.exoplatform.frameworks.jcr.cli;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
@@ -31,6 +34,8 @@ import java.util.TreeMap;
 
 public class HelpCommand extends AbstractCliCommand
 {
+
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.frameworks.jcr.cli.HelpCommand");
 
    private TreeMap<String, String> map = new TreeMap<String, String>();
 
@@ -79,7 +84,10 @@ public class HelpCommand extends AbstractCliCommand
          }
          catch (Exception e)
          {
-            // no parameters found
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
          if (findHelpCommand != null)
          {

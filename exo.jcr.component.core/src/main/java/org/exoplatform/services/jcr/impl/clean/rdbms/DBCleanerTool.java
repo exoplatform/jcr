@@ -192,7 +192,7 @@ public class DBCleanerTool
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the Statement." + e);
+            LOG.error("Can't close the Statement." + e.getMessage());
          }
 
          // restore previous auto commit mode

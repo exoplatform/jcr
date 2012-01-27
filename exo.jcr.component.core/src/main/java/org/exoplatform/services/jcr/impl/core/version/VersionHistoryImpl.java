@@ -44,6 +44,8 @@ import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,6 +76,9 @@ import javax.jcr.version.VersionIterator;
 
 public class VersionHistoryImpl extends VersionStorageDescendantNode implements VersionHistory
 {
+
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.impl.core.version.VersionHistoryImpl");
 
    // new impl
    public VersionHistoryImpl(NodeData data, SessionImpl session) throws PathNotFoundException, RepositoryException
@@ -744,6 +749,10 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
          }
          catch (NumberFormatException e)
          {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
       }
       return vn > 0 ? String.valueOf(vn + 1) : "1";

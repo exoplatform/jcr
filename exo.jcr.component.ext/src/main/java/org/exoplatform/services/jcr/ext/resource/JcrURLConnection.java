@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.ext.resource;
 
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +36,8 @@ import javax.jcr.Session;
  */
 public class JcrURLConnection extends URLConnection
 {
+
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.ext.resource.JcrURLConnection");
 
    private SessionProvider sessionProvider;
 
@@ -183,13 +187,18 @@ public class JcrURLConnection extends URLConnection
       try
       {
          if (!connected)
+         {
             connect();
+         }
 
          return nodeRepresentation.getMediaType();
       }
       catch (Exception e)
       {
-         //e.printStackTrace();
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return null;
    }
@@ -204,13 +213,18 @@ public class JcrURLConnection extends URLConnection
       try
       {
          if (!connected)
+         {
             connect();
+         }
 
          return (int)nodeRepresentation.getContentLenght();
       }
       catch (Exception e)
       {
-         //e.printStackTrace();
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return -1;
    }
@@ -237,13 +251,18 @@ public class JcrURLConnection extends URLConnection
       try
       {
          if (!connected)
+         {
             connect();
+         }
 
          return nodeRepresentation.getContentEncoding();
       }
       catch (Exception e)
       {
-         //e.printStackTrace();
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return null;
    }
@@ -258,13 +277,18 @@ public class JcrURLConnection extends URLConnection
       try
       {
          if (!connected)
+         {
             connect();
+         }
 
          return nodeRepresentation.getLastModified();
       }
       catch (Exception e)
       {
-         //e.printStackTrace();
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return 0;
    }
@@ -335,9 +359,12 @@ public class JcrURLConnection extends URLConnection
             sessionProvider.close();
          }
       }
-      catch (Throwable t)
+      catch (Exception t)
       {
-         ;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + t.getMessage());
+         }
       }
       finally
       {

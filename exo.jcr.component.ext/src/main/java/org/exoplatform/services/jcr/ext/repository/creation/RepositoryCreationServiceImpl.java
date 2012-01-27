@@ -500,7 +500,10 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       }
       catch (RepositoryException e)
       {
-         //ok - repository does not exists
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       // check does this repository name already reserved, otherwise generate and return token
@@ -717,7 +720,10 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             }
             catch (NameNotFoundException e)
             {
-               // skip this exception
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
             catch (NamingException e)
             {

@@ -389,11 +389,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                      }
                      catch (IllegalStateException e)
                      {
-                        // Do not nothing.
+                        if (LOG.isTraceEnabled())
+                        {
+                           LOG.trace("An exception occurred: " + e.getMessage());
+                        }
                      }
                      catch (IOException e)
                      {
-                        // Do not nothing.
+                        if (LOG.isTraceEnabled())
+                        {
+                           LOG.trace("An exception occurred: " + e.getMessage());
+                        }
                      }
                   }
                }
@@ -1602,11 +1608,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
             catch (IllegalStateException e)
             {
-               // Do nothing. Never happens.
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
             catch (IOException e)
             {
-               // Do nothing. Never happens.
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
 
             cache.addToList(makeRefFqn(nodeIdentifier), ITEM_LIST, prop.getIdentifier(),
@@ -1809,7 +1821,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
             catch (IllegalPathException e)
             {
-               // Do nothing. Never happens.
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
 
             // make new path - no matter  node or property

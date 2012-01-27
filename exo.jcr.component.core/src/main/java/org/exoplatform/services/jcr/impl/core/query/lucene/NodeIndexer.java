@@ -63,7 +63,7 @@ public class NodeIndexer
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.NodeIndexer");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.NodeIndexer");
 
    /**
     * The default boost for a lucene field: 1.0f.
@@ -215,6 +215,10 @@ public class NodeIndexer
       {
          // will never happen, because this.mappings will dynamically add
          // unknown uri<->prefix mappings
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       if (indexFormatVersion.getVersion() >= IndexFormatVersion.V4.getVersion())
@@ -273,6 +277,10 @@ public class NodeIndexer
       catch (NamespaceException e)
       {
          // will never happen, prefixes are created dynamically
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
    }
 
@@ -323,7 +331,7 @@ public class NodeIndexer
 
                   if (data == null)
                   {
-                     log.warn("null value found at property " + prop.getQPath().getAsString());
+                     LOG.warn("null value found at property " + prop.getQPath().getAsString());
                   }
 
                   // check the jcr:encoding property
@@ -392,6 +400,10 @@ public class NodeIndexer
                            }
                            catch (Throwable e)
                            {
+                              if (LOG.isTraceEnabled())
+                              {
+                                 LOG.trace("An exception occurred: " + e.getMessage());
+                              }
                            }
                         }
                      }
@@ -406,30 +418,30 @@ public class NodeIndexer
                }
                catch (DocumentReadException e)
                {
-                  log.error("Can not indexing the document by path " + propData.getQPath().getAsString()
+                  LOG.error("Can not indexing the document by path " + propData.getQPath().getAsString()
                      + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                }
                catch (HandlerNotFoundException e)
                {
                   // no handler - no index
-                  if (log.isDebugEnabled())
+                  if (LOG.isDebugEnabled())
                   {
-                     log.debug("Can not indexing the document by path " + propData.getQPath().getAsString()
+                     LOG.debug("Can not indexing the document by path " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                }
                catch (IOException e)
                {
                   // no data - no index
-                  if (log.isWarnEnabled())
+                  if (LOG.isWarnEnabled())
                   {
-                     log.warn("Binary value indexer IO error, document by path " + propData.getQPath().getAsString()
+                     LOG.warn("Binary value indexer IO error, document by path " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                }
                catch (Exception e)
                {
-                  log.error("Binary value indexer error, document by path " + propData.getQPath().getAsString()
+                  LOG.error("Binary value indexer error, document by path " + propData.getQPath().getAsString()
                      + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                }
             }
@@ -450,7 +462,7 @@ public class NodeIndexer
 
             if (data == null)
             {
-               log.warn("null value found at property " + prop.getQPath().getAsString());
+               LOG.warn("null value found at property " + prop.getQPath().getAsString());
             }
 
             ExtendedValue val = null;
@@ -542,7 +554,7 @@ public class NodeIndexer
          }
          catch (RepositoryException e)
          {
-            log.error("Index of property value error. " + prop.getQPath().getAsString() + ".", e);
+            LOG.error("Index of property value error. " + prop.getQPath().getAsString() + ".", e);
             throw new RepositoryException("Index of property value error. " + prop.getQPath().getAsString() + ". " + e,
                e);
          }
@@ -566,6 +578,10 @@ public class NodeIndexer
       catch (NamespaceException e)
       {
          // will never happen
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       doc.add(new Field(FieldNames.PROPERTIES_SET, fieldName, Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
    }
@@ -630,7 +646,7 @@ public class NodeIndexer
       }
       catch (IllegalArgumentException e)
       {
-         log.warn("'{}' is outside of supported date value range.", new Date(value.getTimeInMillis()));
+         LOG.warn("'{}' is outside of supported date value range.", new Date(value.getTimeInMillis()));
       }
    }
 

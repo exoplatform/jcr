@@ -319,7 +319,7 @@ public class RepositoryContainer extends ExoContainer
                catch (ClassNotFoundException e)
                {
                   log.warn("Workspace cache class not found " + wsConfig.getCache().getType()
-                     + ", will use default. Error : " + e);
+                     + ", will use default. Error : " + e.getMessage());
                   workspaceContainer.registerComponentImplementation(LinkedWorkspaceStorageCacheImpl.class);
                }
 

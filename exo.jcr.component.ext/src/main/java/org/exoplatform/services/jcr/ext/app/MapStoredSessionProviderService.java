@@ -53,9 +53,13 @@ public class MapStoredSessionProviderService implements SessionProviderService
    public SessionProvider getSessionProvider(Object key)
    {
       if (providers.containsKey(key))
+      {
          return providers.get(key);
+      }
       else
-         throw new NullPointerException("SessionProvider is not initialized");
+      {
+         throw new IllegalArgumentException("SessionProvider is not initialized");
+      }
    }
 
    /*

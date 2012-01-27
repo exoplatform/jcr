@@ -53,7 +53,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
    /**
     * Logger instance for this class.
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.LuceneSpellChecker");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LuceneSpellChecker");
    
    public static final class FiveSecondsRefreshInterval extends LuceneSpellChecker
    {
@@ -333,7 +333,10 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          }
          catch (IOException e)
          {
-            // ignore
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
          // urgh, the lucene spell checker cannot be closed explicitly.
          // finalize will close the reader...
@@ -438,7 +441,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   }
                   if (hasSuggestion)
                   {
-                     log.debug("Successful after " + new Integer(retries) + " retries");
+                     LOG.debug("Successful after " + new Integer(retries) + " retries");
                      return suggestion;
                   }
                   else
@@ -452,6 +455,10 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   // spell checker is closed while searching for
                   // suggestions. this is actually a design flaw in the
                   // lucene spell checker, but for now we simply retry
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
                }
             }
             // unsuccessful after retries
@@ -505,11 +512,11 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                                  {
                                     long time = System.currentTimeMillis();
                                     Dictionary dict = new LuceneDictionary(reader, FieldNames.FULLTEXT);
-                                    log.debug("Starting spell checker index refresh");
+                                    LOG.debug("Starting spell checker index refresh");
                                     spellChecker.indexDictionary(dict);
                                     time = System.currentTimeMillis() - time;
                                     time = time / 1000;
-                                    log.info("Spell checker index refreshed in: " + new Long(time) + " s.");
+                                    LOG.info("Spell checker index refreshed in: " + new Long(time) + " s.");
                                  }
                                  finally
                                  {
@@ -525,7 +532,10 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                         }
                         catch (IOException e)
                         {
-                           // ignore
+                           if (LOG.isTraceEnabled())
+                           {
+                              LOG.trace("An exception occurred: " + e.getMessage());
+                           }
                         }
                      }
                   };

@@ -28,6 +28,8 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -293,7 +295,15 @@ public abstract class DBCleaningScripts
       {
          script = IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(scriptPath));
       }
-      catch (Throwable e)
+      catch (FileNotFoundException e)
+      {
+         throw new DBCleanException(e);
+      }
+      catch (IllegalArgumentException e)
+      {
+         throw new DBCleanException(e);
+      }
+      catch (IOException e)
       {
          throw new DBCleanException(e);
       }

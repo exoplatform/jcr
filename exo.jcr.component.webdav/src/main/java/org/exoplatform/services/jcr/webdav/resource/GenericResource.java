@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.webdav.resource;
 
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.net.URI;
 import java.util.HashSet;
@@ -40,6 +42,8 @@ import javax.xml.namespace.QName;
 
 public abstract class GenericResource implements Resource
 {
+
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.webdav.resource.GenericResource");
 
    /**
     * Resource identifier.
@@ -113,6 +117,10 @@ public abstract class GenericResource implements Resource
          }
          catch (Exception exc)
          {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + exc.getMessage());
+            }
          }
       }
 

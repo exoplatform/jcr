@@ -112,7 +112,7 @@ public class GroovyScript2RestLoader implements Startable
    }
 
    /** Logger. */
-   static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoader");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoader");
 
    /** Default node types for Groovy scripts. */
    private static final String DEFAULT_NODETYPE = "exo:groovyResourceContainer";
@@ -335,12 +335,15 @@ public class GroovyScript2RestLoader implements Startable
                            }
                            catch (IndexOfflineRepositoryException e)
                            {
-                              //it's okay. Retrying;
+                              if (LOG.isTraceEnabled())
+                              {
+                                 LOG.trace("An exception occurred: " + e.getMessage());
+                              }
                            }
                            catch (Exception e)
                            {
                               // skip
-                              LOG.error(e);
+                              LOG.error("An exception occurred: " + e.getMessage());
                            }
                         }
                         try

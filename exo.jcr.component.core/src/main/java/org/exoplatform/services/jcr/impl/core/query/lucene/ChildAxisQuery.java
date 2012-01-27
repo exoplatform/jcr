@@ -60,7 +60,7 @@ class ChildAxisQuery extends Query implements JcrQuery
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.ChildAxisQuery");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.ChildAxisQuery");
 
    /**
     * Threshold when children calculation is switched to
@@ -743,7 +743,7 @@ class ChildAxisQuery extends Query implements JcrQuery
                   long time = System.currentTimeMillis();
                   NodeData state = (NodeData)itemMgr.getItemData(uuid);
                   time = System.currentTimeMillis() - time;
-                  log.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));
+                  LOG.debug("got NodeState with id {} in {} ms.", uuid, new Long(time));
                   Iterator<NodeData> entries;
                   if (nameTest != null)
                   {
@@ -786,7 +786,10 @@ class ChildAxisQuery extends Query implements JcrQuery
             }
             catch (RepositoryException e)
             {
-               // does not exist anymore -> ignore
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
          return childrenHits;
@@ -833,7 +836,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       public Hits getHits() throws IOException
       {
          long time = 0;
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
             time = System.currentTimeMillis();
          }
@@ -862,10 +865,10 @@ class ChildAxisQuery extends Query implements JcrQuery
                }
             }
          }
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
             time = System.currentTimeMillis() - time;
-            log.debug("Filtered hits in {} ms.", new Long(time));
+            LOG.debug("Filtered hits in {} ms.", new Long(time));
          }
          return childrenHits;
       }

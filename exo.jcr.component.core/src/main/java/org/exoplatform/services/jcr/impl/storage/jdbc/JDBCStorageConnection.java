@@ -327,7 +327,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
       catch (SQLException e)
       {
-         LOG.error(e);
+         LOG.error("An exception occured: " + e.getMessage());
          return false;
       }
    }
@@ -563,7 +563,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
       catch (SQLException e)
       {
-         LOG.error("Can't close the statement: " + e);
+         LOG.error("Can't close the statement: " + e.getMessage());
       }
    }
 
@@ -927,7 +927,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -979,7 +979,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1018,7 +1018,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1055,7 +1055,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1143,7 +1143,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1215,7 +1215,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1289,7 +1289,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1386,7 +1386,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1449,7 +1449,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1514,7 +1514,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1590,7 +1590,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -1851,7 +1851,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -1899,7 +1899,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -1937,7 +1937,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -2093,7 +2093,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -2208,7 +2208,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -2257,7 +2257,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
 

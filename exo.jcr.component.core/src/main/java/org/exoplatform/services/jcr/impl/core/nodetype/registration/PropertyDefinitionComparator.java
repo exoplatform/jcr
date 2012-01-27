@@ -39,6 +39,7 @@ import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsMatcher;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -334,7 +335,11 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
                   strVal = "PropertyType.BINARY";
                }
             }
-            catch (Throwable e)
+            catch (IllegalStateException e)
+            {
+               LOG.error("Error of value read: " + e.getMessage(), e);
+            }
+            catch (IOException e)
             {
                LOG.error("Error of value read: " + e.getMessage(), e);
             }

@@ -130,7 +130,11 @@ public class DateValue extends BaseValue
       {
          return getInternalString().length();
       }
-      catch (Throwable e)
+      catch (ValueFormatException e)
+      {
+         return super.getLength();
+      }
+      catch (RepositoryException e)
       {
          return super.getLength();
       }

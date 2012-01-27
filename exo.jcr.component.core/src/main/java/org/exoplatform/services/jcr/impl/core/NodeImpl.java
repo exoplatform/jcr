@@ -3088,6 +3088,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
       catch (RepositoryException e)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return false;
    }
@@ -3313,7 +3317,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             }
             catch (RepositoryException e)
             {
-               LOG.error(e);
+               LOG.error("An exception occured: " + e.getMessage());
                throw new NoSuchElementException(e.toString());
             }
          }
@@ -3377,7 +3381,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
          catch (RepositoryException e)
          {
-            LOG.error(e);
+            LOG.error("An exception occured: " + e.getMessage());
             throw new NoSuchElementException(e.toString());
          }
 

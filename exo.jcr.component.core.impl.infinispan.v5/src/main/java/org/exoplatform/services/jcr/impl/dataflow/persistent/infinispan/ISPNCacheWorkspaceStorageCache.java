@@ -470,7 +470,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       }
       catch (RepositoryConfigurationException e)
       {
-         // do n't nothing
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       this.cache = new BufferedISPNCache(parentCache, allowLocalChanges);
       cache.addListener(new CacheEventListener());
@@ -1194,11 +1197,17 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             }
             catch (IllegalStateException e)
             {
-               // Do nothing. Never happens.
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
             catch (IOException e)
             {
-               // Do nothing. Never happens.
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
             cache.addToList(new CacheRefsId(nodeIdentifier), prop.getIdentifier(),
                modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
@@ -1334,7 +1343,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                   }
                   catch (IllegalPathException e)
                   {
-                     // Do nothing. Never happens.
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace("An exception occurred: " + e.getMessage());
+                     }
                   }
 
                   // make new path - no matter  node or property
