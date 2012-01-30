@@ -77,7 +77,7 @@
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.component.core</artifactId>
-         <classifier>tests</classifier>
+         <classifier>test-sources</classifier>
          <scope>test</scope>
          <version>${project.version}</version>
          <exclusions>
