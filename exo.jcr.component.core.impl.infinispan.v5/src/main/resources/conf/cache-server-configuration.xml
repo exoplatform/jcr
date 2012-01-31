@@ -28,6 +28,18 @@
 				<name>infinispan-configuration</name>
 				<value>jar:/conf/distributed-cache-configuration.xml</value>
 			</value-param>
+			<properties-param>
+				<name>parameters</name>
+				<description>The parameters of the configuration</description>
+				<property name="configurationFile" value="udp-mux.xml"></property>
+				<property name="invalidationThreshold" value="0"></property>
+			</properties-param>
+			<properties-param profiles="tcp">
+				<name>parameters</name>
+				<description>The parameters of the configuration</description>
+				<property name="configurationFile" value="tcp-mux.xml"></property>
+				<property name="invalidationThreshold" value="-1"></property>
+			</properties-param>
 		</init-params>
 	</component>
 	<component>

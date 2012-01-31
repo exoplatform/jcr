@@ -25,21 +25,21 @@
       <globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/>
       <transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="JCR-cluster" distributedSyncTimeout="20000">
       	<properties>
-         <property name="configurationFile" value="tcp-mux.xml"/>
+         <property name="configurationFile" value="${configurationFile}"/>
       	</properties>
       </transport>
       <shutdown hookBehavior="DEFAULT"/>
    </global>
    <namedCache name="JCRCache">
-      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" />
+      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="120000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" />
       <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" eagerLockSingleNode="true" transactionMode="TRANSACTIONAL"/>
       <jmxStatistics enabled="true"/>
       <clustering mode="distribution">
-      	 <l1 enabled="true" invalidationThreshold="-1"/>
+      	 <l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/>
          <hash numOwners="2" rehashRpcTimeout="120000">
          	<groups enabled="true"/>
          </hash>
-         <sync/>
+         <sync replTimeout="180000"/>
       </clustering>
    </namedCache>
 </infinispan>

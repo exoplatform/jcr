@@ -35,13 +35,10 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.Parser;
-import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.distribution.ch.DefaultConsistentHash;
 import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
-import org.infinispan.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -239,15 +236,6 @@ public class ISPNCacheFactory<K, V>
          };
          confBuilder.transaction().transactionManagerLookup(tml);         
       }
-      //TODO remove it once ISPN-1687 will be fixed
-      confBuilder.storeAsBinary().enabled(false);
-      //TODO remove it once ISPN-1689 will be fixed
-      confBuilder
-         .clustering()
-         .hash()
-         .consistentHash(
-            Util.<ConsistentHash> getInstance(DefaultConsistentHash.class.getName(), Thread.currentThread()
-               .getContextClassLoader()));
       Configuration conf = holder.getDefaultConfigurationBuilder().build();
       // Define the configuration of the cache
       manager.defineConfiguration(regionId, conf);

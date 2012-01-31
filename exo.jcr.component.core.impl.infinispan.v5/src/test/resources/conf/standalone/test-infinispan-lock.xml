@@ -41,7 +41,7 @@
       <eviction strategy="NONE"/>
 
       <loaders passivation="false" shared="true" preload="true">
-        <loader class="org.infinispan.loaders.jdbc.stringbased.JdbcStringBasedCacheStore" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
+        <loader class="org.infinispan.loaders.jdbc.stringbased.JdbcStringBasedCacheStore" fetchPersistentState="true" ignoreModifications="false" purgeOnStartup="false">
           <properties>
              <property name="stringsTableNamePrefix" value="${infinispan-cl-cache.jdbc.table.name}"/>
              <property name="idColumnName" value="${infinispan-cl-cache.jdbc.id.column}"/>

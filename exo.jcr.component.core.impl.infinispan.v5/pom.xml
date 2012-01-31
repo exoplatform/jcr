@@ -43,9 +43,9 @@
    </properties>
    <dependencies>
       <dependency>
-        <groupId>org.exoplatform.ws</groupId>
-        <artifactId>exo.ws.commons</artifactId>
-        <scope>test</scope>
+         <groupId>org.exoplatform.ws</groupId>
+         <artifactId>exo.ws.commons</artifactId>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
@@ -55,7 +55,7 @@
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.commons.test</artifactId>
-      </dependency>     
+      </dependency>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.component.ext.rpc.impl.jgroups.v3</artifactId>
@@ -72,8 +72,8 @@
                <groupId>org.jgroups</groupId>
                <artifactId>jgroups</artifactId>
             </exclusion>
-         </exclusions>         
-      </dependency>      
+         </exclusions>
+      </dependency>
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.component.core</artifactId>
@@ -85,7 +85,7 @@
                <groupId>org.jgroups</groupId>
                <artifactId>jgroups</artifactId>
             </exclusion>
-         </exclusions>         
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.apache.jackrabbit</groupId>
@@ -114,20 +114,20 @@
                <artifactId>jgroups</artifactId>
             </exclusion>
          </exclusions>
-      </dependency>         
+      </dependency>
       <!-- TCK binaries and deps for repo stub, some eXo API test -->
       <dependency>
-        <groupId>org.infinispan</groupId>
-        <artifactId>infinispan-core</artifactId>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-core</artifactId>
       </dependency>
       <dependency>
-        <groupId>org.infinispan</groupId>
-        <artifactId>infinispan-cachestore-jdbc</artifactId>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-cachestore-jdbc</artifactId>
       </dependency>
       <dependency>
-        <groupId>javax.resource</groupId>
-        <artifactId>connector-api</artifactId>
-        <scope>test</scope>
+         <groupId>javax.resource</groupId>
+         <artifactId>connector-api</artifactId>
+         <scope>test</scope>
       </dependency>
       <!-- ===== Databases JDBC support for tests ===== -->
       <dependency>
@@ -135,8 +135,8 @@
          <artifactId>hsqldb</artifactId>
          <scope>test</scope>
       </dependency>
-   </dependencies>      
-  <!-- ======================================================================= -->
+   </dependencies>
+   <!-- ======================================================================= -->
    <build>
       <resources>
          <resource>
@@ -186,7 +186,7 @@
                   <property>
                      <name>cache-enabled</name>
                      <value>${cache.enabled}</value>
-                  </property>                  
+                  </property>
                   <property>
                      <name>value-storage-enabled</name>
                      <value>${value.storage.enabled}</value>
@@ -196,20 +196,19 @@
                      <value>${use.distributed.cache}</value>
                   </property>
                   <property>
-                      <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
-                      <value>${statistics.enabled}</value>
+                     <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                     <value>${statistics.enabled}</value>
                   </property>
                   <property>
-                      <name>exo.properties.url</name>
-                      <value>${properties.url.prefix}${properties.url.suffix}</value>
+                     <name>exo.properties.url</name>
+                     <value>${properties.url.prefix}${properties.url.suffix}</value>
                   </property>
-                  <!-- We add this system property due to some incompatibility between IPv6 and 
-						some JVM of Linux distributions such as Ubuntu and Fedora-->
+                  <!-- We add this system property due to some incompatibility between IPv6 and some JVM of Linux distributions such as Ubuntu and Fedora -->
                   <property>
                      <name>java.net.preferIPv4Stack</name>
                      <value>true</value>
                   </property>
-                  <!-- Avoid the firewall -->           
+                  <!-- Avoid the firewall -->
                   <property>
                      <name>jgroups.bind_addr</name>
                      <value>127.0.0.1</value>
@@ -232,8 +231,8 @@
                </excludes>
             </configuration>
          </plugin>
-          <plugin>
-             <groupId>org.apache.maven.plugins</groupId>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
                <execution>
@@ -257,14 +256,14 @@
                            <classifier>sources</classifier>
                            <type>jar</type>
                            <overWrite>false</overWrite>
-                        </artifactItem>                        
+                        </artifactItem>
                      </artifactItems>
                      <outputDirectory>${project.build.directory}/jcr-core-tests</outputDirectory>
                   </configuration>
                </execution>
             </executions>
-          </plugin>                 
-          <plugin>
+         </plugin>
+         <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
                <execution>
@@ -286,7 +285,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>                     
+                     </tasks>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -340,13 +339,50 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>jar-with-dependencies</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>single</goal>
+                  </goals>
+                  <configuration>
+                     <primaryArtifact>false</primaryArtifact>
+                     <finalName>${project.artifactId}</finalName>
+                     <descriptors>
+                        <descriptor>${basedir}/src/main/assemblies/binary-assembly.xml</descriptor>
+                     </descriptors>
+                     <archive>
+                        <manifest>
+                           <mainClass>org.exoplatform.services.jcr.infinispan.CacheServer</mainClass>
+                        </manifest>
+                     </archive>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>bundle</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>single</goal>
+                  </goals>
+                  <configuration>
+                     <appendAssemblyId>false</appendAssemblyId>
+                     <descriptors>
+                        <descriptor>${basedir}/src/main/assemblies/zip-bundle-assembly.xml</descriptor>
+                     </descriptors>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
    <profiles>
-    <!-- *** -->
-    <!-- TCK -->
-    <!-- *** -->
-    <!-- Use "mvn -Prun-tck" to launch only them -->
+      <!-- *** -->
+      <!-- TCK -->
+      <!-- *** -->
+      <!-- Use "mvn -Prun-tck" to launch only them -->
       <profile>
          <id>run-tck</id>
          <build>
@@ -365,11 +401,11 @@
                         <property>
                            <name>emma.coverage.out.file</name>
                            <value>target/emma/coverage.ec</value>
-                        </property>                
+                        </property>
                         <property>
                            <name>cache-enabled</name>
                            <value>${cache.enabled}</value>
-                        </property>                  
+                        </property>
                         <property>
                            <name>value-storage-enabled</name>
                            <value>${value.storage.enabled}</value>
@@ -378,7 +414,7 @@
                            <name>use-distributed-cache</name>
                            <value>${use.distributed.cache}</value>
                         </property>
-                         <property>
+                        <property>
                            <name>known.issues</name>
                            <value>org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
                               org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder2
@@ -400,7 +436,7 @@
                            <name>java.net.preferIPv4Stack</name>
                            <value>true</value>
                         </property>
-                        <!-- Avoid the firewall -->                    
+                        <!-- Avoid the firewall -->
                         <property>
                            <name>jgroups.bind_addr</name>
                            <value>127.0.0.1</value>
@@ -425,10 +461,10 @@
             </plugins>
          </build>
       </profile>
-    <!-- *** -->
-    <!-- ALL -->
-    <!-- *** -->
-    <!-- Use "mvn -Prun-all" to launch default tests and TCK -->
+      <!-- *** -->
+      <!-- ALL -->
+      <!-- *** -->
+      <!-- Use "mvn -Prun-all" to launch default tests and TCK -->
       <profile>
          <id>run-all</id>
          <build>
@@ -438,6 +474,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <!-- TAKE CARE TO UPDATE ALSO run-tck PROFILE -->
+<!--                      <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</argLine> -->
                      <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <systemProperties>
                         <property>
@@ -447,15 +484,15 @@
                         <property>
                            <name>emma.coverage.out.file</name>
                            <value>target/emma/coverage.ec</value>
-                        </property>                        
+                        </property>
                         <property>
-                            <name>cache-enabled</name>
-                            <value>${cache.enabled}</value>
-                        </property>                  
+                           <name>cache-enabled</name>
+                           <value>${cache.enabled}</value>
+                        </property>
                         <property>
-                            <name>value-storage-enabled</name>
-                            <value>${value.storage.enabled}</value>
-                        </property>                  
+                           <name>value-storage-enabled</name>
+                           <value>${value.storage.enabled}</value>
+                        </property>
                         <property>
                            <name>use-distributed-cache</name>
                            <value>${use.distributed.cache}</value>
@@ -482,7 +519,7 @@
                            <name>java.net.preferIPv4Stack</name>
                            <value>true</value>
                         </property>
-                        <!-- Avoid the firewall -->                    
+                        <!-- Avoid the firewall -->
                         <property>
                            <name>jgroups.bind_addr</name>
                            <value>127.0.0.1</value>
@@ -580,7 +617,7 @@
                <scope>test</scope>
             </dependency>
          </dependencies>
-      </profile>            
+      </profile>
       <profile>
          <id>mysql-5.0</id>
          <properties>
@@ -654,7 +691,7 @@
                <artifactId>db2jcc_license_cu</artifactId>
                <version>9.7</version>
                <scope>test</scope>
-            </dependency>            
+            </dependency>
          </dependencies>
       </profile>
       <profile>
@@ -732,12 +769,12 @@
             <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc.xml</jcr.test.configuration.file>
             <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
          </properties>
-      </profile>      
+      </profile>
       <profile>
          <id>cluster</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration.xml</jcr.test.configuration.file>
          </properties>
-      </profile>      
+      </profile>
    </profiles>
 </project>

@@ -1347,8 +1347,8 @@ public interface ExoCacheCreator {
       be very generic.</para>
 
       <note>
-        <para>All the cache instances that will rely on this cache
-        configuration will share the same
+        <para>All the cache instances fo which we configure the same cluster
+        name will also share the same
         <envar>EmbeddedCacheManager.</envar></para>
       </note>
     </section>
@@ -1419,11 +1419,12 @@ public interface ExoCacheCreator {
    /**
     * Creates an eXo cache according to the given configuration {@link org.exoplatform.services.cache.ExoCacheConfig}
     * @param config the configuration of the cache to apply
-    * @param cacheConfig the configuration of the infinispan cache
+    * @param confBuilder the configuration builder of the infinispan cache
     * @param cacheGetter a {@link Callable} instance from which we can get the cache
     * @exception ExoCacheInitException if an exception happens while initializing the cache
     */
-   public ExoCache&lt;Serializable, Object&gt; create(ExoCacheConfig config, Configuration cacheConfig, Callable&lt;Cache&lt;Serializable, Object&gt;&gt; cacheGetter) throws ExoCacheInitException;
+   public ExoCache&lt;Serializable, Object&gt; create(ExoCacheConfig config, ConfigurationBuilder confBuilder, 
+            Callable&lt;Cache&lt;Serializable, Object&gt;&gt; cacheGetter) throws ExoCacheInitException;
 
    /**
     * Returns the type of {@link org.exoplatform.services.cache.ExoCacheConfig} expected by the creator  
@@ -1612,18 +1613,25 @@ public interface ExoCacheCreator {
       <title>Define an infinispan cache instance</title>
 
       <section>
-        <title>How to define a distributed or a local cache?</title>
+        <title>How to define a replicated, a distributed or a local
+        cache?</title>
 
         <para>Actually, if you use a custom configuration for your cache as
         described in a previous section, we will use the cache mode define in
         your configuration file.</para>
 
         <para>In case, you decide to use the default configuration template,
-        we use the field <emphasis>distributed</emphasis> of your
-        <envar>ExoCacheConfig</envar> to decide. In other words, if the value
-        of this field is false (the default value), the cache will be a local
-        cache otherwise it will be the cache mode defined in your default
-        configuration template that should be distributed.</para>
+        we use the fields <emphasis>distributed</emphasis> and
+        <emphasis>replicated</emphasis> of your <envar>ExoCacheConfig</envar>
+        to decide. In other words, if the value of these fields is false (the
+        default value), the cache will be a local cache otherwise if the field
+        <emphasis>distributed</emphasis> is set to true, the cache will be
+        then be considered as distrbuted and will be retrieved from the
+        <emphasis>DistributedCacheManager</emphasis> (more details about it in
+        the next chapter). Finally if the field
+        <emphasis>replicated</emphasis> is set to true, the cache mode of your
+        cache will be the one defined in the configuration assuming that it
+        should be replicated.</para>
       </section>
 
       <section>
@@ -1761,6 +1769,202 @@ public interface ExoCacheCreator {
             <emphasis>wakeUpInterval</emphasis> needed by infinispan, we will
             use the default values provided by the creator.</para>
           </note></para>
+      </section>
+    </section>
+
+    <section>
+      <title>Using Infinispan in distributed mode</title>
+
+      <para>In order to be able to use infinispan in distributed mode with the
+      ability to launch external JVM instances that will manage a part of the
+      cache, we need to configure the
+      <emphasis>DistributedCacheManager</emphasis>. In the next sections, we
+      will show how to configure the component and how to launch external JVM
+      instances.</para>
+
+      <section>
+        <title>Configuration of the DistributedCacheManager</title>
+
+        <para>The <emphasis>DistributedCacheManager</emphasis> is the
+        component that will manage all the cache instances that we expect to
+        be distributed, it must be unique in the whole JVM which means that it
+        must be declared at <emphasis>RootContainer</emphasis> level in portal
+        mode or at <emphasis>StandaloneContainer</emphasis> in standalone
+        mode. See below an example of configuration.</para>
+
+        <programlisting language="xml">&lt;component&gt;
+  &lt;type&gt;org.exoplatform.services.ispn.DistributedCacheManager&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;infinispan-configuration&lt;/name&gt;
+      &lt;value&gt;jar:/conf/portal/distributed-cache-configuration.xml&lt;/value&gt;
+    &lt;/value-param&gt;
+    &lt;properties-param&gt;
+      &lt;name&gt;parameters&lt;/name&gt;
+      &lt;description&gt;The parameters of the configuration&lt;/description&gt;
+      &lt;property name="infinispan-num-owners" value="1"&gt;&lt;/property&gt;
+    &lt;/properties-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+        <table>
+          <title>Fields description</title>
+
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>infinispan-configuration</entry>
+
+                <entry>Location of the infinispan configuration to use in
+                which all the distributed caches must be configured by name.
+                All paths supported by the ConfigurationManager with prefixes
+                like jar:/..., classpath:/..., etc. This parameter is
+                mandatory.</entry>
+              </row>
+
+              <row>
+                <entry>parameters</entry>
+
+                <entry>In the configuration file, you can add a set of
+                variables of type ${variable-name}, these variables will be
+                solved using the values of the parameters. The name of the
+                variable in the configuration file must match with the name of
+                the parameter. This parameter is optional.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>As described above, the configuration of infinispan must defined
+        explicitly each cache using the <emphasis>nameCache</emphasis> block
+        no dynamic configuration of cache is supported. Indeed to ensure that
+        the whole cluster is consistent in term of defined cache, it is
+        required to configure all the cache that you will need and register it
+        using its future name.</para>
+
+        <para>For now, we have 2 supported cache name which are
+        <emphasis>JCRCache</emphasis> and <emphasis>eXoCache</emphasis>.
+        <emphasis>JCRCache</emphasis> is the name of the cache that we use in
+        case we would like to store the data of the JCR into a distributed
+        cache. <emphasis>eXoCache</emphasis> is the name of the cache that we
+        use in case we would like to store the data of some eXo Cache
+        instances into a distributed cache.</para>
+
+        <para>See below an example of infinispan configuration with only
+        <emphasis>eXoCache</emphasis> defined:</para>
+
+        <programlisting>&lt;infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"
+  xmlns="urn:infinispan:config:5.1"&gt;
+   &lt;global&gt;
+      &lt;globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/&gt;
+      &lt;transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="Infinispan-cluster" distributedSyncTimeout="20000"&gt;
+         &lt;properties&gt;
+            &lt;property name="configurationFile" value="udp.xml"/&gt;
+         &lt;/properties&gt;
+      &lt;/transport&gt;
+      &lt;shutdown hookBehavior="DEFAULT"/&gt;
+   &lt;/global&gt;
+   &lt;namedCache name="eXoCache"&gt;
+      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" /&gt;
+      &lt;transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" eagerLockSingleNode="true" transactionMode="TRANSACTIONAL"/&gt;
+      &lt;jmxStatistics enabled="true"/&gt;
+      &lt;clustering mode="distribution"&gt;
+         &lt;hash numOwners="${infinispan-num-owners}" rehashRpcTimeout="120000" /&gt;
+         &lt;sync/&gt;
+      &lt;/clustering&gt;
+      &lt;invocationBatching enabled="true"/&gt; 
+   &lt;/namedCache&gt;
+&lt;/infinispan&gt;</programlisting>
+      </section>
+
+      <section>
+        <title>Launch a CacheServer</title>
+
+        <para>In case you intend to use the distribued mode, you can launch
+        external JVM in standalone mode to provide more memory to your current
+        cache. To do so, you will need to get the file of type
+        <emphasis>exo.jcr.component.core.impl.infinispan.v5-X.Y.Z-binary.zip</emphasis>
+        in which you will find scripts to launch your cache servers. These
+        scripts allow optional arguments that are described below:</para>
+
+        <para><emphasis>help|?|&lt;configuration-file-path&gt;|udp|tcp
+        &lt;initial-hosts&gt;</emphasis></para>
+
+        <table>
+          <title>Arguments description</title>
+
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>help</entry>
+
+                <entry>Print the expected syntax.</entry>
+              </row>
+
+              <row>
+                <entry>?</entry>
+
+                <entry>Print the expected syntax.</entry>
+              </row>
+
+              <row>
+                <entry>configuration-file-path</entry>
+
+                <entry>The location of the configuration file to use, we
+                expect an absolute path. It will try to get it using the
+                current class loader, if it cannot be found it will get it
+                from the file system. By default it will use the path
+                <emphasis>/conf/cache-server-configuration.xml</emphasis> that
+                is actually a file bundled into the jar.</entry>
+              </row>
+
+              <row>
+                <entry>udp</entry>
+
+                <entry>We use this parameter value when we want to use the
+                default configuration file with udp as transport stack which
+                is actually the default stack used which means that it will
+                have the exact same behavior as when we don't provide any
+                parameter.</entry>
+              </row>
+
+              <row>
+                <entry>tcp</entry>
+
+                <entry>We use this parameter value when we want to use the
+                default configuration file with tcp as transport
+                stack.</entry>
+              </row>
+
+              <row>
+                <entry>initial-hosts</entry>
+
+                <entry>This parameter is optional and is only allowed in case
+                the tcp stack is enabled, it will allow you to define the set
+                of hosts that will be part of the cluster. The syntax of this
+                parameter is a list of hostname[port] comma-separated. Knowing
+                that the default value is "localhost[7800],localhost[7801]" if
+                this parameter is not set, the bind address will be
+                automatically set to 127.0.0.1 so you need to ensure that your
+                server is configured to have it mapped to localhost.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+
+      <section>
+        <title>Configure the cache of your workspace</title>
+
+        <para>In case you would like to configure your workspace in order to
+        rely on a distributed cache apart using
+        <emphasis>org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache</emphasis>
+        as FQN of your cache you will need to set the property
+        <emphasis>use-distributed-cache</emphasis> to
+        <emphasis>true</emphasis>. If you do so the JCR cache will rely on the
+        cache called <emphasis>JCRCache</emphasis> defined in the infinispan
+        configuration provided to the
+        <emphasis>DistributedCacheManager</emphasis>.</para>
       </section>
     </section>
   </section>
