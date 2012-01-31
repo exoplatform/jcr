@@ -968,6 +968,14 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
       {
          return null;
       }
+
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getNodesCount()
+       */
+      public long getNodesCount() throws RepositoryException
+      {
+         throw new UnsupportedOperationException();
+      }
    };
    
    private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase

@@ -199,6 +199,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected PreparedStatement findNodesAndProperties;
 
+   protected PreparedStatement findNodesCount;
+
    /**
     * Read-only flag, if true the connection is marked as READ-ONLY.
     */
@@ -559,6 +561,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (findNodesAndProperties != null)
          {
             findNodesAndProperties.close();
+         }
+
+         if (findNodesCount != null)
+         {
+            findNodesCount.close();
          }
       }
       catch (SQLException e)
@@ -1349,6 +1356,33 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          throw new RepositoryException(e);
       }
+   }
+
+   /**
+    * Reads count of nodes in workspace.
+    * 
+    * @return
+    *          nodes count 
+    * @throws RepositoryException
+    *           if a database access error occurs
+    */
+   public long getNodesCount() throws RepositoryException
+   {
+      ResultSet countNodes;
+      try
+      {
+         countNodes = findNodesCount();
+         if (countNodes.next())
+         {
+            return countNodes.getLong(1);
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+
+      throw new RepositoryException("Can not calculate nodes count");
    }
 
    // ------------------ Private methods ---------------
@@ -2701,6 +2735,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       throws SQLException;
 
    protected abstract int updatePropertyByIdentifier(int version, int type, String identifier) throws SQLException;
+
+   protected abstract ResultSet findNodesCount() throws SQLException;
 
    // -------- values processing ------------
    protected abstract int addValueData(String cid, int orderNumber, InputStream stream, int streamLength,

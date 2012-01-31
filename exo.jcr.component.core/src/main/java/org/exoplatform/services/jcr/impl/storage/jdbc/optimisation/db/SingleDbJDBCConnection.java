@@ -234,6 +234,8 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             + " from JCR_SITEM I where I.I_CLASS=2 and I.CONTAINER_NAME=?"
             + " and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
             + " or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')";
+
+      FIND_NODES_COUNT = "select count(*) from JCR_SITEM I where I.I_CLASS=1 and I.CONTAINER_NAME=?";
    }
 
    /**
@@ -952,7 +954,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       findACLHolders.setString(1, containerName);
 
       return findACLHolders.executeQuery();
-   }   
+   }
 
    /**
     * {@inheritDoc}
@@ -1005,5 +1007,25 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             }
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesCount() throws SQLException
+   {
+      if (findNodesCount == null)
+      {
+         findNodesCount = dbConnection.prepareStatement(FIND_NODES_COUNT);
+      }
+      else
+      {
+         findNodesCount.clearParameters();
+      }
+
+      findNodesCount.setString(1, containerName);
+
+      return findNodesCount.executeQuery();
    }
 }

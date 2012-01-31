@@ -169,7 +169,6 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
    private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
    {
       
-
       private Mode mode;
       private CountDownLatch goSignal;
       
@@ -331,6 +330,14 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          UnsupportedOperationException
       {
          return null;
+      }
+
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getNodesCount()
+       */
+      public long getNodesCount() throws RepositoryException
+      {
+         throw new UnsupportedOperationException();
       }
 
    };

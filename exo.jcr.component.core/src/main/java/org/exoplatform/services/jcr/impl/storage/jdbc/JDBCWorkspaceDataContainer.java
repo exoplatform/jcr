@@ -1401,7 +1401,23 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    {
       return connFactory.isReindexingSupport();
    }
-   
+
+   /**
+    * {@inheritDoc}
+    */
+   public Long getNodesCount() throws RepositoryException
+   {
+      WorkspaceStorageConnection conn = connFactory.openConnection();
+      try
+      {
+         return conn.getNodesCount();
+      }
+      finally
+      {
+         conn.close();
+      }
+   }
+
    /**
     * Get the data source from the InitialContext and wraps it into a {@link ManagedDataSource}
     * in case it has been configured as managed
@@ -1439,4 +1455,5 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
       return DBConstants.DB_DIALECT_GENERIC; // by default
    }
+
 }

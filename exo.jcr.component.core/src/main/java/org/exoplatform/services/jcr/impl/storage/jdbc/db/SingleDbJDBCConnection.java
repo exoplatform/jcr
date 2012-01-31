@@ -164,6 +164,8 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       DELETE_ITEM = "delete from JCR_SITEM where ID=?";
       DELETE_VALUE = "delete from JCR_SVALUE where PROPERTY_ID=?";
       DELETE_REF = "delete from JCR_SREF where PROPERTY_ID=?";
+
+      FIND_NODES_COUNT = "select count(*) from JCR_SITEM I where I.I_CLASS=1 and I.CONTAINER_NAME=?";
    }
 
    /**
@@ -626,5 +628,25 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
             }
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesCount() throws SQLException
+   {
+      if (findNodesCount == null)
+      {
+         findNodesCount = dbConnection.prepareStatement(FIND_NODES_COUNT);
+      }
+      else
+      {
+         findNodesCount.clearParameters();
+      }
+
+      findNodesCount.setString(1, containerName);
+
+      return findNodesCount.executeQuery();
    }
 }

@@ -155,6 +155,8 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       DELETE_ITEM = "delete from JCR_MITEM where ID=?";
       DELETE_VALUE = "delete from JCR_MVALUE where PROPERTY_ID=?";
       DELETE_REF = "delete from JCR_MREF where PROPERTY_ID=?";
+
+      FIND_NODES_COUNT = "select count(*) from JCR_MITEM I where I.I_CLASS=1";
    }
 
    /**
@@ -600,5 +602,18 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
             }
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesCount() throws SQLException
+   {
+      if (findNodesCount != null)
+      {
+         findNodesCount = dbConnection.prepareStatement(FIND_NODES_COUNT);
+      }
+      return findNodesCount.executeQuery();
    }
 }

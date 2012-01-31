@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -254,6 +255,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private final IndexerIoModeHandler modeHandler;
 
    /**
+    * Nodes count
+    */
+   private AtomicLong nodesCount;
+
+   /**
     * The shutdown hook
     */
    private final Thread hook = new Thread()
@@ -380,6 +386,34 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    }
 
    /**
+    * Create thread finding count of nodes.
+    */
+   private Thread createThreadFindNodesCount(final Reindexable reindexableComponent)
+   {
+      return new Thread("Nodes count(" + handler.getContext().getWorkspaceName() + ")")
+      {
+         public void run()
+         {
+            try
+            {
+               if (reindexableComponent != null)
+               {
+                  Long value = reindexableComponent.getNodesCount();
+                  if (value != null)
+                  {
+                     nodesCount = new AtomicLong(value);
+                  }
+               }
+            }
+            catch (RepositoryException e)
+            {
+               LOG.error("Can't calculate nodes count : " + e.getMessage());
+            }
+         }
+      };
+   }
+
+   /**
     * Returns the number of documents in this index.
     * 
     * @return the number of documents in this index.
@@ -491,11 +525,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                // traverse and index workspace
                executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
 
-               long count;
-
                // check if we have deal with RDBMS reindexing mechanism
                Reindexable rdbmsReindexableComponent =
                   (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
+
+               Thread thread = createThreadFindNodesCount(rdbmsReindexableComponent);
+               thread.start();
+
+               long count;
 
                if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
                   && rdbmsReindexableComponent.isReindexingSupport())
@@ -1783,7 +1820,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
    }
 
-   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException, RepositoryException
+   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException,
+      RepositoryException
    {
       MultithreadedIndexing indexing = new MultithreadedIndexing(node, stateMgr);
       return indexing.launch(false);
@@ -1811,8 +1849,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *             if the task has been interrupted 
     */
    private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
-      final AtomicLong count) throws IOException, RepositoryException, InterruptedException
+      final AtomicLong count, final AtomicLong processed) throws IOException, RepositoryException, InterruptedException
    {
+      processed.incrementAndGet();
       if (stopped)
       {
          throw new InterruptedException();
@@ -1824,9 +1863,19 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       executeAndLog(new AddNode(getTransactionId(), node.getIdentifier(), true));
+
       if (count.incrementAndGet() % 1000 == 0)
       {
-         LOG.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count.get()));
+         if (nodesCount == null)
+         {
+            LOG.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count.get()));
+         }
+         else
+         {
+            DecimalFormat format = new DecimalFormat("###.#");
+            LOG.info("indexing... {} ({}%)", node.getQPath().getAsString(),
+               format.format(Math.min(100d * processed.get() / nodesCount.get(), 100)));
+         }
       }
 
       synchronized (this)
@@ -1842,14 +1891,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             public Void call() throws Exception
             {
-               createIndex(tasks, node, stateMgr, count, nodeData);
+               createIndex(tasks, node, stateMgr, count, nodeData, processed);
                return null;
             }
          };
          if (!tasks.offer(task))
          {
             // All threads have tasks to do so we do it ourself
-            createIndex(tasks, node, stateMgr, count, nodeData);
+            createIndex(tasks, node, stateMgr, count, nodeData, processed);
          }
       }
    }
@@ -1878,7 +1927,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *             if the task has been interrupted 
     */
    private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
-      final AtomicLong count, final NodeData nodeData) throws RepositoryException, IOException, InterruptedException
+      final AtomicLong count, final NodeData nodeData, final AtomicLong processed) throws RepositoryException,
+      IOException, InterruptedException
    {
       NodeData childState = (NodeData)stateMgr.getItemData(nodeData.getIdentifier());
       if (childState == null)
@@ -1889,7 +1939,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
       if (nodeData != null)
       {
-         createIndex(tasks, nodeData, stateMgr, count);
+         createIndex(tasks, nodeData, stateMgr, count, processed);
       }
    }
 
@@ -1929,11 +1979,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws InterruptedException
     *             if the task has been interrupted 
     */
-   private void createIndex(final NodeDataIndexingIterator iterator, NodeData rootNode, final AtomicLong count)
-      throws RepositoryException, InterruptedException, IOException
+   private void createIndex(final NodeDataIndexingIterator iterator, NodeData rootNode, final AtomicLong count,
+      final AtomicLong processed) throws RepositoryException, InterruptedException, IOException
    {
       for (NodeDataIndexing node : iterator.next())
       {
+         processed.incrementAndGet();
          if (stopped)
          {
             throw new InterruptedException();
@@ -1952,7 +2003,16 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          executeAndLog(new AddNode(getTransactionId(), node, true));
          if (count.incrementAndGet() % 1000 == 0)
          {
-            LOG.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count.get()));
+            if (nodesCount == null)
+            {
+               LOG.info("indexing... {} ({})", node.getQPath().getAsString(), count.get());
+            }
+            else
+            {
+               DecimalFormat format = new DecimalFormat("###.#");
+               LOG.info("indexing... {} ({}%)", node.getQPath().getAsString(),
+                  format.format(Math.min(100d * processed.get() / nodesCount.get(), 100)));
+            }
          }
 
          synchronized (this)
@@ -1983,7 +2043,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *             if thread was interrupted
     */
    private void createIndex(final Queue<Callable<Void>> tasks, final NodeDataIndexingIterator iterator,
-      final NodeData rootNode, final AtomicLong count) throws IOException, RepositoryException, InterruptedException
+      final NodeData rootNode, final AtomicLong count, final AtomicLong processing) throws IOException,
+      RepositoryException, InterruptedException
    {
       while (iterator.hasNext())
       {
@@ -1992,7 +2053,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             public Void call() throws Exception
             {
-               createIndex(iterator, rootNode, count);
+               createIndex(iterator, rootNode, count, processing);
                return null;
             }
          };
@@ -2000,7 +2061,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          if (!tasks.offer(task))
          {
             // All threads have tasks to do so we do it ourself
-            createIndex(iterator, rootNode, count);
+            createIndex(iterator, rootNode, count, processing);
          }
       }
    }
@@ -3405,6 +3466,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        */
       private final AtomicLong count = new AtomicLong();
 
+      private final AtomicLong processing = new AtomicLong();
+
       /**
        * The list of indexing tasks left to do
        */
@@ -3511,7 +3574,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             public Void call() throws Exception
             {
-               createIndex(tasks, node, stateMgr, count);
+               createIndex(tasks, node, stateMgr, count, processing);
                return null;
             }
          });
@@ -3531,7 +3594,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             public Void call() throws Exception
             {
-               createIndex(tasks, iterator, rootNode, count);
+               createIndex(tasks, iterator, rootNode, count, processing);
                return null;
             }
          });

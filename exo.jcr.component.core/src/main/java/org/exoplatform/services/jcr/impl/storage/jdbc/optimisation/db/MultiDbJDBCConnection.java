@@ -225,6 +225,8 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
          "select I.PARENT_ID, I.P_TYPE "
             + " from JCR_MITEM I where I.I_CLASS=2 and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
             + " or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')";
+      
+      FIND_NODES_COUNT = "select count(*) from JCR_MITEM I where I.I_CLASS=1";
    }
 
    /**
@@ -1082,4 +1084,18 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
          }
       }
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesCount() throws SQLException
+   {
+      if (findNodesCount != null)
+      {
+         findNodesCount = dbConnection.prepareStatement(FIND_NODES_COUNT);
+      }
+      return findNodesCount.executeQuery();
+   }
+
 }

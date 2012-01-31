@@ -766,6 +766,14 @@ public abstract class BaseStandaloneTest extends TestCase
          return false;
       }
 
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getNodesCount()
+       */
+      public long getNodesCount() throws RepositoryException
+      {
+         throw new UnsupportedOperationException();
+      }
+
    }
 
 }

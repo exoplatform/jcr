@@ -195,6 +195,11 @@ public class DBConstants extends DialectConstants
     */
    protected String FIND_NODES_AND_PROPERTIES;
 
+   /**
+    * FIND_NODES_COUNT
+    */
+   protected String FIND_NODES_COUNT;
+
    // ======================== ITEMS table ======================== 
    /**
     * COLUMN_ID.
