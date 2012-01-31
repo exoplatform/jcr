@@ -275,7 +275,7 @@
             <entry>acl-bloomfilter-false-positive-probability</entry>
 
             <entry>ACL Bloom-filter desired false positive probability. Range
-            [0..1]. Default value 0.1d. (See the note below) </entry>
+            [0..1]. Default value 0.1d. (See the note below)</entry>
           </row>
 
           <row>
@@ -513,5 +513,19 @@
         allow applications to migrate step by step.</para>
       </listitem>
     </orderedlist>
+  </section>
+
+  <section>
+    <title>Getting the effective configuration at Runtime of all the
+    repositories</title>
+
+    <para>The effective configuration of all the repositories and their
+    workspaces can be known thanks to the method
+    <emphasis>getConfigurationXML</emphasis>() that is exposed through JMX at
+    the <emphasis>RepositoryServiceConfiguration</emphasis> level. This method
+    will give you the effective configuration in XML format that has been
+    really interpreted by the the JCR core. This could be helpful to
+    understand how your repositories/workspaces are configured especially if
+    you would like to overwrite the configuration for some reasons.</para>
   </section>
 </chapter>
