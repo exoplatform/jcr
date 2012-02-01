@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.access.AccessControlPolicy;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
@@ -504,6 +505,17 @@ public class RepositoryContainer extends ExoContainer
    @Override
    public synchronized void stop()
    {
+      RepositoryImpl repository = (RepositoryImpl)getComponentInstanceOfType(RepositoryImpl.class);
+
+      try
+      {
+         repository.setState(ManageableRepository.OFFLINE);
+      }
+      catch (RepositoryException e)
+      {
+         log.error("Can not switch repository to OFFLINE", e);
+      }
+
       super.stop();
       super.unregisterAllComponents();
    }

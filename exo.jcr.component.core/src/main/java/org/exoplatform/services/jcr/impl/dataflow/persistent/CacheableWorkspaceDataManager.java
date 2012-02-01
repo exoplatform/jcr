@@ -968,6 +968,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       finally
       {
          workingThreads.decrementAndGet();
+
+         if (isSuspended && workingThreads.get() == 0)
+         {
+            synchronized (workingThreads)
+            {
+               workingThreads.notifyAll();
+            }
+         }
       }
    }
 
@@ -1953,10 +1961,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void suspend() throws SuspendException
    {
-      isResponsibleForResuming = true;
-
       if (rpcService != null)
       {
+         isResponsibleForResuming = true;
+
          try
          {
             rpcService.executeCommandOnAllNodes(suspend, true);
@@ -1995,13 +2003,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             throw new ResumeException(e);
          }
+
+         isResponsibleForResuming = false;
       }
       else
       {
          resumeLocally();
       }
-
-      isResponsibleForResuming = false;
    }
 
    /**
@@ -2014,36 +2022,41 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private void suspendLocally() throws SuspendException
    {
-      if (isSuspended)
+      if (!isSuspended)
       {
-         throw new SuspendException("Component already suspended.");
-      }
+         latcher = new CountDownLatch(1);
+         isSuspended = true;
 
-      latcher = new CountDownLatch(1);
-      isSuspended = true;
-
-      while (workingThreads.get() != 0)
-      {
-         try
+         if (workingThreads.get() > 0)
          {
-            Thread.sleep(50);
-         }
-         catch (InterruptedException e)
-         {
-            throw new SuspendException(e);
+            synchronized (workingThreads)
+            {
+               while (workingThreads.get() > 0)
+               {
+                  try
+                  {
+                     workingThreads.wait();
+                  }
+                  catch (InterruptedException e)
+                  {
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace(e.getMessage(), e);
+                     }
+                  }
+               }
+            }
          }
       }
    }
 
    private void resumeLocally() throws ResumeException
    {
-      if (!isSuspended)
+      if (isSuspended)
       {
-         throw new ResumeException("Component is not suspended.");
+         latcher.countDown();
+         isSuspended = false;
       }
-
-      latcher.countDown();
-      isSuspended = false;
    }
 
    /**

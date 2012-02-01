@@ -188,6 +188,7 @@ public final class WorkspaceContainerFacade
                      setOnline();
                      break;
                   case ManageableRepository.OFFLINE :
+                     suspend();
                      break;
                   case ManageableRepository.READONLY :
                      setReadOnly(true);
@@ -249,7 +250,10 @@ public final class WorkspaceContainerFacade
       {
          try
          {
-            component.suspend();
+            if (!component.isSuspended())
+            {
+               component.suspend();
+            }
          }
          catch (SuspendException e)
          {
