@@ -1091,7 +1091,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    @Override
    protected ResultSet findNodesCount() throws SQLException
    {
-      if (findNodesCount != null)
+      if (findNodesCount == null)
       {
          findNodesCount = dbConnection.prepareStatement(FIND_NODES_COUNT);
       }

@@ -610,7 +610,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    @Override
    protected ResultSet findNodesCount() throws SQLException
    {
-      if (findNodesCount != null)
+      if (findNodesCount == null)
       {
          findNodesCount = dbConnection.prepareStatement(FIND_NODES_COUNT);
       }
