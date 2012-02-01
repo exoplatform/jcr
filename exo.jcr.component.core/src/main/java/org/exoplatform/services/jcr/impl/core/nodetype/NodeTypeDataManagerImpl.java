@@ -40,6 +40,8 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
+import org.exoplatform.services.jcr.impl.core.nodetype.registration.CNDNodeTypeDataPersister;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeDefinitionComparator;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeConverter;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister;
@@ -622,7 +624,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       }
       else if (contentType.equalsIgnoreCase(TEXT_X_JCR_CND))
       {
-         throw new RepositoryException("Unsupported content type:" + contentType);
+         serializer = new CNDNodeTypeDataPersister(is, (NamespaceRegistryImpl)namespaceRegistry);
       }
       else
       {
