@@ -202,6 +202,14 @@
             </exclusion>
          </exclusions>
       </dependency>    
+      <dependency>
+         <groupId>org.antlr</groupId>
+         <artifactId>antlr-runtime</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.antlr</groupId>
+         <artifactId>gunit</artifactId>
+      </dependency>
       <!-- TCK binaries and deps for repo stub, some eXo API test -->
       <dependency>
          <groupId>org.jboss.cache</groupId>
@@ -264,6 +272,7 @@
                <include>**/*.pdf</include>
                <include>**/*.dtd</include>
                <include>**/*.policy</include>
+               <include>**/*.cnd</include>
             </includes>
          </testResource>
       </testResources>
@@ -501,6 +510,41 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>taglist-maven-plugin</artifactId>
+         </plugin>
+     
+         <!--  Runs gUnit tests to check ANTLR grammaes.
+               Tests must be located in 'src/test/gunit' directory
+               Their names must be *.testsuite   -->
+         <plugin>
+           <groupId>org.antlr</groupId>
+           <artifactId>maven-gunit-plugin</artifactId>
+           <version>3.2</version>
+           <executions>
+             <execution>
+               <id>maven-gunit-plugin</id>
+               <phase>test</phase> 
+               <goals>
+                 <goal>gunit</goal>
+               </goals>
+             </execution>
+           </executions>
+         </plugin>
+         
+         <!--  Generate java files from ANTLR grammar files
+               in the 'target/generated-sources/antlr3' direcctory   
+               Grammar files must be located in 'src/test/antlr3' directory
+               Their names must me *.g -->
+         <plugin>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr3-maven-plugin</artifactId>
+            <version>3.3</version>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>antlr</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>
