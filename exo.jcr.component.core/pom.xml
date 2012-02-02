@@ -511,24 +511,6 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>taglist-maven-plugin</artifactId>
          </plugin>
-     
-         <!--  Runs gUnit tests to check ANTLR grammaes.
-               Tests must be located in 'src/test/gunit' directory
-               Their names must be *.testsuite   -->
-         <plugin>
-           <groupId>org.antlr</groupId>
-           <artifactId>maven-gunit-plugin</artifactId>
-           <version>3.2</version>
-           <executions>
-             <execution>
-               <id>maven-gunit-plugin</id>
-               <phase>test</phase> 
-               <goals>
-                 <goal>gunit</goal>
-               </goals>
-             </execution>
-           </executions>
-         </plugin>
          
          <!--  Generate java files from ANTLR grammar files
                in the 'target/generated-sources/antlr3' direcctory   
@@ -963,5 +945,29 @@
             <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-jbc.xml</jcr.test.configuration.file>
          </properties>
       </profile>      
+      <profile>
+         <id>gunit</id>
+         <build>
+            <plugins>
+               <!--  Runs gUnit tests to check ANTLR grammaes.
+               Tests must be located in 'src/test/gunit' directory
+                  Their names must be *.testsuite   -->
+               <plugin>
+                  <groupId>org.antlr</groupId>
+                  <artifactId>maven-gunit-plugin</artifactId>
+                  <version>3.2</version>
+                  <executions>
+                     <execution>
+                        <id>maven-gunit-plugin</id>
+                        <phase>test</phase> 
+                        <goals>
+                           <goal>gunit</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
    </profiles>
 </project>
