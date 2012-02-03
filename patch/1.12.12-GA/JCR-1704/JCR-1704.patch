@@ -1,42 +1,88 @@
 Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java
 ===================================================================
---- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java	(revision 5453)
+--- exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java	(revision 5559)
 +++ exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webdav/command/TestPut.java	(working copy)
-@@ -144,6 +144,39 @@
+@@ -144,6 +144,85 @@
        assertEquals(headers.getFirst(HttpHeaders.CONTENT_TYPE), property.getString());
     }
  
 +   /**
-+    * Testing if read-only mime-types properties, which can be set as initial parameters
-+    * for WebDavService, are indeed read-only. 
-+    * More info can be found here: https://jira.exoplatform.org/browse/JCR-1704
-+    * @throws Exception
++    * Testing if we use MimeTypeResolver to define jcr:mimeType property
++    * for untrusted user agents during resource creation. 
 +    */
-+   public void testReadOnlyMimeTypeProperties() throws Exception
++   public void testUntrustedUserAgentResourceCreation() throws Exception
 +   {
-+      String testMimeTypeProperty = "test/mime-type";
 +      String content = TestUtils.getFileContent();
 +      String path = TestUtils.getFileName();
-+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
 +
-+      // setting content-type header
-+      // test/mime-type is defined in init params to be read only mime type
-+      headers.add(HttpHeaders.CONTENT_TYPE, testMimeTypeProperty);
-+      // putting a resource
++      // create User-Agent header indicating that the resource we create
++      // has application/octet-stream type
++      // though it's extension is .txt
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM);
++      headers.add(HttpHeaders.USER_AGENT, "test-user-agent");
++
++      // fullfiling the request
++      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
++
++      Node node = session.getRootNode().getNode(TextUtil.relativizePath(path)).getNode("jcr:content");
++      // though that we passed application/octet-stream mime type
++      // the user agent is within untrusted user agents set
++      // so we use MimeTypeResolver to define the mimeType and
++      // ignore Content-Type header
++      assertEquals(MediaType.TEXT_PLAIN, node.getProperty("jcr:mimeType").getString());
++   }
++
++   /**
++    * Testing if we use MimeTypeResolver to define jcr:mimeType property
++    * for untrusted user agents during resource modification. 
++    */
++   public void testUntrustedUserAgentResourceModification() throws Exception
++   {
++      String content = TestUtils.getFileContent();
++      String path = TestUtils.getFileName();
++
++      // create data with 'trusted' user agent 
++      // (all user agents are considered to be trusted
++      // if they are not listed as untrusted)
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN);
++
 +      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
 +
 +      headers.clear();
-+      // setting content-type header again
-+      // this time we set MediaType.TEXT_HTML to replace previous mime type
-+      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML);
-+      // putting one mopre time
++      content = TestUtils.getFileContent();
++      // define user agent to be among untrusted user agents 
++      headers.add(HttpHeaders.USER_AGENT, "test-user-agent");
++      // define incorrect mime-type via seting Content-Type header
++      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM);
++
 +      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
 +
-+      // gettin jcr:content node, which stores jcr:mimeType parameter
 +      Node node = session.getRootNode().getNode(TextUtil.relativizePath(path)).getNode("jcr:content");
++      // mime-type should still be correct
++      assertEquals(MediaType.TEXT_PLAIN, node.getProperty("jcr:mimeType").getString());
++   }
 +
-+      assertEquals("Mime-type property should not be changed.", testMimeTypeProperty,
-+         node.getProperty("jcr:mimeType").getString());
++   /**
++    * Testing if we can modify mime-type of previously defined resource
++    * via trusted user agent
++    */
++   public void testTrustedUserAgentResourceModification() throws Exception
++   {
++      String content = TestUtils.getFileContent();
++      String path = TestUtils.getFileName() + ".html";
++
++      service(WebDAVMethods.PUT, getPathWS() + path, "", null, content.getBytes());
++      Node node = session.getRootNode().getNode(TextUtil.relativizePath(path));
++      // mime-type is defined according to resource's extension
++      assertEquals(MediaType.TEXT_HTML, node.getNode("jcr:content").getProperty("jcr:mimeType").getString());
++
++      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
++      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML);
++      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
++      // mime-type modified according to Content-Type header content
++      assertEquals(MediaType.TEXT_XML, node.getNode("jcr:content").getProperty("jcr:mimeType").getString());
 +   }
 +
     @Override
@@ -44,36 +90,97 @@ Index: exo.jcr.component.webdav/src/test/java/org/exoplatform/services/jcr/webda
     {
 Index: exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml
 ===================================================================
---- exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(revision 5453)
+--- exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(revision 5559)
 +++ exo.jcr.component.webdav/src/test/resources/conf/standalone/test-configuration.xml	(working copy)
-@@ -173,7 +173,7 @@
-    <component>
-       <type>org.exoplatform.services.jcr.webdav.WebDavServiceImpl</type>
-       <init-params>
--
-+         
-          <value-param>
-             <name>auto-mix-lockable</name>
-             <value>false</value>
-@@ -209,6 +209,15 @@
+@@ -209,6 +209,16 @@
              <value>/absolute/path/to/file</value>
           </value-param>
           
 +         <!-- 
-+            To test read-only mime-type properties to be correctly fetched and processed during put requests.
-+            See more details here: https://jira.exoplatform.org/browse/JCR-1704
++            For testing untrusted-user-agents proper treatment.
++            Content-type headers of listed here user agents should be
++            ignored and MimeTypeResolver should be explicitly used instead 
 +         -->
 +         <values-param>
-+            <name>read-only-mime-types</name>
-+            <value>test/mime-type</value>
++            <name>untrusted-user-agents</name>
++            <value>test-user-agent</value>
 +         </values-param>
-+ 
++         
        </init-params>
     </component>
  
+Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavService.java
+===================================================================
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavService.java	(revision 5559)
++++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavService.java	(working copy)
+@@ -18,15 +18,14 @@
+  */
+ package org.exoplatform.services.jcr.webdav;
+ 
++import org.exoplatform.common.util.HierarchicalProperty;
++
+ import java.io.InputStream;
+-import java.util.List;
+ 
+ import javax.ws.rs.core.MediaType;
+ import javax.ws.rs.core.Response;
+ import javax.ws.rs.core.UriInfo;
+ 
+-import org.exoplatform.common.util.HierarchicalProperty;
+-
+ /**
+  * Created by The eXo Platform SARL .<br/>
+  * JCR WebDAV entry point. Defines WebDav protocol methods: RFC-2518 HTTP
+@@ -68,7 +67,7 @@
+    Response head(String repoName, String repoPath, UriInfo baseURI);
+ 
+    /**
+-    * WedDAV "HEAD" method. See <a
++    * WedDAV "PUT" method. See <a
+     * href='http://www.ietf.org/rfc/rfc2518.txt'>HTTP methods for distributed
+     * authoring sec. 8.7 "PUT"</a>.
+     * 
+@@ -83,16 +82,37 @@
+     * @param inputStream stream that contain incoming data
+     * @return the instance of javax.ws.rs.core.Response
+     */
++   @Deprecated
+    Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String fileNodeTypeHeader,
+       String contentNodeTypeHeader, String mixinTypes, MediaType mediatype, InputStream inputStream);
+ 
+    /**
++    * WedDAV "PUT" method. See <a
++    * href='http://www.ietf.org/rfc/rfc2518.txt'>HTTP methods for distributed
++    * authoring sec. 8.7 "PUT"</a>.
++    * 
+     * @param repoName repository name
+     * @param repoPath path in repository
+     * @param lockTokenHeader Lock-Token HTTP header
+     * @param ifHeader If HTTP Header
++    * @param fileNodeTypeHeader JCR NodeType header
++    * @param contentNodeTypeHeader JCR Content-NodeType header
++    * @param mixinTypes JCR Mixin types header
++    * @param mimeType Content-Type HTTP header
++    * @param userAgent User-Agent HTTP header
++    * @param inputStream stream that contain incoming data
+     * @return the instance of javax.ws.rs.core.Response
+     */
++   Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String fileNodeTypeHeader,
++      String contentNodeTypeHeader, String mixinTypes, MediaType mediaType, String userAgent, InputStream inputStream);
++
++   /**
++    * @param repoName repository name
++    * @param repoPath path in repository
++    * @param lockTokenHeader Lock-Token HTTP header
++    * @param ifHeader If HTTP Header
++    * @return the instance of javax.ws.rs.core.Response
++    */
+    Response delete(String repoName, String repoPath, String lockTokenHeader, String ifHeader);
+ 
+    /**
 Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java
 ===================================================================
---- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 5453)
+--- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(revision 5559)
 +++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/WebDavServiceImpl.java	(working copy)
 @@ -23,6 +23,7 @@
  import org.exoplatform.commons.utils.MimeTypeResolver;
@@ -98,126 +205,79 @@ Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webda
  
     public static final String FOLDER_ICON_PATH = "folder-icon-path";
  
-+   public static final String READ_ONLY_MIME_TYPES = "read-only-mime-types";
++   public static final String UNTRUSTED_USER_AGENTS = "untrusted-user-agents";
 +
     /**
      * Logger.
      */
-@@ -192,6 +197,12 @@
+@@ -192,6 +197,10 @@
     private Map<String, String> xsltParams = new HashMap<String, String>();
  
     /**
-+    * Set to keep all 'read-only' mime types. Mime-types listed here  
-+    * are not allowed to be changed. 
++    * Set of untrusted user agents. Special rules are applied for listed agents.
 +    */
-+   private Set<String> readOnlyMimeTypes = new HashSet<String>();
-+
++   private Set<String> untrustedUserAgents = new HashSet<String>();
 +   /**
      * The list of allowed methods.
      */
     private static final String ALLOW;
-@@ -300,6 +311,11 @@
+@@ -300,6 +309,12 @@
  
        }
  
-+      ValuesParam pReadOnlyMimeTypes = params.getValuesParam(READ_ONLY_MIME_TYPES);
-+      if (pReadOnlyMimeTypes != null)
++      ValuesParam pUntrustedUserAgents = params.getValuesParam(UNTRUSTED_USER_AGENTS);
++      if (pUntrustedUserAgents != null)
 +      {
-+         readOnlyMimeTypes.addAll((List<String>)pReadOnlyMimeTypes.getValues());
++         untrustedUserAgents.addAll((List<String>)pUntrustedUserAgents.getValues());
 +      }
-    }
- 
-    /**
-@@ -1038,7 +1054,8 @@
-          NodeType nodeType = ntm.getNodeType(contentNodeType);
-          NodeTypeUtil.checkContentResourceType(nodeType);
- 
--         return new PutCommand(nullResourceLocks).put(session, path(repoPath), inputStream, fileNodeType,
-+         return new PutCommand(nullResourceLocks, readOnlyMimeTypes).put(session, path(repoPath), inputStream,
-+            fileNodeType,
-             contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType,
-             autoVersionType, tokens);
- 
-Index: exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java
-===================================================================
---- exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java	(revision 5453)
-+++ exo.jcr.component.webdav/src/main/java/org/exoplatform/services/jcr/webdav/command/PutCommand.java	(working copy)
-@@ -24,7 +24,9 @@
- 
- import java.io.InputStream;
- import java.util.Calendar;
-+import java.util.HashSet;
- import java.util.List;
-+import java.util.Set;
- 
- import javax.jcr.AccessDeniedException;
- import javax.jcr.Node;
-@@ -50,6 +52,12 @@
-    private final NullResourceLocksHolder nullResourceLocks;
- 
-    /**
-+    * Set to keep all 'read-only' mime types. Mime-types listed here  
-+    * are not allowed to be changed. 
-+    */
-+   private final Set<String> readOnlyMimeTypes;
 +
-+   /**
-     * Constructor.
-     * 
-     * @param nullResourceLocks resource locks.
-@@ -57,9 +65,22 @@
-    public PutCommand(final NullResourceLocksHolder nullResourceLocks)
-    {
-       this.nullResourceLocks = nullResourceLocks;
-+      this.readOnlyMimeTypes = new HashSet<String>();
     }
  
     /**
-+    * Constructor.
-+    * 
-+    * @param nullResourceLocks resource locks.
-+    * @param readOnlyMimeTypes set of 'read-only' mime types 
-+    */
-+   public PutCommand(final NullResourceLocksHolder nullResourceLocks, Set<String> readOnlyMimeTypes)
+@@ -987,6 +1002,17 @@
+       }
+    }
+ 
++   @Deprecated
++   public Response put(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
++      @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
++      @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
++      @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
++      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
++      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream)
 +   {
-+      this.nullResourceLocks = nullResourceLocks;
-+      this.readOnlyMimeTypes = readOnlyMimeTypes;
++      return put(repoName, repoPath, lockTokenHeader, ifHeader, fileNodeTypeHeader, contentNodeTypeHeader, mixinTypes,
++         mediatype, null, inputStream);
 +   }
-+
-+   /**
-     * Webdav Put method implementation.
-     * 
-     * @param session current session
-@@ -205,7 +226,23 @@
+    /**
+     * {@inheritDoc}
+     */
+@@ -997,9 +1023,9 @@
+       @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
+       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
+       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
+-      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream)
++      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype,
++      @HeaderParam(ExtHttpHeaders.USER_AGENT) String userAgent, InputStream inputStream)
     {
- 
-       Node content = node.getNode("jcr:content");
--      content.setProperty("jcr:mimeType", mimeType);
-+
-+      /* 
-+         Workaround created to fix JCR-1704
-+
-+         1. If readOnlyMimeTypes is not initialized it is okay to set any mime-type you want
-+         2. If readOnlyMimeTypes is empty, it won't be needed to call !content.hasProperty("jcr:mimeType")
-+            which represents a potential query, and again it is okay to set any mime-type you want
-+         3. If jcr:mimeType property is not set, we can set it without worries
-+         4. If jcr:mimeType property isn't in 'read-only' properties list,
-+            we can set it
-+      */
-+      if (readOnlyMimeTypes == null || readOnlyMimeTypes.isEmpty() || !content.hasProperty("jcr:mimeType")
-+         || !readOnlyMimeTypes.contains(content.getProperty("jcr:mimeType").getString()))
-+      {
-+         content.setProperty("jcr:mimeType", mimeType);
-+      }
-+
-       if (encoding != null)
+-
+       if (log.isDebugEnabled())
        {
-          content.setProperty("jcr:encoding", encoding);
+          log.debug("PUT " + repoName + "/" + repoPath);
+@@ -1012,7 +1038,7 @@
+          String mimeType = null;
+          String encoding = null;
+ 
+-         if (mediatype == null)
++         if (mediatype == null || untrustedUserAgents.contains(userAgent))
+          {
+             MimeTypeResolver mimeTypeResolver = new MimeTypeResolver();
+             mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
 Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml
 ===================================================================
---- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(revision 5453)
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(revision 5559)
 +++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/protocols/webdav.xml	(working copy)
-@@ -1,345 +1,470 @@
+@@ -1,345 +1,471 @@
 -<?xml version='1.0' encoding='UTF-8'?>
 -<!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 -<chapter id="JCR.WebDAV">
@@ -719,15 +779,16 @@ Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr
 +      &lt;value&gt;/absolute/path/to/file&lt;/value&gt;
 +    &lt;/value-param&gt;
 +
-+    &lt;!--
-+        This parameter is responsible for definition of read-only mime-type properties.
-+        That basically means that all mime-types mentioned here will be set as read-only properties
-+        (i. e. you cannot change resource's mime-type after it is set).
++    &lt;!-- 
++        This parameter is responsible for untrusted user agents definition.
++        Content-type headers of listed here user agents should be
++        ignored and MimeTypeResolver should be explicitly used instead 
 +    --&gt;
 +    &lt;values-param&gt;
-+      &lt;name&gt;read-only-mime-types&lt;/name&gt;
-+      &lt;value&gt;application/vnd.openxmlformats-officedocument.wordprocessingml.document&lt;/value&gt;
++      &lt;name&gt;untrusted-user-agents&lt;/name&gt;
++      &lt;value&gt;Microsoft Office Core Storage Infrastructure/1.0&lt;/value&gt;
 +    &lt;/values-param&gt;
++
 +
 +  &lt;/init-params&gt;
 +&lt;/component&gt;</programlisting>
