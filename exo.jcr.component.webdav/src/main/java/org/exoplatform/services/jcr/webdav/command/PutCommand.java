@@ -24,9 +24,7 @@ import org.exoplatform.services.jcr.webdav.util.TextUtil;
 
 import java.io.InputStream;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
@@ -59,12 +57,6 @@ public class PutCommand
    private final UriBuilder uriBuilder;
 
    /**
-    * Set to keep all 'read-only' mime types. Mime-types listed here  
-    * are not allowed to be changed. 
-    */
-   private final Set<String> readOnlyMimeTypes;
-
-   /**
     * Constructor.
     * 
     * @param nullResourceLocks resource locks.
@@ -72,15 +64,7 @@ public class PutCommand
    public PutCommand(final NullResourceLocksHolder nullResourceLocks)
    {
       this.nullResourceLocks = nullResourceLocks;
-      /* Since no UriBuilder instance provided initialize it with null
-       * to indicate that "Location" header should not be used in "Created" response
-       */
       this.uriBuilder = null;
-      /* Since no 'read-only' mime-types set provided create empty HashSet
-       * which indicates that 'read-only' mime-types set is empty
-       * so any mime-type property can be overwritten
-       */
-      this.readOnlyMimeTypes = new HashSet<String>();
    }
 
    /**
@@ -92,30 +76,7 @@ public class PutCommand
    public PutCommand(final NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder)
    {
       this.nullResourceLocks = nullResourceLocks;
-      /* Since no UriBuilder instance provided initialize it with null
-       * to indicate that "Location" header should not be used in "Created" response
-       */
       this.uriBuilder = uriBuilder;
-      /* Since no 'read-only' mime-types set provided create empty HashSet
-       * which indicates that 'read-only' mime-types set is empty
-       * so any mime-type property can be overwritten
-       */
-      this.readOnlyMimeTypes = new HashSet<String>();
-   }
-
-   /**
-    * Constructor.
-    * 
-    * @param nullResourceLocks resource locks.
-    * @param uriBuilder - provide data used in 'location' header
-    * @param readOnlyMimeTypes set of 'read-only' mime types 
-    */
-   public PutCommand(final NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder,
-      Set<String> readOnlyMimeTypes)
-   {
-      this.nullResourceLocks = nullResourceLocks;
-      this.uriBuilder = uriBuilder;
-      this.readOnlyMimeTypes = readOnlyMimeTypes;
    }
 
    /**
@@ -270,23 +231,7 @@ public class PutCommand
    {
 
       Node content = node.getNode("jcr:content");
-
-      /* 
-         Workaround created to fix JCR-1704
-      
-         1. If readOnlyMimeTypes is not initialized it is okay to set any mime-type you want
-         2. If readOnlyMimeTypes is empty, it won't be needed to call !content.hasProperty("jcr:mimeType")
-            which represents a potential query, and again it is okay to set any mime-type you want
-         3. If jcr:mimeType property is not set, we can set it without worries
-         4. If jcr:mimeType property isn't in 'read-only' properties list,
-            we can set it
-      */
-      if (readOnlyMimeTypes == null || readOnlyMimeTypes.isEmpty() || !content.hasProperty("jcr:mimeType")
-         || !readOnlyMimeTypes.contains(content.getProperty("jcr:mimeType").getString()))
-      {
-         content.setProperty("jcr:mimeType", mimeType);
-      }
-
+      content.setProperty("jcr:mimeType", mimeType);
       if (encoding != null)
       {
          content.setProperty("jcr:encoding", encoding);
