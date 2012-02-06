@@ -3412,6 +3412,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    }
 
    /**
+    * @return true if index is stopped. 
+    */
+   public boolean isStopped()
+   {
+      return stopped;
+   }
+
+   /**
     * Switches index mode
     * 
     * @param isOnline
