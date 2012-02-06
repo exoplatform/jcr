@@ -76,7 +76,7 @@ public class IndexInfos
    /**
     * {@link MultiIndex} instance for callbacking when list of indexes changed 
     */
-   private MultiIndex multiIndex;
+   protected MultiIndex multiIndex;
 
    /**
     * Creates a new IndexInfos using <code>"indexes"</code> as a filename.

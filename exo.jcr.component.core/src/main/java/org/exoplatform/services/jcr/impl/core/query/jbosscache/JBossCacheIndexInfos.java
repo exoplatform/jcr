@@ -136,7 +136,10 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          // re-read from FS current actual list.
          try
          {
-            super.read();
+            if (!multiIndex.isStopped())
+            {
+               super.read();
+            }
          }
          catch (IOException e)
          {

@@ -166,7 +166,10 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
          // re-read from FS current actual list.
          try
          {
-            super.read();
+            if (!multiIndex.isStopped())
+            {
+               super.read();
+            }
          }
          catch (IOException e)
          {
