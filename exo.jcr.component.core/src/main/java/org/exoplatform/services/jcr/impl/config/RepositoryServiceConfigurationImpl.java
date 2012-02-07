@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.config;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -184,7 +184,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
                {
                   public Void run() throws IOException
                   {
-                     DirectoryHelper.renameFile(sourceConfig, backUp);
+                     DirectoryHelper.deleteDstAndRename(sourceConfig, backUp);
                      return null;
                   }
                });

@@ -354,6 +354,31 @@ public class DirectoryHelper
    }
 
    /**
+    * Rename file. Trying to remove destination first.
+    * If file can't be renamed in standard way the coping
+    * data will be used instead.
+    * 
+    * @param srcFile
+    *          source file
+    * @param dstFile
+    *          destination file 
+    * @throws IOException
+    *          if any exception occurred 
+    */
+   public static void deleteDstAndRename(File srcFile, File dstFile) throws IOException
+   {
+      if (dstFile.exists())
+      {
+         if (!dstFile.delete())
+         {
+            throw new IOException("Cannot delete " + dstFile);
+         }
+      }
+
+      renameFile(srcFile, dstFile);
+   }
+
+   /**
     * Rename file. If file can't be renamed in standard way the coping
     * data will be used instead.
     * 
