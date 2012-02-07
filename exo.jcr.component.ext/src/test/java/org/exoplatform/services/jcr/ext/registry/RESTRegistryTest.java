@@ -90,8 +90,9 @@ public class RESTRegistryTest extends BaseStandaloneTest
 
       log.info("-----REST-----");
 
+      repositoryService.setCurrentRepositoryName("db1");
       DummyContainerResponseWriter wr = new DummyContainerResponseWriter();
-      URI reqUri = new URI(baseUri.toString() + "/registry/db1/");
+      URI reqUri = new URI(baseUri.toString() + "/registry/");
       ContainerResponse cres =
          request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(200, cres.getStatus());
@@ -100,14 +101,14 @@ public class RESTRegistryTest extends BaseStandaloneTest
       // request to exo:services/exo_service
       // response status should be 404 (NOT_FOUND)
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES + "/exo_service");
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/exo_service");
       cres = request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(404, cres.getStatus());
       assertNull(wr.getBody());
 
       // create exo:services/exo_service
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES);
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES);
       cres =
          request(handler, wr, "POST", reqUri, baseUri, SERVICE_XML.getBytes(), new InputHeadersMap(
             new MultivaluedMapImpl()));
@@ -116,14 +117,14 @@ public class RESTRegistryTest extends BaseStandaloneTest
 
       // request to exo:services/exo_service
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES + "/exo_service");
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/exo_service");
       cres = request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(200, cres.getStatus());
       log.info(new String(wr.getBody()));
 
       // recreate exo:services/exo_service
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES);
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES);
       cres =
          request(handler, wr, "PUT", reqUri, baseUri, SERVICE_XML.getBytes(), new InputHeadersMap(
             new MultivaluedMapImpl()));
@@ -132,14 +133,14 @@ public class RESTRegistryTest extends BaseStandaloneTest
 
       // delete exo:services/exo_service
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES + "/exo_service");
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/exo_service");
       cres = request(handler, wr, "DELETE", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(204, cres.getStatus());
 
       // request to exo:services/exo_service
       // request status should be 404 (NOT_FOUND)
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES + "/exo_service");
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/exo_service");
       cres = request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(404, cres.getStatus());
       assertNull(wr.getBody());
@@ -153,40 +154,43 @@ public class RESTRegistryTest extends BaseStandaloneTest
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       int rd = -1;
       while ((rd = in.read()) != -1)
+      {
          out.write(rd);
+      }
       byte[] data = out.toByteArray();
 
+      repositoryService.setCurrentRepositoryName("db1");
       // check for exo:services/group/test
       // response status should be 404 (NOT_FOUND)
-      URI reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES + "/group/test");
+      URI reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/group/test");
       ContainerResponse cres =
          request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(404, cres.getStatus());
       assertNull(wr.getBody());
       // create exo:services/group/test
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES + "/group/");
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/group/");
       cres = request(handler, wr, "POST", reqUri, baseUri, data, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(201, cres.getStatus());
       assertEquals(new URI(reqUri + "test"), wr.getHeaders().getFirst(HttpHeaders.LOCATION));
 
       // check again for exo:services/group/test
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES + "/group/test");
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/group/test");
       cres = request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(200, cres.getStatus());
       log.info(new String(wr.getBody()));
 
       // remove
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES + "/group/");
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/group/");
       cres = request(handler, wr, "DELETE", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(204, cres.getStatus());
 
       // check for exo:services/group/test
       // response status should be 404 (NOT_FOUND)
       wr.reset();
-      reqUri = new URI(baseUri.toString() + "/registry/db1/" + RegistryService.EXO_SERVICES + "/group/test");
+      reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/group/test");
       cres = request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(404, cres.getStatus());
       assertNull(wr.getBody());
