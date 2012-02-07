@@ -22,6 +22,7 @@ import org.apache.lucene.store.NativeFSLockFactory;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -221,15 +222,27 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public boolean rename(final String from, final String to)
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
+      final File src = new File(baseDir, from);
+      final File dest = new File(baseDir, to);
+
+      try
       {
-         public Boolean run()
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            File src = new File(baseDir, from);
-            File dest = new File(baseDir, to);
-            return src.renameTo(dest);
-         }
-      });
+            public Void run() throws IOException
+            {
+               DirectoryHelper.renameFile(src, dest);
+
+               return null;
+            }
+         });
+      }
+      catch (IOException e)
+      {
+         return false;
+      }
+
+      return true;
    }
 
    /**

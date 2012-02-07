@@ -16,8 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.backup.rdbms;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
@@ -27,6 +27,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,26 +97,34 @@ public class DirectoryRestore implements DataRestore
     */
    public void clean() throws BackupException
    {
-      for (int i = 0; i < dataDirs.size(); i++)
+      try
       {
-         File dataDir = dataDirs.get(i);
-
-         try
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            File tmpDir = new File(tempDir, PREFIX + IdGenerator.generate());
-            PrivilegedFileHelper.mkdirs(tmpDir);
-            tmpDirs.add(tmpDir);
-
-            if (PrivilegedFileHelper.exists(dataDir))
+            public Void run() throws IOException
             {
-               DirectoryHelper.copyDirectory(dataDir, tmpDir);
-               DirectoryHelper.removeDirectory(dataDir);
+               for (int i = 0; i < dataDirs.size(); i++)
+               {
+                  File dataDir = dataDirs.get(i);
+
+                  File tmpDir = new File(tempDir, PREFIX + IdGenerator.generate());
+                  tmpDir.mkdirs();
+                  tmpDirs.add(tmpDir);
+
+                  if (dataDir.exists())
+                  {
+                     DirectoryHelper.copyDirectory(dataDir, tmpDir);
+                     DirectoryHelper.removeDirectory(dataDir);
+                  }
+               }
+
+               return null;
             }
-         }
-         catch (IOException e)
-         {
-            throw new BackupException(e);
-         }
+         });
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
       }
    }
 
@@ -124,26 +133,36 @@ public class DirectoryRestore implements DataRestore
     */
    public void restore() throws BackupException
    {
-      for (int i = 0; i < zipFiles.size(); i++)
+      try
       {
-         File zipFile = zipFiles.get(i);
-         File dataDir = dataDirs.get(i);
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws IOException
+            {
 
-         try
-         {
-            if (PrivilegedFileHelper.isDirectory(zipFile))
-            {
-               DirectoryHelper.uncompressEveryFileFromDirectory(zipFile, dataDir);
+               for (int i = 0; i < zipFiles.size(); i++)
+               {
+                  File zipFile = zipFiles.get(i);
+                  File dataDir = dataDirs.get(i);
+
+                  if (zipFile.isDirectory())
+                  {
+                     DirectoryHelper.uncompressEveryFileFromDirectory(zipFile, dataDir);
+                  }
+                  else
+                  {
+                     DirectoryHelper.uncompressDirectory(zipFile, dataDir);
+                  }
+               }
+
+               return null;
             }
-            else
-            {
-               DirectoryHelper.uncompressDirectory(zipFile, dataDir);
-            }
-         }
-         catch (IOException e)
-         {
-            throw new BackupException(e);
-         }
+         });
+
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
       }
    }
 
@@ -159,24 +178,32 @@ public class DirectoryRestore implements DataRestore
     */
    public void rollback() throws BackupException
    {
-      for (int i = 0; i < tmpDirs.size(); i++)
+      try
       {
-         try
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            File tmpDir = tmpDirs.get(i);
-            File dataDir = dataDirs.get(i);
-
-            if (PrivilegedFileHelper.exists(dataDir))
+            public Void run() throws IOException
             {
-               DirectoryHelper.removeDirectory(dataDir);
-            }
+               for (int i = 0; i < tmpDirs.size(); i++)
+               {
+                  File tmpDir = tmpDirs.get(i);
+                  File dataDir = dataDirs.get(i);
 
-            DirectoryHelper.copyDirectory(tmpDir, dataDir);
-         }
-         catch (IOException e)
-         {
-            throw new BackupException(e);
-         }
+                  if (dataDir.exists())
+                  {
+                     DirectoryHelper.removeDirectory(dataDir);
+                  }
+
+                  DirectoryHelper.copyDirectory(tmpDir, dataDir);
+               }
+
+               return null;
+            }
+         });
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
       }
    }
 
@@ -185,16 +212,24 @@ public class DirectoryRestore implements DataRestore
     */
    public void close() throws BackupException
    {
-      for (File tmpDir : tmpDirs)
+      try
       {
-         try
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            DirectoryHelper.removeDirectory(tmpDir);
-         }
-         catch (IOException e)
-         {
-            throw new BackupException(e);
-         }
+            public Void run() throws IOException
+            {
+               for (File tmpDir : tmpDirs)
+               {
+                  DirectoryHelper.removeDirectory(tmpDir);
+               }
+
+               return null;
+            }
+         });
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
       }
 
       dataDirs.clear();

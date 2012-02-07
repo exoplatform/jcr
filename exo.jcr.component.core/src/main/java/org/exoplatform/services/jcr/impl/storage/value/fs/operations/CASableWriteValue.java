@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.impl.storage.value.cas.VCASException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
 import org.exoplatform.services.jcr.impl.storage.value.fs.CASableIOSupport;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileDigestOutputStream;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
@@ -175,11 +176,16 @@ public class CASableWriteValue extends WriteValue
 
                // make sure parent dir exists
                vcasFile.getParentFile().mkdirs();
+
                // rename propetynamed file to hashnamed one
-               if (!tempFile.renameTo(vcasFile))
+               try
+               {
+                  DirectoryHelper.renameFile(tempFile, vcasFile);
+               }
+               catch (IOException e)
                {
                   throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
-                     + vcasFile.getAbsolutePath());
+                     + vcasFile.getAbsolutePath(), e);
                }
             } // else - CASed Value already exists
 

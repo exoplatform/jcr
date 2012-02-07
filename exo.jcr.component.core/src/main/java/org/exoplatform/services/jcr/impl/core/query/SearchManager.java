@@ -21,9 +21,9 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
@@ -1623,7 +1623,17 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
       try
       {
-         DirectoryHelper.removeDirectory(getIndexDirectory());
+         final File indexDir = getIndexDirectory();
+
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws IOException
+            {
+               DirectoryHelper.removeDirectory(indexDir);
+
+               return null;
+            }
+         });
       }
       catch (IOException e)
       {
@@ -1638,22 +1648,30 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * {@inheritDoc}}
     */
-   public void backup(File storageDir) throws BackupException
+   public void backup(final File storageDir) throws BackupException
    {
       try
       {
-         File indexDir = getIndexDirectory();
+         final File indexDir = getIndexDirectory();
 
-         if (!PrivilegedFileHelper.exists(indexDir))
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            throw new BackupException("Can't backup index. Directory "
-               + PrivilegedFileHelper.getCanonicalPath(indexDir) + " doesn't exists");
-         }
-         else
-         {
-            File destZip = new File(storageDir, getStorageName() + ".zip");
-            DirectoryHelper.compressDirectory(indexDir, destZip);
-         }
+            public Void run() throws IOException
+            {
+               if (!indexDir.exists())
+               {
+                  throw new IOException("Can't backup index. Directory " + indexDir.getCanonicalPath()
+                     + " doesn't exists");
+               }
+               else
+               {
+                  File destZip = new File(storageDir, getStorageName() + ".zip");
+                  DirectoryHelper.compressDirectory(indexDir, destZip);
+               }
+
+               return null;
+            }
+         });
       }
       catch (RepositoryConfigurationException e)
       {
