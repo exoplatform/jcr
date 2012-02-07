@@ -30,7 +30,7 @@ import org.exoplatform.services.jcr.infinispan.CacheKey;
  */
 public class IndexInfosKey extends CacheKey
 {
-   IndexInfosKey()
+   public IndexInfosKey()
    {
       super();
    }
