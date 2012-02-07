@@ -36,7 +36,7 @@
       <jmxStatistics enabled="true"/>
       <clustering mode="distribution">
       	 <l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/>
-         <hash numOwners="3" rehashRpcTimeout="120000">
+         <hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}" rehashRpcTimeout="120000">
          	<groups enabled="true"/>
          </hash>
          <sync replTimeout="180000"/>
@@ -48,7 +48,7 @@
       <jmxStatistics enabled="true"/>
       <clustering mode="distribution">
          <l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/>
-         <hash numOwners="3" rehashRpcTimeout="120000"/>
+         <hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}" rehashRpcTimeout="120000"/>
          <sync replTimeout="180000"/>
       </clustering>
    </namedCache>

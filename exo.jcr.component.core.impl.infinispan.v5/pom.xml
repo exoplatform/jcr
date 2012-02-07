@@ -354,24 +354,6 @@
                      <descriptors>
                         <descriptor>${basedir}/src/main/assemblies/binary-assembly.xml</descriptor>
                      </descriptors>
-                     <archive>
-                        <manifest>
-                           <mainClass>org.exoplatform.services.jcr.infinispan.CacheServer</mainClass>
-                        </manifest>
-                     </archive>
-                  </configuration>
-               </execution>
-               <execution>
-                  <id>bundle</id>
-                  <phase>package</phase>
-                  <goals>
-                     <goal>single</goal>
-                  </goals>
-                  <configuration>
-                     <appendAssemblyId>false</appendAssemblyId>
-                     <descriptors>
-                        <descriptor>${basedir}/src/main/assemblies/zip-bundle-assembly.xml</descriptor>
-                     </descriptors>
                   </configuration>
                </execution>
             </executions>

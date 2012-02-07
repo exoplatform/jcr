@@ -18,19 +18,17 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
-  <id>binary</id>
-  <formats>
-    <format>jar</format>
-  </formats>
-  <includeBaseDirectory>false</includeBaseDirectory>  
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+   <id>binary</id>
+   <formats>
+      <format>zip</format>
+   </formats>
+   <includeBaseDirectory>false</includeBaseDirectory>
    <dependencySets>
       <dependencySet>
          <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
-         <outputDirectory>/</outputDirectory>
-         <unpack>true</unpack>
+         <outputDirectory>lib</outputDirectory>
          <excludes>
             <exclude>org.jboss.cache:jbosscache-core</exclude>
             <exclude>junit:junit</exclude>
@@ -38,33 +36,41 @@
             <exclude>javax.faces:jsf-api</exclude>
             <exclude>javax.portlet:portlet-api</exclude>
             <exclude>jmock:jmock</exclude>
-            <exclude>org.ow2.jotm:*</exclude>
             <exclude>xdoclet:*</exclude>
             <exclude>org.exoplatform.tool:exo.tool.framework.junit</exclude>
-            <exclude>org.ow2.carol:*</exclude>
-            <exclude>org.ow2.carol.irmi:irmi</exclude>
-            <exclude>org.ow2.spec.ee:ow2-jta-1.1-spec</exclude>
             <exclude>org.jacorb:*</exclude>
             <exclude>quartz:quartz</exclude>
             <exclude>javax.mail:mail</exclude>
             <exclude>com.experlog:xapool</exclude>
             <exclude>antlr:antlr</exclude>
-            <exclude>avalon-framework:avalon-framework</exclude>
-            <exclude>logkit:logkit</exclude>
-            <exclude>org.objectweb.howl:howl</exclude>
             <exclude>org.jboss.javaee:jboss-transaction-api</exclude>
             <exclude>org.jboss:jboss-common-core</exclude>
             <exclude>org.hibernate:*</exclude>
          </excludes>
-      </dependencySet> 
+      </dependencySet>
       <dependencySet>
          <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
-         <outputDirectory>/</outputDirectory>
+         <outputDirectory>lib</outputDirectory>
          <scope>test</scope>
-         <unpack>true</unpack>
          <includes>
-            <include>org.slf4j:slf4j-log4j12</include>       
+            <include>org.slf4j:slf4j-log4j12</include>
          </includes>
-      </dependencySet> 
-    </dependencySets>
+      </dependencySet>
+   </dependencySets>
+   <files>
+      <file>
+         <source>${basedir}/src/main/doc/readme.txt</source>
+         <destName>readme.txt</destName>
+      </file>
+   </files>
+   <fileSets>
+      <fileSet>
+         <directory>${basedir}/bin</directory>
+         <outputDirectory>/</outputDirectory>
+         <includes>
+            <include>*.cmd</include>
+            <include>*.sh</include>
+         </includes>
+      </fileSet>
+   </fileSets>
 </assembly>

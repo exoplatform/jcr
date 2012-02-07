@@ -1797,13 +1797,16 @@ public interface ExoCacheCreator {
   &lt;init-params&gt;
     &lt;value-param&gt;
       &lt;name&gt;infinispan-configuration&lt;/name&gt;
-      &lt;value&gt;jar:/conf/portal/distributed-cache-configuration.xml&lt;/value&gt;
+      &lt;value&gt;jar:/conf/distributed-cache-configuration.xml&lt;/value&gt;
     &lt;/value-param&gt;
     &lt;properties-param&gt;
       &lt;name&gt;parameters&lt;/name&gt;
       &lt;description&gt;The parameters of the configuration&lt;/description&gt;
-      &lt;property name="infinispan-num-owners" value="1"&gt;&lt;/property&gt;
-    &lt;/properties-param&gt;
+      &lt;property name="configurationFile" value="${gatein.jcr.jgroups.config}"&gt;&lt;/property&gt;
+      &lt;property name="invalidationThreshold" value="0"&gt;&lt;/property&gt;
+      &lt;property name="numOwners" value="3"&gt;&lt;/property&gt;
+      &lt;property name="numVirtualNodes" value="2"&gt;&lt;/property&gt;
+    &lt;/properties-param&gt;     
   &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
 
@@ -1850,29 +1853,42 @@ public interface ExoCacheCreator {
         use in case we would like to store the data of some eXo Cache
         instances into a distributed cache.</para>
 
-        <para>See below an example of infinispan configuration with only
-        <emphasis>eXoCache</emphasis> defined:</para>
+        <para>See below an example of infinispan configuration with both
+        <emphasis>eXoCache</emphasis> and <emphasis>JCRCache</emphasis>
+        defined:</para>
 
         <programlisting>&lt;infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"
   xmlns="urn:infinispan:config:5.1"&gt;
    &lt;global&gt;
       &lt;globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/&gt;
-      &lt;transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="Infinispan-cluster" distributedSyncTimeout="20000"&gt;
-         &lt;properties&gt;
-            &lt;property name="configurationFile" value="udp.xml"/&gt;
-         &lt;/properties&gt;
+      &lt;transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="JCR-cluster" distributedSyncTimeout="20000"&gt;
+        &lt;properties&gt;
+          &lt;property name="configurationFile" value="${configurationFile}"/&gt;
+        &lt;/properties&gt;
       &lt;/transport&gt;
       &lt;shutdown hookBehavior="DEFAULT"/&gt;
    &lt;/global&gt;
-   &lt;namedCache name="eXoCache"&gt;
-      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" /&gt;
+   &lt;namedCache name="JCRCache"&gt;
+      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="120000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" /&gt;
       &lt;transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" eagerLockSingleNode="true" transactionMode="TRANSACTIONAL"/&gt;
       &lt;jmxStatistics enabled="true"/&gt;
       &lt;clustering mode="distribution"&gt;
-         &lt;hash numOwners="${infinispan-num-owners}" rehashRpcTimeout="120000" /&gt;
-         &lt;sync/&gt;
+        &lt;l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/&gt;
+         &lt;hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}" rehashRpcTimeout="120000"&gt;
+           &lt;groups enabled="true"/&gt;
+         &lt;/hash&gt;
+         &lt;sync replTimeout="180000"/&gt;
       &lt;/clustering&gt;
-      &lt;invocationBatching enabled="true"/&gt; 
+   &lt;/namedCache&gt;
+   &lt;namedCache name="eXoCache"&gt;
+      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="120000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" /&gt;
+      &lt;transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" eagerLockSingleNode="true" transactionMode="TRANSACTIONAL"/&gt;
+      &lt;jmxStatistics enabled="true"/&gt;
+      &lt;clustering mode="distribution"&gt;
+         &lt;l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/&gt;
+         &lt;hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}" rehashRpcTimeout="120000"/&gt;
+         &lt;sync replTimeout="180000"/&gt;
+      &lt;/clustering&gt;
    &lt;/namedCache&gt;
 &lt;/infinispan&gt;</programlisting>
       </section>
@@ -1883,7 +1899,7 @@ public interface ExoCacheCreator {
         <para>In case you intend to use the distribued mode, you can launch
         external JVM in standalone mode to provide more memory to your current
         cache. To do so, you will need to get the file of type
-        <emphasis>exo.jcr.component.core.impl.infinispan.v5-X.Y.Z-binary.zip</emphasis>
+        <emphasis>exo.jcr.component.core.impl.infinispan.v5-binary.zip</emphasis>
         in which you will find scripts to launch your cache servers. These
         scripts allow optional arguments that are described below:</para>
 
@@ -1951,6 +1967,15 @@ public interface ExoCacheCreator {
             </tbody>
           </tgroup>
         </table>
+
+        <note>
+          <para>If you intend to use the CacheServer in order to manage some
+          of your eXo Cache instances, don't forget to add the jar files that
+          define both the keys and the values in the lib directory of the
+          CacheServer distribution and restarts your CacheServer instances
+          otherwise the unmarshalling will fail with
+          <emphasis>java.lang.ClassNotFoundException</emphasis>.</para>
+        </note>
       </section>
 
       <section>
