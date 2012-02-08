@@ -243,7 +243,7 @@ public class DumbJob implements Job {
       &lt;description&gt;cron job configuration&lt;/description&gt;
       &lt;init-params&gt;
         &lt;properties-param&gt;
-          &lt;name&gt;job.info&lt;/name&gt;
+          &lt;name&gt;cronjob.info&lt;/name&gt;
           &lt;description&gt;dumb job executed by cron expression&lt;/description&gt;
           &lt;property name=&quot;jobName&quot; value=&quot;DumbJob&quot;/&gt;
           &lt;property name=&quot;groupName&quot; value=&quot;DumbJobGroup&quot;/&gt;
