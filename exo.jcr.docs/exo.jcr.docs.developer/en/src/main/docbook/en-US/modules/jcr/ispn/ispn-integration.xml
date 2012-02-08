@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This document was created with Syntext Serna Free. -->
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="ISPN.integration">
+  <?dbhtml filename="ispn-integration.html"?>
+
+  <title>Infinispan integration</title>
+
+  <para>eXo JCR can rely on distributed cache such as Infinispan. This article
+  describes the required configuration.</para>
+
+  <section>
+    <title>Components configuration requirements</title>
+
+    <programlisting>&lt;component&gt;
+    &lt;key&gt;org.infinispan.transaction.lookup.TransactionManagerLookup&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup&lt;/type&gt;
+&lt;/component&gt;
+
+&lt;component profiles="ispn"&gt;
+    &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.transaction.infinispan.JBossTransactionsService&lt;/type&gt;
+    &lt;init-params&gt;
+        &lt;value-param&gt;
+            &lt;name&gt;timeout&lt;/name&gt;
+            &lt;value&gt;3000&lt;/value&gt;
+        &lt;/value-param&gt;
+    &lt;/init-params&gt;
+&lt;/component&gt;
+
+&lt;component profiles="ispn"&gt;
+    &lt;key&gt;org.exoplatform.services.rpc.RPCService&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.rpc.jgv3.RPCServiceImpl&lt;/type&gt;
+    &lt;init-params&gt;
+        &lt;value-param&gt;
+            &lt;name&gt;jgroups-configuration&lt;/name&gt;
+            &lt;value&gt;jar:/conf/udp-mux-v3.xml&lt;/value&gt;
+        &lt;/value-param&gt;
+        &lt;value-param&gt;
+            &lt;name&gt;jgroups-cluster-name&lt;/name&gt;
+            &lt;value&gt;RPCService-Cluster&lt;/value&gt;
+        &lt;/value-param&gt;
+        &lt;value-param&gt;
+            &lt;name&gt;jgroups-default-timeout&lt;/name&gt;
+            &lt;value&gt;0&lt;/value&gt;
+        &lt;/value-param&gt;
+    &lt;/init-params&gt;
+&lt;/component&gt;
+</programlisting>
+  </section>
+
+  <section>
+    <title>Workspaces configuration requirements</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Cache configuration:</para>
+
+        <programlisting language="xml">&lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache"&gt;
+    &lt;properties&gt;
+        &lt;property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-data.xml" /&gt;
+        &lt;property name="jgroups-configuration" value="jar:/conf/udp-mux-v3.xml" /&gt;
+        &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
+    &lt;/properties&gt;
+&lt;/cache&gt;
+</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Indexer configuration</para>
+
+        <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+    &lt;properties&gt;
+        &lt;property name="index-dir" value="${exo.jcr.parent.dir:..}/temp/jcrlucenedb/production" /&gt;
+        &lt;property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" /&gt;
+        &lt;property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-indexer.xml" /&gt;
+        &lt;property name="jgroups-configuration" value="jar:/conf/udp-mux-v3.xml" /&gt;
+        &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
+        &lt;property name="max-volatile-time" value="60" /&gt;
+    &lt;/properties&gt;
+&lt;/query-handler&gt;
+</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Lock Manager configuration</para>
+
+        <programlisting language="xml">&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
+    &lt;properties&gt;
+        &lt;property name="time-out" value="15m" /&gt;
+        &lt;property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-lock.xml" /&gt;
+        &lt;property name="jgroups-configuration" value="jar:/conf/udp-mux-v3.xml" /&gt;
+        &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.table.name" value="lk" /&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.table.create" value="true" /&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.table.drop" value="false" /&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.id.column" value="id" /&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" /&gt;
+    &lt;/properties&gt;
+&lt;/lock-manager&gt;^
+</programlisting>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Shipped Infinispan Cache configuration templates</title>
+
+    <para>eXo JCR implementation is shipped with ready-to-use Infinispan Cache
+    configuration templates for JCR's components. </para>
+
+    <section>
+      <title>Data container template</title>
+
+      <para>Data container template is "infinispan-data.xml":</para>
+
+      <programlisting>&lt;infinispan 
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance". 
+      xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd". 
+      xmlns="urn:infinispan:config:5.1"&gt;
+
+    &lt;global&gt;
+      &lt;evictionScheduledExecutor factory="org.infinispan.executors.DefaultScheduledExecutorFactory"&gt;
+        &lt;properties&gt;
+          &lt;property name="threadNamePrefix" value="EvictionThread"/&gt;
+        &lt;/properties&gt;
+      &lt;/evictionScheduledExecutor&gt;
+
+      &lt;globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/&gt;
+
+      &lt;transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="${infinispan-cluster-name}" distributedSyncTimeout=
+        &lt;properties&gt;
+          &lt;property name="configurationFile" value="${jgroups-configuration}"/&gt;
+        &lt;/properties&gt;
+      &lt;/transport&gt;
+    &lt;/global&gt;
+
+    &lt;default&gt;
+      &lt;clustering mode="replication"&gt;
+        &lt;stateTransfer timeout="20000" fetchInMemoryState="false" /&gt;
+        &lt;sync replTimeout="20000"/&gt;
+      &lt;/clustering&gt;
+
+      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true"/&gt;
+      &lt;transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" s
+      &lt;jmxStatistics enabled="true"/&gt;
+      &lt;eviction strategy="LRU" threadPolicy="DEFAULT" maxEntries="1000000"/&gt;
+      &lt;expiration wakeUpInterval="5000"/&gt;
+   &lt;/default&gt;
+&lt;/infinispan&gt;
+</programlisting>
+
+      <table>
+        <title>Template variables</title>
+
+        <tgroup cols="1">
+          <tbody>
+            <row>
+              <entry>infinispan-cluster-name</entry>
+            </row>
+
+            <row>
+              <entry>jgroups-configuration</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section>
+      <title>Lock manager template</title>
+
+      <para>Its template name is "infinispan-lock.xml"</para>
+
+      <programlisting language="xml">&lt;infinispan 
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance". 
+      xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd". 
+      xmlns="urn:infinispan:config:5.1"&gt;
+
+    &lt;global&gt;
+      &lt;evictionScheduledExecutor factory="org.infinispan.executors.DefaultScheduledExecutorFactory"&gt;
+        &lt;properties&gt;
+          &lt;property name="threadNamePrefix" value="EvictionThread"/&gt;
+        &lt;/properties&gt;
+      &lt;/evictionScheduledExecutor&gt;
+
+      &lt;globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/&gt;
+
+      &lt;transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="${infinispan-cluster-name}" distributedSyncTimeout=
+        &lt;properties&gt;
+          &lt;property name="configurationFile" value="${jgroups-configuration}"/&gt;
+        &lt;/properties&gt;
+      &lt;/transport&gt;
+    &lt;/global&gt;
+
+    &lt;default&gt;
+      &lt;clustering mode="replication"&gt;
+        &lt;stateTransfer timeout="20000" fetchInMemoryState="false" /&gt;
+        &lt;sync replTimeout="20000"/&gt;
+      &lt;/clustering&gt;
+
+      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/&gt;
+      &lt;transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" s
+      &lt;jmxStatistics enabled="true"/&gt;
+      &lt;eviction strategy="NONE"/&gt;
+
+      &lt;loaders passivation="false" shared="true" preload="true"&gt;
+        &lt;loader class="org.infinispan.loaders.jdbc.stringbased.JdbcStringBasedCacheStore" fetchPersistentState="true" ignoreModifications="false" purgeOnStar
+          &lt;properties&gt;
+             &lt;property name="stringsTableNamePrefix" value="${infinispan-cl-cache.jdbc.table.name}"/&gt;
+             &lt;property name="idColumnName" value="${infinispan-cl-cache.jdbc.id.column}"/&gt;
+             &lt;property name="dataColumnName" value="${infinispan-cl-cache.jdbc.data.column}"/&gt;
+             &lt;property name="timestampColumnName" value="${infinispan-cl-cache.jdbc.timestamp.column}"/&gt;
+             &lt;property name="idColumnType" value="${infinispan-cl-cache.jdbc.id.type}"/&gt;
+             &lt;property name="dataColumnType" value="${infinispan-cl-cache.jdbc.data.type}"/&gt;
+             &lt;property name="timestampColumnType" value="${infinispan-cl-cache.jdbc.timestamp.type}"/&gt;
+             &lt;property name="dropTableOnExit" value="${infinispan-cl-cache.jdbc.table.drop}"/&gt;
+             &lt;property name="createTableOnStart" value="${infinispan-cl-cache.jdbc.table.create}"/&gt;
+             &lt;property name="connectionFactoryClass" value="${infinispan-cl-cache.jdbc.connectionFactory}"/&gt;
+             &lt;property name="datasourceJndiLocation" value="${infinispan-cl-cache.jdbc.datasource}"/&gt;
+          &lt;/properties&gt;
+          &lt;async enabled="false"/&gt;
+        &lt;/loader&gt;
+      &lt;/loaders&gt;
+   &lt;/default&gt;
+
+&lt;/infinispan&gt;
+</programlisting>
+
+      <table>
+        <title>Template variables</title>
+
+        <tgroup cols="1">
+          <tbody>
+            <row>
+              <entry>infinispan-cluster-name</entry>
+            </row>
+
+            <row>
+              <entry>jgroups-configuration</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.table.name</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.id.column</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.data.column</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.timestamp.column</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.id.type</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.data.type</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.timestamp.type</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.table.drop</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.table.create</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.connectionFactory</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cl-cache.jdbc.datasource</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section>
+      <title>Query handler (indexer) template</title>
+
+      <para>Have a look at "infinispan-indexer.xml"</para>
+
+      <programlisting>&lt;infinispan 
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance". 
+      xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd". 
+      xmlns="urn:infinispan:config:5.1"&gt;
+
+    &lt;global&gt;
+      &lt;evictionScheduledExecutor factory="org.infinispan.executors.DefaultScheduledExecutorFactory"&gt;
+        &lt;properties&gt;
+          &lt;property name="threadNamePrefix" value="EvictionThread"/&gt;
+        &lt;/properties&gt;
+      &lt;/evictionScheduledExecutor&gt;
+
+      &lt;globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/&gt;
+
+      &lt;transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="${infinispan-cluster-name}" distributedSyncTimeout=
+        &lt;properties&gt;
+          &lt;property name="configurationFile" value="${jgroups-configuration}"/&gt;
+        &lt;/properties&gt;
+      &lt;/transport&gt;
+    &lt;/global&gt;
+
+    &lt;default&gt;
+      &lt;clustering mode="replication"&gt;
+        &lt;stateTransfer timeout="20000" fetchInMemoryState="false" /&gt;
+        &lt;sync replTimeout="20000"/&gt;
+      &lt;/clustering&gt;
+
+      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/&gt;
+      &lt;transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" s
+      &lt;jmxStatistics enabled="true"/&gt;
+      &lt;eviction strategy="NONE"/&gt;
+
+      &lt;loaders passivation="false" shared="false" preload="false"&gt;
+        &lt;loader class="${infinispan-cachestore-classname}" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false"&gt;
+          &lt;async enabled="false"/&gt;
+        &lt;/loader&gt;
+      &lt;/loaders&gt;
+   &lt;/default&gt;
+&lt;/infinispan&gt;
+</programlisting>
+
+      <table>
+        <title>Template variable</title>
+
+        <tgroup cols="1">
+          <tbody>
+            <row>
+              <entry>infinispan-cluster-name</entry>
+            </row>
+
+            <row>
+              <entry>jgroups-configuration</entry>
+            </row>
+
+            <row>
+              <entry>infinispan-cachestore-classname</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  </section>
+</chapter>
