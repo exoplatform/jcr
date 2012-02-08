@@ -53,6 +53,26 @@
   <section>
     <title>Workspaces configuration requirements</title>
 
+    <para>Each mentioned below components uses instances of Infinispan Cache
+    product for caching in clustered environment. So every element has it's
+    own transport and has to be configured in a proper way. As usual,
+    workspaces have similar configuration. The simplest way to configure them
+    is to define their own configuration files for each component in each
+    workspace. There are several commons parameters. <abbrev></abbrev></para>
+
+    <para><abbrev>"infinispan-configuration"</abbrev> defines path to template
+    based configuration for Infinispan Cache instance. </para>
+
+    <para>JGroups is used by Infinispan Cache for network communications and
+    transport in a clustered environment. If property
+    <abbrev>"jgroups-configuration"</abbrev> is defined in component
+    configuration, it will be injected into the Infinispan Cache instance on
+    startup.</para>
+
+    <para>The another parameter is <abbrev>"infinispan-cluster-name".</abbrev>
+    This defines the name of the cluster. Needs to be the same for all nodes
+    in a cluster in order to find each other.</para>
+
     <itemizedlist>
       <listitem>
         <para>Cache configuration:</para>
@@ -81,6 +101,17 @@
     &lt;/properties&gt;
 &lt;/query-handler&gt;
 </programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para><abbrev>changesfilter-class</abbrev> - defines cluster-ready
+            index strategy based on Infinispan Cache, it can be either
+            <classname>org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter</classname>
+            (for shared index) or
+            <classname>org.exoplatform.services.jcr.impl.core.query.ispn.LocalIndexChangesFilter</classname>
+            (for local index)</para>
+          </listitem>
+        </itemizedlist>
       </listitem>
 
       <listitem>
@@ -103,6 +134,51 @@
     &lt;/properties&gt;
 &lt;/lock-manager&gt;^
 </programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para><abbrev>infinispan-cl-cache.jdbc.table.name</abbrev> - table
+            name</para>
+          </listitem>
+
+          <listitem>
+            <para><abbrev>infinispan-cl-cache.jdbc.table.create</abbrev> - is
+            true or false. Indicates whether to create table at start phase.
+            If true, the table is created if it does not already exist.</para>
+          </listitem>
+
+          <listitem>
+            <para><abbrev>infinispan-cl-cache.jdbc.table.drop</abbrev> - is
+            true or false. Indicates whether to drop the table at stop
+            phase.</para>
+          </listitem>
+
+          <listitem>
+            <para><abbrev>infinispan-cl-cache.jdbc.id.column</abbrev> - id
+            column name</para>
+          </listitem>
+
+          <listitem>
+            <para><abbrev>infinispan-cl-cache.jdbc.data.column</abbrev> - data
+            column name</para>
+          </listitem>
+
+          <listitem>
+            <para><abbrev>infinispan-cl-cache.jdbc.timestamp.column</abbrev> -
+            timestamp column name</para>
+          </listitem>
+
+          <listitem>
+            <para><abbrev>infinispan-cl-cache.jdbc.datasource</abbrev> - name
+            of configured in Container datasource, where you want to store
+            locks. The best idea is to use the same as for workspace.</para>
+          </listitem>
+
+          <listitem>
+            <para><abbrev>infinispan-cl-cache.jdbc.connectionFactory</abbrev>
+            - connection factories for use with the JDBC Cache Store.</para>
+          </listitem>
+        </itemizedlist>
       </listitem>
     </itemizedlist>
   </section>
@@ -349,10 +425,6 @@
 
             <row>
               <entry>jgroups-configuration</entry>
-            </row>
-
-            <row>
-              <entry>infinispan-cachestore-classname</entry>
             </row>
           </tbody>
         </tgroup>

@@ -285,7 +285,7 @@
 
       <listitem>
         <para>Use RepositorySuspendController suspend all repositories (see
-        <link linked="JCR.SearchIndexBackup">37.1 Repository
+        <link linkend="JCR.SearchIndexBackup">37.1 Repository
         suspending</link>)</para>
       </listitem>
 
@@ -295,7 +295,7 @@
 
       <listitem>
         <para>Use RepositorySuspendController to resume all repositories (see
-        <link linked="JCR.SearchIndexBackup">37.3 Repository
+        <link linkend="JCR.SearchIndexBackup">37.3 Repository
         resuming</link>)</para>
       </listitem>
     </itemizedlist>
