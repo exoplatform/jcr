@@ -27,6 +27,8 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 
 import java.util.concurrent.TimeUnit;
 
@@ -76,7 +78,7 @@ public class TestISPNCache extends TestCase
       assertTrue(cache.size() == 1);
       assertTrue(cache.containsKey("key"));
 
-      String value = (String)cache.remove("key");
+      String value = cache.remove("key");
       assertTrue(value.equals("value"));
       assertTrue(cache.isEmpty());
 
@@ -91,6 +93,26 @@ public class TestISPNCache extends TestCase
       assertTrue(cache.containsKey("key"));
       Thread.sleep(2000 + 500);
       assertFalse(cache.containsKey("key"));
+   }
+   
+   /**
+    * Infinispan-based RSync concept relies on some JGroups and ISPN interns, used to identify physical address
+    * of coodrinator node. This test used to identify any changed in those libraries to be able quickly update
+    * RSync components. 
+    * 
+    * @throws Exception
+    */
+   public void testJGroupTransportPhysicalAddress() throws Exception
+   {
+      GlobalConfiguration myGlobalConfig = new GlobalConfigurationBuilder().clusteredDefault().build();
+      // Create cache manager
+      EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig);
+
+      // Create a cache
+      Cache<String, String> cache = manager.getCache();
+      
+      assertTrue(manager.getCoordinator() instanceof JGroupsAddress);
+      assertTrue(manager.getTransport() instanceof JGroupsTransport);
    }
 
    /**
@@ -111,7 +133,7 @@ public class TestISPNCache extends TestCase
       assertTrue(cache.size() == 1);
       assertTrue(cache.containsKey("key"));
 
-      String value = (String)cache.remove("key");
+      String value = cache.remove("key");
       assertTrue(value.equals("value"));
       assertTrue(cache.isEmpty());
 
