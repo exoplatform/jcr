@@ -77,6 +77,7 @@ import org.picocontainer.Startable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -1025,23 +1026,22 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
          if (wsConfig.getContainer().getValueStorages() != null)
          {
-            for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
             {
-               final File valueStorageDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-
-               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+               public Void run() throws IOException, RepositoryConfigurationException
                {
-                  public Void run() throws IOException
+                  for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
                   {
+                     File valueStorageDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
                      if (valueStorageDir.exists())
                      {
                         DirectoryHelper.removeDirectory(valueStorageDir);
                      }
-
-                     return null;
                   }
-               });
-            }
+
+                  return null;
+               }
+            });
          }
       }
       catch (RepositoryConfigurationException e)
@@ -1056,7 +1056,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          throw new BackupException(e);
       }
-      catch (IOException e)
+      catch (PrivilegedActionException e)
       {
          throw new BackupException(e);
       }
@@ -1106,14 +1106,13 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          // backup value storage
          if (wsConfig.getContainer().getValueStorages() != null)
          {
-            for (final ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
             {
-               final File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-
-               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+               public Void run() throws IOException, RepositoryConfigurationException
                {
-                  public Void run() throws IOException
+                  for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
                   {
+                     File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
                      if (!srcDir.exists())
                      {
                         throw new IOException("Can't backup value storage. Directory " + srcDir.getName()
@@ -1124,22 +1123,22 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                         File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
                         DirectoryHelper.compressDirectory(srcDir, zipFile);
                      }
-
-                     return null;
                   }
-               });
-            }
+
+                  return null;
+               }
+            });
          }
       }
       catch (IOException e)
       {
          throw new BackupException(e);
       }
-      catch (RepositoryConfigurationException e)
+      catch (RepositoryException e)
       {
          throw new BackupException(e);
       }
-      catch (RepositoryException e)
+      catch (PrivilegedActionException e)
       {
          throw new BackupException(e);
       }
