@@ -109,8 +109,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * Indicates if the statistics has to be enabled.
     */
-   public static final boolean STATISTICS_ENABLED =
-      Boolean.valueOf(PrivilegedSystemHelper.getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
+   public static final boolean STATISTICS_ENABLED = Boolean.valueOf(PrivilegedSystemHelper
+      .getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
 
    static
    {
@@ -487,8 +487,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       // by default
       if (dbSourceName != null)
       {
-         return new GenericConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-            swapDirectory, swapCleaner);
+         return new GenericConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider,
+            maxBufferSize, swapDirectory, swapCleaner);
       }
 
       return new GenericConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
@@ -538,8 +538,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
 
          // MULTIDB
-         if (!wsEntry.getContainer().getParameterValue(MULTIDB).equals(
-            wsConfig.getContainer().getParameterValue(MULTIDB)))
+         if (!wsEntry.getContainer().getParameterValue(MULTIDB)
+            .equals(wsConfig.getContainer().getParameterValue(MULTIDB)))
          {
             throw new RepositoryConfigurationException("All workspaces must be " + MULTIDB + " or " + SINGLEDB
                + ". But " + wsEntry.getName() + "- multi-db=" + wsEntry.getContainer().getParameterValue(MULTIDB)
@@ -660,14 +660,14 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          this.connFactory = defaultConnectionFactory();
          dbInitializer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8 ||
-               dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8
+         || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
       {
          if (dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
          {
-            LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only" +
-                  " if you don't expect any support and performances in read accesses are more important than the consistency" +
-                  " in your use-case. This dialect is only dedicated to the community.");
+            LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only"
+               + " if you don't expect any support and performances in read accesses are more important than the consistency"
+               + " in your use-case. This dialect is only dedicated to the community.");
          }
          if (dbSourceName != null)
          {
@@ -721,8 +721,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          if (dbSourceName != null)
          {
             this.connFactory =
-               new HSQLDBConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
+               new HSQLDBConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider,
+                  maxBufferSize, swapDirectory, swapCleaner);
          }
          else
          {
@@ -1027,11 +1027,20 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          {
             for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
             {
-               File valueStorageDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-               if (PrivilegedFileHelper.exists(valueStorageDir))
+               final File valueStorageDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+
+               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
                {
-                  DirectoryHelper.removeDirectory(valueStorageDir);
-               }
+                  public Void run() throws IOException
+                  {
+                     if (valueStorageDir.exists())
+                     {
+                        DirectoryHelper.removeDirectory(valueStorageDir);
+                     }
+
+                     return null;
+                  }
+               });
             }
          }
       }
@@ -1056,7 +1065,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public void backup(File storageDir) throws BackupException
+   public void backup(final File storageDir) throws BackupException
    {
       ObjectWriter backupInfo = null;
 
@@ -1097,19 +1106,28 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          // backup value storage
          if (wsConfig.getContainer().getValueStorages() != null)
          {
-            for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
+            for (final ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
             {
-               File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-               if (!PrivilegedFileHelper.exists(srcDir))
+               final File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+
+               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
                {
-                  throw new BackupException("Can't backup value storage. Directory " + srcDir.getName()
-                     + " doesn't exists");
-               }
-               else
-               {
-                  File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
-                  DirectoryHelper.compressDirectory(srcDir, zipFile);
-               }
+                  public Void run() throws IOException
+                  {
+                     if (!srcDir.exists())
+                     {
+                        throw new IOException("Can't backup value storage. Directory " + srcDir.getName()
+                           + " doesn't exists");
+                     }
+                     else
+                     {
+                        File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
+                        DirectoryHelper.compressDirectory(srcDir, zipFile);
+                     }
+
+                     return null;
+                  }
+               });
             }
          }
       }
@@ -1152,7 +1170,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       ObjectReader backupInfo = null;
       try
       {
-         File storageDir = (File) context.getObject(DataRestoreContext.STORAGE_DIR);
+         File storageDir = (File)context.getObject(DataRestoreContext.STORAGE_DIR);
          Connection jdbcConn = null;
 
          if (context.getObject(DataRestoreContext.DB_CONNECTION) == null)
@@ -1174,11 +1192,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          else
          {
-            jdbcConn = (Connection) context.getObject(DataRestoreContext.DB_CONNECTION);
+            jdbcConn = (Connection)context.getObject(DataRestoreContext.DB_CONNECTION);
          }
 
          backupInfo =
-                  new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
+            new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
                "JDBCWorkspaceDataContainer.info")));
 
          String srcContainerName = backupInfo.readString();

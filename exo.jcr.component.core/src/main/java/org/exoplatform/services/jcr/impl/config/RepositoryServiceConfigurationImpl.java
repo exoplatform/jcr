@@ -173,17 +173,25 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          else
          {
             URL filePath = configurationService.getURL(param.getValue());
-            File sourceConfig = new File(filePath.toURI());
+            final File sourceConfig = new File(filePath.toURI());
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-            File backUp = new File(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
+            final File backUp = new File(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
+
             try
             {
-               DirectoryHelper.renameFile(sourceConfig, backUp);
+               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+               {
+                  public Void run() throws IOException
+                  {
+                     DirectoryHelper.deleteDstAndRename(sourceConfig, backUp);
+                     return null;
+                  }
+               });
             }
             catch (IOException ioe)
             {
                throw new RepositoryException("Can't back up configuration on path "
-                        + PrivilegedFileHelper.getAbsolutePath(sourceConfig), ioe);
+                  + PrivilegedFileHelper.getAbsolutePath(sourceConfig), ioe);
             }
 
             saveStream = PrivilegedFileHelper.fileOutputStream(sourceConfig);

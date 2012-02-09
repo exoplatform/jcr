@@ -16,7 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.core.query.lucene.OfflinePersistentIndex;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -140,21 +141,27 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
 
          public Serializable execute(Serializable[] args) throws Throwable
          {
-            int indexDirLen = PrivilegedFileHelper.getAbsolutePath(indexDirectory).length();
-
-            ArrayList<String> result = new ArrayList<String>();
-            for (File file : DirectoryHelper.listFiles(indexDirectory))
+            return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<ArrayList<String>>()
             {
-               if (!file.isDirectory())
+               public ArrayList<String> run() throws IOException
                {
-                  // if parent directory is not "offline" then add this file. Otherwise skip it.
-                  if (!file.getParent().endsWith(OfflinePersistentIndex.NAME))
+                  int indexDirLen = indexDirectory.getAbsolutePath().length();
+
+                  ArrayList<String> result = new ArrayList<String>();
+                  for (File file : DirectoryHelper.listFiles(indexDirectory))
                   {
-                     result.add(PrivilegedFileHelper.getAbsolutePath(file).substring(indexDirLen));
+                     if (!file.isDirectory())
+                     {
+                        // if parent directory is not "offline" then add this file. Otherwise skip it.
+                        if (!file.getParent().endsWith(OfflinePersistentIndex.NAME))
+                        {
+                           result.add(file.getAbsolutePath().substring(indexDirLen));
+                        }
+                     }
                   }
+                  return result;
                }
-            }
-            return result;
+            });
          }
       });
 

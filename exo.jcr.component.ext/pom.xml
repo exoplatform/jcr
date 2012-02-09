@@ -160,6 +160,7 @@
           <include>**/*.xls</include>
           <include>**/*.groovy</include>
           <include>**/login.conf</include>
+          <include>**/tsm-excludes.properties</include>
         </includes>
       </testResource>
     </testResources>

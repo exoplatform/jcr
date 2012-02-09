@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,12 +56,12 @@ public class DirectoryHelper
    {
       List<File> result = new ArrayList<File>();
 
-      if (!PrivilegedFileHelper.isDirectory(srcPath))
+      if (!srcPath.isDirectory())
       {
-         throw new IOException(PrivilegedFileHelper.getAbsolutePath(srcPath) + " is a directory");
+         throw new IOException(srcPath.getAbsolutePath() + " is a directory");
       }
 
-      for (File subFile : PrivilegedFileHelper.listFiles(srcPath))
+      for (File subFile : srcPath.listFiles())
       {
          result.add(subFile);
          if (subFile.isDirectory())
@@ -85,14 +85,14 @@ public class DirectoryHelper
     */
    public static void copyDirectory(File srcPath, File dstPath) throws IOException
    {
-      if (PrivilegedFileHelper.isDirectory(srcPath))
+      if (srcPath.isDirectory())
       {
-         if (!PrivilegedFileHelper.exists(dstPath))
+         if (!dstPath.exists())
          {
-            PrivilegedFileHelper.mkdirs(dstPath);
+            dstPath.mkdirs();
          }
 
-         String files[] = PrivilegedFileHelper.list(srcPath);
+         String files[] = srcPath.list();
          for (int i = 0; i < files.length; i++)
          {
             copyDirectory(new File(srcPath, files[i]), new File(dstPath, files[i]));
@@ -105,8 +105,8 @@ public class DirectoryHelper
 
          try
          {
-            in = PrivilegedFileHelper.fileInputStream(srcPath);
-            out = PrivilegedFileHelper.fileOutputStream(dstPath);
+            in = new FileInputStream(srcPath);
+            out = new FileOutputStream(dstPath);
 
             transfer(in, out);
          }
@@ -136,23 +136,23 @@ public class DirectoryHelper
     */
    public static void removeDirectory(File dir) throws IOException
    {
-      if (PrivilegedFileHelper.isDirectory(dir))
+      if (dir.isDirectory())
       {
-         for (File subFile : PrivilegedFileHelper.listFiles(dir))
+         for (File subFile : dir.listFiles())
          {
             removeDirectory(subFile);
          }
 
-         if (!PrivilegedFileHelper.delete(dir))
+         if (!dir.delete())
          {
-            throw new IOException("Can't remove folder : " + PrivilegedFileHelper.getCanonicalPath(dir));
+            throw new IOException("Can't remove folder : " + dir.getCanonicalPath());
          }
       }
       else
       {
-         if (!PrivilegedFileHelper.delete(dir))
+         if (!dir.delete())
          {
-            throw new IOException("Can't remove file : " + PrivilegedFileHelper.getCanonicalPath(dir));
+            throw new IOException("Can't remove file : " + dir.getCanonicalPath());
          }
       }
    }
@@ -172,12 +172,12 @@ public class DirectoryHelper
     */
    public static void compressDirectory(File rootPath, File dstZipPath) throws IOException
    {
-      ZipOutputStream zip = PrivilegedFileHelper.zipOutputStream(dstZipPath);
+      ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(dstZipPath));
       try
       {
-         if (PrivilegedFileHelper.isDirectory(rootPath))
+         if (rootPath.isDirectory())
          {
-            String files[] = PrivilegedFileHelper.list(rootPath);
+            String files[] = rootPath.list();
             for (int i = 0; i < files.length; i++)
             {
                compressDirectory("", new File(rootPath, files[i]), zip);
@@ -203,12 +203,12 @@ public class DirectoryHelper
     */
    private static void compressDirectory(String relativePath, File srcPath, ZipOutputStream zip) throws IOException
    {
-      if (PrivilegedFileHelper.isDirectory(srcPath))
+      if (srcPath.isDirectory())
       {
          zip.putNextEntry(new ZipEntry(relativePath + "/" + srcPath.getName() + "/"));
          zip.closeEntry();
 
-         String files[] = PrivilegedFileHelper.list(srcPath);
+         String files[] = srcPath.list();
          for (int i = 0; i < files.length; i++)
          {
             compressDirectory(relativePath + "/" + srcPath.getName(), new File(srcPath, files[i]), zip);
@@ -216,7 +216,7 @@ public class DirectoryHelper
       }
       else
       {
-         InputStream in = PrivilegedFileHelper.fileInputStream(srcPath);
+         InputStream in = new FileInputStream(srcPath);
          try
          {
             zip.putNextEntry(new ZipEntry(relativePath + "/" + srcPath.getName()));
@@ -247,7 +247,7 @@ public class DirectoryHelper
     */
    public static void uncompressDirectory(File srcZipPath, File dstDirPath) throws IOException
    {
-      ZipInputStream in = PrivilegedFileHelper.zipInputStream(srcZipPath);
+      ZipInputStream in = new ZipInputStream(new FileInputStream(srcZipPath));
       ZipEntry entry = null;
 
       try
@@ -255,15 +255,15 @@ public class DirectoryHelper
          while ((entry = in.getNextEntry()) != null)
          {
             File dstFile = new File(dstDirPath, entry.getName());
-            PrivilegedFileHelper.mkdirs(dstFile.getParentFile());
+            dstFile.getParentFile().mkdirs();
 
             if (entry.isDirectory())
             {
-               PrivilegedFileHelper.mkdirs(dstFile);
+               dstFile.mkdirs();
             }
             else
             {
-               OutputStream out = PrivilegedFileHelper.fileOutputStream(dstFile);
+               OutputStream out = new FileOutputStream(dstFile);
                try
                {
                   transfer(in, out);
@@ -296,14 +296,14 @@ public class DirectoryHelper
     */
    public static void uncompressEveryFileFromDirectory(File srcPath, File dstPath) throws IOException
    {
-      if (PrivilegedFileHelper.isDirectory(srcPath))
+      if (srcPath.isDirectory())
       {
-         if (!PrivilegedFileHelper.exists(dstPath))
+         if (!dstPath.exists())
          {
-            PrivilegedFileHelper.mkdirs(dstPath);
+            dstPath.mkdirs();
          }
 
-         String files[] = PrivilegedFileHelper.list(srcPath);
+         String files[] = srcPath.list();
          for (int i = 0; i < files.length; i++)
          {
             uncompressEveryFileFromDirectory(new File(srcPath, files[i]), new File(dstPath, files[i]));
@@ -316,10 +316,10 @@ public class DirectoryHelper
 
          try
          {
-            in = PrivilegedFileHelper.zipInputStream(srcPath);
+            in = new ZipInputStream(new FileInputStream(srcPath));
             in.getNextEntry();
 
-            out = PrivilegedFileHelper.fileOutputStream(dstPath);
+            out = new FileOutputStream(dstPath);
 
             transfer(in, out);
          }
@@ -354,7 +354,9 @@ public class DirectoryHelper
    }
 
    /**
-    * Rename file.
+    * Rename file. Trying to remove destination first.
+    * If file can't be renamed in standard way the coping
+    * data will be used instead.
     * 
     * @param srcFile
     *          source file
@@ -363,34 +365,45 @@ public class DirectoryHelper
     * @throws IOException
     *          if any exception occurred 
     */
-   public static synchronized void renameFile(File srcFile, File dstFile) throws IOException
+   public static void deleteDstAndRename(File srcFile, File dstFile) throws IOException
    {
-      /* This is not atomic.  If the program crashes between the call to
-         delete() and the call to renameTo() then we're screwed, but I've
-         been unable to figure out how else to do this... */
-
-      if (PrivilegedFileHelper.exists(dstFile))
-         if (!PrivilegedFileHelper.delete(dstFile))
+      if (dstFile.exists())
+      {
+         if (!dstFile.delete())
+         {
             throw new IOException("Cannot delete " + dstFile);
+         }
+      }
 
+      renameFile(srcFile, dstFile);
+   }
+
+   /**
+    * Rename file. If file can't be renamed in standard way the coping
+    * data will be used instead.
+    * 
+    * @param srcFile
+    *          source file
+    * @param dstFile
+    *          destination file 
+    * @throws IOException
+    *          if any exception occurred 
+    */
+   public static void renameFile(File srcFile, File dstFile) throws IOException
+   {
       // Rename the srcFile file to the new one. Unfortunately, the renameTo()
       // method does not work reliably under some JVMs.  Therefore, if the
       // rename fails, we manually rename by copying the srcFile file to the new one
-      if (!PrivilegedFileHelper.renameTo(srcFile, dstFile))
+      if (!srcFile.renameTo(dstFile))
       {
          InputStream in = null;
          OutputStream out = null;
          try
          {
-            in = PrivilegedFileHelper.fileInputStream(srcFile);
-            out = PrivilegedFileHelper.fileOutputStream(dstFile);
-            // see if the buffer needs to be initialized. Initialization is
-            // only done on-demand since many VM's will never run into the renameTo
-            // bug and hence shouldn't waste 1K of mem for no reason.
-            transfer(in, out);
+            in = new FileInputStream(srcFile);
+            out = new FileOutputStream(dstFile);
 
-            // delete the srcFile file.
-            PrivilegedFileHelper.delete(srcFile);
+            transfer(in, out);
          }
          catch (IOException ioe)
          {
@@ -410,6 +423,9 @@ public class DirectoryHelper
                out.close();
             }
          }
+
+         // delete the srcFile file.
+         srcFile.delete();
       }
    }
 }
