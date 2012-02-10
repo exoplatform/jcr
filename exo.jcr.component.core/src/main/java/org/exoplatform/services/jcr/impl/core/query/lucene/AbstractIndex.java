@@ -174,56 +174,42 @@ abstract class AbstractIndex
    void addDocuments(final Document[] docs) throws IOException
    {
       final IndexWriter writer = getIndexWriter();
-      DynamicPooledExecutor.Command[] commands = new DynamicPooledExecutor.Command[docs.length];
-      for (int i = 0; i < docs.length; i++)
+
+      IOException ioExc = null;
+      try
       {
-         // check if text extractor completed its work
-         final Document doc = getFinishedDocument(docs[i]);
-         // create a command for inverting the document
-         commands[i] = new DynamicPooledExecutor.Command()
+         for (Document doc : docs)
          {
-            public Object call() throws Exception
+            try
             {
-               long time = System.currentTimeMillis();
-               writer.addDocument(doc);
-               return new Long(System.currentTimeMillis() - time);
+               writer.addDocument(getFinishedDocument(doc));
             }
-         };
-      }
-      DynamicPooledExecutor.Result[] results = EXECUTOR.executeAndWait(commands);
-      invalidateSharedReader();
-      IOException ex = null;
-      for (int i = 0; i < results.length; i++)
-      {
-         if (results[i].getException() != null)
-         {
-            Throwable cause = results[i].getException().getCause();
-            if (ex == null)
+            catch (Throwable e)
             {
-               // only throw the first exception
-               if (cause instanceof IOException)
+               if (ioExc == null)
                {
-                  ex = (IOException)cause;
+                  if (e instanceof IOException)
+                  {
+                     ioExc = (IOException)e;
+                  }
+                  else
+                  {
+                     ioExc = Util.createIOException(e);
+                  }
                }
-               else
-               {
-                  throw Util.createIOException(cause);
-               }
-            }
-            else
-            {
-               // all others are logged
-               log.warn("Exception while inverting document", cause);
+
+               log.warn("Exception while inverting document", e);
             }
          }
-         else
-         {
-            log.debug("Inverted document in {} ms", results[i].get());
-         }
       }
-      if (ex != null)
+      finally
       {
-         throw ex;
+         invalidateSharedReader();
+      }
+
+      if (ioExc != null)
+      {
+         throw ioExc;
       }
    }
 
