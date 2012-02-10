@@ -219,13 +219,15 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       // read RSYNC configuration
       String rsyncEntryName = config.getParameterValue(PARAM_RSYNC_ENTRY_NAME, null);
       String rsyncEntryPath = config.getParameterValue(PARAM_RSYNC_ENTRY_PATH, null);
+      String rsyncUserName = config.getParameterValue(PARAM_RSYNC_USER, null);
+      String rsyncPassword = config.getParameterValue(PARAM_RSYNC_PASSWORD, null);
       int rsyncPort = config.getParameterInteger(PARAM_RSYNC_PORT, PARAM_RSYNC_PORT_DEFAULT);
 
       // rsync configured
       if (rsyncEntryName != null)
       {
          return new RsyncIndexInfos(rootFqn, cache, system, modeHandler, ((SearchIndex)handler).getContext()
-            .getIndexDirectory(), rsyncPort, rsyncEntryName, rsyncEntryPath);
+            .getIndexDirectory(), rsyncPort, rsyncEntryName, rsyncEntryPath, rsyncUserName, rsyncPassword);
       }
       else
       {
