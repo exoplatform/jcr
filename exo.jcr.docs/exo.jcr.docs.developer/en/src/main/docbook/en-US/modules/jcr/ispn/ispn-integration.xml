@@ -107,7 +107,7 @@
             <para><abbrev>changesfilter-class</abbrev> - defines cluster-ready
             index strategy based on Infinispan Cache, it can be either
             <classname>org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter</classname>
-            (for shared index) or
+            (for shared and rsync-based index strategies) or
             <classname>org.exoplatform.services.jcr.impl.core.query.ispn.LocalIndexChangesFilter</classname>
             (for local index)</para>
           </listitem>

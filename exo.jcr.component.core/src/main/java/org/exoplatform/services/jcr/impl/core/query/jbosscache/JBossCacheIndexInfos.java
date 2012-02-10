@@ -64,17 +64,17 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
 
    private static final String LIST_KEY = "$listOfIndexes".intern();
 
-   private final Cache<Serializable, Object> cache;
+   protected final Cache<Serializable, Object> cache;
 
    /**
     * Flag notifies if this IndexInfos is from system search manager or not.
     */
-   private boolean system;
+   protected boolean system;
 
    /**
     * Used to retrieve the current mode
     */
-   private final IndexerIoModeHandler modeHandler;
+   protected final IndexerIoModeHandler modeHandler;
 
    /**
     * This FQN points to cache node, where list of indexes for this {@link IndexInfos} instance is stored.
@@ -195,23 +195,36 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
             // read from cache to update lists
             set = (Set<String>)cache.get(namesFqn, LIST_KEY);
          }
-         if (set != null)
-         {
-            setNames(set);
-            // callback multiIndex to refresh lists
-            try
-            {
-               MultiIndex multiIndex = getMultiIndex();
-               if (multiIndex != null)
-               {
-                  multiIndex.refreshIndexList();
-               }
-            }
-            catch (IOException e)
-            {
-               log.error("Failed to update indexes! " + e.getMessage(), e);
-            }
-         }
+         refreshIndexes(set);
       }
    }
+
+   /**
+    * Update index configuration, when it changes on persistent storage 
+    * 
+    * @param set
+    */
+   protected void refreshIndexes(Set<String> set)
+   {
+      // do nothing if null is passed
+      if (set == null)
+      {
+         return;
+      }
+      setNames(set);
+      // callback multiIndex to refresh lists
+      try
+      {
+         MultiIndex multiIndex = getMultiIndex();
+         if (multiIndex != null)
+         {
+            multiIndex.refreshIndexList();
+         }
+      }
+      catch (IOException e)
+      {
+         log.error("Failed to update indexes! " + e.getMessage(), e);
+      }
+   }
+
 }

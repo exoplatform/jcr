@@ -70,17 +70,17 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
    /**
     * ISPN cache.
     */
-   private final Cache<Serializable, Object> cache;
+   protected final Cache<Serializable, Object> cache;
 
    /**
     * Used to retrieve the current mode.
     */
-   private final IndexerIoModeHandler modeHandler;
+   protected final IndexerIoModeHandler modeHandler;
 
    /**
     * Cache key for storing index names.
     */
-   private final IndexInfosKey namesKey;
+   protected final IndexInfosKey namesKey;
    
    /**
     * Need to write the index info out of the current transaction 
@@ -214,22 +214,39 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
          Set<String> set = (Set<String>)event.getValue();
          if (set != null)
          {
-            setNames(set);
-
-            // callback multiIndex to refresh lists
-            try
-            {
-               MultiIndex multiIndex = getMultiIndex();
-               if (multiIndex != null)
-               {
-                  multiIndex.refreshIndexList();
-               }
-            }
-            catch (IOException e)
-            {
-               log.error("Failed to update indexes! " + e.getMessage(), e);
-            }
+            refreshIndexes(set);
          }
       }
    }
+   
+
+
+   /**
+    * Update index configuration, when it changes on persistent storage 
+    * 
+    * @param set
+    */
+  protected void refreshIndexes(Set<String> set)
+  {
+     // do nothing if null is passed
+     if (set == null)
+     {
+        return;
+     }
+     setNames(set);
+     // callback multiIndex to refresh lists
+     try
+     {
+        MultiIndex multiIndex = getMultiIndex();
+        if (multiIndex != null)
+        {
+           multiIndex.refreshIndexList();
+        }
+     }
+     catch (IOException e)
+     {
+        log.error("Failed to update indexes! " + e.getMessage(), e);
+     }
+  }
+   
 }
