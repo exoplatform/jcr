@@ -92,7 +92,7 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
             }
          }
       }
-      catch (Exception e)
+      catch (IllegalStateException e)
       {
          if (log.isDebugEnabled())
          {

@@ -40,43 +40,38 @@ public class PropertyDataOrderComparator implements Comparator<PropertyData>
    public int compare(PropertyData p1, PropertyData p2)
    {
       int r = 0;
-      try
+
+      InternalQName qname1 = p1.getQPath().getName();
+      InternalQName qname2 = p2.getQPath().getName();
+      if (qname1.equals(Constants.JCR_PRIMARYTYPE))
       {
-         InternalQName qname1 = p1.getQPath().getName();
-         InternalQName qname2 = p2.getQPath().getName();
-         if (qname1.equals(Constants.JCR_PRIMARYTYPE))
-         {
-            r = Integer.MIN_VALUE;
-         }
-         else if (qname2.equals(Constants.JCR_PRIMARYTYPE))
-         {
-            r = Integer.MAX_VALUE;
-         }
-         else if (qname1.equals(Constants.JCR_MIXINTYPES))
-         {
-            r = Integer.MIN_VALUE + 1;
-         }
-         else if (qname2.equals(Constants.JCR_MIXINTYPES))
-         {
-            r = Integer.MAX_VALUE - 1;
-         }
-         else if (qname1.equals(Constants.JCR_UUID))
-         {
-            r = Integer.MIN_VALUE + 2;
-         }
-         else if (qname2.equals(Constants.JCR_UUID))
-         {
-            r = Integer.MAX_VALUE - 2;
-         }
-         else
-         {
-            r = qname1.getAsString().compareTo(qname2.getAsString());
-         }
+         r = Integer.MIN_VALUE;
       }
-      catch (Exception e)
+      else if (qname2.equals(Constants.JCR_PRIMARYTYPE))
       {
-         LOG.error("PropertiesOrderComparator error: " + e, e);
+         r = Integer.MAX_VALUE;
       }
+      else if (qname1.equals(Constants.JCR_MIXINTYPES))
+      {
+         r = Integer.MIN_VALUE + 1;
+      }
+      else if (qname2.equals(Constants.JCR_MIXINTYPES))
+      {
+         r = Integer.MAX_VALUE - 1;
+      }
+      else if (qname1.equals(Constants.JCR_UUID))
+      {
+         r = Integer.MIN_VALUE + 2;
+      }
+      else if (qname2.equals(Constants.JCR_UUID))
+      {
+         r = Integer.MAX_VALUE - 2;
+      }
+      else
+      {
+         r = qname1.getAsString().compareTo(qname2.getAsString());
+      }
+
       return r;
    }
 

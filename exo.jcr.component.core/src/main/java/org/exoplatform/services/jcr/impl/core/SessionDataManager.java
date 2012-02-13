@@ -2490,7 +2490,7 @@ public class SessionDataManager implements ItemDataConsumer
                }
             }
          }
-         catch (Exception e)
+         catch (RepositoryException e)
          {
             log.error(e.getLocalizedMessage(), e);
          }

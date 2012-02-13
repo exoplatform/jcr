@@ -1709,7 +1709,17 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             sp = synonymProviderClass.newInstance();
             sp.initialize(createSynonymProviderConfigResource());
          }
-         catch (Exception e)
+         catch (IOException e)
+         {
+            log.warn("Exception initializing synonym provider: " + synonymProviderClass, e);
+            sp = null;
+         }
+         catch (InstantiationException e)
+         {
+            log.warn("Exception initializing synonym provider: " + synonymProviderClass, e);
+            sp = null;
+         }
+         catch (IllegalAccessException e)
          {
             log.warn("Exception initializing synonym provider: " + synonymProviderClass, e);
             sp = null;
@@ -1823,7 +1833,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             spCheck = spellCheckerClass.newInstance();
             spCheck.init(SearchIndex.this, spellCheckerMinDistance, spellCheckerMorePopular);
          }
-         catch (Exception e)
+         catch (IOException e)
+         {
+            log.warn("Exception initializing spell checker: " + spellCheckerClass, e);
+         }
+         catch (InstantiationException e)
+         {
+            log.warn("Exception initializing spell checker: " + spellCheckerClass, e);
+         }
+         catch (IllegalAccessException e)
          {
             log.warn("Exception initializing spell checker: " + spellCheckerClass, e);
          }
@@ -2362,7 +2380,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          Class<?> analyzerClass = ClassLoading.forName(analyzerClassName, this);
          analyzer.setDefaultAnalyzer((Analyzer)analyzerClass.newInstance());
       }
-      catch (Exception e)
+      catch (ClassNotFoundException e)
+      {
+         log.warn("Invalid Analyzer class: " + analyzerClassName, e);
+      }
+      catch (InstantiationException e)
+      {
+         log.warn("Invalid Analyzer class: " + analyzerClassName, e);
+      }
+      catch (IllegalAccessException e)
       {
          log.warn("Invalid Analyzer class: " + analyzerClassName, e);
       }
@@ -2952,7 +2978,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          Class<?> similarityClass = ClassLoading.forName(className, this);
          similarity = (Similarity)similarityClass.newInstance();
       }
-      catch (Exception e)
+      catch (ClassNotFoundException e)
+      {
+         log.warn("Invalid Similarity class: " + className, e);
+      }
+      catch (InstantiationException e)
+      {
+         log.warn("Invalid Similarity class: " + className, e);
+      }
+      catch (IllegalAccessException e)
       {
          log.warn("Invalid Similarity class: " + className, e);
       }

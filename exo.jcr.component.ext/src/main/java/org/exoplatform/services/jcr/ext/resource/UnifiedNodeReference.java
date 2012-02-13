@@ -277,7 +277,43 @@ public class UnifiedNodeReference
                handler = (URLStreamHandler)cls.newInstance();
             }
          }
-         catch (Exception e)
+         catch (ExceptionInInitializerError e)
+         {
+            // exceptions can get thrown here if class not be loaded y system ClassLoader
+            // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (SecurityException e)
+         {
+            // exceptions can get thrown here if class not be loaded y system ClassLoader
+            // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (ClassNotFoundException e)
+         {
+            // exceptions can get thrown here if class not be loaded y system ClassLoader
+            // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (InstantiationException e)
+         {
+            // exceptions can get thrown here if class not be loaded y system ClassLoader
+            // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (IllegalAccessException e)
          {
             // exceptions can get thrown here if class not be loaded y system ClassLoader
             // or if class can't be instantiated.

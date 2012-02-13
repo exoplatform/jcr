@@ -82,7 +82,7 @@ public class HelpCommand extends AbstractCliCommand
          {
             findHelpCommand = ctx.getParameter(0);
          }
-         catch (Exception e)
+         catch (ParameterNotFoundException e)
          {
             if (LOG.isTraceEnabled())
             {

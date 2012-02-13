@@ -37,6 +37,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.core.query.Reindexable;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
+import org.exoplatform.services.rpc.RPCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -554,7 +555,28 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                scheduleFlushTask();
             }
          }
-         catch (Exception e)
+         catch (IOException e)
+         {
+            String msg = "Error indexing workspace.";
+            IOException ex = new IOException(msg);
+            ex.initCause(e);
+            throw ex;
+         }
+         catch (RPCException e)
+         {
+            String msg = "Error indexing workspace.";
+            IOException ex = new IOException(msg);
+            ex.initCause(e);
+            throw ex;
+         }
+         catch (RepositoryException e)
+         {
+            String msg = "Error indexing workspace.";
+            IOException ex = new IOException(msg);
+            ex.initCause(e);
+            throw ex;
+         }
+         catch (SuspendException e)
          {
             String msg = "Error indexing workspace.";
             IOException ex = new IOException(msg);

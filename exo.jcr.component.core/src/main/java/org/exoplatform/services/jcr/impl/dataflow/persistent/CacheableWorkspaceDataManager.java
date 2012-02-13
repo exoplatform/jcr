@@ -979,17 +979,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                super.save(logWrapper);
             }
+            catch (RepositoryException e)
+            {
+               doRollback();
+               throw e;
+            }
             catch (Exception e)
             {
                doRollback();
-               if (e instanceof RepositoryException)
-               {
-                  throw (RepositoryException)e;
-               }
-               else
-               {
-                  throw new RepositoryException("Could not save the changes", e);
-               }
+               throw new RepositoryException("Could not save the changes", e);
             }
             doCommit();
             // notify listeners after storage commit

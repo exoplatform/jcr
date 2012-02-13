@@ -22,6 +22,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS
@@ -62,7 +63,7 @@ public class GetNodesCommand extends AbstractCliCommand
             output.append("Current item is property: ").append(((Property)ctx.getCurrentItem()).getName()).append("\n");
          }
       }
-      catch (Exception e)
+      catch (RepositoryException e)
       {
          output = new StringBuilder("Can't execute command - ").append(e.getMessage()).append("\n");
       }

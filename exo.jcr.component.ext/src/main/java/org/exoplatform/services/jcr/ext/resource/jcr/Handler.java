@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.ext.resource.jcr;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
@@ -30,9 +31,12 @@ import org.exoplatform.services.security.ConversationState;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+
+import javax.jcr.RepositoryException;
 
 /**
  * URLStreamHandler for protocol <tt>jcr://</tt>.
@@ -137,7 +141,17 @@ public class Handler extends URLStreamHandler implements Startable
          return conn;
 
       }
-      catch (Exception e)
+      catch (RepositoryException e)
+      {
+         //e.printStackTrace();
+         throw new IOException("Open connection to URL '" + url.toString() + "' failed!");
+      }
+      catch (URISyntaxException e)
+      {
+         //e.printStackTrace();
+         throw new IOException("Open connection to URL '" + url.toString() + "' failed!");
+      }
+      catch (RepositoryConfigurationException e)
       {
          //e.printStackTrace();
          throw new IOException("Open connection to URL '" + url.toString() + "' failed!");

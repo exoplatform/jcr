@@ -145,7 +145,6 @@ public class CNDNodeTypeDataPersister implements NodeTypeDataPersister
 
    /**
     * {@inheritDoc}
-    * @see org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister#getNodeType(org.exoplatform.services.jcr.datamodel.InternalQName)
     */
    public NodeTypeData getNodeType(InternalQName nodeTypeName) throws RepositoryException
    {

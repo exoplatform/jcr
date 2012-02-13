@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.StreamingOutput;
 
 /**
@@ -120,7 +121,12 @@ public class MultipartByterangesEntity implements StreamingOutput
          print("--" + WebDavConst.BOUNDARY + "--", ostream);
          println(ostream);
       }
-      catch (Exception exc)
+      catch (IOException exc)
+      {
+         log.error(exc.getMessage(), exc);
+         throw new IOException("Can't write to stream, caused " + exc);
+      }
+      catch (RepositoryException exc)
       {
          log.error(exc.getMessage(), exc);
          throw new IOException("Can't write to stream, caused " + exc);

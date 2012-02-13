@@ -207,7 +207,17 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
                isReindexingSupport = false;
             }
          }
-         catch (Exception e)
+         catch (NumberFormatException e)
+         {
+            isReindexingSupport = false;
+            log.error("Error checking product version.", e);
+         }
+         catch (RepositoryException e)
+         {
+            isReindexingSupport = false;
+            log.error("Error checking product version.", e);
+         }
+         catch (SQLException e)
          {
             isReindexingSupport = false;
             log.error("Error checking product version.", e);

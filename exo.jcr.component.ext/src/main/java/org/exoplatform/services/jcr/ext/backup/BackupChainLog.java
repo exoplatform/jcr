@@ -41,6 +41,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivilegedActionException;
@@ -296,7 +297,15 @@ public class BackupChainLog
 
          logWriter.write(info, config);
       }
-      catch (Exception e)
+      catch (IOException e)
+      {
+         logger.error("Can't add job", e);
+      }
+      catch (XMLStreamException e)
+      {
+         logger.error("Can't add job", e);
+      }
+      catch (BackupOperationException e)
       {
          logger.error("Can't add job", e);
       }
@@ -365,11 +374,19 @@ public class BackupChainLog
             out.close();
          }
       }
-      catch (Exception e)
+
+      catch (FileNotFoundException e)
       {
          logger.error("Can't write log", e);
       }
-
+      catch (UnsupportedEncodingException e)
+      {
+         logger.error("Can't write log", e);
+      }
+      catch (IOException e)
+      {
+         logger.error("Can't write log", e);
+      }
    }
 
    /**
@@ -1035,7 +1052,7 @@ public class BackupChainLog
             writer.writeEndDocument();
             writer.flush();
          }
-         catch (Exception e)
+         catch (XMLStreamException e)
          {
             logger.error("Can't write log", e);
          }

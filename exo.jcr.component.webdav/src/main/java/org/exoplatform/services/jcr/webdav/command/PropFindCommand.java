@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.webdav.command.propfind.PropFindRequestEntit
 import org.exoplatform.services.jcr.webdav.command.propfind.PropFindResponseEntity;
 import org.exoplatform.services.jcr.webdav.resource.CollectionResource;
 import org.exoplatform.services.jcr.webdav.resource.FileResource;
+import org.exoplatform.services.jcr.webdav.resource.IllegalResourceTypeException;
 import org.exoplatform.services.jcr.webdav.resource.Resource;
 import org.exoplatform.services.jcr.webdav.resource.ResourceUtil;
 import org.exoplatform.services.jcr.webdav.resource.VersionedCollectionResource;
@@ -36,6 +37,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -132,7 +134,17 @@ public class PropFindCommand
          }
 
       }
-      catch (Exception e1)
+      catch (RepositoryException e1)
+      {
+         log.error(e1.getMessage(), e1);
+         return Response.serverError().build();
+      }
+      catch (URISyntaxException e1)
+      {
+         log.error(e1.getMessage(), e1);
+         return Response.serverError().build();
+      }
+      catch (IllegalResourceTypeException e1)
       {
          log.error(e1.getMessage(), e1);
          return Response.serverError().build();

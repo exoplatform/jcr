@@ -404,7 +404,7 @@ class CachingIndexReader extends FilterIndexReader
             }
             initializeParents(reader);
          }
-         catch (Exception e)
+         catch (IOException e)
          {
             // only log warn message during regular operation
             if (!stopRequested)

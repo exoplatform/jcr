@@ -18,8 +18,10 @@
  */
 package org.exoplatform.services.jcr.ext.distribution.impl;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +79,17 @@ public class DataDistributionByHash extends AbstractDataDistributionType
          digest.update(dataId.getBytes("UTF-8"));
          return new BigInteger(1, digest.digest()).toString(32);
       }
-      catch (Exception e)
+      catch (NumberFormatException e)
+      {
+         throw new RuntimeException("Could not generate the hash code of '" + dataId + "' with the algorithm '"
+            + hashAlgorithm + "'", e);
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         throw new RuntimeException("Could not generate the hash code of '" + dataId + "' with the algorithm '"
+            + hashAlgorithm + "'", e);
+      }
+      catch (NoSuchAlgorithmException e)
       {
          throw new RuntimeException("Could not generate the hash code of '" + dataId + "' with the algorithm '"
             + hashAlgorithm + "'", e);

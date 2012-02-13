@@ -28,7 +28,9 @@ import org.exoplatform.services.rest.ext.util.XlinkHref;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
@@ -36,6 +38,7 @@ import java.security.PrivilegedExceptionAction;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -51,6 +54,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 
 /**
@@ -154,7 +158,7 @@ public class RESTRegistryService implements ResourceContainer
       {
          return Response.status(Response.Status.NOT_FOUND).build();
       }
-      catch (Exception e)
+      catch (RepositoryException e)
       {
          log.error("Get registry entry failed", e);
          throw new WebApplicationException(e);
@@ -175,7 +179,27 @@ public class RESTRegistryService implements ResourceContainer
          URI location = uriInfo.getRequestUriBuilder().path(entry.getName()).build();
          return Response.created(location).build();
       }
-      catch (Exception e)
+      catch (IllegalArgumentException e)
+      {
+         log.error("Create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (IOException e)
+      {
+         log.error("Create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (SAXException e)
+      {
+         log.error("Create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (ParserConfigurationException e)
+      {
+         log.error("Create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (RepositoryException e)
       {
          log.error("Create registry entry failed", e);
          throw new WebApplicationException(e);
@@ -194,13 +218,37 @@ public class RESTRegistryService implements ResourceContainer
       {
          RegistryEntry entry = RegistryEntry.parse(entryStream);
          if (createIfNotExist)
+         {
             regService.updateEntry(sessionProvider, normalizePath(groupName), entry);
+         }
          else
+         {
             regService.recreateEntry(sessionProvider, normalizePath(groupName), entry);
+         }
          URI location = uriInfo.getRequestUriBuilder().path(entry.getName()).build();
          return Response.created(location).build();
       }
-      catch (Exception e)
+      catch (IllegalArgumentException e)
+      {
+         log.error("Re-create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (IOException e)
+      {
+         log.error("Re-create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (SAXException e)
+      {
+         log.error("Re-create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (ParserConfigurationException e)
+      {
+         log.error("Re-create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (RepositoryException e)
       {
          log.error("Re-create registry entry failed", e);
          throw new WebApplicationException(e);

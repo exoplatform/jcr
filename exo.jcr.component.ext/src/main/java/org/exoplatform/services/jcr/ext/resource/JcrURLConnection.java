@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.URLConnection;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
@@ -146,7 +147,12 @@ public class JcrURLConnection extends URLConnection
       {
          return nodeRepresentation.getInputStream();
       }
-      catch (Exception e)
+      catch (IOException e)
+      {
+         //e.printStackTrace();
+         throw new IOException("can't get input stream");
+      }
+      catch (RepositoryException e)
       {
          //e.printStackTrace();
          throw new IOException("can't get input stream");
@@ -193,7 +199,14 @@ public class JcrURLConnection extends URLConnection
 
          return nodeRepresentation.getMediaType();
       }
-      catch (Exception e)
+      catch (IOException e)
+      {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
+      }
+      catch (RepositoryException e)
       {
          if (LOG.isTraceEnabled())
          {
@@ -219,7 +232,14 @@ public class JcrURLConnection extends URLConnection
 
          return (int)nodeRepresentation.getContentLenght();
       }
-      catch (Exception e)
+      catch (IOException e)
+      {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
+      }
+      catch (RepositoryException e)
       {
          if (LOG.isTraceEnabled())
          {
@@ -283,7 +303,14 @@ public class JcrURLConnection extends URLConnection
 
          return nodeRepresentation.getLastModified();
       }
-      catch (Exception e)
+      catch (IOException e)
+      {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
+      }
+      catch (RepositoryException e)
       {
          if (LOG.isTraceEnabled())
          {

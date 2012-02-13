@@ -36,6 +36,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -102,7 +103,37 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
                         .newInstance(holder.getFileCleaner());
 
                }
-               catch (Exception e)
+               catch (InstantiationException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (IllegalArgumentException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (SecurityException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (IllegalAccessException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (InvocationTargetException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (NoSuchMethodException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (ClassNotFoundException e)
                {
                   log.error("Value Storage Plugin instantiation FAILED. ", e);
                   continue;

@@ -25,6 +25,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -134,7 +135,7 @@ public class FtpClientSessionImpl implements FtpClientSession
             clientSocket.close();
          }
       }
-      catch (Exception exc)
+      catch (IOException exc)
       {
          log.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
       }

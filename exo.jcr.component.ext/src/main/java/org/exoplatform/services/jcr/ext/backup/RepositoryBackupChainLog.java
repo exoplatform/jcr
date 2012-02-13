@@ -44,6 +44,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.regex.PatternSyntaxException;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
@@ -223,7 +224,7 @@ public class RepositoryBackupChainLog
             writer.writeEndDocument();
             writer.flush();
          }
-         catch (Exception e)
+         catch (XMLStreamException e)
          {
             logger.error("Can't write end log", e);
          }
@@ -780,7 +781,15 @@ public class RepositoryBackupChainLog
                out.close();
             }
          }
-         catch (Exception e)
+         catch (PatternSyntaxException e)
+         {
+            logger.error("Can't write log", e);
+         }
+         catch (FileNotFoundException e)
+         {
+            logger.error("Can't write log", e);
+         }
+         catch (IOException e)
          {
             logger.error("Can't write log", e);
          }

@@ -37,6 +37,7 @@ import javax.jcr.RepositoryException;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
@@ -128,7 +129,12 @@ public class VersionTreeResponseEntity implements StreamingOutput
          xmlStreamWriter.writeEndElement();
          xmlStreamWriter.writeEndDocument();
       }
-      catch (Exception exc)
+      catch (XMLStreamException exc)
+      {
+         log.error(exc.getMessage(), exc);
+         throw new IOException(exc.getMessage());
+      }
+      catch (RepositoryException exc)
       {
          log.error(exc.getMessage(), exc);
          throw new IOException(exc.getMessage());

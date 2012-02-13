@@ -43,7 +43,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 /**
@@ -1064,7 +1069,11 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                isTxCreated = true;
             }
          }
-         catch (Exception e)
+         catch (SystemException e)
+         {
+            LOG.warn("Could not create a new tx", e);
+         }
+         catch (NotSupportedException e)
          {
             LOG.warn("Could not create a new tx", e);
          }
@@ -1094,10 +1103,32 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             try
             {
                if (LOG.isTraceEnabled())
+               {
                   LOG.trace("The tx will be committed");
+               }
                tm.commit();
             }
-            catch (Exception e)
+            catch (SystemException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (SecurityException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (IllegalStateException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (RollbackException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (HeuristicMixedException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (HeuristicRollbackException e)
             {
                LOG.warn("Could not commit the tx", e);
             }

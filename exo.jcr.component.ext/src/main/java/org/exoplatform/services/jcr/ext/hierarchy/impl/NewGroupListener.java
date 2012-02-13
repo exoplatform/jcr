@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
@@ -119,7 +120,7 @@ public class NewGroupListener extends GroupEventListener
          Node groupsHome = (Node)session.getItem(groupsPath_);
          dataDistributionType_.removeDataNode(groupsHome, groupId);
       }
-      catch (Exception e)
+      catch (RepositoryException e)
       {
          log.error("An error occurs while removing the group directory of '" + groupId + "'", e);
       }
