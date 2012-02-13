@@ -182,10 +182,33 @@ public class CollectionResource extends GenericResource
             {
                props.add((namesOnly) ? new HierarchicalProperty(name) : getProperty(name));
             }
-            catch (Exception exc)
+            catch (UnsupportedOperationException exc)
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.error(exc.getMessage(), exc);
+               }
+            }
+            catch (ClassCastException exc)
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.error(exc.getMessage(), exc);
+               }
+            }
+            catch (IllegalArgumentException exc)
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.error(exc.getMessage(), exc);
+               }
+            }
+            catch (PathNotFoundException exc)
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.error(exc.getMessage(), exc);
+               }
             }
          }
       }

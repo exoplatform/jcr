@@ -208,7 +208,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
                   }
                }
             }
-            catch (Exception e)
+            catch (RepositoryException e)
             {
                LOG.error("An error occurs while processing the JCR path which alias is "
                   + (currentjcrPath == null ? null : currentjcrPath.getAlias()) + " with the workspace "

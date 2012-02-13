@@ -150,7 +150,7 @@ public class DBBackup
                contentLenWriter.close();
             }
          }
-         catch (Exception e)
+         catch (IOException e)
          {
             if (exc != null)
             {

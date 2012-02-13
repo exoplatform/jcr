@@ -1345,7 +1345,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet ", e);
             }
          }
       }

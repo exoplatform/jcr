@@ -128,6 +128,17 @@ class ConsistencyCheck
                notRepairable++;
             }
          }
+         catch (IOException e)
+         {
+            if (ignoreFailure)
+            {
+               log.warn("Exception while reparing: " + e);
+            }
+            else
+            {
+               throw e;
+            }
+         }
          catch (Exception e)
          {
             if (ignoreFailure)
@@ -136,11 +147,7 @@ class ConsistencyCheck
             }
             else
             {
-               if (!(e instanceof IOException))
-               {
-                  e = new IOException(e.getMessage());
-               }
-               throw (IOException)e;
+               throw new IOException(e.getMessage());
             }
          }
       }

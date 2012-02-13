@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
+import org.jboss.cache.CacheException;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.config.CacheLoaderConfig;
@@ -46,6 +47,8 @@ import org.jboss.cache.jmx.JmxRegistrationManager;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
 
 import javax.jcr.RepositoryException;
@@ -214,9 +217,9 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       {
          if (jmxManager != null)
          {
-            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
             {
-               public Void run()
+               public Void run() throws CacheException
                {
                   jmxManager.unregisterAllMBeans();
                   return null;
@@ -224,7 +227,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
             });
          }
       }
-      catch (Exception e) {
+      catch (PrivilegedActionException e)
+      {
          log.warn("Not all JBoss Cache MBeans were unregistered.");
       }
    } 

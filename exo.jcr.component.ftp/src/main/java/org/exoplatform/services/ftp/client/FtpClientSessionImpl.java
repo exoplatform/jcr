@@ -174,7 +174,7 @@ public class FtpClientSessionImpl implements FtpClientSession
       {
          clientSocket.close();
       }
-      catch (Exception exc)
+      catch (IOException exc)
       {
          log.info("Unhandled exception. " + exc.getMessage(), exc);
       }

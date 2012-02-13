@@ -61,12 +61,16 @@ public abstract class WorkerThread extends Thread
             callPeriodically();
             sleep(timeout);
          }
+         catch (InterruptedException e)
+         {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
          catch (Exception e)
          {
-            if (!(e instanceof InterruptedException))
-            {
-               LOG.error(e.getLocalizedMessage(), e);
-            }
+            LOG.error(e.getLocalizedMessage(), e);
          }
       }
    }

@@ -91,9 +91,9 @@ public class PropertiesSynonymProvider implements SynonymProvider
          configLastModified = System.currentTimeMillis();
          lastCheck = System.currentTimeMillis();
       }
-      catch (Exception e)
+      catch (IOException e)
       {
-         throw Util.createIOException(e);
+         throw e;
       }
    }
 
@@ -131,18 +131,18 @@ public class PropertiesSynonymProvider implements SynonymProvider
          return;
       }
       // check last modified
-      try
-      {
+      //try
+      //{
          //            if (configLastModified != config.lastModified()) {
          //                synonyms = getSynonyms(config);
          //                configLastModified = config.lastModified();
          //                log.info("Reloaded synonyms from {}", config.getPath());
          //            }
-      }
-      catch (Exception e)
-      {
-         log.error("Exception while reading synonyms", e);
-      }
+      //}
+      //catch (Exception e)
+      //{
+      //log.error("Exception while reading synonyms", e);
+      //}
       // update lastCheck timestamp, even if error occured (retry later)
       lastCheck = System.currentTimeMillis();
    }

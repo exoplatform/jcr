@@ -217,7 +217,7 @@ public class CmdStor extends FtpCommandImpl
          {
             inputStream.close();
          }
-         catch (Exception exc)
+         catch (IOException exc)
          {
             LOG.info("Failurinc closing input stream");
          }

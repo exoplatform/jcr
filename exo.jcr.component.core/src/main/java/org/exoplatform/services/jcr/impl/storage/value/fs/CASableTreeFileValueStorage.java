@@ -61,7 +61,23 @@ public class CASableTreeFileValueStorage extends TreeFileValueStorage
       {
          vcas = (ValueContentAddressStorage)Class.forName(vcasType).newInstance();
       }
-      catch (Exception e)
+      catch (ExceptionInInitializerError e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (SecurityException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (InstantiationException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (IllegalAccessException e)
       {
          throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
       }

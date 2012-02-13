@@ -23,6 +23,7 @@ import org.exoplatform.frameworks.ftpclient.client.FtpClientSession;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -48,17 +49,10 @@ public abstract class FtpCommandImpl implements FtpCommand
    public int run(FtpClientSession clientSession)
    {
       this.clientSession = clientSession;
-      try
-      {
-         // outPrintStream = new PrintStream(clientSession.getClientSocket().getOutputStream());
-         int status = execute();
-         return status;
-      }
-      catch (Exception exc)
-      {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
-      }
-      return -1;
+
+      // outPrintStream = new PrintStream(clientSession.getClientSocket().getOutputStream());
+      int status = execute();
+      return status;
    }
 
    public abstract int execute();
@@ -74,7 +68,7 @@ public abstract class FtpCommandImpl implements FtpCommand
          outStream.write(data);
          outStream.write("\r\n".getBytes());
       }
-      catch (Exception exc)
+      catch (IOException exc)
       {
          log.info("Unhandled exception. " + exc.getMessage(), exc);
       }

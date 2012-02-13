@@ -30,6 +30,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
 
 import java.lang.ref.SoftReference;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -180,7 +181,12 @@ public class TransactionableResourceManager implements XAResource
             return true;
          }
       }
-      catch (Exception e)
+      catch (PrivilegedActionException e)
+      {
+         log.warn("Could not check if a global Tx has been started or register the session into the resource manager",
+            e);
+      }
+      catch (SystemException e)
       {
          log.warn("Could not check if a global Tx has been started or register the session into the resource manager",
             e);
@@ -345,7 +351,15 @@ public class TransactionableResourceManager implements XAResource
             // Indicates that there is at least one after completion method to come
             isLastAfterCompletion.set(false);
          }
-         catch (Exception e)
+         catch (RollbackException e)
+         {
+            log.error("Could not register the second synchronization", e);
+         }
+         catch (IllegalStateException e)
+         {
+            log.error("Could not register the second synchronization", e);
+         }
+         catch (SystemException e)
          {
             log.error("Could not register the second synchronization", e);
          }
@@ -669,7 +683,11 @@ public class TransactionableResourceManager implements XAResource
       {
          tm.getTransaction().setRollbackOnly();
       }
-      catch (Exception e)
+      catch (IllegalStateException e)
+      {
+         log.warn("Could not set the status of the tx to 'rollback-only'", e);
+      }
+      catch (SystemException e)
       {
          log.warn("Could not set the status of the tx to 'rollback-only'", e);
       }

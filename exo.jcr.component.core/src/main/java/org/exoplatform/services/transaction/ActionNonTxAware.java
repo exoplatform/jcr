@@ -21,6 +21,7 @@ package org.exoplatform.services.transaction;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
@@ -57,7 +58,7 @@ public abstract class ActionNonTxAware<R, A, E extends Exception>
             {
                tx = tm.suspend();
             }
-            catch (Exception e)
+            catch (SystemException e)
             {
                LOG.warn("Cannot suspend the current transaction", e);
             }

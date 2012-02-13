@@ -23,6 +23,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -140,7 +141,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
             dataSocket.close();
          }
       }
-      catch (Exception exc)
+      catch (IOException exc)
       {
          LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
@@ -158,7 +159,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
             dataSocket.close();
             return true;
          }
-         catch (Exception exc)
+         catch (IOException exc)
          {
             LOG.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
          }

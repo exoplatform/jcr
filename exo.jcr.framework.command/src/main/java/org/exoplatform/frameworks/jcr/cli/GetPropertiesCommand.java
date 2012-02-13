@@ -21,6 +21,7 @@ package org.exoplatform.frameworks.jcr.cli;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS
@@ -47,7 +48,7 @@ public class GetPropertiesCommand extends AbstractCliCommand
             output.append(property.getName()).append("\n");
          }
       }
-      catch (Exception e)
+      catch (RepositoryException e)
       {
          output = new StringBuilder("Can't execute command - ").append(e.getMessage()).append("\n");
       }

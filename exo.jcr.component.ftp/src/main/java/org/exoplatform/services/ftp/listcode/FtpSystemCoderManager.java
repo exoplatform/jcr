@@ -50,7 +50,15 @@ public class FtpSystemCoderManager
                FtpSystemCoder coder = (FtpSystemCoder)Class.forName(availableSysemCoders[i][1]).newInstance();
                return coder;
             }
-            catch (Exception exc)
+            catch (ClassNotFoundException exc)
+            {
+               log.info("Unhandled exception. " + exc.getMessage(), exc);
+            }
+            catch (InstantiationException exc)
+            {
+               log.info("Unhandled exception. " + exc.getMessage(), exc);
+            }
+            catch (IllegalAccessException exc)
             {
                log.info("Unhandled exception. " + exc.getMessage(), exc);
             }

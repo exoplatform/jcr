@@ -334,7 +334,7 @@ public class ExoJBossCacheFactory<K, V>
             }
          };
       }
-      catch (Exception e)
+      catch (IllegalArgumentException e)
       {
          log.error("Could not create the JMX Manager", e);
       }

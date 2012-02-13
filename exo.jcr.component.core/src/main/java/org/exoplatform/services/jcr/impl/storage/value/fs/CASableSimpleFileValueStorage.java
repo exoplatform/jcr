@@ -60,7 +60,15 @@ public class CASableSimpleFileValueStorage extends FileValueStorage
       {
          vcas = (ValueContentAddressStorage)Class.forName(vcasType).newInstance();
       }
-      catch (Exception e)
+      catch (ClassNotFoundException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (InstantiationException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (IllegalAccessException e)
       {
          throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
       }

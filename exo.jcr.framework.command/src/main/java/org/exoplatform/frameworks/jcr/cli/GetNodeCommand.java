@@ -19,6 +19,8 @@
 package org.exoplatform.frameworks.jcr.cli;
 
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS
@@ -42,7 +44,15 @@ public class GetNodeCommand extends AbstractCliCommand
          ctx.setCurrentItem(resultNode);
          output = "Current node: " + resultNode.getPath() + "\n";
       }
-      catch (Exception e)
+      catch (ParameterNotFoundException e)
+      {
+         output = "Can't execute command - " + e.getMessage() + "\n";
+      }
+      catch (PathNotFoundException e)
+      {
+         output = "Can't execute command - " + e.getMessage() + "\n";
+      }
+      catch (RepositoryException e)
       {
          output = "Can't execute command - " + e.getMessage() + "\n";
       }

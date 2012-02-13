@@ -63,7 +63,7 @@ public class CmdPort extends FtpCommandImpl
          host.append(ports[3]);
          port = new Integer(ports[4]) * 256 + new Integer(ports[5]);
       }
-      catch (Exception exc)
+      catch (NumberFormatException exc)
       {
          reply(String.format(FtpConst.Replyes.REPLY_500_ILLEGAL, "PORT"));
          return;

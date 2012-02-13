@@ -111,7 +111,15 @@ public class BackupChainImpl implements BackupChain
       {
          this.fullBackup = (AbstractFullBackupJob)Class.forName(fullBackupType).newInstance();
       }
-      catch (Exception e)
+      catch (ClassNotFoundException e)
+      {
+         throw new BackupConfigurationException("FullBackupType error, " + e, e);
+      }
+      catch (InstantiationException e)
+      {
+         throw new BackupConfigurationException("FullBackupType error, " + e, e);
+      }
+      catch (IllegalAccessException e)
       {
          throw new BackupConfigurationException("FullBackupType error, " + e, e);
       }
@@ -123,7 +131,15 @@ public class BackupChainImpl implements BackupChain
          {
             this.incrementalBackup = (AbstractIncrementalBackupJob)Class.forName(incrementalBackupType).newInstance();
          }
-         catch (Exception e)
+         catch (ClassNotFoundException e)
+         {
+            throw new BackupConfigurationException("IncrementalBackupType error, " + e, e);
+         }
+         catch (InstantiationException e)
+         {
+            throw new BackupConfigurationException("IncrementalBackupType error, " + e, e);
+         }
+         catch (IllegalAccessException e)
          {
             throw new BackupConfigurationException("IncrementalBackupType error, " + e, e);
          }

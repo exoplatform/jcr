@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.ext.resource;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.datamodel.Identifier;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -51,6 +53,8 @@ public class UnifiedNodeReference
    private String path;
 
    private static URLStreamHandler handler;
+
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference");
 
    public UnifiedNodeReference(final String spec) throws URISyntaxException, MalformedURLException
    {
@@ -294,10 +298,50 @@ public class UnifiedNodeReference
                handler = (URLStreamHandler)cls.newInstance();
             }
          }
-         catch (Exception e)
+         catch (ExceptionInInitializerError e)
          {
             // exceptions can get thrown here if class not be loaded y system ClassLoader
             // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+                           {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (SecurityException e)
+         {
+            // exceptions can get thrown here if class not be loaded y system ClassLoader
+            // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (ClassNotFoundException e)
+         {
+            // exceptions can get thrown here if class not be loaded y system ClassLoader
+            // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (InstantiationException e)
+         {
+            // exceptions can get thrown here if class not be loaded y system ClassLoader
+            // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
+         catch (IllegalAccessException e)
+         {
+            // exceptions can get thrown here if class not be loaded y system ClassLoader
+            // or if class can't be instantiated.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
       }
       return handler;
