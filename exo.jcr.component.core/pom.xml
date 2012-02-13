@@ -39,7 +39,7 @@
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
       <!-- ispn specific exclude by default -->
-      <test.cache.exclude>**/persistent/cache/**</test.cache.exclude>
+      <test.cache.exclude>**/persistent/cache/foo/**</test.cache.exclude>
    </properties>
    <dependencies>
       <dependency>
