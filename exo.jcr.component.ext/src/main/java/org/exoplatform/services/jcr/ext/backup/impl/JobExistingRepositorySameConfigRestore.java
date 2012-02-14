@@ -237,7 +237,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             }
             catch (BackupException e)
             {
-               log.error("Can't rollback changes", e);
+               LOG.error("Can't rollback changes", e);
             }
          }
 
@@ -254,7 +254,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             }
             catch (BackupException e)
             {
-               log.error("Can't close restorer", e);
+               LOG.error("Can't close restorer", e);
             }
          }
 
@@ -267,7 +267,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          }
          catch (RepositoryException e)
          {
-            log.error("Can't resume repository", e);
+            LOG.error("Can't resume repository", e);
          }
       }
    }

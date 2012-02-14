@@ -89,7 +89,6 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 
    public static final int PARAM_RSYNC_PORT_DEFAULT = 873;
 
-   // TODO
    public static final String PARAM_RSYNC_USER = "rsync-user";
 
    public static final String PARAM_RSYNC_PASSWORD = "rsync-password";

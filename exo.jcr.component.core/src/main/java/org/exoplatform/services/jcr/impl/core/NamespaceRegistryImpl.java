@@ -367,19 +367,6 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
       }
    }
 
-   private void validate() throws RepositoryException
-   {
-      if (dataManager == null)
-      {
-         throw new RepositoryException("Datamanager not initialized");
-      }
-      if (indexSearcherHolder == null)
-      {
-         throw new RepositoryException("RepositoryIndexSearcherHolder not initialized");
-      }
-
-   }
-
    private void addPendingNamespaces()
    {
       for (ComponentPlugin plugin : addNamespacePluginHolder.getAddNamespacesPlugins())

@@ -60,7 +60,7 @@ public class JobRepositoryRestore extends Thread
    /**
     * The apache logger.
     */
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobRepositoryRestore");
+   protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.JobRepositoryRestore");
 
    /**
     * REPOSITORY_RESTORE_STARTED. The state of start restore.
@@ -222,7 +222,7 @@ public class JobRepositoryRestore extends Thread
       {
          restored = false;
 
-         log.error(
+         LOG.error(
             "Can not restore workspace \"" + currennWorkspaceName + " in repository \"" + repositoryEntry.getName()
                + "\".", e);
 
@@ -234,7 +234,7 @@ public class JobRepositoryRestore extends Thread
       {
          restored = false;
 
-         log.error(
+         LOG.error(
             "Can not restore workspace \"" + currennWorkspaceName + " in repository \"" + repositoryEntry.getName()
                + "\".", t);
 
@@ -252,7 +252,7 @@ public class JobRepositoryRestore extends Thread
             }
             catch (Throwable thr)
             {
-               log.error("The partly restored repository \"" + repositoryEntry.getName() + "\" can not be removed.",
+               LOG.error("The partly restored repository \"" + repositoryEntry.getName() + "\" can not be removed.",
                   thr);
             }
          }
@@ -283,6 +283,10 @@ public class JobRepositoryRestore extends Thread
       catch (RepositoryException e)
       {
          // The repository not exist.
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       if (mr != null)
@@ -382,7 +386,7 @@ public class JobRepositoryRestore extends Thread
       }
       catch (Throwable t)
       {
-         log.error("The restore was fail", t);
+         LOG.error("The restore was fail", t);
       }
    }
 

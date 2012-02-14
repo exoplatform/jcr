@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
@@ -106,8 +105,6 @@ public class CNDNodeTypeDataPersister implements NodeTypeDataPersister
 
    /**
     * {@inheritDoc}
-    * 
-    * @throws IOException
     */
    public void addNodeTypes(List<NodeTypeData> nodeTypes) throws RepositoryException
    {

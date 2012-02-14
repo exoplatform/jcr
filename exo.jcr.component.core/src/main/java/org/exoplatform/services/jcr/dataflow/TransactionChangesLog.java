@@ -161,7 +161,10 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
          }
          catch (IllegalPathException e)
          {
-
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
       }
       return null;

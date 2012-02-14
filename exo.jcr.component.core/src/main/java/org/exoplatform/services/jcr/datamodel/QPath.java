@@ -524,33 +524,4 @@ public class QPath implements Comparable<QPath>
       return path;
    }
 
-   /**
-    * Parse textual path entry.
-    *
-    * @param entry - String text
-    * @return QPathEntry
-    * @throws IllegalPathException if text is not a valid entry
-    */
-   private static QPathEntry parseEntry(final String entry) throws IllegalPathException
-   {
-
-      if (!entry.startsWith("["))
-         throw new IllegalPathException("Invalid QPath Entry '" + entry + "' Should start of '['");
-      final int uriStart = 0;
-      final int uriFinish = entry.indexOf("]", uriStart);
-      if (uriFinish == -1)
-         throw new IllegalPathException("Invalid QPath Entry '" + entry + "' No closed ']'");
-      final String uri = entry.substring(uriStart + 1, uriFinish);
-
-      final String localName = entry.substring(uriFinish + 1, entry.length());
-
-      final int ind = localName.indexOf(PREFIX_DELIMITER);
-      if (ind > 1)
-      {
-         return new QPathEntry(uri, localName.substring(0, ind), Integer.parseInt(localName.substring(ind + 1)));
-      }
-
-      return new QPathEntry(uri, localName, 1);
-   }
-
 }

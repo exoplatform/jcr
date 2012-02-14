@@ -95,10 +95,9 @@ public class RsyncIndexInfos extends ISPNIndexInfos
       else
       {
          throw new RepositoryConfigurationException(
-            "Invalid RSync configuration. Index must be placed in folder that is a descendant of RSync Server Entry. Current RSync Server Entry Path is : "
-               + absoluteRsyncEntryPath
-               + " but it doesnt hold Index folder, that is : "
-               + this.indexPath
+            "Invalid RSync configuration. Index must be placed in folder that is a descendant of RSync Server Entry. "
+               + "Current RSync Server Entry Path is : " + absoluteRsyncEntryPath
+               + " but it doesnt hold Index folder, that is : " + this.indexPath
                + ". Please fix configuration according to JCR Documentation and restart application.");
       }
 
