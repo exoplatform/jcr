@@ -43,7 +43,7 @@ import javax.jcr.Node;
  */
 public class NewUserListener extends UserEventListener
 {
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.NewUserListener");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.NewUserListener");
 
    private final HierarchyConfig config_;
 
@@ -86,7 +86,7 @@ public class NewUserListener extends UserEventListener
       }
       catch (Exception e)
       {
-         log.error("An error occurs while initializing the user directory of '" + userName + "'", e);
+         LOG.error("An error occurs while initializing the user directory of '" + userName + "'", e);
       }
       finally
       {
@@ -106,7 +106,7 @@ public class NewUserListener extends UserEventListener
       }
       catch (Exception e)
       {
-         log.error("An error occurs while removing the user directory of '" + user.getUserName() + "'", e);
+         LOG.error("An error occurs while removing the user directory of '" + user.getUserName() + "'", e);
       }
       finally
       {

@@ -153,7 +153,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
             coordinator = newActiveState;
 
             getModeHandler().setMode(coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY);
-            log.info("Set indexer io mode to:" + (coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY));
+            LOG.info("Set indexer io mode to:" + (coordinator ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY));
 
             if (coordinator)
             {
@@ -168,11 +168,11 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
     */
    protected void doPushState()
    {
-      final boolean debugEnabled = log.isDebugEnabled();
+      final boolean debugEnabled = LOG.isDebugEnabled();
 
       if (debugEnabled)
       {
-         log.debug("start pushing in-memory state to cache cacheLoader collection");
+         LOG.debug("start pushing in-memory state to cache cacheLoader collection");
       }
 
       Map<String, ChangesFilterListsWrapper> changesMap = new HashMap<String, ChangesFilterListsWrapper>();
@@ -189,9 +189,9 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
          {
             if (entry.getValue() instanceof ChangesFilterListsWrapper && entry.getKey() instanceof ChangesKey)
             {
-               if (log.isDebugEnabled())
+               if (LOG.isDebugEnabled())
                {
-                  log.info("Received list wrapper, start indexing...");
+                  LOG.info("Received list wrapper, start indexing...");
                }
                // get stale List that was not processed
                ChangesFilterListsWrapper staleListIncache = (ChangesFilterListsWrapper)entry.getValue();
@@ -232,7 +232,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
 
       if (debugEnabled)
       {
-         log.debug("in-memory state passed to cache cacheStore successfully");
+         LOG.debug("in-memory state passed to cache cacheStore successfully");
       }
    }
 

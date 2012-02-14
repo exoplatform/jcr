@@ -51,7 +51,7 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
    /**
     * Logger
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.CacheableSessionLockManager");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CacheableSessionLockManager");
 
    /**
     * Session identifier.
@@ -242,19 +242,19 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
             }
             catch (UnsupportedRepositoryOperationException e)
             {
-               log.error(e.getLocalizedMessage());
+               LOG.error(e.getLocalizedMessage());
             }
             catch (LockException e)
             {
-               log.error(e.getLocalizedMessage());
+               LOG.error(e.getLocalizedMessage());
             }
             catch (AccessDeniedException e)
             {
-               log.error(e.getLocalizedMessage());
+               LOG.error(e.getLocalizedMessage());
             }
             catch (RepositoryException e)
             {
-               log.error(e.getLocalizedMessage());
+               LOG.error(e.getLocalizedMessage());
             }
          }
       }

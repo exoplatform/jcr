@@ -30,7 +30,7 @@ import org.exoplatform.services.log.Log;
 public class FtpTextUtils
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpTextUtils");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpTextUtils");
 
    public static String getStrached(String strVal, int reqLen)
    {
@@ -52,7 +52,7 @@ public class FtpTextUtils
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       StringBuilder resStr = new StringBuilder(); 
       for (int i = 0; i < reqLen; i++)

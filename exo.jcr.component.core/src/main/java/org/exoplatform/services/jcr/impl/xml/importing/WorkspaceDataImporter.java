@@ -44,7 +44,7 @@ import javax.jcr.NamespaceRegistry;
  */
 public class WorkspaceDataImporter extends StreamImporter
 {
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceDataImporter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceDataImporter");
 
    public WorkspaceDataImporter(NodeData parent, int uuidBehavior, ItemDataKeeper dataKeeper,
       ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,

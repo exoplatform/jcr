@@ -33,7 +33,7 @@ import org.exoplatform.services.log.Log;
 public class Constants
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.Constants");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.Constants");
 
    /**
     * Default namespace prefix (empty uri).
@@ -712,7 +712,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         log.error("ERROR: Can't parse JCR_SYSTEM_URI for constant JCR_SYSTEM (" + JCR_SYSTEM_URI + "): " + e, e);
+         LOG.error("ERROR: Can't parse JCR_SYSTEM_URI for constant JCR_SYSTEM (" + JCR_SYSTEM_URI + "): " + e, e);
       }
 
       try
@@ -721,7 +721,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         log.error("ERROR: Can't parse JCR_VERSION_STORAGE_URI for constant JCR_VERSION_STORAGE_PATH ("
+         LOG.error("ERROR: Can't parse JCR_VERSION_STORAGE_URI for constant JCR_VERSION_STORAGE_PATH ("
                   + JCR_VERSION_STORAGE_URI + "): " + e, e);
       }
 
@@ -731,7 +731,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         log.error("ERROR: Can't parse JCR_NODETYPES_URI for constant JCR_NODETYPES_PATH ("
+         LOG.error("ERROR: Can't parse JCR_NODETYPES_URI for constant JCR_NODETYPES_PATH ("
             + JCR_NODETYPES_URI + "): " + e, e);
       }
 
@@ -742,7 +742,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         log.error("ERROR: Can't parse EXO_NAMESPACES_URI for constant EXO_NAMESPACES (" + nsUri + "): " + e, e);
+         LOG.error("ERROR: Can't parse EXO_NAMESPACES_URI for constant EXO_NAMESPACES (" + nsUri + "): " + e, e);
       }
 
       try
@@ -751,7 +751,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         log.error("ERROR: Can't parse ROOT_URI " + e, e);
+         LOG.error("ERROR: Can't parse ROOT_URI " + e, e);
       }
 
    }

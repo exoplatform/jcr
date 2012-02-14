@@ -43,7 +43,7 @@ public class CNDNodeTypeDataPersister implements NodeTypeDataPersister
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger(CNDNodeTypeDataPersister.class);
+   private static final Log LOG = ExoLogger.getLogger(CNDNodeTypeDataPersister.class);
 
    private final InputStream is;
 

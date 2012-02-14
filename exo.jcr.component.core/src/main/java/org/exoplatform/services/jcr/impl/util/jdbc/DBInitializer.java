@@ -62,7 +62,7 @@ public class DBInitializer
 
    static public String SQL_TRIGGERNAME = "(([A-Z_]+JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+)+?";
 
-   protected final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBInitializer");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBInitializer");
 
    protected final Connection connection;
 

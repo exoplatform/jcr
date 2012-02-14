@@ -82,7 +82,7 @@ import javax.jcr.version.VersionException;
 public class WorkspaceImpl implements ExtendedWorkspace
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceImpl");
 
    private final SessionImpl session;
 
@@ -638,7 +638,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
                }
                else
                {
-                  log.warn("Workspace.restore(). Correspondent node is not found " + versionableIdentifier);
+                  LOG.warn("Workspace.restore(). Correspondent node is not found " + versionableIdentifier);
                }
             }
             if (versionableParentIdentifier != null && existedIdentifiers.contains(versionableParentIdentifier))

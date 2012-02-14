@@ -256,7 +256,7 @@ public class HTTPBackupAgent implements ResourceContainer
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.HTTPBackupAgent");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.HTTPBackupAgent");
 
    /**
     * To disable cache control.
@@ -302,7 +302,7 @@ public class HTTPBackupAgent implements ResourceContainer
       this.backupManager = (ExtendedBackupManager) backupManager;
       this.sessionProviderService = sessionProviderService;
 
-      log.info("HTTPBackupAgent inited");
+      LOG.info("HTTPBackupAgent inited");
    }
 
    /**
@@ -411,7 +411,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start backup", exception);
+      LOG.error("Can not start backup", exception);
 
       return Response.status(status).entity("Can not start backup : " + failMessage).type(MediaType.TEXT_PLAIN)
          .cacheControl(noCache).build();
@@ -505,7 +505,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start backup", exception);
+      LOG.error("Can not start backup", exception);
 
       return Response.status(status).entity("Can not start backup : " + failMessage).type(MediaType.TEXT_PLAIN)
          .cacheControl(noCache).build();
@@ -567,7 +567,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not drop the workspace '" + "/" + repository + "/" + workspace + "'", exception);
+      LOG.error("Can not drop the workspace '" + "/" + repository + "/" + workspace + "'", exception);
 
       return Response.status(status).entity(
          "Can not drop the workspace '" + "/" + repository + "/" + workspace + "' : " + failMessage).type(
@@ -680,7 +680,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+      LOG.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
          + "' from backup log with id '" + backupId + "'", exception);
 
       return Response.status(status).entity(
@@ -814,7 +814,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+      LOG.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
                + "' from backup log with id '" + backupId + "'", exception);
 
       return Response.status(status).entity(
@@ -856,7 +856,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (UnsupportedEncodingException e)
       {
-         log.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+         LOG.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
                   + "' from backup set '" + backupSetPath + "'", e);
 
          return Response.status(Response.Status.BAD_REQUEST).entity(
@@ -983,7 +983,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+      LOG.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
                + "' from backup set '" + backupSetPath + "'", exception);
 
       return Response.status(status).entity(
@@ -1134,7 +1134,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the workspace '" + "/" + repository + "/" + workspace
+      LOG.error("Can not start restore the workspace '" + "/" + repository + "/" + workspace
                + "' from backup log with id '" + backupId + "'", exception);
 
       return Response.status(status).entity(
@@ -1171,7 +1171,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (UnsupportedEncodingException e) 
       {
-         log.error("Can not start restore from backup set '" + backupSetPathEncoded + "'", e);
+         LOG.error("Can not start restore from backup set '" + backupSetPathEncoded + "'", e);
 
          return Response.status(Response.Status.BAD_REQUEST).entity(
                   "Can not start restore from backup set  '" + backupSetPathEncoded + "' : " + e.getMessage()).type(
@@ -1235,7 +1235,7 @@ public class HTTPBackupAgent implements ResourceContainer
       {
          if (exception != null)
          {
-            log.error("Can not start restore from backup set '" + backupSetPath + "'", exception);
+            LOG.error("Can not start restore from backup set '" + backupSetPath + "'", exception);
 
             return Response.status(status).entity(
                      "Can not start restore from backup set  '" + backupSetPath + "' : " + failMessage).type(
@@ -1344,7 +1344,7 @@ public class HTTPBackupAgent implements ResourceContainer
             failMessage = e.getMessage();
          }
 
-         log.error("Can not start restore the workspace '" + "/" + repository + "/" + workspace
+         LOG.error("Can not start restore the workspace '" + "/" + repository + "/" + workspace
                   + "' from backup set \"" + backupSetPath + "\"", exception);
 
          return Response.status(status).entity(
@@ -1419,7 +1419,7 @@ public class HTTPBackupAgent implements ResourceContainer
             failMessage = e.getMessage();
          }
 
-         log.error("Can not start restore the repository '" + "/" + repository + "' from backup set '" + backupSetPath
+         LOG.error("Can not start restore the repository '" + "/" + repository + "' from backup set '" + backupSetPath
                   + "'", exception);
 
          return Response.status(status).entity(
@@ -1513,7 +1513,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '"
+      LOG.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '"
          + backupId + "'", exception);
 
       return Response.status(status).entity(
@@ -1621,7 +1621,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '"
+      LOG.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '"
                + backupId + "'", exception);
 
       return Response.status(status).entity(
@@ -1663,7 +1663,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (UnsupportedEncodingException e)
       {
-         log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup set '"
+         LOG.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup set '"
                   + backupSetPath + "'", e);
 
          return Response.status(Response.Status.BAD_REQUEST).entity(
@@ -1759,7 +1759,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup set '"
+      LOG.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup set '"
                + backupSetPath + "'", exception);
 
       return Response.status(status).entity(
@@ -1867,7 +1867,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the repository '" + "/" + repository + "' from backup log with id '"
+      LOG.error("Can not start restore the repository '" + "/" + repository + "' from backup log with id '"
                + backupId + "'", exception);
 
       return Response.status(status).entity(
@@ -1927,7 +1927,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not stop backup", exception);
+      LOG.error("Can not stop backup", exception);
 
       return Response.status(status).entity("Can not stop backup : " + failMessage).type(MediaType.TEXT_PLAIN)
          .cacheControl(noCache).build();
@@ -1985,7 +1985,7 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not stop repository backup ", exception);
+      LOG.error("Can not stop repository backup ", exception);
 
       return Response.status(status).entity("Can not stop repository backup : " + failMessage).type(
          MediaType.TEXT_PLAIN).cacheControl(noCache).build();
@@ -2013,7 +2013,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about backup service", e);
+         LOG.error("Can not get information about backup service", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about backup service : " + e.getMessage()).type(MediaType.TEXT_PLAIN)
@@ -2049,7 +2049,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current or completed backups", e);
+         LOG.error("Can not get information about current or completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
@@ -2085,7 +2085,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current or completed reposioty backups", e);
+         LOG.error("Can not get information about current or completed reposioty backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current or completed repository backups" + e.getMessage()).type(
@@ -2133,7 +2133,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current or completed backup with 'id' " + id, e);
+         LOG.error("Can not get information about current or completed backup with 'id' " + id, e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current or completed backup with 'id' " + id + " : " + e.getMessage()).type(
@@ -2182,7 +2182,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current or completed repository backup with 'id' " + id, e);
+         LOG.error("Can not get information about current or completed repository backup with 'id' " + id, e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current or completed repository backup with 'id' " + id + " : "
@@ -2214,7 +2214,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current backups", e);
+         LOG.error("Can not get information about current backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current backups" + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(
@@ -2246,7 +2246,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current repositorty backups", e);
+         LOG.error("Can not get information about current repositorty backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current backups" + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(
@@ -2279,7 +2279,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about completed backups", e);
+         LOG.error("Can not get information about completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
@@ -2312,7 +2312,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about completed backups", e);
+         LOG.error("Can not get information about completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
@@ -2366,7 +2366,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current or completed backups", e);
+         LOG.error("Can not get information about current or completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
@@ -2416,7 +2416,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current or completed repository backups", e);
+         LOG.error("Can not get information about current or completed repository backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current or completed repository backups" + e.getMessage()).type(
@@ -2466,7 +2466,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error(
+         LOG.error(
             "Can not get information about current restore for workspace /" + repository + "/" + workspace + "'", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
@@ -2515,7 +2515,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current restore for repository /" + repository + "'", e);
+         LOG.error("Can not get information about current restore for repository /" + repository + "'", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current restore for repository /" + repository + "' : " + e.getMessage())
@@ -2571,7 +2571,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current restores.", e);
+         LOG.error("Can not get information about current restores.", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current restores : " + e.getMessage()).type(MediaType.TEXT_PLAIN)
@@ -2625,7 +2625,7 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current repository restores.", e);
+         LOG.error("Can not get information about current repository restores.", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current repository restores : " + e.getMessage()).type(MediaType.TEXT_PLAIN)

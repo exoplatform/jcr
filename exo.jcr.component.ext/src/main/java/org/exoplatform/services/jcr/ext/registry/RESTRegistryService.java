@@ -68,7 +68,7 @@ public class RESTRegistryService implements ResourceContainer
    /**
     * Logger.
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.RESTRegistryService");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.RESTRegistryService");
 
    /**
     * 
@@ -136,7 +136,7 @@ public class RESTRegistryService implements ResourceContainer
       }
       catch (Exception e)
       {
-         log.error("Get registry failed", e);
+         LOG.error("Get registry failed", e);
          throw new WebApplicationException(e);
       }
    }
@@ -160,7 +160,7 @@ public class RESTRegistryService implements ResourceContainer
       }
       catch (RepositoryException e)
       {
-         log.error("Get registry entry failed", e);
+         LOG.error("Get registry entry failed", e);
          throw new WebApplicationException(e);
       }
    }
@@ -181,27 +181,27 @@ public class RESTRegistryService implements ResourceContainer
       }
       catch (IllegalArgumentException e)
       {
-         log.error("Create registry entry failed", e);
+         LOG.error("Create registry entry failed", e);
          throw new WebApplicationException(e);
       }
       catch (IOException e)
       {
-         log.error("Create registry entry failed", e);
+         LOG.error("Create registry entry failed", e);
          throw new WebApplicationException(e);
       }
       catch (SAXException e)
       {
-         log.error("Create registry entry failed", e);
+         LOG.error("Create registry entry failed", e);
          throw new WebApplicationException(e);
       }
       catch (ParserConfigurationException e)
       {
-         log.error("Create registry entry failed", e);
+         LOG.error("Create registry entry failed", e);
          throw new WebApplicationException(e);
       }
       catch (RepositoryException e)
       {
-         log.error("Create registry entry failed", e);
+         LOG.error("Create registry entry failed", e);
          throw new WebApplicationException(e);
       }
    }
@@ -230,27 +230,27 @@ public class RESTRegistryService implements ResourceContainer
       }
       catch (IllegalArgumentException e)
       {
-         log.error("Re-create registry entry failed", e);
+         LOG.error("Re-create registry entry failed", e);
          throw new WebApplicationException(e);
       }
       catch (IOException e)
       {
-         log.error("Re-create registry entry failed", e);
+         LOG.error("Re-create registry entry failed", e);
          throw new WebApplicationException(e);
       }
       catch (SAXException e)
       {
-         log.error("Re-create registry entry failed", e);
+         LOG.error("Re-create registry entry failed", e);
          throw new WebApplicationException(e);
       }
       catch (ParserConfigurationException e)
       {
-         log.error("Re-create registry entry failed", e);
+         LOG.error("Re-create registry entry failed", e);
          throw new WebApplicationException(e);
       }
       catch (RepositoryException e)
       {
-         log.error("Re-create registry entry failed", e);
+         LOG.error("Re-create registry entry failed", e);
          throw new WebApplicationException(e);
       }
    }
@@ -272,7 +272,7 @@ public class RESTRegistryService implements ResourceContainer
       }
       catch (Exception e)
       {
-         log.error("Remove registry entry failed", e);
+         LOG.error("Remove registry entry failed", e);
          throw new WebApplicationException(e);
       }
    }

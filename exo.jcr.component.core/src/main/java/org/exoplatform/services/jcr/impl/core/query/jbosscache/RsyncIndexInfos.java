@@ -42,7 +42,7 @@ import java.util.Set;
 public class RsyncIndexInfos extends JBossCacheIndexInfos
 {
 
-   final Log log = ExoLogger.getLogger("exo.jcr.component.core.RsyncIndexInfos");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RsyncIndexInfos");
 
    private final String indexPath;
 
@@ -146,7 +146,7 @@ public class RsyncIndexInfos extends JBossCacheIndexInfos
             }
             catch (IOException e)
             {
-               log.error("Failed to retrieve index using RSYNC", e);
+               LOG.error("Failed to retrieve index using RSYNC", e);
             }
          }
       }

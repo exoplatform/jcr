@@ -45,7 +45,7 @@ public class MultipartByterangesEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.MultipartByterangesEntity");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.MultipartByterangesEntity");
 
    /**
     * resource.
@@ -123,12 +123,12 @@ public class MultipartByterangesEntity implements StreamingOutput
       }
       catch (IOException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          throw new IOException("Can't write to stream, caused " + exc);
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          throw new IOException("Can't write to stream, caused " + exc);
       }
    }

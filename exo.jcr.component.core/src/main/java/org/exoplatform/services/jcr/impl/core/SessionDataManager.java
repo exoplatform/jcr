@@ -85,7 +85,7 @@ public class SessionDataManager implements ItemDataConsumer
 
    public static final int MERGE_ITEMS = 3;
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionDataManager");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionDataManager");
 
    protected final SessionImpl session;
 
@@ -357,10 +357,10 @@ public class SessionDataManager implements ItemDataConsumer
       throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
+         LOG.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
       }
 
       ItemImpl item = null;
@@ -370,9 +370,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + ") --> "
+            LOG.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + ") --> "
                + (item != null ? item.getPath() : "null") + " <<<<< " + ((System.currentTimeMillis() - start) / 1000d)
                + "sec");
          }
@@ -405,10 +405,10 @@ public class SessionDataManager implements ItemDataConsumer
       ItemType itemType, boolean createNullItemData) throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
+         LOG.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
       }
 
       ItemImpl item = null;
@@ -420,9 +420,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + ") --> "
+            LOG.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + ") --> "
                + (item != null ? item.getPath() : "null") + " <<<<< " + ((System.currentTimeMillis() - start) / 1000d)
                + "sec");
          }
@@ -448,7 +448,7 @@ public class SessionDataManager implements ItemDataConsumer
       throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
          StringBuilder debugPath = new StringBuilder();
@@ -456,7 +456,7 @@ public class SessionDataManager implements ItemDataConsumer
          {
             debugPath.append(rp.getAsString());
          }
-         log.debug("getItem(" + parent.getQPath().getAsString() + " + " + debugPath + " ) >>>>>");
+         LOG.debug("getItem(" + parent.getQPath().getAsString() + " + " + debugPath + " ) >>>>>");
       }
 
       ItemImpl item = null;
@@ -466,14 +466,14 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
             StringBuilder debugPath = new StringBuilder();
             for (QPathEntry rp : relPath)
             {
                debugPath.append(rp.getAsString());
             }
-            log.debug("getItem(" + parent.getQPath().getAsString() + " + " + debugPath + ") --> "
+            LOG.debug("getItem(" + parent.getQPath().getAsString() + " + " + debugPath + ") --> "
                + (item != null ? item.getPath() : "null") + " <<<<< " + ((System.currentTimeMillis() - start) / 1000d)
                + "sec");
          }
@@ -493,10 +493,10 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItem(QPath path, boolean pool) throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getItem(" + path.getAsString() + " ) >>>>>");
+         LOG.debug("getItem(" + path.getAsString() + " ) >>>>>");
       }
 
       ItemImpl item = null;
@@ -506,9 +506,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getItem(" + path.getAsString() + ") --> " + (item != null ? item.getPath() : "null") + " <<<<< "
+            LOG.debug("getItem(" + path.getAsString() + ") --> " + (item != null ? item.getPath() : "null") + " <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
@@ -614,10 +614,10 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItemByIdentifier(String identifier, boolean pool, boolean apiRead) throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getItemByIdentifier(" + identifier + " ) >>>>>");
+         LOG.debug("getItemByIdentifier(" + identifier + " ) >>>>>");
       }
 
       ItemImpl item = null;
@@ -627,9 +627,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getItemByIdentifier(" + identifier + ") --> " + (item != null ? item.getPath() : "null")
+            LOG.debug("getItemByIdentifier(" + identifier + ") --> " + (item != null ? item.getPath() : "null")
                + "  <<<<< " + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
@@ -805,10 +805,10 @@ public class SessionDataManager implements ItemDataConsumer
       throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getChildNodesData(" + parent.getQPath().getAsString() + " , itemDataFilter) >>>>>");
+         LOG.debug("getChildNodesData(" + parent.getQPath().getAsString() + " , itemDataFilter) >>>>>");
       }
 
       try
@@ -864,9 +864,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") <<<<< "
+            LOG.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
@@ -878,10 +878,10 @@ public class SessionDataManager implements ItemDataConsumer
    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") >>>>>");
+         LOG.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") >>>>>");
       }
 
       try
@@ -890,9 +890,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") <<<<< "
+            LOG.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
@@ -905,10 +905,10 @@ public class SessionDataManager implements ItemDataConsumer
       throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getChildNodesData(" + parent.getQPath().getAsString() + " , itemDataFilter) >>>>>");
+         LOG.debug("getChildNodesData(" + parent.getQPath().getAsString() + " , itemDataFilter) >>>>>");
       }
 
       try
@@ -920,9 +920,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") <<<<< "
+            LOG.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
@@ -964,10 +964,10 @@ public class SessionDataManager implements ItemDataConsumer
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") >>>>>");
+         LOG.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") >>>>>");
       }
 
       try
@@ -976,9 +976,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") <<<<< "
+            LOG.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
@@ -991,10 +991,10 @@ public class SessionDataManager implements ItemDataConsumer
       throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") >>>>>");
+         LOG.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") >>>>>");
       }
 
       try
@@ -1007,9 +1007,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") <<<<< "
+            LOG.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
@@ -1022,10 +1022,10 @@ public class SessionDataManager implements ItemDataConsumer
    public List<PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("listChildPropertiesData(" + parent.getQPath().getAsString() + ") >>>>>");
+         LOG.debug("listChildPropertiesData(" + parent.getQPath().getAsString() + ") >>>>>");
       }
 
       try
@@ -1034,9 +1034,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("listChildPropertiesData(" + parent.getQPath().getAsString() + ") <<<<< "
+            LOG.debug("listChildPropertiesData(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
@@ -1054,10 +1054,10 @@ public class SessionDataManager implements ItemDataConsumer
    public AccessControlList getACL(QPath path) throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getACL(" + path.getAsString() + " ) >>>>>");
+         LOG.debug("getACL(" + path.getAsString() + " ) >>>>>");
       }
 
       try
@@ -1109,9 +1109,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getACL(" + path.getAsString() + ") <<<<< " + ((System.currentTimeMillis() - start) / 1000d)
+            LOG.debug("getACL(" + path.getAsString() + ") <<<<< " + ((System.currentTimeMillis() - start) / 1000d)
                + "sec");
          }
       }
@@ -1120,10 +1120,10 @@ public class SessionDataManager implements ItemDataConsumer
    public AccessControlList getACL(NodeData parent, QPathEntry name) throws RepositoryException
    {
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
-         log.debug("getACL(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
+         LOG.debug("getACL(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
       }
 
       try
@@ -1142,9 +1142,9 @@ public class SessionDataManager implements ItemDataConsumer
       }
       finally
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("getACL(" + parent.getQPath().getAsString() + " + " + name.getAsString() + ") <<<<< "
+            LOG.debug("getACL(" + parent.getQPath().getAsString() + " + " + name.getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
          }
       }
@@ -1277,9 +1277,9 @@ public class SessionDataManager implements ItemDataConsumer
             invalidated.add(pooled);
          }
 
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("deleted top item: " + itemData.getQPath().getAsString());
+            LOG.debug("deleted top item: " + itemData.getQPath().getAsString());
          }
       }
 
@@ -1507,9 +1507,9 @@ public class SessionDataManager implements ItemDataConsumer
 
       PlainChangesLog cLog = changesLog.pushLog(path);
 
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug(" ----- commit -------- \n" + cLog.dump());
+         LOG.debug(" ----- commit -------- \n" + cLog.dump());
       }
 
       try
@@ -1554,9 +1554,9 @@ public class SessionDataManager implements ItemDataConsumer
    private void remainChangesBack(PlainChangesLog cLog)
    {
       changesLog.addAll(cLog.getAllStates());
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug(" ----- rollback ----- \n" + cLog.dump());
+         LOG.debug(" ----- rollback ----- \n" + cLog.dump());
       }
    }
 
@@ -1747,7 +1747,7 @@ public class SessionDataManager implements ItemDataConsumer
             }
             catch (RepositoryException e)
             {
-               log.warn("Unexpected exception. Probable wrong data. Exception message:" + e.getLocalizedMessage());
+               LOG.warn("Unexpected exception. Probable wrong data. Exception message:" + e.getLocalizedMessage());
             }
          }
       }
@@ -2492,7 +2492,7 @@ public class SessionDataManager implements ItemDataConsumer
          }
          catch (RepositoryException e)
          {
-            log.error(e.getLocalizedMessage(), e);
+            LOG.error(e.getLocalizedMessage(), e);
          }
 
          return str.toString();

@@ -49,7 +49,7 @@ public class NodeTypeConverter
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeConverter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeConverter");
 
    private final LocationFactory locationFactory;
 
@@ -76,7 +76,7 @@ public class NodeTypeConverter
             {
                // skip this node, so it's not necessary at this runtime
                // + "' -- it's not necessary at this runtime";
-               log.warn("Node type " + ntvalue.getName() + " is not register due to DISABLE control policy");
+               LOG.warn("Node type " + ntvalue.getName() + " is not register due to DISABLE control policy");
                break;
             }
          }

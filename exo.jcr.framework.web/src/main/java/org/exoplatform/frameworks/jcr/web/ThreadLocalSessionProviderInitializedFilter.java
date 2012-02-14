@@ -54,7 +54,7 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
 
    private SessionProviderService providerService;
 
-   private static final Log log = ExoLogger.getLogger("exo.jcr.framework.command.ThreadLocalSessionProviderInitializedFilter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.ThreadLocalSessionProviderInitializedFilter");
 
    /*
     * (non-Javadoc)
@@ -80,9 +80,9 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
       HttpSession httpSession = httpRequest.getSession(false);
       if (state == null)
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("Current conversation state is not set");
+            LOG.debug("Current conversation state is not set");
          }
 
          if (httpSession != null)
@@ -94,9 +94,9 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
             {
                provider = new SessionProvider(state);
             }
-            else if (log.isDebugEnabled())
+            else if (LOG.isDebugEnabled())
             {
-               log.debug("WARN: Conversation State is null, id  " + httpSession.getId());
+               LOG.debug("WARN: Conversation State is null, id  " + httpSession.getId());
             }
          }
       }
@@ -107,9 +107,9 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
 
       if (provider == null)
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("Create SessionProvider for anonymous.");
+            LOG.debug("Create SessionProvider for anonymous.");
          }
          provider = SessionProvider.createAnonimProvider();
       }
@@ -135,7 +135,7 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
             }
             catch (Exception e)
             {
-               log.warn("An error occured while removing the session provider from the conversation state", e);
+               LOG.warn("An error occured while removing the session provider from the conversation state", e);
             }
          }
          if (providerService.getSessionProvider(null) != null)
@@ -147,7 +147,7 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
             }
             catch (Exception e)
             {
-               log.warn("An error occured while cleaning the ThreadLocal", e);
+               LOG.warn("An error occured while cleaning the ThreadLocal", e);
             }
          }
       }

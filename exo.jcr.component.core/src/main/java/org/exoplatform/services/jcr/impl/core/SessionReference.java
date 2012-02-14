@@ -42,7 +42,7 @@ public class SessionReference extends WeakReference<Session>
    /**
     * The logger instance for this class.
     */
-   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionReference");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionReference");
 
    //
    private static final int INITIAL_DELAY = 10;

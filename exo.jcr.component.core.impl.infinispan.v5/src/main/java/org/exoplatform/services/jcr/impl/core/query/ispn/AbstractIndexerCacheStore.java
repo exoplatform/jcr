@@ -58,7 +58,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
     */
    protected final Map<String, Indexer> indexers = new HashMap<String, Indexer>();
 
-   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.IndexerCacheLoader");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.IndexerCacheLoader");
 
    /**
     * Executor used to remove all the entries that have already been treated. We
@@ -98,9 +98,9 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    {
       indexers.put(searchManager.getWsId(), new Indexer(searchManager, parentSearchManager, handler,
          parentHandler));
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("Register " + searchManager.getWsId() + " " + this + " in " + indexers);
+         LOG.debug("Register " + searchManager.getWsId() + " " + this + " in " + indexers);
       }
    }
 
@@ -111,9 +111,9 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    {
       if (entry.getKey() instanceof ChangesKey && entry.getValue() instanceof ChangesFilterListsWrapper)
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.info("Received list wrapper, start indexing...");
+            LOG.info("Received list wrapper, start indexing...");
          }
          // updating index
          ChangesFilterListsWrapper wrapper = (ChangesFilterListsWrapper)entry.getValue();
@@ -123,10 +123,10 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
             Indexer indexer = indexers.get(key.getWsId());
             if (indexer == null)
             {
-               log.warn("No indexer could be found for the cache entry " + key.toString());
-               if (log.isDebugEnabled())
+               LOG.warn("No indexer could be found for the cache entry " + key.toString());
+               if (LOG.isDebugEnabled())
                {
-                  log.debug("The current content of the map of indexers is " + indexers);
+                  LOG.debug("The current content of the map of indexers is " + indexers);
                }
             }
             else if (wrapper.withChanges())

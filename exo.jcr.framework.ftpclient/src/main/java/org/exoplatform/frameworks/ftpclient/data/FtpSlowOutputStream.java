@@ -27,7 +27,7 @@ import java.io.OutputStream;
 public class FtpSlowOutputStream extends OutputStream
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpSlowOutputStream");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.FtpSlowOutputStream");
 
    private OutputStream nativeOutputStream;
 
@@ -55,7 +55,7 @@ public class FtpSlowOutputStream extends OutputStream
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception. " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          }
          writed = 0;
       }

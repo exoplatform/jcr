@@ -43,7 +43,7 @@ import javax.sql.DataSource;
  */
 public class GenericConnectionFactory implements WorkspaceStorageConnectionFactory
 {
-   protected final Log log = ExoLogger.getLogger("exo.jcr.component.core.GenericConnectionFactory");
+   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.GenericConnectionFactory");
 
    protected final DataSource dbDataSource;
 

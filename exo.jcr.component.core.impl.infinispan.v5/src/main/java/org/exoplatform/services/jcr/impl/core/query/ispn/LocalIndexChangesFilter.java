@@ -58,7 +58,8 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter implements Loc
    /**
     * Logger instance for this class
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.LocalIndexChangesFilter");
+   private static final Log LOG = ExoLogger
+      .getLogger("exo.jcr.component.core.impl.infinispan.v5.LocalIndexChangesFilter");
 
    public static final String PARAM_INFINISPAN_CACHESTORE_CLASS = "infinispan-cachestore-classname";
 
@@ -103,7 +104,7 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter implements Loc
 
    protected Log getLogger()
    {
-      return log;
+      return LOG;
    }
 
    protected void doUpdateIndex(ChangesFilterListsWrapper changes)

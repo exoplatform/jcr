@@ -51,7 +51,7 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
 
    private final static Set<String> PROTECTED_NAMESPACES = new HashSet<String>();
 
-   protected final static Log log = ExoLogger.getLogger("exo.jcr.component.core.NamespaceRegistryImpl");
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NamespaceRegistryImpl");
 
    private boolean started = false;
    static
@@ -389,15 +389,15 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
                {
                   registerNamespace(prefix, uri);
                }
-               if (log.isDebugEnabled())
+               if (LOG.isDebugEnabled())
                {
-                  log.debug("Namespace is registered " + prefix + " = " + uri);
+                  LOG.debug("Namespace is registered " + prefix + " = " + uri);
                }
             }
          }
          catch (Exception e)
          {
-            log.error("Error load namespaces ", e);
+            LOG.error("Error load namespaces ", e);
          }
       }
    }

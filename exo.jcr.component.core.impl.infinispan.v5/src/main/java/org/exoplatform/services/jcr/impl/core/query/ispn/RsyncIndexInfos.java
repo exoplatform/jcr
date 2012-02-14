@@ -46,7 +46,7 @@ import java.util.Set;
 public class RsyncIndexInfos extends ISPNIndexInfos
 {
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.RsyncIndexInfos");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RsyncIndexInfos");
 
    private final String indexPath;
 
@@ -162,18 +162,18 @@ public class RsyncIndexInfos extends ISPNIndexInfos
                }
                catch (IOException e)
                {
-                  log.error("Failed to retrieve index using RSYNC", e);
+                  LOG.error("Failed to retrieve index using RSYNC", e);
                }
             }
             else
             {
-               log.error("Error triggering RSync synchronization, skipped. Unsupported Address object : "
+               LOG.error("Error triggering RSync synchronization, skipped. Unsupported Address object : "
                   + jgAddress.getClass().getName());
             }
          }
          else
          {
-            log.error("Error triggering RSync synchronization, skipped. Unsupported Address object : "
+            LOG.error("Error triggering RSync synchronization, skipped. Unsupported Address object : "
                + cacheManager.getCoordinator().getClass().getName());
          }
       }

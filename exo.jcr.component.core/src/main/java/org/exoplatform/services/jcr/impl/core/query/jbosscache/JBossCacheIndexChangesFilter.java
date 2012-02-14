@@ -65,7 +65,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
    /**
     * Logger instance for this class
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheIndexChangesFilter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheIndexChangesFilter");
 
    public static final String PARAM_JBOSSCACHE_CONFIGURATION = "jbosscache-configuration";
 
@@ -240,7 +240,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 
    protected Log getLogger()
    {
-      return log;
+      return LOG;
    }
 
    protected void doUpdateIndex(ChangesFilterListsWrapper changes)
@@ -279,7 +279,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       }
       catch (PrivilegedActionException e)
       {
-         log.warn("Not all JBoss Cache MBeans were unregistered.");
+         LOG.warn("Not all JBoss Cache MBeans were unregistered.");
       }
    }
 }

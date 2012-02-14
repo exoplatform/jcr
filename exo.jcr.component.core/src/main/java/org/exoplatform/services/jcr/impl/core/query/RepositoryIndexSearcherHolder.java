@@ -43,7 +43,7 @@ public class RepositoryIndexSearcherHolder implements Startable
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.RepositoryIndexSearcherHolder");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RepositoryIndexSearcherHolder");
 
    /**
     * @param indexSearchers

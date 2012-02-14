@@ -37,7 +37,7 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
 {
    Cache<?, ?> cache;
 
-   private static final Log log = LogFactory.getLog("exo.jcr.component.core.DefaultEvictionActionPolicy");
+   private static final Log LOG = LogFactory.getLog("exo.jcr.component.core.DefaultEvictionActionPolicy");
 
    public void setCache(Cache<?, ?> cache)
    {
@@ -50,18 +50,18 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
       boolean result;
       try
       {
-         if (log.isTraceEnabled())
+         if (LOG.isTraceEnabled())
          {
-            log.trace("Evicting Fqn " + fqn);
+            LOG.trace("Evicting Fqn " + fqn);
          }
          cache.evict(fqn);
          result = true;
       }
       catch (Exception e)
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("Unable to evict " + fqn, e);
+            LOG.debug("Unable to evict " + fqn, e);
          }
          result = false;
       }
@@ -84,9 +84,9 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
             // Check if not null, possibly this node was concurrently removed 
             if (node != null && !node.hasChildrenDirect())
             {
-               if (log.isTraceEnabled())
+               if (LOG.isTraceEnabled())
                {
-                  log.trace("Evicting Fqn " + fqn);
+                  LOG.trace("Evicting Fqn " + fqn);
                }
                cache.evict(parentFqn);
             }
@@ -94,9 +94,9 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
       }
       catch (IllegalStateException e)
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("Unable to evict " + fqn, e);
+            LOG.debug("Unable to evict " + fqn, e);
          }
       }
       return result;

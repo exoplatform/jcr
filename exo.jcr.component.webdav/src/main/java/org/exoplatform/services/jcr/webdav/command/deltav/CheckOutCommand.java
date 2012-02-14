@@ -45,7 +45,7 @@ public class CheckOutCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.CheckOutCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.CheckOutCommand");
 
    /**
     * Webdav CheckOut comand implementation.
@@ -79,7 +79,7 @@ public class CheckOutCommand
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
    }

@@ -46,7 +46,7 @@ public class SearchCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.SearchCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.SearchCommand");
 
    /**
     * Webdav search method implementation.
@@ -84,7 +84,7 @@ public class SearchCommand
       }
       catch (Exception exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
 

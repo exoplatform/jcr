@@ -36,7 +36,7 @@ import java.io.InputStreamReader;
  */
 public class RSyncJob
 {
-   final Log log = ExoLogger.getLogger("exo.jcr.component.core.RsyncJob");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RsyncJob");
 
    private final static String RSYNC_USER_SYSTEM_PROPERTY = "USER";
 
@@ -72,9 +72,9 @@ public class RSyncJob
       try
       {
          String command = "rsync -rv --delete " + src + " " + dst;
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("Rsync job started: " + command);
+            LOG.debug("Rsync job started: " + command);
          }
          if (userName != null && password != null)
          {
@@ -125,9 +125,9 @@ public class RSyncJob
                // oops, this can happen sometimes
             }
          }
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("Rsync job finished: " + returnCode + ". Error stream output \n"
+            LOG.debug("Rsync job finished: " + returnCode + ". Error stream output \n"
                + stringBuilderErr.toString() + " Standard stream output \n" + stringBuilderStd.toString());
          }
          if (returnCode != 0)

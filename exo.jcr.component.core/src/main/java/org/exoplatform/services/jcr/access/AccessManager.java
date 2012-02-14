@@ -45,7 +45,7 @@ import javax.jcr.RepositoryException;
 public abstract class AccessManager
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.AccessManager");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AccessManager");
 
    protected final Map<String, String> parameters;
 

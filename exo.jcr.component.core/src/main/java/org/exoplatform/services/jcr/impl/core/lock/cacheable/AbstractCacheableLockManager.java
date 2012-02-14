@@ -136,7 +136,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    /**
     * Logger
     */
-   protected Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AbstractCacheableLockManager");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AbstractCacheableLockManager");
 
    protected LockActionNonTxAware<Integer, Object> getNumLocks;
 

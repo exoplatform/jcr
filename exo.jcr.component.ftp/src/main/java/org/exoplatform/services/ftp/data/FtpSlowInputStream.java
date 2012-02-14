@@ -34,7 +34,7 @@ import java.io.InputStream;
 public class FtpSlowInputStream extends InputStream
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpSlowInputStream");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpSlowInputStream");
 
    private InputStream nativeInputStream;
 
@@ -58,7 +58,7 @@ public class FtpSlowInputStream extends InputStream
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception until Thread.sleep(...). " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception until Thread.sleep(...). " + exc.getMessage(), exc);
          }
          readed = 0;
       }

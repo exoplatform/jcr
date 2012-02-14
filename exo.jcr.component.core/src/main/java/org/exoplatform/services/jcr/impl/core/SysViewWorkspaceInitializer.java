@@ -89,7 +89,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
    public static final String RESTORE_PATH_PARAMETER = "restore-path";
 
-   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceInitializer");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceInitializer");
 
    protected final String workspaceName;
 
@@ -535,7 +535,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
       final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
 
-      log.info("Workspace [" + workspaceName + "] restored from storage " + restorePath + " in "
+      LOG.info("Workspace [" + workspaceName + "] restored from storage " + restorePath + " in "
          + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
 
       return root;
@@ -675,7 +675,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                               true));
                         }
                         else
-                           log.warn("Node skipped name=" + svName + " id=" + exoId + ". Context node "
+                           LOG.warn("Node skipped name=" + svName + " id=" + exoId + ". Context node "
                               + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
 
                      }
@@ -709,12 +709,12 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                                     ("true".equals(exoMultivalued) ? true : false));
                            }
                            else
-                              log.warn("Property can'b be first name=" + svName + " type=" + svType + " id=" + exoId
+                              LOG.warn("Property can'b be first name=" + svName + " type=" + svType + " id=" + exoId
                                  + ". Node should be prior. Context node "
                                  + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
                         }
                         else
-                           log.warn("Property skipped name=" + svName + " type=" + svType + " id=" + exoId
+                           LOG.warn("Property skipped name=" + svName + " type=" + svType + " id=" + exoId
                               + ". Context node "
                               + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
 

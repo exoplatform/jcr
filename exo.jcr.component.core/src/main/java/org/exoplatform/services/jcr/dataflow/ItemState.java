@@ -42,7 +42,7 @@ public class ItemState implements Externalizable
 
    private static final long serialVersionUID = 7967457831325761318L;
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemState");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemState");
 
    public static final int ADDED = 1;
 
@@ -162,8 +162,8 @@ public class ItemState implements Externalizable
       this.internallyCreated = isInternalCreated;
       this.isPersisted = isPersisted;
 
-      if (log.isDebugEnabled())
-         log.debug(nameFromValue(state) + " " + data.getQPath().getAsString() + ",  " + data.getIdentifier());
+      if (LOG.isDebugEnabled())
+         LOG.debug(nameFromValue(state) + " " + data.getQPath().getAsString() + ",  " + data.getIdentifier());
 
    }
 

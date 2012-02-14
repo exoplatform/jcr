@@ -56,7 +56,7 @@ public class SystemSearchManager extends SearchManager
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.SystemSearchManager");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SystemSearchManager");
 
    /**
     * Is started flag.
@@ -103,14 +103,14 @@ public class SystemSearchManager extends SearchManager
          }
          catch (RepositoryException e)
          {
-            log.error(e.getLocalizedMessage());
+            LOG.error(e.getLocalizedMessage());
             handler = null;
             //freeBuffers();
             throw new RuntimeException(e);
          }
          catch (RepositoryConfigurationException e)
          {
-            log.error(e.getLocalizedMessage());
+            LOG.error(e.getLocalizedMessage());
             handler = null;
             //freeBuffers();
             throw new RuntimeException(e);

@@ -181,7 +181,7 @@ public class JCRPathExt extends JCRPath
       {
          if (size <= 0)
          {
-            log.warn("Wrong relative path. Can't move up in path hierarhy.");
+            LOG.warn("Wrong relative path. Can't move up in path hierarhy.");
             return 0;
          }
          return size - 1;

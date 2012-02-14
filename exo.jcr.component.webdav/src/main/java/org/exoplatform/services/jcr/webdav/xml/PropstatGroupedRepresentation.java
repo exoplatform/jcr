@@ -54,7 +54,7 @@ public class PropstatGroupedRepresentation
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.PropstatGroupedRepresentation");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.PropstatGroupedRepresentation");
 
    /**
     * properties statuses.
@@ -163,7 +163,7 @@ public class PropstatGroupedRepresentation
             catch (AccessDeniedException exc)
             {
                statname = WebDavConst.getStatusDescription(HTTPStatus.FORBIDDEN);
-               log.error(exc.getMessage(), exc);
+               LOG.error(exc.getMessage(), exc);
             }
             catch (ItemNotFoundException exc)
             {

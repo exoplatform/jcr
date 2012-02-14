@@ -34,7 +34,7 @@ public class ExtendedEventType
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ExtendedEventType");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ExtendedEventType");
 
    public static final String NODE_ADDED = "Node is added";
 

@@ -51,7 +51,7 @@ public class SessionActionInterceptor
    /**
     * Logger
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionActionInterceptor");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionActionInterceptor");
 
    private final ActionCatalog catalog;
 
@@ -498,7 +498,7 @@ public class SessionActionInterceptor
             }
             catch (Exception e)
             {
-               log.error(e.getLocalizedMessage(), e);
+               LOG.error(e.getLocalizedMessage(), e);
             }
          }
       }
