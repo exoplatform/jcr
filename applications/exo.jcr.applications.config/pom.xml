@@ -29,6 +29,11 @@
   <artifactId>exo.jcr.applications.config</artifactId>
   <packaging>pom</packaging>
   <name>eXo JCR :: Applications :: Config</name>
+
+  <properties>
+    <exo.deploy.profile>jbc</exo.deploy.profile>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
@@ -100,6 +105,10 @@
              <version>${project.version}</version>
            </dependency>
          </dependencies>
+
+         <properties>
+           <exo.deploy.profile>ispn</exo.deploy.profile>
+         </properties>
       </profile>
   </profiles>
 </project>

@@ -7,4 +7,5 @@ rem
 rem                   -Xdebug -Xrunjdwp:transport=%JPDA_TRANSPORT%,
 rem                       address=%JPDA_ADDRESS%,server=y,suspend=%JPDA_SUSPEND%
 @SET JPDA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,address=18000,server=y,suspend=y
-@ eXo.bat jpda start 
+if EXIST eXo-jbc.bat @ eXo-jbc.bat jpda start 
+if EXIST eXo-ispn.bat @ eXo-ispn.bat jpda start 
