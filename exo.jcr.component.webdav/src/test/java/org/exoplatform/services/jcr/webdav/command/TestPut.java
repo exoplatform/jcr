@@ -144,6 +144,85 @@ public class TestPut extends BaseStandaloneTest
       assertEquals(headers.getFirst(HttpHeaders.CONTENT_TYPE), property.getString());
    }
 
+   /**
+    * Testing if we use MimeTypeResolver to define jcr:mimeType property
+    * for untrusted user agents during resource creation. 
+    */
+   public void testUntrustedUserAgentResourceCreation() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String path = TestUtils.getFileName();
+
+      // create User-Agent header indicating that the resource we create
+      // has application/octet-stream type
+      // though it's extension is .txt
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM);
+      headers.add(HttpHeaders.USER_AGENT, "test-user-agent");
+
+      // fullfiling the request
+      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
+
+      Node node = session.getRootNode().getNode(TextUtil.relativizePath(path)).getNode("jcr:content");
+      // though that we passed application/octet-stream mime type
+      // the user agent is within untrusted user agents set
+      // so we use MimeTypeResolver to define the mimeType and
+      // ignore Content-Type header
+      assertEquals(MediaType.TEXT_PLAIN, node.getProperty("jcr:mimeType").getString());
+   }
+
+   /**
+    * Testing if we use MimeTypeResolver to define jcr:mimeType property
+    * for untrusted user agents during resource modification. 
+    */
+   public void testUntrustedUserAgentResourceModification() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String path = TestUtils.getFileName();
+
+      // create data with 'trusted' user agent 
+      // (all user agents are considered to be trusted
+      // if they are not listed as untrusted)
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN);
+
+      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
+
+      headers.clear();
+      content = TestUtils.getFileContent();
+      // define user agent to be among untrusted user agents 
+      headers.add(HttpHeaders.USER_AGENT, "test-user-agent");
+      // define incorrect mime-type via seting Content-Type header
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM);
+
+      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
+
+      Node node = session.getRootNode().getNode(TextUtil.relativizePath(path)).getNode("jcr:content");
+      // mime-type should still be correct
+      assertEquals(MediaType.TEXT_PLAIN, node.getProperty("jcr:mimeType").getString());
+   }
+
+   /**
+    * Testing if we can modify mime-type of previously defined resource
+    * via trusted user agent
+    */
+   public void testTrustedUserAgentResourceModification() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String path = TestUtils.getFileName() + ".html";
+
+      service(WebDAVMethods.PUT, getPathWS() + path, "", null, content.getBytes());
+      Node node = session.getRootNode().getNode(TextUtil.relativizePath(path));
+      // mime-type is defined according to resource's extension
+      assertEquals(MediaType.TEXT_HTML, node.getNode("jcr:content").getProperty("jcr:mimeType").getString());
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML);
+      service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
+      // mime-type modified according to Content-Type header content
+      assertEquals(MediaType.TEXT_XML, node.getNode("jcr:content").getProperty("jcr:mimeType").getString());
+   }
+
    @Override
    protected String getRepositoryName()
    {

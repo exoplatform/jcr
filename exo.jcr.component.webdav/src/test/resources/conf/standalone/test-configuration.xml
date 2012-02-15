@@ -209,6 +209,16 @@
             <value>/absolute/path/to/file</value>
          </value-param>
          
+         <!-- 
+            For testing untrusted-user-agents proper treatment.
+            Content-type headers of listed here user agents should be
+            ignored and MimeTypeResolver should be explicitly used instead 
+         -->
+         <values-param>
+            <name>untrusted-user-agents</name>
+            <value>test-user-agent</value>
+         </values-param>
+         
       </init-params>
    </component>
 
