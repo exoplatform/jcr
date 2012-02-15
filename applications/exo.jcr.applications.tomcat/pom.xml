@@ -120,16 +120,15 @@
                      <fileset dir="${basedir}/target/lib-binary.dir/" includes="**/*.jar" />
                   </copy>
                   <copy todir="${exo.projects.directory.working}/exo-tomcat/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/tomcat/">
-                        <exclude name="**/*-jbc.*" />
-                        <exclude name="**/*-ispn.*" />
-                     </fileset>
+                     <fileset dir="${basedir}/../product-patches/as/tomcat/" />
                   </copy>
-                  <copy todir="${exo.projects.directory.working}/exo-tomcat/bin" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/tomcat/bin">
-                        <include name="**/eXo-${exo.deploy.profile}.*" />
-                     </fileset>
-                  </copy>
+                  <replace dir="${exo.projects.directory.working}/exo-tomcat/bin" token="@exo.deploy.profile@" value="${exo.deploy.profile}"/>
+                  <move todir="${exo.projects.directory.working}/exo-tomcat/bin//">
+                    <fileset dir="${exo.projects.directory.working}/exo-tomcat/bin/">
+                      <include name="**/eXo.*" />
+                    </fileset>
+                    <globmapper from="eXo.*" to="eXo-${exo.deploy.profile}.*" />
+                  </move>
 
                   <chmod dir="${exo.projects.directory.working}/exo-tomcat/bin" perm="+x" includes="*.sh" />
 

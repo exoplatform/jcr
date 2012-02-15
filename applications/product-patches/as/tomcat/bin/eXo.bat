@@ -8,7 +8,7 @@ for %%i in ( !%BIN_DIR%\..! ) do set TOMCAT_HOME=%%~fi
 rem Sets some variables
 set LOG_OPTS="-Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog"
 set SECURITY_OPTS="-Djava.security.auth.login.config=%TOMCAT_HOME%\conf\jaas.conf"
-set EXO_OPTS=-Dexo.product.developing=true -Dexo.profiles=jbc -Djava.net.preferIPv4Stack=true
+set EXO_OPTS=-Dexo.product.developing=true -Dexo.profiles=@exo.deploy.profile@ -Djava.net.preferIPv4Stack=true
 set JAVA_OPTS=-Xshare:auto -Xms128m -Xmx512m %LOG_OPTS% %SECURITY_OPTS% %EXO_OPTS%
 
 rem Launches the server
