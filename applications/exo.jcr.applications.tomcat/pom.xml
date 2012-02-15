@@ -123,7 +123,7 @@
                      <fileset dir="${basedir}/../product-patches/as/tomcat/" />
                   </copy>
                   <replace dir="${exo.projects.directory.working}/exo-tomcat/bin" token="@exo.deploy.profile@" value="${exo.deploy.profile}"/>
-                  <move todir="${exo.projects.directory.working}/exo-tomcat/bin//">
+                  <move todir="${exo.projects.directory.working}/exo-tomcat/bin/">
                     <fileset dir="${exo.projects.directory.working}/exo-tomcat/bin/">
                       <include name="**/eXo.*" />
                     </fileset>

@@ -157,8 +157,11 @@
 
                   <!-- Copying patch directory -->
                   <copy todir="${exo.projects.directory.working}/exo-jonas/" verbose="true" overwrite="true">
-                    <fileset dir="${basedir}/../product-patches/as/jonas/" />
+                     <fileset dir="${basedir}/../product-patches/as/jonas/" />
                   </copy>
+                  <replace dir="${exo.projects.directory.working}/exo-jonas/" token="@exo.deploy.profile@" value="${exo.deploy.profile}"/>
+                  <move file="${exo.projects.directory.working}/exo-jonas/bin/nt/jonas.bat" tofile="${exo.projects.directory.working}/exo-jonas/bin/nt/jonas-${exo.deploy.profile}.bat" />
+                  <move file="${exo.projects.directory.working}/exo-jonas/bin/unix/jonas" tofile="${exo.projects.directory.working}/exo-jonas/bin/unix/jonas-${exo.deploy.profile}" />
 
                   <!-- Coping wars, rar -->
                   <copy todir="${exo.projects.directory.working}/exo-jonas/apps/autoload/exoplatform.ear" verbose="true" overwrite="true">
@@ -177,6 +180,8 @@
                         <include name="**/hsqldb*.jar" />
                      </fileset>
                   </copy>
+
+                  <delete file="${exo.projects.directory.working}/exo-jonas/lib/commons/jonas/carol/jgroups-all.jar" />
                </tasks>
             </configuration>
             <dependencies>
