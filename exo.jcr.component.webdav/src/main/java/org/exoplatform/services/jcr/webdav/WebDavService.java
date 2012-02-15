@@ -67,7 +67,7 @@ public interface WebDavService
    Response head(String repoName, String repoPath, UriInfo baseURI);
 
    /**
-    * WedDAV "HEAD" method. See <a
+    * WedDAV "PUT" method. See <a
     * href='http://www.ietf.org/rfc/rfc2518.txt'>HTTP methods for distributed
     * authoring sec. 8.7 "PUT"</a>.
     * 
@@ -79,11 +79,14 @@ public interface WebDavService
     * @param contentNodeTypeHeader JCR Content-NodeType header
     * @param mixinTypes JCR Mixin types header
     * @param mimeType Content-Type HTTP header
+    * @param userAgent User-Agent HTTP header
     * @param inputStream stream that contain incoming data
+    * @param UriInfo URI info
     * @return the instance of javax.ws.rs.core.Response
     */
    Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String fileNodeTypeHeader,
-      String contentNodeTypeHeader, String mixinTypes, MediaType mediatype, InputStream inputStream, UriInfo uriInfo);
+      String contentNodeTypeHeader, String mixinTypes, MediaType mediaType, String userAgent, InputStream inputStream,
+      UriInfo uriInfo);
 
    /**
     * @param repoName repository name
