@@ -31,7 +31,9 @@
   <name>eXo JCR :: EAR</name>
   <properties>
     <enforcer.skip>true</enforcer.skip>
+    <exo.deploy.profile>jbc</exo.deploy.profile>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
@@ -128,6 +130,10 @@
              <version>${project.version}</version>
            </dependency>
          </dependencies>
+
+         <properties>
+           <exo.deploy.profile>jbc</exo.deploy.profile>
+         </properties>
       </profile>
   </profiles>
   <build>

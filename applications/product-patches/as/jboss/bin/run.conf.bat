@@ -55,9 +55,6 @@ rem # Sample JPDA settings for shared memory debugging
 rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
 
 rem # Add the eXo variables
-set "JAVA_OPTS=%JAVA_OPTS% -Dexo.profiles=%1 -Dexo.jcr.parent.dir=../server/default/data"
-
-if ""%1"" == ""jbc"" shift
-if ""%1"" == ""ispn"" shift
+set "JAVA_OPTS=%JAVA_OPTS% -Dexo.profiles=jbc -Dexo.jcr.parent.dir=../server/default/data"
 
 :JAVA_OPTS_SET
