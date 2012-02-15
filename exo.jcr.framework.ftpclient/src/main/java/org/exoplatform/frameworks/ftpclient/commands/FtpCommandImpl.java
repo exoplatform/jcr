@@ -36,7 +36,7 @@ import java.io.OutputStream;
 public abstract class FtpCommandImpl implements FtpCommand
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpCommandImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.FtpCommandImpl");
 
    protected FtpClientSession clientSession;
 
@@ -59,7 +59,7 @@ public abstract class FtpCommandImpl implements FtpCommand
 
    public void sendCommand(String command)
    {
-      log.info(">>> " + command);
+      LOG.info(">>> " + command);
 
       try
       {
@@ -70,7 +70,7 @@ public abstract class FtpCommandImpl implements FtpCommand
       }
       catch (IOException exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
    }
 
@@ -92,7 +92,7 @@ public abstract class FtpCommandImpl implements FtpCommand
 
    public int getReply() throws Exception
    {
-      log.info("try get reply..........");
+      LOG.info("try get reply..........");
       StringBuilder reply = new StringBuilder(); 
       String curReply = "";
 
@@ -122,7 +122,7 @@ public abstract class FtpCommandImpl implements FtpCommand
       descript = reply.toString();
 
       replyCode = FtpUtils.getReplyCode(curReply);
-      log.info("<<< " + descript);
+      LOG.info("<<< " + descript);
       return replyCode;
    }
 

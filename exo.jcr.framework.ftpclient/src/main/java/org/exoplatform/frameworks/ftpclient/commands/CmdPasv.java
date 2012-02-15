@@ -34,7 +34,7 @@ import org.exoplatform.services.log.Log;
 public class CmdPasv extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdPasv");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.CmdPasv");
 
    protected String host = "";
 
@@ -78,9 +78,9 @@ public class CmdPasv extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         log.info("unhandled ecxeption. " + exc.getMessage(), exc);
+         LOG.info("unhandled ecxeption. " + exc.getMessage(), exc);
       }
-      log.info("SOME ERRORS");
+      LOG.info("SOME ERRORS");
       return -1;
    }
 

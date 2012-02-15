@@ -61,7 +61,7 @@ public class LockCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.LockCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.LockCommand");
 
    /**
     * Resource locks holder.
@@ -157,7 +157,7 @@ public class LockCommand
       }
       catch (Exception exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
 
@@ -248,7 +248,7 @@ public class LockCommand
          }
          catch (Exception e)
          {
-            log.error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             throw new IOException(e.getMessage());
          }
       }

@@ -51,7 +51,7 @@ import java.util.List;
 public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.IncrementalBackupJob");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.IncrementalBackupJob");
 
    private ObjectOutputStream oosFileData;
 
@@ -77,12 +77,12 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
       }
       catch (FileNotFoundException e)
       {
-         log.error("Incremental backup initialization failed ", e);
+         LOG.error("Incremental backup initialization failed ", e);
          notifyError("Incremental backup initialization failed ", e);
       }
       catch (IOException e)
       {
-         log.error("Incremental backup initialization failed ", e);
+         LOG.error("Incremental backup initialization failed ", e);
          notifyError("Incremental backup initialization failed ", e);
       }
    }
@@ -90,7 +90,7 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
    public void stop()
    {
       state = FINISHED;
-      log.info("Stop requested " + getStorageURL().getPath());
+      LOG.info("Stop requested " + getStorageURL().getPath());
 
       notifyListeners();
    }
@@ -123,8 +123,8 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 
          long total = System.currentTimeMillis() - start;
 
-         if (log.isDebugEnabled())
-            log.debug("Time : " + total + " ms" + "    Itemstates count : " + changesLog.getAllStates().size());
+         if (LOG.isDebugEnabled())
+            LOG.debug("Time : " + total + " ms" + "    Itemstates count : " + changesLog.getAllStates().size());
       }
    }
 

@@ -37,7 +37,7 @@ public class PropertyInfo
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.PropertyInfo");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.PropertyInfo");
 
    /**
     * 

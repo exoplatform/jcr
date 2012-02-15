@@ -57,7 +57,7 @@ public class ActionLauncher implements ItemsPersistenceListener
 
    public final int SKIP_EVENT = Integer.MIN_VALUE;
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ActionLauncher");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ActionLauncher");
 
    private final ObservationManagerRegistry observationRegistry;
 
@@ -129,7 +129,7 @@ public class ActionLauncher implements ItemsPersistenceListener
                      }
                      catch (RepositoryException e)
                      {
-                        log.error("Can not fire ActionLauncher.onSaveItems() for " + item.getQPath().getAsString()
+                        LOG.error("Can not fire ActionLauncher.onSaveItems() for " + item.getQPath().getAsString()
                            + " reason: " + e.getMessage());
                      }
                   }
@@ -228,7 +228,7 @@ public class ActionLauncher implements ItemsPersistenceListener
 
          if (node == null)
          {
-            log.warn("Item's " + item.getQPath().getAsString() + " associated parent (" + item.getParentIdentifier()
+            LOG.warn("Item's " + item.getQPath().getAsString() + " associated parent (" + item.getParentIdentifier()
                + ") can't be found nor in workspace nor in current changes. Nodetype filter is rejected.");
             return false;
          }

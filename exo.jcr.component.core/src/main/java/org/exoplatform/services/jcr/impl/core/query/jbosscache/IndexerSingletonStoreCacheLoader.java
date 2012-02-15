@@ -39,7 +39,7 @@ import java.util.concurrent.Callable;
  */
 public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
 {
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerSingletonStoreCacheLoader");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.IndexerSingletonStoreCacheLoader");
 
    /**
     * @see org.jboss.cache.loader.SingletonStoreCacheLoader#activeStatusChanged(boolean)
@@ -63,7 +63,7 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
             }
             catch (PushStateException e)
             {
-               log.error("Failed to initiate PushState.", e);
+               LOG.error("Failed to initiate PushState.", e);
             }
          }
       }, "JCR Indexer ActiveStatusChanged-handler").start();
@@ -76,11 +76,11 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
       {
          public Object call() throws Exception
          {
-            final boolean debugEnabled = log.isDebugEnabled();
+            final boolean debugEnabled = LOG.isDebugEnabled();
 
             if (debugEnabled)
             {
-               log.debug("start pushing in-memory state to cache cacheLoader collection");
+               LOG.debug("start pushing in-memory state to cache cacheLoader collection");
             }
 
             // merging all lists stored in memory
@@ -139,7 +139,7 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
             }
             if (debugEnabled)
             {
-               log.debug("in-memory state passed to cache cacheLoader successfully");
+               LOG.debug("in-memory state passed to cache cacheLoader successfully");
             }
             return null;
          }
@@ -169,7 +169,7 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
          // if newActiveState is true IndexerCacheLoader is coordinator with write enabled;
          ((IndexerCacheLoader)getCacheLoader()).setMode(writeEnabled ? IndexerIoMode.READ_WRITE
             : IndexerIoMode.READ_ONLY);
-         log.info("Set indexer io mode to:" + (writeEnabled ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY));
+         LOG.info("Set indexer io mode to:" + (writeEnabled ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY));
       }
    }
 }

@@ -56,7 +56,7 @@ public class RepositoryBackupChainImpl
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RepositoryBackupChainImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.RepositoryBackupChainImpl");
    
    private final RepositoryBackupConfig config;
 
@@ -146,10 +146,11 @@ public class RepositoryBackupChainImpl
    {
       if (state != FINISHED)
       {
-         if (log.isDebugEnabled()) {
+         if (LOG.isDebugEnabled())
+         {
             for (BackupChain bc : workspaceBackups)
             {
-               log.debug(repositoryBackupId + " : " + getState(bc.getFullBackupState()));
+               LOG.debug(repositoryBackupId + " : " + getState(bc.getFullBackupState()));
             }
          }
          

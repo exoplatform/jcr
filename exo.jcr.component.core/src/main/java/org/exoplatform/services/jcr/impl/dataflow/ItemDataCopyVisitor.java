@@ -41,7 +41,7 @@ import javax.jcr.RepositoryException;
 public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
 {
 
-   private Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemDataCopyVisitor");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemDataCopyVisitor");
 
    public ItemDataCopyVisitor(NodeData parent, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
       SessionDataManager srcDataManager, SessionDataManager dstDataManager, boolean keepIdentifiers)
@@ -151,9 +151,9 @@ public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
             .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(), property
             .isMultiValued(), values);
 
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("entering COPY " + newProperty.getQPath().getAsString() + "; pidentifier: "
+         LOG.debug("entering COPY " + newProperty.getQPath().getAsString() + "; pidentifier: "
             + newProperty.getParentIdentifier() + "; identifier: " + newProperty.getIdentifier());
       }
 

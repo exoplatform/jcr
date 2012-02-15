@@ -61,7 +61,7 @@ import javax.jcr.ValueFactory;
 public class ItemAutocreator
 {
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemAutocreator");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemAutocreator");
 
    private final NodeTypeDataManager nodeTypeDataManager;
 
@@ -132,9 +132,9 @@ public class ItemAutocreator
             }
             else
             {
-               if (this.log.isDebugEnabled())
+               if (this.LOG.isDebugEnabled())
                {
-                  this.log.debug("Skipping existed node " + ndef.getName() + " in " + parent.getQPath().getAsString()
+                  this.LOG.debug("Skipping existed node " + ndef.getName() + " in " + parent.getQPath().getAsString()
                      + "   during the automatic creation of items for " + typeName.getAsString()
                      + " nodetype or mixin type");
                }
@@ -180,9 +180,9 @@ public class ItemAutocreator
             }
             else
             {
-               if (this.log.isDebugEnabled())
+               if (this.LOG.isDebugEnabled())
                {
-                  this.log.debug("Skipping existed property " + pdef.getName() + " in "
+                  this.LOG.debug("Skipping existed property " + pdef.getName() + " in "
                      + parent.getQPath().getAsString() + "   during the automatic creation of items for "
                      + typeName.getAsString() + " nodetype or mixin type");
                }

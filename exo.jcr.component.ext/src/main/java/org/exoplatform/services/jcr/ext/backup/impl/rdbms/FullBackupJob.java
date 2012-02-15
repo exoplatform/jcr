@@ -46,7 +46,7 @@ public class FullBackupJob extends AbstractFullBackupJob
    /**
    * Logger.
    */
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
 
    /**
     * {@inheritDoc}
@@ -77,12 +77,12 @@ public class FullBackupJob extends AbstractFullBackupJob
       }
       catch (FileNotFoundException e)
       {
-         log.error("Full backup initialization failed ", e);
+         LOG.error("Full backup initialization failed ", e);
          notifyError("Full backup initialization failed ", e);
       }
       catch (IOException e)
       {
-         log.error("Full backup initialization failed ", e);
+         LOG.error("Full backup initialization failed ", e);
          notifyError("Full backup initialization failed ", e);
       }
    }
@@ -109,12 +109,12 @@ public class FullBackupJob extends AbstractFullBackupJob
       }
       catch (BackupException e)
       {
-         log.error("Full backup failed " + getStorageURL().getPath(), e);
+         LOG.error("Full backup failed " + getStorageURL().getPath(), e);
          notifyError("Full backup failed", e);
       }
       catch (RepositoryException e)
       {
-         log.error("Full backup failed " + getStorageURL().getPath(), e);
+         LOG.error("Full backup failed " + getStorageURL().getPath(), e);
          notifyError("Full backup failed", e);
       }
       finally
@@ -125,7 +125,7 @@ public class FullBackupJob extends AbstractFullBackupJob
          }
          catch (RepositoryException e)
          {
-            log.error("Full backup failed " + getStorageURL().getPath(), e);
+            LOG.error("Full backup failed " + getStorageURL().getPath(), e);
             notifyError("Full backup failed", e);
          }
       }
@@ -139,6 +139,6 @@ public class FullBackupJob extends AbstractFullBackupJob
     */
    public void stop()
    {
-      log.info("Stop requested " + getStorageURL().getPath());
+      LOG.info("Stop requested " + getStorageURL().getPath());
    }
 }

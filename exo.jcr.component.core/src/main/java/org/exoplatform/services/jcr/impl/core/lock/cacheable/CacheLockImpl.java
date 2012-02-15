@@ -35,7 +35,7 @@ import javax.jcr.lock.LockException;
  */
 public class CacheLockImpl extends LockImpl
 {
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.CacheLockImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CacheLockImpl");
 
    private boolean live;
 
@@ -117,7 +117,7 @@ public class CacheLockImpl extends LockImpl
       }
       catch (RepositoryException e)
       {
-         log.error(e.getLocalizedMessage(), e);
+         LOG.error(e.getLocalizedMessage(), e);
       }
       return null;
    }

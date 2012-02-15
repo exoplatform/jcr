@@ -73,7 +73,7 @@ public class GetCommand
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.GetCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.GetCommand");
 
    private Map<String, String> xsltParams;
 
@@ -236,12 +236,12 @@ public class GetCommand
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
    }

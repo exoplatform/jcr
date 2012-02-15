@@ -49,7 +49,7 @@ import javax.jcr.ValueFormatException;
 public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.BaseValue");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.BaseValue");
 
    protected final int type;
 
@@ -352,7 +352,7 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
             }
             catch (IOException e)
             {
-               log.error("Read error", e);
+               LOG.error("Read error", e);
                return false;
             }
          }

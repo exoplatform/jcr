@@ -54,7 +54,7 @@ import javax.security.auth.login.LoginException;
 public class FtpClientSessionImpl implements FtpClientSession
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpClientSessionImpl");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpClientSessionImpl");
 
    private FtpServer ftpServer;
 
@@ -131,7 +131,7 @@ public class FtpClientSessionImpl implements FtpClientSession
       }
       catch (UnsupportedEncodingException eexc)
       {
-         log.info("Unsupported encoding exception. See for CLIENT-SIDE-ENCODING parameter. " + eexc.getMessage(), eexc);
+         LOG.info("Unsupported encoding exception. See for CLIENT-SIDE-ENCODING parameter. " + eexc.getMessage(), eexc);
          byte[] data = replyString.getBytes();
          clientSocket.getOutputStream().write(data);
          // outPrintStream.println(replyString);
@@ -176,7 +176,7 @@ public class FtpClientSessionImpl implements FtpClientSession
       }
       catch (IOException exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       getFtpServer().unRegisterClient(this);
@@ -370,7 +370,7 @@ public class FtpClientSessionImpl implements FtpClientSession
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       return FtpConst.Replyes.REPLY_550;

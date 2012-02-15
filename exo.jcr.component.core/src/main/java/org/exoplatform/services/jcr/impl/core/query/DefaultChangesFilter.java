@@ -39,7 +39,7 @@ public class DefaultChangesFilter extends IndexerChangesFilter
    /**
     * Logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.DefaultChangesFilter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DefaultChangesFilter");
 
    /**
     * @param searchManager
@@ -89,11 +89,11 @@ public class DefaultChangesFilter extends IndexerChangesFilter
       }
       catch (RepositoryException e)
       {
-         log.error("Error indexing changes " + e, e);
+         LOG.error("Error indexing changes " + e, e);
       }
       catch (IOException e)
       {
-         log.error("Error indexing changes " + e, e);
+         LOG.error("Error indexing changes " + e, e);
          logErrorChanges(handler, removedNodes, addedNodes);
       }
 
@@ -103,17 +103,17 @@ public class DefaultChangesFilter extends IndexerChangesFilter
       }
       catch (RepositoryException e)
       {
-         log.error("Error indexing changes " + e, e);
+         LOG.error("Error indexing changes " + e, e);
       }
       catch (IOException e)
       {
-         log.error("Error indexing changes " + e, e);
+         LOG.error("Error indexing changes " + e, e);
          logErrorChanges(parentHandler, parentRemovedNodes, parentAddedNodes);
       }
    }
    
    protected Log getLogger()
    {
-      return log;
+      return LOG;
    }
 }

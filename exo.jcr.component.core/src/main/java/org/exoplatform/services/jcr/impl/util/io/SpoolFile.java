@@ -54,7 +54,7 @@ import java.util.WeakHashMap;
 public class SpoolFile extends File
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SpoolFile");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SpoolFile");
 
    protected Map<Object, Long> users = new WeakHashMap<Object, Long>();
 

@@ -54,7 +54,7 @@ import javax.jcr.RepositoryException;
 public class FtpServerImpl implements FtpServer
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpServerImpl");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpServerImpl");
 
    public static final String COMMAND_PATH = "/conf/ftp-commands.xml";
 
@@ -96,14 +96,14 @@ public class FtpServerImpl implements FtpServer
 
       if (!PrivilegedFileHelper.exists(cacheFolder))
       {
-         log.info("Cache folder not exist. Try to create it...");
+         LOG.info("Cache folder not exist. Try to create it...");
          PrivilegedFileHelper.mkdirs(cacheFolder);
       }
 
       String[] cacheFiles = PrivilegedFileHelper.list(cacheFolder);
       if (cacheFiles == null)
       {
-         log.info("No cache file in cache folder!");
+         LOG.info("No cache file in cache folder!");
          return;
       }
 
@@ -132,11 +132,11 @@ public class FtpServerImpl implements FtpServer
             try
             {
                serverSocket = new ServerSocket(port);
-               log.info("FTPServer started on port '" + port + "'");
+               LOG.info("FTPServer started on port '" + port + "'");
             }
             catch (BindException e)
             {
-               log.warn("Cannot launch the FTPServer on '" + (port++) + "', we try the next port number");
+               LOG.warn("Cannot launch the FTPServer on '" + (port++) + "', we try the next port number");
             }
          }
 
@@ -149,7 +149,7 @@ public class FtpServerImpl implements FtpServer
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       return false;
@@ -174,11 +174,11 @@ public class FtpServerImpl implements FtpServer
       }
       catch (RepositoryException e)
       {
-         log.info("Repository exception. " + e.getMessage(), e);
+         LOG.info("Repository exception. " + e.getMessage(), e);
       }
       catch (RepositoryConfigurationException e)
       {
-         log.info("Repository configuration exception. " + e.getMessage(), e);
+         LOG.info("Repository configuration exception. " + e.getMessage(), e);
       }
 
       return null;
@@ -197,7 +197,7 @@ public class FtpServerImpl implements FtpServer
    public boolean unRegisterClient(FtpClientSession clientSession)
    {
       boolean result = clients.remove(clientSession);
-      log.info(">>> Client disconnected. Clients: " + clients.size());
+      LOG.info(">>> Client disconnected. Clients: " + clients.size());
       return result;
    }
 
@@ -249,11 +249,11 @@ public class FtpServerImpl implements FtpServer
                FtpClientSession clientSession = new FtpClientSessionImpl(ftpServer, incoming);
                clients.add(clientSession);
 
-               log.info(">>> New client connected. Clients: " + clients.size());
+               LOG.info(">>> New client connected. Clients: " + clients.size());
             }
             catch (Exception exc)
             {
-               log.info("Unhandled exception. " + exc.getMessage(), exc);
+               LOG.info("Unhandled exception. " + exc.getMessage(), exc);
             }
          }
       }

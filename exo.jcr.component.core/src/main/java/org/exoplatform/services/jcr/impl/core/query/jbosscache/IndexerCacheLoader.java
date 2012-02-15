@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
 {
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");
 
    /**
     * A map of all the indexers that has been registered
@@ -74,9 +74,9 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    {
       indexers.put(Fqn.fromElements(searchManager.getWsId()), new Indexer(searchManager, parentSearchManager, handler,
          parentHandler));
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("Register " + searchManager.getWsId() + " " + this + " in " + indexers);
+         LOG.debug("Register " + searchManager.getWsId() + " " + this + " in " + indexers);
       }
    }
 
@@ -87,9 +87,9 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    {
       if (key.equals(JBossCacheIndexChangesFilter.LISTWRAPPER) && value instanceof ChangesFilterListsWrapper)
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.info("Received list wrapper, start indexing...");
+            LOG.info("Received list wrapper, start indexing...");
          }
          // updating index
          ChangesFilterListsWrapper wrapper = (ChangesFilterListsWrapper)value;
@@ -98,10 +98,10 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
             Indexer indexer = indexers.get(name.getParent());
             if (indexer == null)
             {
-               log.warn("No indexer could be found for the fqn " + name.getParent());
-               if (log.isDebugEnabled())
+               LOG.warn("No indexer could be found for the fqn " + name.getParent());
+               if (LOG.isDebugEnabled())
                {
-                  log.debug("The current content of the map of indexers is " + indexers);
+                  LOG.debug("The current content of the map of indexers is " + indexers);
                }
             }
             else if (wrapper.withChanges())

@@ -44,7 +44,7 @@ public class SimpleExcerptProvider implements ExcerptProvider
    /**
     * Logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.SimpleExcerptProvider");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SimpleExcerptProvider");
 
    /**
     * The item state manager.
@@ -88,7 +88,7 @@ public class SimpleExcerptProvider implements ExcerptProvider
       catch (RepositoryException e)
       {
          // ignore
-         log.warn(e.getLocalizedMessage());
+         LOG.warn(e.getLocalizedMessage());
       }
       if (text.length() > maxFragmentSize)
       {

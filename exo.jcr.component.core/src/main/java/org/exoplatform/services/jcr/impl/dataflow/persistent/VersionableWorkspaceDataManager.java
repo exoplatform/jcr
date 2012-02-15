@@ -56,7 +56,7 @@ import javax.jcr.RepositoryException;
 public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspaceDataManager
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.VersionableWorkspaceDataManager");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.VersionableWorkspaceDataManager");
 
    private ShareableSupportedWorkspaceDataManager versionDataManager;
 

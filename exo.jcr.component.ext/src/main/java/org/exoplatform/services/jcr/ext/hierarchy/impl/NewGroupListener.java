@@ -44,7 +44,7 @@ import javax.jcr.Session;
  */
 public class NewGroupListener extends GroupEventListener
 {
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.NewGroupListener");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.NewGroupListener");
 
    private static final String GROUPS_PATH = "groupsPath";
 
@@ -122,7 +122,7 @@ public class NewGroupListener extends GroupEventListener
       }
       catch (RepositoryException e)
       {
-         log.error("An error occurs while removing the group directory of '" + groupId + "'", e);
+         LOG.error("An error occurs while removing the group directory of '" + groupId + "'", e);
       }
       finally
       {
@@ -153,7 +153,7 @@ public class NewGroupListener extends GroupEventListener
       }
       catch (Exception e)
       {
-         log.error("An error occurs while initializing the group directory of '" + groupId + "'", e);
+         LOG.error("An error occurs while initializing the group directory of '" + groupId + "'", e);
       }
       finally
       {

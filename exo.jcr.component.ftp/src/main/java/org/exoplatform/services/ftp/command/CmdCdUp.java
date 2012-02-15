@@ -33,7 +33,7 @@ import java.io.IOException;
 public class CmdCdUp extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdCdUp");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdCdUp");
 
    public CmdCdUp()
    {
@@ -49,7 +49,7 @@ public class CmdCdUp extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       reply(String.format(FtpConst.Replyes.REPLY_550, FtpConst.Commands.CMD_CDUP));
    }

@@ -58,7 +58,7 @@ public class AclCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(AclCommand.class);
+   private static final Log LOG = ExoLogger.getLogger(AclCommand.class);
 
    /**
     * Applies changes for JCR node's {@link AccessControlList} 
@@ -121,22 +121,22 @@ public class AclCommand
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.status(HTTPStatus.INTERNAL_ERROR).entity(exc.getMessage()).build();
       }
       catch (AccessControlException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.status(HTTPStatus.FORBIDDEN).entity(exc.getMessage()).build();
       }
       catch (IllegalArgumentException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.status(HTTPStatus.BAD_REQUEST).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.status(HTTPStatus.BAD_REQUEST).build();
       }
 

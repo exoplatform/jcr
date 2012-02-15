@@ -53,7 +53,7 @@ import javax.sql.DataSource;
 public class JDBCConfigurationPersister implements ConfigurationPersister
 {
 
-   protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCConfigurationPersister");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCConfigurationPersister");
 
    public final static String PARAM_SOURCE_NAME = "source-name";
 

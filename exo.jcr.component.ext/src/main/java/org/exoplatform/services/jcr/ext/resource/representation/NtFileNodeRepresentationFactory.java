@@ -37,7 +37,7 @@ public class NtFileNodeRepresentationFactory implements NodeRepresentationFactor
    /**
     * Logger.
     */
-   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.NtFileNodeRepresentationFactory");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.NtFileNodeRepresentationFactory");
 
    protected NodeRepresentationService nodeRepresentationService;
 

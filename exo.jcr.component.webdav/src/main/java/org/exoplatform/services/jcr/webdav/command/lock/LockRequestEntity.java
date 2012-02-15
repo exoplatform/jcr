@@ -38,7 +38,7 @@ public class LockRequestEntity
    /**
     * logger.
     */
-   private Log log = ExoLogger.getLogger("exo.jcr.component.webdav.LockRequestEntity");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.LockRequestEntity");
 
    /**
     * Lock scope.
@@ -77,7 +77,7 @@ public class LockRequestEntity
             if (!scope.equals(PropertyConstants.EXCLUSIVE))
             {
                // should we throw PreconditionException here?
-               log.warn("Lock is converted to exclusive scope, requested " + scope.getLocalPart());
+               LOG.warn("Lock is converted to exclusive scope, requested " + scope.getLocalPart());
             }
             lockScope = PropertyConstants.EXCLUSIVE;
          }
@@ -87,7 +87,7 @@ public class LockRequestEntity
             if (!type.equals(PropertyConstants.WRITE))
             {
                // should we throw PreconditionException here?
-               log.warn("Lock is converted to exclusive scope, requested " + type.getLocalPart());
+               LOG.warn("Lock is converted to exclusive scope, requested " + type.getLocalPart());
             }
             lockScope = PropertyConstants.WRITE;
          }

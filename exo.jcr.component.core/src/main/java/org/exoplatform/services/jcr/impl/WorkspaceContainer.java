@@ -50,7 +50,7 @@ import javax.jcr.RepositoryException;
 public class WorkspaceContainer extends ExoContainer
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceContainer");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceContainer");
 
    private final String name;
 

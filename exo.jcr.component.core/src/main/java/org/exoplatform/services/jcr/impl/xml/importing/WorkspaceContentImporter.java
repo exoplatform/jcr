@@ -52,7 +52,7 @@ public class WorkspaceContentImporter extends SystemViewImporter
    /**
     * Class logger.
     */
-   protected final Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceContentImporter");
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceContentImporter");
 
    /**
     * The flag indicates whether a verified that the first element is the root.

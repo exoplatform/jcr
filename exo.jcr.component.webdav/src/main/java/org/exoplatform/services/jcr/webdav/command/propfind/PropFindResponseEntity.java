@@ -55,7 +55,7 @@ public class PropFindResponseEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.PropFindResponseEntity");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.PropFindResponseEntity");
 
    /**
     * XML writer.
@@ -149,22 +149,22 @@ public class PropFindResponseEntity implements StreamingOutput
       }
       catch (XMLStreamException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          throw new IOException(exc.getMessage());
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          throw new IOException(exc.getMessage());
       }
       catch (IllegalResourceTypeException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          throw new IOException(exc.getMessage());
       }
       catch (URISyntaxException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          throw new IOException(exc.getMessage());
       }
    }

@@ -51,7 +51,7 @@ public class JobWorkspaceRestore extends Thread
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobWorkspaceRestore");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.JobWorkspaceRestore");
 
    /**
     * RESTORE_STARTED. The state of start restore.
@@ -156,7 +156,7 @@ public class JobWorkspaceRestore extends Thread
       }
       catch (Throwable t)
       {
-         log.error("The restore was fail", t);
+         LOG.error("The restore was fail", t);
       }
    }
 

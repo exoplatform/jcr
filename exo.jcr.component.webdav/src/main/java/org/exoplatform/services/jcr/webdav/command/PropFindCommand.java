@@ -64,7 +64,7 @@ public class PropFindCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.PropFindCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.PropFindCommand");
 
    /**
     * Webdav Propfind method implementation.
@@ -89,7 +89,7 @@ public class PropFindCommand
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
 
@@ -136,17 +136,17 @@ public class PropFindCommand
       }
       catch (RepositoryException e1)
       {
-         log.error(e1.getMessage(), e1);
+         LOG.error(e1.getMessage(), e1);
          return Response.serverError().build();
       }
       catch (URISyntaxException e1)
       {
-         log.error(e1.getMessage(), e1);
+         LOG.error(e1.getMessage(), e1);
          return Response.serverError().build();
       }
       catch (IllegalResourceTypeException e1)
       {
-         log.error(e1.getMessage(), e1);
+         LOG.error(e1.getMessage(), e1);
          return Response.serverError().build();
       }
 

@@ -45,7 +45,7 @@ public abstract class JCRPath
 
    public final static String PARENT_RELPATH = "..";
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.JCRPath");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JCRPath");
 
    public static JCRPath createJCRPath()
    {

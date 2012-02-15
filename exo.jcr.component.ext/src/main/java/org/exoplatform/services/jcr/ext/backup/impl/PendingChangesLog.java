@@ -57,7 +57,7 @@ public class PendingChangesLog
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.PendingChangesLog");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.PendingChangesLog");
 
    /**
     * The definition of ChangesLog types.
@@ -429,15 +429,15 @@ public class PendingChangesLog
          }
          catch (InterruptedException ie)
          {
-            log.error("The interrupted exceptio : ", ie);
+            LOG.error("The interrupted exceptio : ", ie);
          }
          catch (IndexOutOfBoundsException ioobe)
          {
-            if (log.isDebugEnabled())
+            if (LOG.isDebugEnabled())
             {
-               log.info("listFixupStream.size() == " + listFixupStream.size());
-               log.info("listRandomAccessFile.size() == " + listRandomAccessFile.size());
-               log.info(" i == " + i);
+               LOG.info("listFixupStream.size() == " + listFixupStream.size());
+               LOG.info("listRandomAccessFile.size() == " + listRandomAccessFile.size());
+               LOG.info(" i == " + i);
             }
             synchronized (this)
             {

@@ -97,7 +97,7 @@ public class ExoJBossCacheFactory<K, V>
 
    private ConfigurationManager configurationManager;
 
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.ExoJBossCacheFactory");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ExoJBossCacheFactory");
 
    /**
     * Creates ExoJbossCacheFactory with provided configuration transaction managers.
@@ -142,7 +142,7 @@ public class ExoJBossCacheFactory<K, V>
    {
       // get JBossCache configuration file path
       String jBossCacheConfigurationPath = parameterEntry.getParameterValue(JBOSSCACHE_CONFIG);
-      log.info("JBoss Cache configuration used: " + jBossCacheConfigurationPath);
+      LOG.info("JBoss Cache configuration used: " + jBossCacheConfigurationPath);
 
       // prepare configuration
       InputStream configStream;
@@ -194,7 +194,7 @@ public class ExoJBossCacheFactory<K, V>
                // Create and inject multiplexer factory
                CHANNEL_FACTORY.setMultiplexerConfig(configurationManager.getResource(jgroupsConfigurationFilePath));
                cache.getConfiguration().getRuntimeConfig().setMuxChannelFactory(CHANNEL_FACTORY);
-               log.info("Multiplexer stack successfully enabled for the cache.");
+               LOG.info("Multiplexer stack successfully enabled for the cache.");
             }
          }
          catch (Exception e)
@@ -213,7 +213,7 @@ public class ExoJBossCacheFactory<K, V>
             {
                cache.getConfiguration().setJgroupsConfigFile(
                   configurationManager.getResource(jgroupsConfigurationFilePath));
-               log.info("Custom JGroups configuration set:"
+               LOG.info("Custom JGroups configuration set:"
                   + configurationManager.getResource(jgroupsConfigurationFilePath));
             }
             catch (Exception e)
@@ -301,16 +301,16 @@ public class ExoJBossCacheFactory<K, V>
       else
       {
          caches.put(key, cache);
-         if (log.isInfoEnabled())
+         if (LOG.isInfoEnabled())
          {
-            log.info("A new JBoss Cache instance has been registered for the region " + rootFqn + ", a cache of type "
+            LOG.info("A new JBoss Cache instance has been registered for the region " + rootFqn + ", a cache of type "
                + cacheType + " and the container " + container.getContext().getName());
          }
       }
       addEvictionRegion(rootFqn, cache, cfg);
-      if (log.isInfoEnabled())
+      if (LOG.isInfoEnabled())
       {
-         log.info("The region " + rootFqn + " has been registered for a cache of type " + cacheType
+         LOG.info("The region " + rootFqn + " has been registered for a cache of type " + cacheType
             + " and the container " + container.getContext().getName());
       }
       return cache;
@@ -336,7 +336,7 @@ public class ExoJBossCacheFactory<K, V>
       }
       catch (IllegalArgumentException e)
       {
-         log.error("Could not create the JMX Manager", e);
+         LOG.error("Could not create the JMX Manager", e);
       }
       return null;
    }

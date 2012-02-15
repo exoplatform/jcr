@@ -65,7 +65,7 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
 {
 
-   protected final Log log = ExoLogger.getLogger("exo.jcr.component.core.JCRNodeTypeDataPersister");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JCRNodeTypeDataPersister");
 
    private final DataManager dataManager;
 
@@ -120,7 +120,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
    {
       if (!started)
       {
-         log.warn("Unable save nodetype " + nodeType.getName().getAsString()
+         LOG.warn("Unable save nodetype " + nodeType.getName().getAsString()
             + " in to the storage. Storage not initialized");
          return;
       }
@@ -152,7 +152,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
       TransientNodeData jcrNodetypes;
 
       long start = 0;
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
          start = System.currentTimeMillis();
       }
@@ -214,9 +214,9 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          changesLog.add(ItemState.createAddedState(jcrNodetypes)).add(ItemState.createAddedState(primaryType));
       }
 
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("/jcr:system/jcr:nodetypes is created, creation time: " + (System.currentTimeMillis() - start)
+         LOG.debug("/jcr:system/jcr:nodetypes is created, creation time: " + (System.currentTimeMillis() - start)
             + " ms");
       }
 
@@ -233,7 +233,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
    {
       if (nodeTypeStorageRoot == null)
       {
-         log.warn(" Storage not initialized");
+         LOG.warn(" Storage not initialized");
          return false;
       }
       try
@@ -243,7 +243,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
       }
       catch (RepositoryException e)
       {
-         log.error(e.getLocalizedMessage(), e);
+         LOG.error(e.getLocalizedMessage(), e);
 
       }
       return false;
@@ -335,7 +335,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
    {
       if (nodeTypeStorageRoot == null)
       {
-         log.warn(" Storage not initialized");
+         LOG.warn(" Storage not initialized");
          return null;
       }
       //Searching nodeType root
@@ -431,8 +431,8 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
    {
       if (this.nodeTypeStorageRoot == null)
       {
-         if (log.isDebugEnabled())
-            log.debug(" Storage not initialized");
+         if (LOG.isDebugEnabled())
+            LOG.debug(" Storage not initialized");
          return false;
       }
       return true;

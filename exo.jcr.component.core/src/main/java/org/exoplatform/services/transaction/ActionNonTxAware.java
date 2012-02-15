@@ -38,7 +38,7 @@ public abstract class ActionNonTxAware<R, A, E extends Exception>
    /**
     * The logger
     */
-   protected Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ActionNonTxAware");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ActionNonTxAware");
    
    /**
     * Executes the action outside the context of the current tx

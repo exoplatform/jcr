@@ -53,7 +53,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
    /**
     * The logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobExistingWorkspaceSameConfigRestore");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.JobExistingWorkspaceSameConfigRestore");
 
    /**
     * JobExistingWorkspaceSameConfigRestore constructor.
@@ -159,7 +159,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
             }
             catch (BackupException e)
             {
-               log.error("Can't rollback changes", e);
+               LOG.error("Can't rollback changes", e);
             }
          }
 
@@ -176,7 +176,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
             }
             catch (BackupException e)
             {
-               log.error("Can't close restorer", e);
+               LOG.error("Can't close restorer", e);
             }
          }
 
@@ -189,7 +189,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
          }
          catch (RepositoryException e)
          {
-            log.error("Can't resume component", e);
+            LOG.error("Can't resume component", e);
          }
       }
    }

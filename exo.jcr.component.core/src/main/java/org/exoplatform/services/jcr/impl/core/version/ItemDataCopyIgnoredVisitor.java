@@ -46,7 +46,7 @@ import javax.jcr.version.OnParentVersionAction;
 public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemDataCopyIgnoredVisitor");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemDataCopyIgnoredVisitor");
 
    protected final SessionChangesLog restoredChanges;
 
@@ -88,8 +88,8 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
             {
                // the node can be stored as IGNOREd in restore set, check an action
 
-               if (log.isDebugEnabled())
-                  log.debug("A property " + property.getQPath().getAsString() + " is IGNOREd");
+               if (LOG.isDebugEnabled())
+                  LOG.debug("A property " + property.getQPath().getAsString() + " is IGNOREd");
 
                // set context current parent to existed in restore set
                parents.push((NodeData)contextState.getData());
@@ -101,9 +101,9 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
       else
       {
          // copy as IGNOREd parent child, i.e. OnParentVersionAction is any
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("A property " + property.getQPath().getAsString() + " is IGNOREd node descendant");
+            LOG.debug("A property " + property.getQPath().getAsString() + " is IGNOREd node descendant");
          }
          super.entering(property, level);
       }
@@ -137,8 +137,8 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
                ItemState contextState = restoredChanges.getItemState(node.getParentIdentifier());
                if (contextState != null && !contextState.isDeleted())
                {
-                  if (log.isDebugEnabled())
-                     log.debug("A node " + node.getQPath().getAsString() + " is IGNOREd");
+                  if (LOG.isDebugEnabled())
+                     LOG.debug("A node " + node.getQPath().getAsString() + " is IGNOREd");
 
                   // set context current parent to existed in restore set
                   parents.push((NodeData)contextState.getData());
@@ -153,9 +153,9 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
          else
          {
             // copy as IGNOREd parent child, i.e. OnParentVersionAction is any
-            if (log.isDebugEnabled())
+            if (LOG.isDebugEnabled())
             {
-               log.debug("A node " + node.getQPath().getAsString() + " is IGNOREd node descendant");
+               LOG.debug("A node " + node.getQPath().getAsString() + " is IGNOREd node descendant");
             }
 
             super.entering(node, level);

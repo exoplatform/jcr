@@ -33,7 +33,7 @@ import org.exoplatform.services.log.Log;
 public class CmdStor extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdStor");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.CmdStor");
 
    protected String path;
 
@@ -89,7 +89,7 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         log.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
+         LOG.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
       }
       return -1;
    }

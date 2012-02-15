@@ -48,7 +48,7 @@ public class GenericWebAppContext extends ServletWebContext implements JCRAppCon
 
    public static final String JCR_CONTENT_MAPPING = "org.exoplatform.frameworks.web.repositoryMapping";
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.JCRWebAppContext");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.JCRWebAppContext");
 
    protected final SessionProvider sessionProvider;
 
@@ -72,7 +72,7 @@ public class GenericWebAppContext extends ServletWebContext implements JCRAppCon
       {
          String name = (String)en.nextElement();
          put(name, servletContext.getInitParameter(name));
-         log.debug("ServletContext init param: " + name + "=" + servletContext.getInitParameter(name));
+         LOG.debug("ServletContext init param: " + name + "=" + servletContext.getInitParameter(name));
       }
 
       en = servletContext.getAttributeNames();
@@ -80,7 +80,7 @@ public class GenericWebAppContext extends ServletWebContext implements JCRAppCon
       {
          String name = (String)en.nextElement();
          put(name, servletContext.getAttribute(name));
-         log.debug("ServletContext: " + name + "=" + servletContext.getAttribute(name));
+         LOG.debug("ServletContext: " + name + "=" + servletContext.getAttribute(name));
       }
 
       HttpSession session = request.getSession(false);
@@ -91,7 +91,7 @@ public class GenericWebAppContext extends ServletWebContext implements JCRAppCon
          {
             String name = (String)en.nextElement();
             put(name, session.getAttribute(name));
-            log.debug("Session: " + name + "=" + session.getAttribute(name));
+            LOG.debug("Session: " + name + "=" + session.getAttribute(name));
          }
       }
 
@@ -107,7 +107,7 @@ public class GenericWebAppContext extends ServletWebContext implements JCRAppCon
       {
          String name = (String)en.nextElement();
          put(name, request.getParameter(name));
-         log.debug("Request: " + name + "=" + request.getParameter(name));
+         LOG.debug("Request: " + name + "=" + request.getParameter(name));
       }
    }
 
