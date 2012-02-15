@@ -23,6 +23,7 @@ import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.commons.utils.MimeTypeResolver;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
@@ -78,8 +79,10 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.PathNotFoundException;
@@ -143,6 +146,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
    public static final String FOLDER_ICON_PATH = "folder-icon-path";
 
+   public static final String UNTRUSTED_USER_AGENTS = "untrusted-user-agents";
+
    /**
     * Logger.
     */
@@ -192,6 +197,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * XSLT parameters.
     */
    private Map<String, String> xsltParams = new HashMap<String, String>();
+
+   /**
+    * Set of untrusted user agents. Special rules are applied for listed agents.
+    */
+   private Set<String> untrustedUserAgents = new HashSet<String>();
 
    /**
     * The list of allowed methods.
@@ -303,6 +313,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
 
       }
+
+      ValuesParam pUntrustedUserAgents = params.getValuesParam(UNTRUSTED_USER_AGENTS);
+      if (pUntrustedUserAgents != null)
+      {
+         untrustedUserAgents.addAll((List<String>)pUntrustedUserAgents.getValues());
+      }
+
       this.mimeTypeResolver = new MimeTypeResolver();
       this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
    }
@@ -386,6 +403,24 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
 
       }
+
+      /*
+       * As this constructor receives Map<String, String> instead of InitParams
+       * we cannot pass multi-valued parameters in the form of 
+       * String -> Collection  
+       * We pass a set of 'untrusted-user-agents' as a single String
+       * with mime types separated by comma (",")
+       * i.e. "agent1, agent2, agent3"
+       */
+      paramValue = params.get(UNTRUSTED_USER_AGENTS);
+      if (paramValue != null)
+      {
+         for (String mimeType : paramValue.split(","))
+         {
+            untrustedUserAgents.add(mimeType.trim());
+         }
+      }
+
       this.mimeTypeResolver = new MimeTypeResolver();
       this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
    }
@@ -1129,6 +1164,21 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * {@inheritDoc}
     */
+   @Deprecated
+   public Response put(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
+      @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
+      @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
+      @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
+      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
+      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream, @Context UriInfo uriInfo)
+   {
+      return put(repoName, repoPath, lockTokenHeader, ifHeader, fileNodeTypeHeader, contentNodeTypeHeader, mixinTypes,
+         mediatype, null, inputStream, uriInfo);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    @PUT
    @Path("/{repoName}/{repoPath:.*}/")
    public Response put(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
@@ -1136,7 +1186,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
-      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream, @Context UriInfo uriInfo)
+      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype,
+      @HeaderParam(ExtHttpHeaders.USER_AGENT) String userAgent, InputStream inputStream, @Context UriInfo uriInfo)
    {
       if (log.isDebugEnabled())
       {
@@ -1150,7 +1201,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String mimeType = null;
          String encoding = null;
 
-         if (mediatype == null)
+         if (mediatype == null || untrustedUserAgents.contains(userAgent))
          {
             mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
          }
@@ -1528,4 +1579,5 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          return new URI(TextUtil.escape(path, '%', true));
       }
    }
+
 }
