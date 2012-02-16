@@ -122,8 +122,20 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
                PlainChangesLog chlog = new PlainChangesLogImpl();
                chlog.add(ItemState.createAddedState(new PersistedNodeData(idNode, Constants.ROOT_PATH, "parent-id", 1, 0,
                   Constants.NT_UNSTRUCTURED, null, null)));
+
+               if (mode == Mode.READ_FIRST)
+               {
+                  try
+                  {
+                     goSignal.await();
+                  }
+                  catch (InterruptedException e)
+                  {
+                     Thread.currentThread().interrupt();
+                  }
+               }
+
                cwdm.save(chlog);
-               if (mode == Mode.WRITE_FIRST) goSignal.countDown();
             }
             catch (Exception e)
             {
@@ -131,6 +143,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
             }
             finally
             {
+               if (mode == Mode.WRITE_FIRST) goSignal.countDown();
                doneSignal.countDown();
             }
          }
@@ -144,7 +157,6 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
             {
                startSignal.await();
                cwdm.getItemData(idNode);
-               if (mode == Mode.READ_FIRST) goSignal.countDown();
             }
             catch (Exception e)
             {
@@ -152,6 +164,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
             }
             finally
             {
+               if (mode == Mode.READ_FIRST) goSignal.countDown();
                doneSignal.countDown();
             }            
          }
@@ -168,7 +181,6 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
    }
    private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
    {
-      
 
       private Mode mode;
       private CountDownLatch goSignal;
@@ -197,17 +209,6 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
 
       public void commit() throws IllegalStateException, RepositoryException
       {
-         if (mode == Mode.READ_FIRST)
-         {
-            try
-            {
-               goSignal.await();
-            }
-            catch (InterruptedException e)
-            {
-               Thread.currentThread().interrupt();
-            }            
-         }
       }
 
       public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
