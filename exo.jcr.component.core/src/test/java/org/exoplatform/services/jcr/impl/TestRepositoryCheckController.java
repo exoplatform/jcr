@@ -746,6 +746,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testDBUsecasesNodeHasNoPropertiesSingleDB() throws Exception
    {
       checkDBUsecasesNodeHasNoProperties(helper.createRepository(container, false, false));
+      checkDBUsecasesNodeHasPrimaryTypeProperties(helper.createRepository(container, false, false));
    }
 
    /**
@@ -754,6 +755,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testDBUsecasesNodeHasNoPropertiesMultiDB() throws Exception
    {
       checkDBUsecasesNodeHasNoProperties(helper.createRepository(container, true, false));
+      checkDBUsecasesNodeHasPrimaryTypeProperties(helper.createRepository(container, false, false));
    }
 
    private void checkDBUsecasesNodeHasNoProperties(ManageableRepository repository) throws Exception
@@ -765,7 +767,6 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.save();
 
       PropertyIterator iter = node.getProperties();
-
 
       // repository is consistent
       checkController = new RepositoryCheckController(repository);
@@ -800,6 +801,56 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
       // repository is inconsistent
       assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is inconsistent"));
+      checkController.getLastLogFile().delete();
+   }
+
+   private void checkDBUsecasesNodeHasPrimaryTypeProperties(ManageableRepository repository) throws Exception
+   {
+      // create repository and add node
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
+      session.save();
+
+      PropertyIterator iter = node.getProperties();
+
+      // repository is consistent
+      checkController = new RepositoryCheckController(repository);
+      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is consistent"));
+      checkController.getLastLogFile().delete();
+
+      WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
+      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+
+      // remove all properties
+      String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+
+      Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
+      while (iter.hasNext())
+      {
+         PropertyImpl prop = (PropertyImpl)iter.nextProperty();
+
+         if (!prop.getName().equals("jcr:primaryType"))
+         {
+            conn.prepareStatement(
+               "DELETE FROM JCR_" + (isMultiDb ? "M" : "S") + "VALUE WHERE PROPERTY_ID = '"
+                  + (isMultiDb ? "" : wsEntry.getName()) + prop.getInternalIdentifier() + "'").execute();
+            
+            conn.prepareStatement(
+               "DELETE FROM JCR_" + (isMultiDb ? "M" : "S") + "ITEM WHERE ID = '"
+                  + (isMultiDb ? "" : wsEntry.getName()) + prop.getInternalIdentifier() + "'").execute();
+         }
+      }
+
+      conn.commit();
+      conn.close();
+
+      assertTrue(node.getProperties().hasNext());
+
+      session.logout();
+
+      // repository is inconsistent
+      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is consistent"));
       checkController.getLastLogFile().delete();
    }
 
