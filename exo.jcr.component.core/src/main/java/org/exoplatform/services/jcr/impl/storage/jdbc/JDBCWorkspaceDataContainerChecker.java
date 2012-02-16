@@ -76,12 +76,14 @@ public class JDBCWorkspaceDataContainerChecker
       
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM N where N.I_CLASS=1 and NOT EXISTS "
-            + "(select * from JCR_MITEM P where P.I_CLASS=2 and P.PARENT_ID=N.ID)"
+            + "(select * from JCR_MITEM P where P.I_CLASS=2 and P.PARENT_ID=N.ID "
+            + "and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType')"
          : "select * from JCR_SITEM N where N.CONTAINER_NAME='" + jdbcDataContainer.containerName
             + "' and N.I_CLASS=1 and NOT EXISTS (select * from JCR_SITEM P "
-            + "where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.CONTAINER_NAME='" + jdbcDataContainer.containerName + "')",
-         new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-         "Nodes that do not have at least one property", InspectionStatus.ERR));
+            + "where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' "
+            + "and P.CONTAINER_NAME='" + jdbcDataContainer.containerName + "')", new String[]{DBConstants.COLUMN_ID,
+         DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+         "Nodes that do not have at least one jcr:primaryType property", InspectionStatus.ERR));
       
       queries
          .add(new InspectionQuery(jdbcDataContainer.multiDb
