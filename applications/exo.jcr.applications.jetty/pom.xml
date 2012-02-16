@@ -121,6 +121,13 @@
                   <copy todir="${exo.projects.directory.working}/exo-jetty/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/jetty/" />
                   </copy>
+                  <replace dir="${exo.projects.directory.working}/exo-jetty" token="@exo.deploy.profile@" value="${exo.deploy.profile}"/>
+                  <move todir="${exo.projects.directory.working}/exo-jetty/">
+                    <fileset dir="${exo.projects.directory.working}/exo-jetty/">
+                      <include name="**/eXo.*" />
+                    </fileset>
+                    <globmapper from="eXo.*" to="eXo-${exo.deploy.profile}.*" />
+                  </move>
                   <chmod dir="${exo.projects.directory.working}/exo-jetty" perm="+x" includes="*.sh" />
                   <move todir="${basedir}/target/lib-binary.dir/">
                      <fileset dir="${basedir}/target/lib-binary.dir/">

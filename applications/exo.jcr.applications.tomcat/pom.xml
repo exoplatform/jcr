@@ -122,6 +122,14 @@
                   <copy todir="${exo.projects.directory.working}/exo-tomcat/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/tomcat/" />
                   </copy>
+                  <replace dir="${exo.projects.directory.working}/exo-tomcat/bin" token="@exo.deploy.profile@" value="${exo.deploy.profile}"/>
+                  <move todir="${exo.projects.directory.working}/exo-tomcat/bin/">
+                    <fileset dir="${exo.projects.directory.working}/exo-tomcat/bin/">
+                      <include name="**/eXo.*" />
+                    </fileset>
+                    <globmapper from="eXo.*" to="eXo-${exo.deploy.profile}.*" />
+                  </move>
+
                   <chmod dir="${exo.projects.directory.working}/exo-tomcat/bin" perm="+x" includes="*.sh" />
 
                   <move todir="${basedir}/target/lib-binary.dir/">
