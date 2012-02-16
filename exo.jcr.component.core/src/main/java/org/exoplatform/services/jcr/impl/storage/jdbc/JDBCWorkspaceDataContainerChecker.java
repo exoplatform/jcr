@@ -64,61 +64,6 @@ public class JDBCWorkspaceDataContainerChecker
    public static void checkDB(JDBCWorkspaceDataContainer jdbcDataContainer, InspectionLog inspectionLog)
       throws RepositoryException, IOException
    {
-
-      /**
-       * Data class, contains a combination of SQL states, description, field names and status  
-       */
-      class InspectionQuery
-      {
-         /**
-          * SQL query that must be executed.
-          */
-         private final String statement;
-
-         /**
-          * Inspection query description.
-          */
-         private final String description;
-
-         /**
-          * Field names that must be showed in inspection log if something wrong.
-          */
-         private final String[] fieldNames;
-
-         /**
-          * Corruption status. Is it critical - <b>ERR</b>, or not - <b>WARN</b>.
-          */
-         private final InspectionStatus status;
-
-         public InspectionQuery(String statement, String[] fieldNames, String headerMessage, InspectionStatus status)
-         {
-            this.statement = statement;
-            this.description = headerMessage;
-            this.fieldNames = fieldNames;
-            this.status = status;
-         }
-
-         public String getStatement()
-         {
-            return statement;
-         }
-
-         public String getDescription()
-         {
-            return description;
-         }
-
-         public String[] getFieldNames()
-         {
-            return fieldNames;
-         }
-
-         public InspectionStatus getStatus()
-         {
-            return status;
-         }
-      }
-
       Set<InspectionQuery> queries = new HashSet<InspectionQuery>();
 
       // preload queries
@@ -138,22 +83,25 @@ public class JDBCWorkspaceDataContainerChecker
          new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
          "Nodes that do not have at least one property", InspectionStatus.ERR));
       
-      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
-         ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
-            + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
-         : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-            + jdbcDataContainer.containerName + "' and NOT EXISTS(select * from JCR_SITEM P where P.CONTAINER_NAME='"
-            + jdbcDataContainer.containerName + "' and V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{
-         DBConstants.COLUMN_ID, DBConstants.COLUMN_VPROPERTY_ID},
-         "All value records that has not owner-property record", InspectionStatus.ERR));
-      
-      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
-         ? "select * from JCR_MITEM P where P.I_CLASS=2 and NOT EXISTS( select * from JCR_MVALUE V "
-            + "where V.PROPERTY_ID=P.ID)" : "select * from JCR_SITEM P where P.CONTAINER_NAME='"
-            + jdbcDataContainer.containerName
-            + "' and P.I_CLASS=2 and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)", new String[]{
-         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-         "All properties that have not value record.", InspectionStatus.ERR));
+      queries
+         .add(new InspectionQuery(jdbcDataContainer.multiDb
+            ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
+               + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
+            : "select * from JCR_SVALUE V where NOT EXISTS(select * from JCR_SITEM P "
+               + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
+            DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not owner-property record",
+            InspectionStatus.ERR));
+
+      queries
+         .add(new InspectionQueryFilteredMultivaluedProperties(
+            jdbcDataContainer.multiDb
+               ? "select * from JCR_MITEM P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_MVALUE V "
+                  + "where V.PROPERTY_ID=P.ID)"
+               : "select * from JCR_SITEM P where P.CONTAINER_NAME='"
+                  + jdbcDataContainer.containerName
+                  + "' and P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)",
+            new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+            "All properties that have not value record.", InspectionStatus.ERR));
       
       // The differences in the queries by DB dialect.
       // Oracle doesn't work correct with default query because empty value stored as null value.
@@ -187,24 +135,17 @@ public class JDBCWorkspaceDataContainerChecker
       }
       queries.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID}, "Incorrect JCR_VALUE records",
          InspectionStatus.ERR));
-      
-      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
-         ? "select * from JCR_MITEM P where P.P_TYPE=9 and NOT EXISTS "
-            + "(select * from JCR_MREF R where P.ID=R.PROPERTY_ID)"
-         : "select * from JCR_SITEM P where P.CONTAINER_NAME='" + jdbcDataContainer.containerName
-            + "' and P.P_TYPE=9 and NOT EXISTS( select * from JCR_SREF R where P.ID=R.PROPERTY_ID)", new String[]{
-         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-         "Reference properties without reference records", InspectionStatus.ERR));
 
-      // properties can refer to missing node. It is possible to perform this usecase via JCR API with no exceptions 
-      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
-         ? "select * from JCR_MREF R where NOT EXISTS(select * from JCR_MITEM N where R.NODE_ID=N.ID)"
-         : "select * from JCR_SREF R, JCR_SITEM I where R.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-            + jdbcDataContainer.containerName
-            + "'  and NOT EXISTS(select * from JCR_SITEM N where N.CONTAINER_NAME='"
-            + jdbcDataContainer.containerName + "' and R.NODE_ID=N.ID)", new String[]{"NODE_ID", "PROPERTY_ID",
-         DBConstants.COLUMN_VORDERNUM},
-         "Reference records that linked to unexisted nodes. Can be normal for some usecases.", InspectionStatus.WARN));
+      queries
+         .add(new InspectionQueryFilteredMultivaluedProperties(
+            jdbcDataContainer.multiDb
+               ? "select * from JCR_MITEM P where P.P_TYPE=9 and P.P_MULTIVALUED=? and NOT EXISTS "
+                  + "(select * from JCR_MREF R where P.ID=R.PROPERTY_ID)"
+               : "select * from JCR_SITEM P where P.CONTAINER_NAME='"
+                  + jdbcDataContainer.containerName
+                  + "' and P.P_TYPE=9 and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_SREF R where P.ID=R.PROPERTY_ID)",
+            new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+            "Reference properties without reference records", InspectionStatus.ERR));
 
       // an item is its own parent. 
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
@@ -242,7 +183,8 @@ public class JDBCWorkspaceDataContainerChecker
             ResultSet resultSet = null;
             try
             {
-               st = jdbcConn.prepareStatement(query.getStatement());
+               st = query.prepareStatement(jdbcConn);
+
                // the result of query is expected to be empty 
                resultSet = st.executeQuery();
                if (resultSet.next())

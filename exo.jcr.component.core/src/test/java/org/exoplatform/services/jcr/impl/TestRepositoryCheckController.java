@@ -569,64 +569,11 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    }
 
    /**
-    * Usecase: Reference records that linked to unexisted nodes. Can be normal for some usecases.
-    */
-   public void testDBUsecasesRefPropertiesLinksToUnexistedNodesSingleDB() throws Exception
-   {
-      checkDBUsecasesRefPropertiesLinksToUnexistedNodes(helper.createRepository(container, false, false));
-   }
-
-   /**
-    * Usecase: Reference records that linked to unexisted nodes. Can be normal for some usecases.
-    */
-   public void testDBUsecasesRefPropertiesLinksToUnexistedNodesMultiDB() throws Exception
-   {
-      checkDBUsecasesRefPropertiesLinksToUnexistedNodes(helper.createRepository(container, true, false));
-   }
-
-   private void checkDBUsecasesRefPropertiesLinksToUnexistedNodes(ManageableRepository repository) throws Exception
-   {
-      // create repository and add property
-      SessionImpl session =
-         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
-      NodeImpl refNode = (NodeImpl)session.getRootNode().addNode("refNode");
-      refNode.addMixin("mix:referenceable");
-      NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
-      PropertyImpl prop = (PropertyImpl)node.setProperty("refProp", refNode);
-      session.save();
-      session.logout();
-
-      // repository is consistent
-      checkController = new RepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is consistent"));
-      checkController.getLastLogFile().delete();
-
-      WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
-
-      // change node id in REF table
-      String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-
-      Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
-      conn.prepareStatement(
-         "UPDATE JCR_" + (isMultiDb ? "M" : "S") + "REF SET NODE_ID = 'unexisted-id' WHERE PROPERTY_ID = '"
-            + (isMultiDb ? "" : wsEntry.getName()) + prop.getInternalIdentifier() + "'").execute();
-
-      conn.commit();
-      conn.close();
-
-      // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
-         "Repository data is consistent, except some warnings"));
-      checkController.getLastLogFile().delete();
-   }
-
-   /**
     * Usecase: value records has no item record.
     */
    public void testDBUsecasesValueRecordHasNoItemRecordSingleDB() throws Exception
    {
-      checkDBUsecasesPropertiesHasNoValueRecord(helper.createRepository(container, false, false));
+      checkDBUsecasesValueRecordHasNoItemRecord(helper.createRepository(container, false, false));
    }
 
    /**
@@ -678,7 +625,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesPropertiesHasNoValueRecordSingleDB() throws Exception
    {
-      checkDBUsecasesPropertiesHasNoValueRecord(helper.createRepository(container, false, false));
+      checkDBUsecasesPropertiesHasNoSingleValueRecord(helper.createRepository(container, false, false));
+      checkDBUsecasesPropertiesHasEmptyMultiValueRecord(helper.createRepository(container, false, false));
    }
 
    /**
@@ -686,10 +634,11 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesPropertiesHasNoValueRecordMultiDB() throws Exception
    {
-      checkDBUsecasesPropertiesHasNoValueRecord(helper.createRepository(container, true, false));
+      checkDBUsecasesPropertiesHasNoSingleValueRecord(helper.createRepository(container, true, false));
+      checkDBUsecasesPropertiesHasEmptyMultiValueRecord(helper.createRepository(container, false, false));
    }
 
-   private void checkDBUsecasesPropertiesHasNoValueRecord(ManageableRepository repository) throws Exception
+   private void checkDBUsecasesPropertiesHasNoSingleValueRecord(ManageableRepository repository) throws Exception
    {
       // create repository and add property
       SessionImpl session =
@@ -719,6 +668,21 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
       // repository is inconsistent
       assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is inconsistent"));
+      checkController.getLastLogFile().delete();
+   }
+
+   private void checkDBUsecasesPropertiesHasEmptyMultiValueRecord(ManageableRepository repository) throws Exception
+   {
+      // create repository and add property
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      PropertyImpl prop = (PropertyImpl)session.getRootNode().addNode("testNode").setProperty("prop", new String[]{});
+      session.save();
+      session.logout();
+
+      // repository is consistent
+      checkController = new RepositoryCheckController(repository);
+      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith("Repository data is consistent"));
       checkController.getLastLogFile().delete();
    }
 
