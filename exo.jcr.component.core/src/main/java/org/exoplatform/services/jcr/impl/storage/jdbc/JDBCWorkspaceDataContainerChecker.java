@@ -20,8 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.InspectionLog;
-import org.exoplatform.services.jcr.impl.InspectionLog.InspectionStatus;
+import org.exoplatform.services.jcr.impl.InspectionReport;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
@@ -61,7 +60,7 @@ public class JDBCWorkspaceDataContainerChecker
     * @throws RepositoryException
     * @throws IOException
     */
-   public static void checkDB(JDBCWorkspaceDataContainer jdbcDataContainer, InspectionLog inspectionLog)
+   public static void checkDataBase(JDBCWorkspaceDataContainer jdbcDataContainer, InspectionReport report)
       throws RepositoryException, IOException
    {
       Set<InspectionQuery> queries = new HashSet<InspectionQuery>();
@@ -72,8 +71,8 @@ public class JDBCWorkspaceDataContainerChecker
          : "select * from JCR_SITEM I where I.CONTAINER_NAME='" + jdbcDataContainer.containerName
             + "' and NOT EXISTS(select * from JCR_SITEM P where P.ID = I.PARENT_ID)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS},
-         "Items that do not have parent nodes", InspectionStatus.ERR));
-      
+         "Items that do not have parent nodes"));
+
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM N where N.I_CLASS=1 and NOT EXISTS "
             + "(select * from JCR_MITEM P where P.I_CLASS=2 and P.PARENT_ID=N.ID "
@@ -83,16 +82,14 @@ public class JDBCWorkspaceDataContainerChecker
             + "where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' "
             + "and P.CONTAINER_NAME='" + jdbcDataContainer.containerName + "')", new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-         "Nodes that do not have at least one jcr:primaryType property", InspectionStatus.ERR));
-      
-      queries
-         .add(new InspectionQuery(jdbcDataContainer.multiDb
-            ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
-               + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
-            : "select * from JCR_SVALUE V where NOT EXISTS(select * from JCR_SITEM P "
-               + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
-            DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not owner-property record",
-            InspectionStatus.ERR));
+         "Nodes that do not have at least one jcr:primaryType property"));
+
+      queries.add(new InspectionQuery(jdbcDataContainer.multiDb
+         ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
+            + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
+         : "select * from JCR_SVALUE V where NOT EXISTS(select * from JCR_SITEM P "
+            + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
+         DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not owner-property record"));
 
       queries
          .add(new InspectionQueryFilteredMultivaluedProperties(
@@ -103,8 +100,8 @@ public class JDBCWorkspaceDataContainerChecker
                   + jdbcDataContainer.containerName
                   + "' and P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-            "All properties that have not value record.", InspectionStatus.ERR));
-      
+            "All properties that have not value record."));
+
       // The differences in the queries by DB dialect.
       // Oracle doesn't work correct with default query because empty value stored as null value.
       String statement;
@@ -121,12 +118,14 @@ public class JDBCWorkspaceDataContainerChecker
       else if (jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
          || jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
       {
-         statement =  jdbcDataContainer.multiDb
-         ? "select * from JCR_MVALUE where (STORAGE_DESC is not null and DATA is not null)"
-         : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-            + jdbcDataContainer.containerName
-            + "'  AND (STORAGE_DESC is not null and DATA is not null)";
-      } else {
+         statement =
+            jdbcDataContainer.multiDb
+               ? "select * from JCR_MVALUE where (STORAGE_DESC is not null and DATA is not null)"
+               : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
+                  + jdbcDataContainer.containerName + "'  AND (STORAGE_DESC is not null and DATA is not null)";
+      }
+      else
+      {
          statement =
             jdbcDataContainer.multiDb
                ? "select * from JCR_MVALUE where (STORAGE_DESC is null and DATA is null) or "
@@ -135,8 +134,7 @@ public class JDBCWorkspaceDataContainerChecker
                   + jdbcDataContainer.containerName
                   + "'  AND ((STORAGE_DESC is null and DATA is null) or (STORAGE_DESC is not null and DATA is not null))";
       }
-      queries.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID}, "Incorrect JCR_VALUE records",
-         InspectionStatus.ERR));
+      queries.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID}, "Incorrect JCR_VALUE records"));
 
       queries
          .add(new InspectionQueryFilteredMultivaluedProperties(
@@ -147,15 +145,14 @@ public class JDBCWorkspaceDataContainerChecker
                   + jdbcDataContainer.containerName
                   + "' and P.P_TYPE=9 and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_SREF R where P.ID=R.PROPERTY_ID)",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-            "Reference properties without reference records", InspectionStatus.ERR));
+            "Reference properties without reference records"));
 
       // an item is its own parent. 
       queries.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM I where I.ID = I.PARENT_ID and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'"
          : "select * from JCR_SITEM I where I.ID = I.PARENT_ID and I.CONTAINER_NAME='"
             + jdbcDataContainer.containerName + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'", new String[]{
-         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "An item is its own parent.",
-         InspectionStatus.ERR));
+         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "An item is its own parent."));
 
       // Several versions of same item
       queries
@@ -164,13 +161,15 @@ public class JDBCWorkspaceDataContainerChecker
                ? "select * from JCR_MITEM I where EXISTS (select * from JCR_MITEM J"
                   + " WHERE I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
                   + " and I.VERSION != J.VERSION)"
-               : "select * from JCR_SITEM I where I.CONTAINER_NAME='" + jdbcDataContainer.containerName + "' and"
+               : "select * from JCR_SITEM I where I.CONTAINER_NAME='"
+                  + jdbcDataContainer.containerName
+                  + "' and"
                   + " EXISTS (select * from JCR_SITEM J WHERE I.CONTAINER_NAME = J.CONTAINER_NAME and"
                   + " I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
                   + " and I.VERSION != J.VERSION)",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME,
                DBConstants.COLUMN_VERSION, DBConstants.COLUMN_CLASS, DBConstants.COLUMN_INDEX},
-            "Several versions of same item.", InspectionStatus.ERR));
+            "Several versions of same item."));
 
       // using existing DataSource to get a JDBC Connection.
       Connection jdbcConn = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
@@ -191,7 +190,7 @@ public class JDBCWorkspaceDataContainerChecker
                if (resultSet.next())
                {
                   // but if result not empty, then inconsistency takes place
-                  inspectionLog.logInspectionDescription(query.getDescription());
+                  report.logDescription(query.getDescription());
                   do
                   {
                      StringBuilder record = new StringBuilder();
@@ -210,8 +209,8 @@ public class JDBCWorkspaceDataContainerChecker
                         }
                         record.append(' ');
                      }
-                     // log inconsistency issue.
-                     inspectionLog.logBrokenObjectInfo(record.toString(), "", query.getStatus());
+
+                     report.logBrokenObjectAndSetInconsistency(record.toString(), "");
                   }
                   while (resultSet.next());
                }
@@ -246,8 +245,7 @@ public class JDBCWorkspaceDataContainerChecker
       }
       catch (SQLException e)
       {
-         // log unexpected exceptions to log
-         inspectionLog.logException("Exception during DB inspection.", e);
+         report.logExceptionAndSetInconsistency("Exception during DB inspection.", e);
       }
       finally
       {
@@ -283,7 +281,7 @@ public class JDBCWorkspaceDataContainerChecker
     * @throws IOException
     */
    public static void checkValueStorage(final JDBCWorkspaceDataContainer jdbcDataContainer,
-      ValueStoragePluginProvider vsPlugin, InspectionLog inspectionLog) throws RepositoryException, IOException
+      ValueStoragePluginProvider vsPlugin, InspectionReport report) throws RepositoryException, IOException
    {
       final String valueRecordFormat = "ValueData[PROPERTY_ID=%s ORDER_NUM=%d STORAGE_DESC=%s]";
 
@@ -323,9 +321,8 @@ public class JDBCWorkspaceDataContainerChecker
                   }
                   catch (ValueStorageNotFoundException e)
                   {
-                     inspectionLog.logBrokenObjectInfo("ValueStorage " + storageDesc + " not found. "
-                        + String.format(valueRecordFormat, propertyId, orderNumber, storageDesc), e.getMessage(),
-                        InspectionStatus.ERR);
+                     report.logBrokenObjectAndSetInconsistency("ValueStorage " + storageDesc + " not found. "
+                        + String.format(valueRecordFormat, propertyId, orderNumber, storageDesc), e.getMessage());
                      continue;
                   }
                }
@@ -351,13 +348,13 @@ public class JDBCWorkspaceDataContainerChecker
                   Throwable ex = e.getCause();
                   if (ex instanceof ValueDataNotFoundException)
                   {
-                     inspectionLog.logBrokenObjectInfo(String.format(valueRecordFormat, propertyId, orderNumber,
-                        storageDesc)
-                        + " not found.", ex.getMessage(), InspectionStatus.ERR);
+                     report.logBrokenObjectAndSetInconsistency(
+                        String.format(valueRecordFormat, propertyId, orderNumber, storageDesc) + " not found.",
+                        ex.getMessage());
                   }
                   else if (ex instanceof IOException)
                   {
-                     inspectionLog.logException(ex.getMessage(), (IOException)ex);
+                     report.logExceptionAndSetInconsistency(ex.getMessage(), ex);
                   }
                   else
                   {
@@ -370,8 +367,7 @@ public class JDBCWorkspaceDataContainerChecker
       }
       catch (SQLException e)
       {
-         // log unexpceted exception
-         inspectionLog.logException("Exception during ValueStorage inspection.", e);
+         report.logExceptionAndSetInconsistency("Exception during ValueStorage inspection.", e);
       }
       finally
       {

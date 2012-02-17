@@ -20,15 +20,10 @@ package org.exoplatform.services.jcr.impl;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.services.jcr.impl.InspectionLog.InspectionStatus;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.Writer;
 
 /**
  * @author <a href="mailto:skarpenko@exoplatform.com">Sergiy Karpenko</a>
@@ -38,31 +33,29 @@ import java.io.Writer;
 public class TestInspectionLogFile extends TestCase
 {
 
-   private File f;
-
-   private Writer writer;
+   private InspectionReport report;
 
    public void setUp() throws Exception
    {
       super.setUp();
-      f = File.createTempFile("testlog", "suf");
-      writer = new OutputStreamWriter(PrivilegedFileHelper.fileOutputStream(f));
+
+      report = new InspectionReport("test");
    }
 
    public void tearDown() throws Exception
    {
-      writer.close();
-      f.delete();
+      report.close();
+      getFileFromReport().delete();
+
       super.tearDown();
    }
 
    public void testLogComment() throws Exception
    {
-      InspectionLog report = new InspectionLogWriter(writer);
       report.logComment("test message");
 
       // read file;
-      Reader reader = new FileReader(f);
+      Reader reader = new FileReader(getFileFromReport());
       BufferedReader br = new BufferedReader(reader);
       String s = br.readLine();
       br.close();
@@ -72,11 +65,10 @@ public class TestInspectionLogFile extends TestCase
 
    public void testLogInspectionDescription() throws Exception
    {
-      InspectionLog report = new InspectionLogWriter(writer);
-      report.logInspectionDescription("description");
+      report.logDescription("description");
 
       // read file;
-      Reader reader = new FileReader(f);
+      Reader reader = new FileReader(getFileFromReport());
       BufferedReader br = new BufferedReader(reader);
       String s = br.readLine();
       br.close();
@@ -86,16 +78,15 @@ public class TestInspectionLogFile extends TestCase
 
    public void testLogBrokenObjectInfo() throws Exception
    {
-      InspectionLog report = new InspectionLogWriter(writer);
-      report.logBrokenObjectInfo("broken object descr", "message", InspectionStatus.REINDEX);
+      report.logBrokenObjectAndSetInconsistency("broken object descr", "message");
 
       // read file;
-      Reader reader = new FileReader(f);
+      Reader reader = new FileReader(getFileFromReport());
       BufferedReader br = new BufferedReader(reader);
       String s = br.readLine();
       br.close();
 
-      assertEquals("Reindex broken object descr message", s);
+      assertEquals("broken object descr message", s);
       assertTrue(report.hasInconsistency());
    }
 
@@ -103,11 +94,10 @@ public class TestInspectionLogFile extends TestCase
    {
       Exception e = new Exception("Exception message.");
 
-      InspectionLog report = new InspectionLogWriter(writer);
-      report.logException("message", e);
+      report.logExceptionAndSetInconsistency("message", e);
 
       // read file;
-      Reader reader = new FileReader(f);
+      Reader reader = new FileReader(getFileFromReport());
       BufferedReader br = new BufferedReader(reader);
       String s = br.readLine();
       assertEquals("//message", s);
@@ -117,6 +107,11 @@ public class TestInspectionLogFile extends TestCase
       assertEquals("//" + e.toString(), s);
       br.close();
       assertTrue(report.hasInconsistency());
+   }
+
+   private File getFileFromReport()
+   {
+      return new File(report.getReportPath());
    }
 
 }

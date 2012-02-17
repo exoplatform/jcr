@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 
@@ -33,7 +34,7 @@ public abstract class AbstractRepositorySuspender
    /**
     * The current repository.
     */
-   private final ManageableRepository repository;
+   protected final ManageableRepository repository;
 
    /**
     * AbstractRepositorySuspender constructor.
@@ -49,12 +50,8 @@ public abstract class AbstractRepositorySuspender
     */
    protected void suspendRepository() throws RepositoryException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+
       repository.setState(ManageableRepository.SUSPENDED);
    }
 
@@ -64,11 +61,8 @@ public abstract class AbstractRepositorySuspender
    protected void resumeRepository() throws RepositoryException
    {
       // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+
       repository.setState(ManageableRepository.ONLINE);
    }
 
