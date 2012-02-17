@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import org.exoplatform.services.jcr.impl.InspectionLog.InspectionStatus;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -34,9 +32,9 @@ class InspectionQueryFilteredMultivaluedProperties extends InspectionQuery
    /**
     * {@inheritDoc}
     */
-   public InspectionQueryFilteredMultivaluedProperties(String statement, String[] fieldNames, String headerMessage, InspectionStatus status)
+   public InspectionQueryFilteredMultivaluedProperties(String statement, String[] fieldNames, String headerMessage)
    {
-      super(statement, fieldNames, headerMessage, status);
+      super(statement, fieldNames, headerMessage);
    }
 
    /**

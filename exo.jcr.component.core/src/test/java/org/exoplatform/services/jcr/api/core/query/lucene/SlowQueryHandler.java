@@ -19,7 +19,7 @@ package org.exoplatform.services.jcr.api.core.query.lucene;
 import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.InspectionLog;
+import org.exoplatform.services.jcr.impl.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.AbstractQueryHandler;
@@ -130,7 +130,8 @@ public class SlowQueryHandler extends AbstractQueryHandler
     * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#checkIndex(org.exoplatform.services.jcr.dataflow.ItemDataConsumer, boolean, InspectionLog)
     */
    @Override
-   public void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, InspectionLog inspectionLog) throws RepositoryException,
+   public void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, InspectionReport inspectionLog)
+      throws RepositoryException,
       IOException
    {
       // do nothing

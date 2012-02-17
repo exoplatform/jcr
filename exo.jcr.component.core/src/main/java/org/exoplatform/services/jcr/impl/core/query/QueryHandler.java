@@ -20,7 +20,7 @@ import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.InspectionLog;
+import org.exoplatform.services.jcr.impl.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
@@ -231,10 +231,10 @@ public interface QueryHandler
     * 
     * @param itemStateManager
     * @param isSystem
-    * @param inspectionLog
+    * @param report
     * @throws RepositoryException
     * @throws IOException
     */
-   void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, InspectionLog inspectionLog)
+   void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, InspectionReport report)
       throws RepositoryException, IOException;
 }

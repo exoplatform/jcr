@@ -51,8 +51,7 @@ import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.InspectionLog;
-import org.exoplatform.services.jcr.impl.InspectionLog.InspectionStatus;
+import org.exoplatform.services.jcr.impl.InspectionReport;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
@@ -869,7 +868,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * {@inheritDoc}
     */
-   public void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, final InspectionLog inspectionLog)
+   public void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, final InspectionReport report)
       throws RepositoryException, IOException
    {
 
@@ -920,12 +919,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                   if (docs.next())
                   {
                      //multiple entries
-                     inspectionLog.logBrokenObjectInfo("ID=" + uuid, "Multiple entires.", InspectionStatus.REINDEX);
+                     report.logBrokenObjectAndSetInconsistency("ID=" + uuid, "Multiple entires.");
                   }
                }
                else
                {
-                  inspectionLog.logBrokenObjectInfo("ID=" + uuid, "Not indexed.", InspectionStatus.REINDEX);
+                  report.logBrokenObjectAndSetInconsistency("ID=" + uuid, "Not indexed.");
                }
             }
             catch (IOException e)
@@ -983,8 +982,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             String uuid = d.get(FieldNames.UUID);
             if (!documentUUIDs.contains(uuid))
             {
-               inspectionLog.logBrokenObjectInfo("ID=" + uuid, "Document corresponds to removed node.",
-                  InspectionStatus.REINDEX);
+               report.logBrokenObjectAndSetInconsistency("ID=" + uuid, "Document corresponds to removed node.");
             }
          }
       }

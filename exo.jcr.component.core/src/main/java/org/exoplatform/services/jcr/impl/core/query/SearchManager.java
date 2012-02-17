@@ -49,7 +49,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.InspectionLog;
+import org.exoplatform.services.jcr.impl.InspectionReport;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
@@ -400,7 +400,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * according jcr-node. If index is suspended then it will be temporary resumed, while check is running
     * and suspended afterwards.
     */
-   public void checkIndex(final InspectionLog inspectionLog, final boolean isSystem) throws RepositoryException,
+   public void checkIndex(final InspectionReport report, final boolean isSystem) throws RepositoryException,
       IOException
    {
       if (isSuspended)
@@ -420,7 +420,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                      }
                      resume();
 
-                     handler.checkIndex(itemMgr, isSystem, inspectionLog);
+                     handler.checkIndex(itemMgr, isSystem, report);
                      return null;
                   }
                   catch (ResumeException e)
@@ -466,7 +466,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       else
       {
          // simply run checkIndex, if not suspended
-         handler.checkIndex(itemMgr, isSystem, inspectionLog);
+         handler.checkIndex(itemMgr, isSystem, report);
       }
    }
 

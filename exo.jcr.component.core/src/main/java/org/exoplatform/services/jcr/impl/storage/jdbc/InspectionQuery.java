@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import org.exoplatform.services.jcr.impl.InspectionLog.InspectionStatus;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -49,17 +47,11 @@ class InspectionQuery
     */
    public String[] fieldNames;
 
-   /**
-    * Corruption status. Is it critical - <b>ERR</b>, or not - <b>WARN</b>.
-    */
-   public InspectionStatus status;
-
-   public InspectionQuery(String statement, String[] fieldNames, String headerMessage, InspectionStatus status)
+   public InspectionQuery(String statement, String[] fieldNames, String headerMessage)
    {
       this.statement = statement;
       this.description = headerMessage;
       this.fieldNames = fieldNames;
-      this.status = status;
    }
 
    public String getStatement()
@@ -75,11 +67,6 @@ class InspectionQuery
    public String[] getFieldNames()
    {
       return fieldNames;
-   }
-
-   public InspectionStatus getStatus()
-   {
-      return status;
    }
 
    /**
