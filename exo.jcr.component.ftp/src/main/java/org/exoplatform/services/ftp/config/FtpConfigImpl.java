@@ -35,7 +35,7 @@ import org.exoplatform.services.log.Log;
 public class FtpConfigImpl implements FtpConfig
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpConfigImpl");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ftp.FtpConfigImpl");
 
    /**
     * "command-port".

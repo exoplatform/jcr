@@ -302,7 +302,7 @@ public class BackupClientImpl
          }
          catch (Exception e)
          {
-            throw new RuntimeException("Can not get DetailedInfo from responce.", e);
+            throw new IllegalStateException("Can not get DetailedInfo from responce.", e);
          }
 
          if (info.getType() == DetailedInfo.COMPLETED)
@@ -380,7 +380,7 @@ public class BackupClientImpl
          }
          catch (Exception e)
          {
-            throw new RuntimeException("Can not get ShortInfoList from responce.", e);
+            throw new IllegalStateException("Can not get ShortInfoList from responce.", e);
          }
 
          for (ShortInfo info : repositoryInfoList.getBackups())
@@ -418,7 +418,7 @@ public class BackupClientImpl
          }
          catch (Exception e)
          {
-            throw new RuntimeException("Can not get ShortInfoList from responce.", e);
+            throw new IllegalStateException("Can not get ShortInfoList from responce.", e);
          }
 
          for (ShortInfo info : workspaceInfoList.getBackups())
@@ -686,7 +686,7 @@ public class BackupClientImpl
          }
          catch (Exception e)
          {
-            throw new RuntimeException("Can not get BackupServiceInfoBean from responce.", e);
+            throw new IllegalStateException("Can not get BackupServiceInfoBean from responce.", e);
          }
 
          String result =
@@ -728,7 +728,7 @@ public class BackupClientImpl
          }
          catch (Exception e)
          {
-            throw new RuntimeException("Can not get ShortInfoList from responce.", e);
+            throw new IllegalStateException("Can not get ShortInfoList from responce.", e);
          }
 
          ShortInfoList workspaceInfoList;
@@ -738,7 +738,7 @@ public class BackupClientImpl
          }
          catch (Exception e)
          {
-            throw new RuntimeException("Can not get ShortInfoList from responce.", e);
+            throw new IllegalStateException("Can not get ShortInfoList from responce.", e);
          }
 
          StringBuilder result = new StringBuilder("\nThe current backups information : \n");
@@ -824,7 +824,7 @@ public class BackupClientImpl
          }
          catch (Exception e)
          {
-            throw new RuntimeException("Can not get ShortInfoList from responce.", e);
+            throw new IllegalStateException("Can not get ShortInfoList from responce.", e);
          }
 
          ShortInfoList workspaceInfoList;
@@ -910,7 +910,7 @@ public class BackupClientImpl
             }
             catch (Exception e)
             {
-               throw new RuntimeException("Can not get DetailedInfo from responce.", e);
+               throw new IllegalStateException("Can not get DetailedInfo from responce.", e);
             }
 
             StringBuilder result = new StringBuilder("\nThe current restores information : \n");
@@ -956,7 +956,7 @@ public class BackupClientImpl
             }
             catch (Exception e)
             {
-               throw new RuntimeException("Can not get DetailedInfo from responce.", e);
+               throw new IllegalStateException("Can not get DetailedInfo from responce.", e);
             }
 
             StringBuilder result = new StringBuilder("\nThe current restores information : \n");
@@ -1215,7 +1215,9 @@ public class BackupClientImpl
             wsEntry = wEntry;
 
       if (wsEntry == null)
-         throw new RuntimeException("Can not find the workspace '" + workspaceName + "' in configuration.");
+      {
+         throw new IllegalStateException("Can not find the workspace '" + workspaceName + "' in configuration.");
+      }
 
       return wsEntry;
    }

@@ -35,7 +35,7 @@ import java.util.TreeMap;
 public class HelpCommand extends AbstractCliCommand
 {
 
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.frameworks.jcr.cli.HelpCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.HelpCommand");
 
    private TreeMap<String, String> map = new TreeMap<String, String>();
 

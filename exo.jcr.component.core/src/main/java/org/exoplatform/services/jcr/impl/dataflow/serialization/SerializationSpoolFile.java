@@ -37,8 +37,7 @@ import java.security.PrivilegedAction;
 public class SerializationSpoolFile extends SpoolFile
 {
 
-   private static final Log LOG = ExoLogger
-      .getLogger("org.exoplatform.services.jcr.impl.dataflow.serialization.SerializationSpoolFile");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SerializationSpoolFile");
 
    /**
     * SpoolFileHolder.

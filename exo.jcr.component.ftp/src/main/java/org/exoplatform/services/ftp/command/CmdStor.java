@@ -49,7 +49,7 @@ import javax.jcr.Session;
 public class CmdStor extends FtpCommandImpl
 {
 
-   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdStor");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.CmdStor");
 
    public CmdStor()
    {

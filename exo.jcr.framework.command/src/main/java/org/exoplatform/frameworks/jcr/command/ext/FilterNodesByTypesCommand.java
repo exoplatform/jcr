@@ -50,12 +50,16 @@ public class FilterNodesByTypesCommand implements Command
    {
       Object obj = context.get(incomingNodesKey);
       if (obj == null || !(obj instanceof NodeIterator))
-         throw new Exception("Invalid incoming nodes iterator " + obj);
+      {
+         throw new IllegalArgumentException("Invalid incoming nodes iterator " + obj);
+      }
       NodeIterator nodes = (NodeIterator)obj;
 
       obj = context.get(typesKey);
       if (obj == null || !(obj instanceof String[]))
-         throw new Exception("Invalid node types object, expected String[] " + obj);
+      {
+         throw new IllegalArgumentException("Invalid node types object, expected String[] " + obj);
+      }
       String[] nts = (String[])context.get(typesKey);
 
       List nodes1 = new ArrayList();
@@ -65,7 +69,9 @@ public class FilterNodesByTypesCommand implements Command
          for (int i = 0; i < nts.length; i++)
          {
             if (n.isNodeType(nts[i]))
+            {
                nodes1.add(n);
+            }
          }
       }
       // context.put(resultKey, new EntityCollection(nodes1));

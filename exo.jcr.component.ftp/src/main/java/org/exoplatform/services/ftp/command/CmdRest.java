@@ -33,7 +33,7 @@ import java.io.IOException;
 public class CmdRest extends FtpCommandImpl
 {
 
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.ftp.command.CmdRest");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.command.CmdRest");
 
    public CmdRest()
    {

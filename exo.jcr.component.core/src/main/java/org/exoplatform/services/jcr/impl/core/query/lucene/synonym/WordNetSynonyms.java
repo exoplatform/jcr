@@ -31,8 +31,7 @@ import java.io.InputStream;
 public class WordNetSynonyms implements SynonymProvider
 {
 
-   private static final Log LOG = ExoLogger
-      .getLogger("org.exoplatform.services.jcr.impl.core.query.lucene.synonym.WordNetSynonyms");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WordNetSynonyms");
 
    /**
     * The synonym map or <code>null</code> if an error occurred while reading the prolog file.

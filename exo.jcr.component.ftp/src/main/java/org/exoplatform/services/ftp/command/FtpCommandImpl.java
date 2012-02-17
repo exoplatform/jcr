@@ -48,7 +48,7 @@ import javax.jcr.Session;
 public abstract class FtpCommandImpl implements FtpCommand
 {
 
-   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpCommandImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.FtpCommandImpl");
 
    protected boolean isNeedLogin = true;
 

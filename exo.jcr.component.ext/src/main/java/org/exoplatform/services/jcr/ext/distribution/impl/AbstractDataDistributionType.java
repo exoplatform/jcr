@@ -43,8 +43,7 @@ import javax.jcr.RepositoryException;
 public abstract class AbstractDataDistributionType implements DataDistributionType
 {
 
-   private static final Log LOG = ExoLogger
-      .getLogger("org.exoplatform.services.jcr.ext.distribution.impl.AbstractDataDistributionType");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.AbstractDataDistributionType");
 
    /**
     * The default node type to use when we create a new node

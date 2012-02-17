@@ -38,7 +38,7 @@ import javax.jcr.Session;
 public class JcrURLConnection extends URLConnection
 {
 
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.ext.resource.JcrURLConnection");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.JcrURLConnection");
 
    private SessionProvider sessionProvider;
 

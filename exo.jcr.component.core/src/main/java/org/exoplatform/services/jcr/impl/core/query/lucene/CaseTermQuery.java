@@ -37,8 +37,7 @@ import java.util.Map;
  */
 abstract class CaseTermQuery extends MultiTermQuery implements TransformConstants
 {
-    private static final Log LOG = ExoLogger
-      .getLogger("org.exoplatform.services.jcr.impl.core.query.lucene.CaseTermQuery");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CaseTermQuery");
 
     /**
      * Indicates whether terms from the index should be lower-cased or

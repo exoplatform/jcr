@@ -37,7 +37,7 @@ import org.picocontainer.Startable;
 public class FtpServiceImpl implements FtpService, Startable
 {
 
-   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpServiceImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.FtpServiceImpl");
 
    private CommandService commandService = null;
 

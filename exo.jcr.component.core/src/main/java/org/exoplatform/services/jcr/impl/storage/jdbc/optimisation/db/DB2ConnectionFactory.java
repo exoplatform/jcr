@@ -43,8 +43,7 @@ import javax.sql.DataSource;
 public class DB2ConnectionFactory extends GenericCQConnectionFactory
 {
 
-   private static final Log LOG = ExoLogger
-      .getLogger("org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2ConnectionFactory");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DB2ConnectionFactory");
 
    private Boolean isReindexingSupport;
 

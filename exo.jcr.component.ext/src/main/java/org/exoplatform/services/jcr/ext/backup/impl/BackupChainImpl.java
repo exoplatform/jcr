@@ -291,7 +291,9 @@ public class BackupChainImpl implements BackupChain
    public int getIncrementalBackupState()
    {
       if (incrementalBackup == null)
-         throw new RuntimeException("The incremental bacup was not configured. Only full backup.");
+      {
+         throw new IllegalStateException("The incremental bacup was not configured. Only full backup.");
+      }
          
       return incrementalBackup.getState();
    }
