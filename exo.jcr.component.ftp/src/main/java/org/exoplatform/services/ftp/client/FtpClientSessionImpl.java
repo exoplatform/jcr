@@ -54,7 +54,7 @@ import javax.security.auth.login.LoginException;
 public class FtpClientSessionImpl implements FtpClientSession
 {
 
-   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpClientSessionImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.FtpClientSessionImpl");
 
    private FtpServer ftpServer;
 

@@ -38,8 +38,7 @@ import javax.jcr.RepositoryException;
 public class NodeTraversingQueryHits extends AbstractQueryHits
 {
 
-   private static final Log LOG = ExoLogger
-      .getLogger("org.exoplatform.services.jcr.impl.core.query.lucene.NodeTraversingQueryHits");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTraversingQueryHits");
 
    /**
      * The nodes to traverse.

@@ -38,8 +38,7 @@ import java.util.regex.Matcher;
 class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
 {
 
-   private static final Log LOG = ExoLogger
-      .getLogger("org.exoplatform.services.jcr.impl.core.query.lucene.WildcardTermEnum");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WildcardTermEnum");
 
    /**
      * The pattern matcher.

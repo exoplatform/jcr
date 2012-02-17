@@ -1081,7 +1081,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    {
       if (backupDir == null)
       {
-         throw new RuntimeException(BACKUP_DIR + " not specified");
+         throw new IllegalStateException(BACKUP_DIR + " not specified");
       }
 
       logsDirectory = new File(backupDir);
@@ -1092,19 +1092,19 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       if (defIncrPeriod == null)
       {
-         throw new RuntimeException(DEFAULT_INCREMENTAL_JOB_PERIOD + " not specified");
+         throw new IllegalStateException(DEFAULT_INCREMENTAL_JOB_PERIOD + " not specified");
       }
 
       defaultIncrementalJobPeriod = Integer.valueOf(defIncrPeriod);
 
       if (fullBackupType == null)
       {
-         throw new RuntimeException(FULL_BACKUP_TYPE + " not specified");
+         throw new IllegalStateException(FULL_BACKUP_TYPE + " not specified");
       }
 
       if (incrementalBackupType == null)
       {
-         throw new RuntimeException(INCREMENTAL_BACKUP_TYPE + " not specified");
+         throw new IllegalStateException(INCREMENTAL_BACKUP_TYPE + " not specified");
       }
    }
 

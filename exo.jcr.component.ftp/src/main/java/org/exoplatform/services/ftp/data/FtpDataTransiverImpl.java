@@ -19,7 +19,6 @@
 package org.exoplatform.services.ftp.data;
 
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.ftp.FtpConst;
 import org.exoplatform.services.ftp.client.FtpClientSession;
 import org.exoplatform.services.ftp.config.FtpConfig;
 import org.exoplatform.services.log.ExoLogger;
@@ -43,7 +42,7 @@ import java.security.PrivilegedExceptionAction;
 public class FtpDataTransiverImpl implements FtpDataTransiver
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpDataTransiverImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.FtpDataTransiverImpl");
 
    private FtpClientSession clientSession;
 
@@ -118,7 +117,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception. " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          }
       }
 
@@ -130,7 +129,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
          }
          catch (IOException ioexc)
          {
-            log.info("Closing socket failure.");
+            LOG.info("Closing socket failure.");
          }
 
       }
@@ -148,7 +147,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
    }
 
@@ -216,7 +215,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
                            + configuration.getPortalContainer().getName()));
       }
       
-      protected Log acceptLog = ExoLogger.getLogger("jcr.AcceptDataConnect");
+      protected Log acceptLog = ExoLogger.getLogger("exo.jcr.component.ftp.AcceptDataConnect");
 
       @Override
       public void run()
@@ -235,7 +234,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception. " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          }
       }
 
@@ -251,7 +250,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
                            + configuration.getPortalContainer().getName()));
       }
 
-      protected Log connectLog = ExoLogger.getLogger("jcr.ConnectDataPort");
+      protected Log connectLog = ExoLogger.getLogger("exo.jcr.component.ftp.ConnectDataPort");
 
       @Override
       public void run()
@@ -264,7 +263,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception. " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          }
       }
 

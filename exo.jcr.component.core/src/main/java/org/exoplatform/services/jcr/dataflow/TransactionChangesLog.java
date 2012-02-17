@@ -42,7 +42,7 @@ import java.util.List;
 public class TransactionChangesLog implements CompositeChangesLog, Externalizable
 {
 
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.dataflow.TransactionChangesLog");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TransactionChangesLog");
 
    private static final long serialVersionUID = 4866736965040228027L;
 

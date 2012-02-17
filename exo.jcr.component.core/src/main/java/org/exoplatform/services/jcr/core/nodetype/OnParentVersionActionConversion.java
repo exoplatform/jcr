@@ -31,8 +31,7 @@ import javax.jcr.version.OnParentVersionAction;
 public class OnParentVersionActionConversion
 {
 
-   private static final Log LOG = ExoLogger
-      .getLogger("org.exoplatform.services.jcr.core.nodetype.OnParentVersionActionConversion");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.OnParentVersionActionConversion");
 
    public static String serializeType(int propertyType)
    {
