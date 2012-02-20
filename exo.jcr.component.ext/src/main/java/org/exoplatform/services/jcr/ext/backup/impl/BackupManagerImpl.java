@@ -1201,7 +1201,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       logsDirectory = new File(backupDir);
       if (!PrivilegedFileHelper.exists(logsDirectory))
       {
-         PrivilegedFileHelper.mkdirs(logsDirectory);
+         if (!PrivilegedFileHelper.mkdirs(logsDirectory))
+         {
+            throw new IllegalStateException("Could not create the backup directory at "
+               + logsDirectory.getAbsolutePath());
+         }
       }
 
       if (defIncrPeriod == null)
