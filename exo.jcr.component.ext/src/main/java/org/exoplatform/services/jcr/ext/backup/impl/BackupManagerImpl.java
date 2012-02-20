@@ -939,12 +939,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          readParamsFromFile();
       }
 
-      if (!PrivilegedFileHelper.exists(logsDirectory))
-      {
-         throw new IllegalStateException("Directory " + logsDirectory.getAbsolutePath()
-            + " not found. Please create it.");
-      }
-
       // scan for task files
       File[] tasks = PrivilegedFileHelper.listFiles(this.logsDirectory, new TaskFilter());
       for (File task : tasks)
