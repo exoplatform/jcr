@@ -897,6 +897,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public void start()
    {
+      if (!PrivilegedFileHelper.exists(tempDir))
+      {
+         throw new IllegalStateException("Directory " + tempDir.getAbsolutePath() + " not found. Please create it.");
+      }
 
       //remove if exists all old jcrrestorewi*.tmp files.
       File[] files = PrivilegedFileHelper.listFiles(tempDir, new JcrRestoreWiFilter());
@@ -933,6 +937,12 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       else
       {
          readParamsFromFile();
+      }
+
+      if (!PrivilegedFileHelper.exists(logsDirectory))
+      {
+         throw new IllegalStateException("Directory " + logsDirectory.getAbsolutePath()
+            + " not found. Please create it.");
       }
 
       // scan for task files
