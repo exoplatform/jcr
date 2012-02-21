@@ -3479,7 +3479,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The total amount of threads used for the indexing
        */
-      private final int nThreads = Runtime.getRuntime().availableProcessors();
+      private final int nThreads = handler.getIndexingThreadPoolSize();
 
       /**
        * The {@link CountDownLatch} used to notify that the indexing is over

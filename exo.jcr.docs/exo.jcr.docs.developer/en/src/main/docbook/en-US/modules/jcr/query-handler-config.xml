@@ -25,7 +25,7 @@
     <mediaobject>
       <imageobject>
         <imagedata align="center"
-                   fileref="images/diagram-standalone-index.png" />
+                   fileref="images/diagram-standalone-index.png"/>
       </imageobject>
     </mediaobject>
 
@@ -41,7 +41,7 @@
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/diagram-local-index.png" />
+        <imagedata align="center" fileref="images/diagram-local-index.png"/>
       </imageobject>
     </mediaobject>
 
@@ -64,7 +64,7 @@
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/diagram-shared-index.png" />
+        <imagedata align="center" fileref="images/diagram-shared-index.png"/>
       </imageobject>
     </mediaobject>
 
@@ -108,6 +108,7 @@
          &lt;property name="reindexing-page-size" value="1000" /&gt;
          &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
          &lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter" /&gt;
+         &lt;property name="indexing-thread-pool-size" value="16" /&gt;
       &lt;/properties&gt;
    &lt;/query-handler&gt;
 &lt;/workspace&gt;
@@ -212,6 +213,12 @@
               <entry>Controls the process of re-indexing on JCR's startup. If
               flag set, indexing will be launched asynchronously, without
               blocking the JCR. Default is "false".</entry>
+            </row>
+
+            <row>
+              <entry>indexing-thread-pool-size</entry>
+
+              <entry>Define the total amount of indexing threads.</entry>
             </row>
           </tbody>
         </tgroup>
@@ -460,11 +467,11 @@
       <para>"OFFLINE" state means that index is currently re-creating. When
       state changed, corresponding log event is printed. From the start of
       background task index is switched to "OFFLINE", with following log event
-      : </para>
+      :</para>
 
       <programlisting>[INFO] Setting index OFFLINE (repository/production[system]).</programlisting>
 
-      <para>When process finished, two events are logged : </para>
+      <para>When process finished, two events are logged :</para>
 
       <programlisting>[INFO] Created initial index for 143018 nodes (repository/production[system]).
 [INFO] Setting index ONLINE (repository/production[system]).</programlisting>
@@ -486,7 +493,7 @@
       blocking whole application by using any JMX-compatible console (see
       screenshot below, "JConsole in action").<mediaobject>
           <imageobject>
-            <imagedata align="center" fileref="images/jmx-jconsole.png" />
+            <imagedata align="center" fileref="images/jmx-jconsole.png"/>
           </imageobject>
         </mediaobject>Server can continue working as expected while index is
       recreated. This depends on the flag "allow queries", passed via JMX

@@ -183,6 +183,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public static final boolean DEFAULT_ASYNC_REINDEXING = false;
 
+   /**
+    * The default value for {@link #indexingThreadPoolSize}
+    */
+   private static final Integer DEFAULT_INDEXING_THREAD_POOL_SIZE = Runtime.getRuntime().availableProcessors();
+
    /** 
     * The default value for {@link #indexRecoveryMode}. 
     */
@@ -523,6 +528,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    protected List<AbstractRecoveryFilter> recoveryFilters = null;
 
    protected Map<String, String> optionalParameters = new HashMap<String, String>();
+
+   protected Integer indexingThreadPoolSize = DEFAULT_INDEXING_THREAD_POOL_SIZE;
 
    /**
     * Working constructor.
@@ -3424,5 +3431,21 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public int getPriority()
    {
       return PRIORITY_NORMAL;
+   }
+
+   /**
+    * @return the indexingThreadPoolSize
+    */
+   public Integer getIndexingThreadPoolSize()
+   {
+      return indexingThreadPoolSize;
+   }
+
+   /**
+    * @param indexingThreadPoolSize the indexingThreadPoolSize to set
+    */
+   public void setIndexingThreadPoolSize(Integer indexingThreadPoolSize)
+   {
+      this.indexingThreadPoolSize = indexingThreadPoolSize;
    }
 }

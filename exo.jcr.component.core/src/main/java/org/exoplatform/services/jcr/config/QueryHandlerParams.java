@@ -119,4 +119,6 @@ public interface QueryHandlerParams
    
    public static final String PARAM_INDEX_RECOVERY_FILTER = "index-recovery-filter";
    
+   public static final String PARAM_INDEXING_THREAD_POOL_SIZE = "indexing-thread-pool-size";
+
 }

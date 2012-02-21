@@ -206,6 +206,10 @@ public class SearchIndexConfigurationHelper
       {
          searchIndex.addRecoveryFilterClass(value);
       }
+      else if (QueryHandlerParams.PARAM_INDEXING_THREAD_POOL_SIZE.equals(name))
+      {
+         searchIndex.setIndexingThreadPoolSize(Integer.parseInt(value));
+      }
       else
       {
          searchIndex.addOptionalParameter(name, value);
