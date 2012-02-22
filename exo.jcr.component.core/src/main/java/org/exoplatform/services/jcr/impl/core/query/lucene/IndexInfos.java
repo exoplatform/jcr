@@ -20,6 +20,7 @@ import org.apache.lucene.store.Directory;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexOutputStream;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -119,7 +120,7 @@ public class IndexInfos
          public Object run() throws Exception
          {
             // Known issue for NFS bases on ext3. Need to refresh directory to read actual data.
-            dir.list();
+            dir.listAll();
 
             names.clear();
             indexes.clear();
@@ -186,11 +187,48 @@ public class IndexInfos
             {
                dir.deleteFile(name);
             }
-            dir.renameFile(name + ".new", name);
+            rename(name + ".new", name);
             dirty = false;
             return null;
          }
       });
+   }
+
+   /**
+    * Renames file by copying.
+    * 
+    * @param from
+    * @param to
+    * @throws IOException
+    */
+   private void rename(String from, String to) throws IOException
+   {
+      IndexOutputStream out = null;
+      IndexInputStream in = null;
+      try
+      {
+         out = new IndexOutputStream(dir.createOutput(to));
+         in = new IndexInputStream(dir.openInput(from));
+         DirectoryHelper.transfer(in, out);
+         // delete old one
+         if (dir.fileExists(from))
+         {
+            dir.deleteFile(from);
+         }
+      }
+      finally
+      {
+         if (in != null)
+         {
+            in.close();
+         }
+
+         if (out != null)
+         {
+            out.flush();
+            out.close();
+         }
+      }
    }
 
    /**

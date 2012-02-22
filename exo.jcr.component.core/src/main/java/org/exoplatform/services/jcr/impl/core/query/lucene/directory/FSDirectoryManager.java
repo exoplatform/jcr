@@ -18,6 +18,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene.directory;
 
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.FSLockFactory;
+import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
@@ -27,6 +29,7 @@ import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 
@@ -37,38 +40,48 @@ import java.security.PrivilegedExceptionAction;
 public class FSDirectoryManager implements DirectoryManager
 {
 
-   /**
-    * The full qualified name of the lock factory to use by default, if not
-    * specified org.apache.lucene.store.NativeFSLockFactory will be used
-    */
-   public static final String LOCK_FACTORY_CLASS;
+   private static Class<? extends FSDirectory> FS_DIRECTORY_CLASS;
 
-   /**
-    * The full qualified name of the lock factory to use by default, if not
-    * specified org.apache.lucene.store.NativeFSLockFactory will be used
-    */
-   public static final String FS_DIRECTORY_CLASS;
+   private static Class<? extends LockFactory> LOCK_FACTORY_CLASS;
 
-   /**
-    * Static block, used to initialize (map) org.exoplatform.jcr.lucene* 
-    * properties to org.apache.lucene.* and make it only once at a system
-    * start 
-    * 
-    * Required to set custom Index Directory and Lock Factory implementations for Lucene 2.x.
-    */
    static
    {
       // get eXo system properties 
-      LOCK_FACTORY_CLASS = PropertyManager.getProperty("org.exoplatform.jcr.lucene.store.FSDirectoryLockFactoryClass");
-      FS_DIRECTORY_CLASS = PropertyManager.getProperty("org.exoplatform.jcr.lucene.FSDirectory.class");
+      String lockFactoryClassName =
+         PropertyManager.getProperty("org.exoplatform.jcr.lucene.store.FSDirectoryLockFactoryClass");
+      String fsDirectoryClassName = PropertyManager.getProperty("org.exoplatform.jcr.lucene.FSDirectory.class");
       // map to Lucene ones. Works only with Lucene 2.x.
-      if (LOCK_FACTORY_CLASS != null)
+      if (lockFactoryClassName != null)
       {
-         PropertyManager.setProperty("org.apache.lucene.store.FSDirectoryLockFactoryClass", LOCK_FACTORY_CLASS);
+         try
+         {
+            // avoid case when abstract base class used
+            if (!FSLockFactory.class.getName().equals(lockFactoryClassName))
+            {
+               LOCK_FACTORY_CLASS = (Class<? extends LockFactory>)Class.forName(lockFactoryClassName);
+            }
+         }
+         catch (ClassNotFoundException e)
+         {
+            throw new RuntimeException("cannot load LockFactory class: " + e.toString(), e);
+         }
       }
-      if (FS_DIRECTORY_CLASS != null)
+
+      if (fsDirectoryClassName != null)
       {
-         PropertyManager.setProperty("org.apache.lucene.FSDirectory.class", FS_DIRECTORY_CLASS);
+         try
+         {
+            // avoid case when abstract base class used
+            if (!FSDirectory.class.getName().equals(fsDirectoryClassName))
+            {
+               FS_DIRECTORY_CLASS = (Class<? extends FSDirectory>)Class.forName(fsDirectoryClassName);
+            }
+            // else rely on Lucene FSDirectory instantiation 
+         }
+         catch (ClassNotFoundException e)
+         {
+            throw new RuntimeException("cannot load FSDirectory class: " + e.toString(), e);
+         }
       }
    }
 
@@ -133,15 +146,18 @@ public class FSDirectoryManager implements DirectoryManager
                   throw new IOException("Cannot create directory: " + dir);
                }
             }
-            // if both not defined, using FSDirectory.open
-            if (FS_DIRECTORY_CLASS == null && LOCK_FACTORY_CLASS == null)
+            LockFactory lockFactory =
+               (LOCK_FACTORY_CLASS == null) ? new NativeFSLockFactory() : (LockFactory)LOCK_FACTORY_CLASS.newInstance();
+
+            if (FS_DIRECTORY_CLASS == null)
             {
-               return FSDirectory.open(dir, new NativeFSLockFactory(dir));
+               return FSDirectory.open(dir, lockFactory);
             }
-            // LOCK FACTORY only defined, using deprecated getDirectory method
             else
             {
-               return FSDirectory.getDirectory(dir, LOCK_FACTORY_CLASS != null ? null : new NativeFSLockFactory(dir));
+               Constructor<? extends FSDirectory> constructor =
+                  FS_DIRECTORY_CLASS.getConstructor(File.class, LockFactory.class);
+               return constructor.newInstance(dir, lockFactory);
             }
          }
       });

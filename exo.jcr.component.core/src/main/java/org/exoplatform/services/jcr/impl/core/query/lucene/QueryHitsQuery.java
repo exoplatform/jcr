@@ -39,235 +39,264 @@ import java.util.TreeSet;
  * <code>QueryHitsQuery</code> exposes a {@link QueryHits} implementation again
  * as a Lucene Query.
  */
-public class QueryHitsQuery extends Query implements JcrQuery{
+public class QueryHitsQuery extends Query implements JcrQuery
+{
 
-    /**
-     * The underlying query hits.
-     */
-    private final QueryHits hits;
+   /**
+    * The underlying query hits.
+    */
+   private final QueryHits hits;
 
-    /**
-     * Creates a new query based on {@link QueryHits}.
-     *
-     * @param hits the query hits.
-     */
-    public QueryHitsQuery(QueryHits hits) {
-        this.hits = hits;
-    }
+   /**
+    * Creates a new query based on {@link QueryHits}.
+    *
+    * @param hits the query hits.
+    */
+   public QueryHitsQuery(QueryHits hits)
+   {
+      this.hits = hits;
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-   public Weight createWeight(Searcher searcher) throws IOException {
-        return new QueryHitsQueryWeight(searcher.getSimilarity());
-    }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public Weight createWeight(Searcher searcher) throws IOException
+   {
+      return new QueryHitsQueryWeight(searcher.getSimilarity());
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-   public String toString(String field) {
-        return "QueryHitsQuery";
-    }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public String toString(String field)
+   {
+      return "QueryHitsQuery";
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-   public void extractTerms(Set terms) {
-        // no terms
-    }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void extractTerms(Set terms)
+   {
+      // no terms
+   }
 
-    //-----------------------< JackrabbitQuery >--------------------------------
+   //-----------------------< JackrabbitQuery >--------------------------------
 
-    /**
-     * {@inheritDoc}
-     */
-    public QueryHits execute(JcrIndexSearcher searcher,
-                             SessionImpl session,
-                             Sort sort) throws IOException {
-        if (sort.getSort().length == 0) {
-            return hits;
-        } else {
-            return null;
-        }
-    }
+   /**
+    * {@inheritDoc}
+    */
+   public QueryHits execute(JcrIndexSearcher searcher, SessionImpl session, Sort sort) throws IOException
+   {
+      if (sort.getSort().length == 0)
+      {
+         return hits;
+      }
+      else
+      {
+         return null;
+      }
+   }
 
-    //------------------------< QueryHitsQueryWeight >--------------------------
+   //------------------------< QueryHitsQueryWeight >--------------------------
 
-    /**
-     * The Weight implementation for this query.
-     */
-    public class QueryHitsQueryWeight extends Weight {
+   /**
+    * The Weight implementation for this query.
+    */
+   public class QueryHitsQueryWeight extends Weight
+   {
 
-        /**
-         * The similarity.
-         */
-        private final Similarity similarity;
+      /**
+       * The similarity.
+       */
+      private final Similarity similarity;
 
-        /**
-         * Creates a new weight with the given <code>similarity</code>.
-         *
-         * @param similarity the similarity.
-         */
-        public QueryHitsQueryWeight(Similarity similarity) {
-            this.similarity = similarity;
-        }
+      /**
+       * Creates a new weight with the given <code>similarity</code>.
+       *
+       * @param similarity the similarity.
+       */
+      public QueryHitsQueryWeight(Similarity similarity)
+      {
+         this.similarity = similarity;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public Query getQuery() {
-            return QueryHitsQuery.this;
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Query getQuery()
+      {
+         return QueryHitsQuery.this;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public float getValue() {
-            return 1.0f;
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public float getValue()
+      {
+         return 1.0f;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public float sumOfSquaredWeights() throws IOException {
-            return 1.0f;
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public float sumOfSquaredWeights() throws IOException
+      {
+         return 1.0f;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public void normalize(float norm) {
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public void normalize(float norm)
+      {
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
-            return new QueryHitsQueryScorer(reader, similarity);
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException
+      {
+         return new QueryHitsQueryScorer(reader, similarity);
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public Explanation explain(IndexReader reader, int doc) throws IOException {
-            return new Explanation();
-        }
-    }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Explanation explain(IndexReader reader, int doc) throws IOException
+      {
+         return new Explanation();
+      }
+   }
 
-    //-------------------< QueryHitsQueryScorer >-------------------------------
+   //-------------------< QueryHitsQueryScorer >-------------------------------
 
-    /**
-     * the scorer implementation for this query.
-     */
-    public class QueryHitsQueryScorer extends Scorer {
+   /**
+    * the scorer implementation for this query.
+    */
+   public class QueryHitsQueryScorer extends Scorer
+   {
 
-        /**
-         * Iterator over <code>Integer</code> instances identifying the
-         * lucene documents. Document numbers are iterated in ascending order.
-         */
-        private final Iterator docs;
+      /**
+       * Iterator over <code>Integer</code> instances identifying the
+       * lucene documents. Document numbers are iterated in ascending order.
+       */
+      private final Iterator<Integer> docs;
 
-        /**
-         * Maps <code>Integer</code> document numbers to <code>Float</code>
-         * scores.
-         */
-        private final Map scores = new HashMap();
+      /**
+       * Maps <code>Integer</code> document numbers to <code>Float</code>
+       * scores.
+       */
+      private final Map<Integer, Float> scores = new HashMap<Integer, Float>();
 
-        /**
-         * The current document number.
-         */
-        private Integer currentDoc = null;
+      /**
+       * The current document number.
+       */
+      private Integer currentDoc = null;
 
-        /**
-         * Creates a new scorer.
-         *
-         * @param reader     the index reader.
-         * @param similarity the similarity implementation.
-         * @throws IOException if an error occurs while reading from the index.
-         */
-        protected QueryHitsQueryScorer(IndexReader reader,
-                                       Similarity similarity)
-                throws IOException {
-            super(similarity);
-            ScoreNode node;
-            Set sortedDocs = new TreeSet();
-            try {
-                while ((node = hits.nextScoreNode()) != null) {
-                    String uuid = node.getNodeId();
-                    Term id = new Term(FieldNames.UUID, uuid);
-                    TermDocs tDocs = reader.termDocs(id);
-                    try {
-                        if (tDocs.next()) {
-                            Integer doc = new Integer(tDocs.doc());
-                            sortedDocs.add(doc);
-                            scores.put(doc, new Float(node.getScore()));
-                        }
-                    } finally {
-                        tDocs.close();
-                    }
-                }
-            } finally {
-                hits.close();
+      /**
+       * Creates a new scorer.
+       *
+       * @param reader     the index reader.
+       * @param similarity the similarity implementation.
+       * @throws IOException if an error occurs while reading from the index.
+       */
+      protected QueryHitsQueryScorer(IndexReader reader, Similarity similarity) throws IOException
+      {
+         super(similarity);
+         ScoreNode node;
+         Set<Integer> sortedDocs = new TreeSet();
+         try
+         {
+            while ((node = hits.nextScoreNode()) != null)
+            {
+               String uuid = node.getNodeId();
+               Term id = new Term(FieldNames.UUID, uuid);
+               TermDocs tDocs = reader.termDocs(id);
+               try
+               {
+                  if (tDocs.next())
+                  {
+                     Integer doc = new Integer(tDocs.doc());
+                     sortedDocs.add(doc);
+                     scores.put(doc, new Float(node.getScore()));
+                  }
+               }
+               finally
+               {
+                  tDocs.close();
+               }
             }
-            docs = sortedDocs.iterator();
-        }
+         }
+         finally
+         {
+            hits.close();
+         }
+         docs = sortedDocs.iterator();
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public boolean next() throws IOException {
-            if (docs.hasNext()) {
-                currentDoc = (Integer) docs.next();
-                return true;
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public int nextDoc() throws IOException
+      {
+         if (currentDoc == NO_MORE_DOCS)
+         {
+            return currentDoc;
+         }
+
+         currentDoc = docs.hasNext() ? docs.next() : NO_MORE_DOCS;
+         return currentDoc;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public int docID()
+      {
+         return currentDoc == null ? -1 : currentDoc;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public float score() throws IOException
+      {
+         return scores.get(currentDoc).floatValue();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public int advance(int target) throws IOException
+      {
+         if (currentDoc == NO_MORE_DOCS)
+         {
+            return currentDoc;
+         }
+
+         do
+         {
+            if (nextDoc() == NO_MORE_DOCS)
+            {
+               return NO_MORE_DOCS;
             }
-            return false;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public int doc() {
-            return currentDoc.intValue();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public float score() throws IOException {
-            return ((Float) scores.get(currentDoc)).floatValue();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public boolean skipTo(int target) throws IOException {
-            do {
-                if (!next()) {
-                    return false;
-                }
-            } while (target > doc());
-            return true;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public Explanation explain(int doc) throws IOException {
-            return new Explanation();
-        }
-    }
+         }
+         while (target > docID());
+         return docID();
+      }
+   }
 }

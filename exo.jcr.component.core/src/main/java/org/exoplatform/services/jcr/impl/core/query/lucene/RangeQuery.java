@@ -20,19 +20,19 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.search.ConstantScoreRangeQuery;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.Weight;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,464 +40,541 @@ import java.util.Set;
 /**
  * Implements a lucene range query.
  */
-public class RangeQuery extends Query implements Transformable {
+public class RangeQuery extends Query implements Transformable
+{
 
-    /**
-     * The lower term. May be <code>null</code> if <code>upperTerm</code> is not
-     * <code>null</code>.
-     */
-    private Term lowerTerm;
+   /**
+    * The lower term. May be <code>null</code> if <code>upperTerm</code> is not
+    * <code>null</code>.
+    */
+   private Term lowerTerm;
 
-    /**
-     * The upper term. May be <code>null</code> if <code>lowerTerm</code> is not
-     * <code>null</code>.
-     */
-    private Term upperTerm;
+   /**
+    * The upper term. May be <code>null</code> if <code>lowerTerm</code> is not
+    * <code>null</code>.
+    */
+   private Term upperTerm;
 
-    /**
-     * If <code>true</code> the range interval is inclusive.
-     */
-    private boolean inclusive;
+   /**
+    * If <code>true</code> the range interval is inclusive.
+    */
+   private boolean inclusive;
 
-    /**
-     * How the term enum is transformed before it is compared to lower and upper
-     * term.
-     */
-    private int transform = TRANSFORM_NONE;
+   /**
+    * How the term enum is transformed before it is compared to lower and upper
+    * term.
+    */
+   private int transform = TRANSFORM_NONE;
 
-    /**
-     * Creates a new RangeQuery. The lower or the upper term may be
-     * <code>null</code>, but not both!
-     *
-     * @param lowerTerm the lower term of the interval, or <code>null</code>
-     * @param upperTerm the upper term of the interval, or <code>null</code>.
-     * @param inclusive if <code>true</code> the interval is inclusive.
-     */
-    public RangeQuery(Term lowerTerm, Term upperTerm, boolean inclusive) {
-        this(lowerTerm, upperTerm, inclusive, TRANSFORM_NONE);
-    }
+   /**
+    * The rewritten range query or <code>null</code> if the range spans more
+    * than {@link org.apache.lucene.search.BooleanQuery#maxClauseCount} terms.
+    */
+   private Query stdRangeQuery;
 
-    /**
-     * Creates a new RangeQuery. The lower or the upper term may be
-     * <code>null</code>, but not both!
-     *
-     * @param lowerTerm the lower term of the interval, or <code>null</code>
-     * @param upperTerm the upper term of the interval, or <code>null</code>.
-     * @param inclusive if <code>true</code> the interval is inclusive.
-     * @param transform how term enums are transformed when read from the index.
-     */
-    public RangeQuery(Term lowerTerm, Term upperTerm, boolean inclusive, int transform) {
-        if (lowerTerm == null && upperTerm == null) {
-            throw new IllegalArgumentException("At least one term must be non-null");
-        }
-        if (lowerTerm != null && upperTerm != null && lowerTerm.field() != upperTerm.field()) {
-            throw new IllegalArgumentException("Both terms must be for the same field");
-        }
+   /**
+    * Creates a new RangeQuery. The lower or the upper term may be
+    * <code>null</code>, but not both!
+    *
+    * @param lowerTerm the lower term of the interval, or <code>null</code>
+    * @param upperTerm the upper term of the interval, or <code>null</code>.
+    * @param inclusive if <code>true</code> the interval is inclusive.
+    */
+   public RangeQuery(Term lowerTerm, Term upperTerm, boolean inclusive)
+   {
+      this(lowerTerm, upperTerm, inclusive, TRANSFORM_NONE);
+   }
 
-        // if we have a lowerTerm, start there. otherwise, start at beginning
-        if (lowerTerm != null) {
-            this.lowerTerm = lowerTerm;
-        } else {
-            this.lowerTerm = new Term(upperTerm.field(), "");
-        }
+   /**
+    * Creates a new RangeQuery. The lower or the upper term may be
+    * <code>null</code>, but not both!
+    *
+    * @param lowerTerm the lower term of the interval, or <code>null</code>
+    * @param upperTerm the upper term of the interval, or <code>null</code>.
+    * @param inclusive if <code>true</code> the interval is inclusive.
+    * @param transform how term enums are transformed when read from the index.
+    */
+   public RangeQuery(Term lowerTerm, Term upperTerm, boolean inclusive, int transform)
+   {
+      if (lowerTerm == null && upperTerm == null)
+      {
+         throw new IllegalArgumentException("At least one term must be non-null");
+      }
+      if (lowerTerm != null && upperTerm != null && lowerTerm.field() != upperTerm.field())
+      {
+         throw new IllegalArgumentException("Both terms must be for the same field");
+      }
 
-        this.upperTerm = upperTerm;
-        this.inclusive = inclusive;
-        this.transform = transform;
-    }
+      // if we have a lowerTerm, start there. otherwise, start at beginning
+      if (lowerTerm != null)
+      {
+         this.lowerTerm = lowerTerm;
+      }
+      else
+      {
+         this.lowerTerm = new Term(upperTerm.field(), "");
+      }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setTransformation(int transformation) {
-        this.transform = transformation;
-    }
+      this.upperTerm = upperTerm;
+      this.inclusive = inclusive;
+      this.transform = transform;
+   }
 
-    /**
-     * Rewrites this query into a {@link ConstantScoreRangeQuery} if
-     * {@link #transform} is {@link #TRANSFORM_NONE}.
-     *
-     * @param reader the index reader.
-     * @return the rewritten query or this query if rewriting is not possible.
-     * @throws IOException if an error occurs.
-     */
-    @Override
-   public Query rewrite(IndexReader reader) throws IOException {
-        if (transform == TRANSFORM_NONE) {
-            return new ConstantScoreRangeQuery(lowerTerm.field(),
-                    lowerTerm.text(), upperTerm.text(), inclusive,
-                    inclusive).rewrite(reader);
-        } else {
-            // always use our implementation when we need to transform the
-            // term enum
+   /**
+    * {@inheritDoc}
+    */
+   public void setTransformation(int transformation)
+   {
+      this.transform = transformation;
+   }
+
+   /**
+    * Tries to rewrite this query into a standard lucene RangeQuery.
+    * This rewrite might fail with a TooManyClauses exception. If that
+    * happens, we use our own implementation.
+    *
+    * @param reader the index reader.
+    * @return the rewritten query or this query if rewriting is not possible.
+    * @throws IOException if an error occurs.
+    */
+   public Query rewrite(IndexReader reader) throws IOException
+   {
+      if (transform == TRANSFORM_NONE)
+      {
+         Query stdRangeQueryImpl =
+            new TermRangeQuery(lowerTerm.field(), lowerTerm.text(), upperTerm.text(), inclusive, inclusive);
+         try
+         {
+            stdRangeQuery = stdRangeQueryImpl.rewrite(reader);
+            return stdRangeQuery;
+         }
+         catch (BooleanQuery.TooManyClauses e)
+         {
+            // failed, use own implementation
             return this;
-        }
-    }
+         }
+      }
+      else
+      {
+         // always use our implementation when we need to transform the
+         // term enum
+         return this;
+      }
+   }
 
-    /**
-     * Creates the <code>Weight</code> for this query.
-     *
-     * @param searcher the searcher to use for the <code>Weight</code>.
-     * @return the <code>Weigth</code> for this query.
-     */
-    @Override
-   public Weight createWeight(Searcher searcher) {
-        return new RangeQueryWeight(searcher);
-    }
+   /**
+    * Creates the <code>Weight</code> for this query.
+    *
+    * @param searcher the searcher to use for the <code>Weight</code>.
+    * @return the <code>Weigth</code> for this query.
+    */
+   public Weight createWeight(Searcher searcher)
+   {
+      return new RangeQueryWeight(searcher);
+   }
 
-    /**
-     * Returns a string representation of this query.
-     * @param field the field name for which to create a string representation.
-     * @return a string representation of this query.
-     */
-    @Override
-   public String toString(String field) {
-        StringBuffer buffer = new StringBuffer();
-        if (!getField().equals(field)) {
-            buffer.append(getField());
-            buffer.append(":");
-        }
-        buffer.append(inclusive ? "[" : "{");
-        buffer.append(lowerTerm != null ? lowerTerm.text() : "null");
-        buffer.append(" TO ");
-        buffer.append(upperTerm != null ? upperTerm.text() : "null");
-        buffer.append(inclusive ? "]" : "}");
-        if (getBoost() != 1.0f) {
-            buffer.append("^");
-            buffer.append(Float.toString(getBoost()));
-        }
-        return buffer.toString();
-    }
+   /**
+    * Returns a string representation of this query.
+    * @param field the field name for which to create a string representation.
+    * @return a string representation of this query.
+    */
+   public String toString(String field)
+   {
+      StringBuffer buffer = new StringBuffer();
+      if (!getField().equals(field))
+      {
+         buffer.append(getField());
+         buffer.append(":");
+      }
+      buffer.append(inclusive ? "[" : "{");
+      buffer.append(lowerTerm != null ? lowerTerm.text() : "null");
+      buffer.append(" TO ");
+      buffer.append(upperTerm != null ? upperTerm.text() : "null");
+      buffer.append(inclusive ? "]" : "}");
+      if (getBoost() != 1.0f)
+      {
+         buffer.append("^");
+         buffer.append(Float.toString(getBoost()));
+      }
+      return buffer.toString();
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-   public void extractTerms(Set terms) {
-        // cannot extract terms
-    }
+   /**
+    * {@inheritDoc}
+    */
+   public void extractTerms(Set terms)
+   {
+      if (stdRangeQuery != null)
+      {
+         stdRangeQuery.extractTerms(terms);
+      }
+   }
 
-    /**
-     * Returns the field name for this query.
-     */
-    private String getField() {
-        return (lowerTerm != null ? lowerTerm.field() : upperTerm.field());
-    }
+   /**
+    * Returns the field name for this query.
+    */
+   private String getField()
+   {
+      return (lowerTerm != null ? lowerTerm.field() : upperTerm.field());
+   }
 
-    //--------------------------< RangeQueryWeight >----------------------------
+   //--------------------------< RangeQueryWeight >----------------------------
 
-    /**
-     * The <code>Weight</code> implementation for this <code>RangeQuery</code>.
-     */
-    private class RangeQueryWeight extends AbstractWeight {
+   /**
+    * The <code>Weight</code> implementation for this <code>RangeQuery</code>.
+    */
+   private class RangeQueryWeight extends AbstractWeight
+   {
 
-        /**
-         * Creates a new <code>RangeQueryWeight</code> instance using
-         * <code>searcher</code>.
-         *
-         * @param searcher a <code>Searcher</code> instance.
-         */
-        RangeQueryWeight(Searcher searcher) {
-            super(searcher);
-        }
+      /**
+       * Creates a new <code>RangeQueryWeight</code> instance using
+       * <code>searcher</code>.
+       *
+       * @param searcher a <code>Searcher</code> instance.
+       */
+      RangeQueryWeight(Searcher searcher)
+      {
+         super(searcher);
+      }
 
-        /**
-         * Creates a {@link RangeQueryScorer} instance.
-         *
-         * @param reader index reader
-         * @return a {@link RangeQueryScorer} instance
-         */
-        @Override
-      protected Scorer createScorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) {
-            return new RangeQueryScorer(searcher.getSimilarity(), reader);
-        };
+      /**
+       * Creates a {@link RangeQueryScorer} instance.
+       *
+       * @param reader index reader
+       * @return a {@link RangeQueryScorer} instance
+       */
+      @Override
+      protected Scorer createScorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer)
+      {
+         return new RangeQueryScorer(searcher.getSimilarity(), reader);
+      };
 
-        /**
-         * Returns this <code>RangeQuery</code>.
-         *
-         * @return this <code>RangeQuery</code>.
-         */
-        @Override
-      public Query getQuery() {
-            return RangeQuery.this;
-        }
+      /**
+       * Returns this <code>RangeQuery</code>.
+       *
+       * @return this <code>RangeQuery</code>.
+       */
+      @Override
+      public Query getQuery()
+      {
+         return RangeQuery.this;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public float getValue() {
-            return 1.0f;
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public float getValue()
+      {
+         return 1.0f;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public float sumOfSquaredWeights() throws IOException {
-            return 1.0f;
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public float sumOfSquaredWeights() throws IOException
+      {
+         return 1.0f;
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public void normalize(float norm) {
-        }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public void normalize(float norm)
+      {
+      }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public Explanation explain(IndexReader reader, int doc) throws IOException {
-            return new Explanation();
-        }
-    }
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Explanation explain(IndexReader reader, int doc) throws IOException
+      {
+         return new Explanation();
+      }
+   }
 
-    //------------------------< RangeQueryScorer >------------------------------
+   //------------------------< RangeQueryScorer >------------------------------
+   /**
+    * Implements a <code>Scorer</code> for this <code>RangeQuery</code>.
+    */
+   private final class RangeQueryScorer extends Scorer
+   {
 
-    /**
-     * Implements a <code>Scorer</code> for this <code>RangeQuery</code>.
-     */
-    private final class RangeQueryScorer extends Scorer {
+      /**
+       * The index reader to use for calculating the matching documents.
+       */
+      private final IndexReader reader;
 
-        /**
-         * The index reader to use for calculating the matching documents.
-         */
-        private final IndexReader reader;
+      /**
+       * The documents ids that match this range query.
+       */
+      private final BitSet hits;
 
-        /**
-         * The documents ids that match this range query.
-         */
-        private final BitSet hits;
+      /**
+       * Set to <code>true</code> when the hits have been calculated.
+       */
+      private boolean hitsCalculated = false;
 
-        /**
-         * Set to <code>true</code> when the hits have been calculated.
-         */
-        private boolean hitsCalculated = false;
+      /**
+       * The next document id to return
+       */
+      private int nextDoc = -1;
 
-        /**
-         * The next document id to return
-         */
-        private int nextDoc = -1;
+      /**
+       * The cache key to use to store the results.
+       */
+      private final String cacheKey;
 
-        /**
-         * The cache key to use to store the results.
-         */
-        private final String cacheKey;
+      /**
+       * The map to store the results.
+       */
+      private final Map<String, BitSet> resultMap;
 
-        /**
-         * The map to store the results.
-         */
-        private final Map resultMap;
+      /**
+       * Creates a new RangeQueryScorer.
+       * @param similarity the similarity implementation.
+       * @param reader the index reader to use.
+       */
+      @SuppressWarnings({"unchecked"})
+      RangeQueryScorer(Similarity similarity, IndexReader reader)
+      {
+         super(similarity);
+         this.reader = reader;
+         StringBuffer key = new StringBuffer();
+         key.append(lowerTerm != null ? lowerTerm.field() : upperTerm.field());
+         key.append('\uFFFF');
+         key.append(lowerTerm != null ? lowerTerm.text() : "");
+         key.append('\uFFFF');
+         key.append(upperTerm != null ? upperTerm.text() : "");
+         key.append('\uFFFF');
+         key.append(inclusive);
+         key.append('\uFFFF');
+         key.append(transform);
+         this.cacheKey = key.toString();
+         // check cache
+         PerQueryCache cache = PerQueryCache.getInstance();
+         Map<String, BitSet> m = (Map<String, BitSet>)cache.get(RangeQueryScorer.class, reader);
+         if (m == null)
+         {
+            m = new HashMap<String, BitSet>();
+            cache.put(RangeQueryScorer.class, reader, m);
+         }
+         resultMap = m;
 
-        /**
-         * Creates a new RangeQueryScorer.
-         * @param similarity the similarity implementation.
-         * @param reader the index reader to use.
-         */
-        RangeQueryScorer(Similarity similarity, IndexReader reader) {
-            super(similarity);
-            this.reader = reader;
-            StringBuffer key = new StringBuffer();
-            key.append(lowerTerm != null ? lowerTerm.field() : upperTerm.field());
-            key.append('\uFFFF');
-            key.append(lowerTerm != null ? lowerTerm.text() : "");
-            key.append('\uFFFF');
-            key.append(upperTerm != null ? upperTerm.text() : "");
-            key.append('\uFFFF');
-            key.append(inclusive);
-            key.append('\uFFFF');
-            key.append(transform);
-            this.cacheKey = key.toString();
-            // check cache
-            PerQueryCache cache = PerQueryCache.getInstance();
-            Map m = (Map) cache.get(RangeQueryScorer.class, reader);
-            if (m == null) {
-                m = new HashMap();
-                cache.put(RangeQueryScorer.class, reader, m);
-            }
-            resultMap = m;
-
-            BitSet result = (BitSet) resultMap.get(cacheKey);
-            if (result == null) {
-                result = new BitSet(reader.maxDoc());
-            } else {
-                hitsCalculated = true;
-            }
-            hits = result;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public boolean next() throws IOException {
-            calculateHits();
-            nextDoc = hits.nextSetBit(nextDoc + 1);
-            return nextDoc > -1;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public int doc() {
-            return nextDoc;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public float score() {
-            return 1.0f;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-      public boolean skipTo(int target) throws IOException {
-            calculateHits();
-            nextDoc = hits.nextSetBit(target);
-            return nextDoc > -1;
-        }
-
-        /**
-         * Returns an empty Explanation object.
-         * @return an empty Explanation object.
-         */
-        @Override
-      public Explanation explain(int doc) {
-            return new Explanation();
-        }
-
-        /**
-         * Calculates the ids of the documents matching this range query.
-         * @throws IOException if an error occurs while reading from the index.
-         */
-        private void calculateHits() throws IOException {
-            if (hitsCalculated) {
-                return;
-            }
-
-            String testField = getField();
-
-            boolean checkLower = false;
-            if (!inclusive || transform != TRANSFORM_NONE) {
-                // make adjustments to set to exclusive
-                checkLower = true;
-            }
-
-            int propNameLength = FieldNames.getNameLength(lowerTerm.text());
-            String namePrefix = "";
-            if (propNameLength > 0) {
-                namePrefix = lowerTerm.text().substring(0, propNameLength);
-            }
-            List startTerms = new ArrayList(2);
-
-            if (transform == TRANSFORM_NONE || lowerTerm.text().length() <= propNameLength) {
-                // use lowerTerm as is
-                startTerms.add(lowerTerm);
-            } else {
-                // first enumerate terms using lower case start character
-                StringBuffer termText = new StringBuffer(propNameLength + 1);
-                termText.append(lowerTerm.text().subSequence(0, propNameLength));
-                char startCharacter = lowerTerm.text().charAt(propNameLength);
-                termText.append(Character.toLowerCase(startCharacter));
-                startTerms.add(new Term(lowerTerm.field(), termText.toString()));
-                // second enumerate terms using upper case start character
-                termText.setCharAt(termText.length() - 1, Character.toUpperCase(startCharacter));
-                startTerms.add(new Term(lowerTerm.field(), termText.toString()));
-            }
-
-            Iterator it = startTerms.iterator();
-            while (it.hasNext()) {
-                Term startTerm = (Term) it.next();
-
-                TermEnum terms = reader.terms(startTerm);
-                try {
-                    TermDocs docs = reader.termDocs();
-                    try {
-                        do {
-                            Term term = terms.term();
-                            if (term != null
-                                    && term.field() == testField
-                                    && term.text().startsWith(namePrefix)) {
-                                if (checkLower) {
-                                    int compare = termCompare(term.text(), lowerTerm.text(), propNameLength);
-                                    if (compare > 0 || compare == 0 && inclusive) {
-                                        // do not check lower term anymore if no
-                                        // transformation is done on the term enum
-                                        checkLower = transform == TRANSFORM_NONE ? false : true;
-                                    } else {
-                                        // continue with next term
-                                        continue;
-                                    }
-                                }
-                                if (upperTerm != null) {
-                                    int compare = termCompare(term.text(), upperTerm.text(), propNameLength);
-                                    // if beyond the upper term, or is exclusive and
-                                    // this is equal to the upper term
-                                    if ((compare > 0) || (!inclusive && compare == 0)) {
-                                        // only break out if no transformation
-                                        // was done on the term from the enum
-                                        if (transform == TRANSFORM_NONE) {
-                                            break;
-                                        } else {
-                                            // because of the transformation
-                                            // it is possible that the next
-                                            // term will be included again if
-                                            // we still enumerate on the same
-                                            // property name
-                                            if (term.text().startsWith(namePrefix)) {
-                                                continue;
-                                            } else {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                docs.seek(terms);
-                                while (docs.next()) {
-                                    hits.set(docs.doc());
-                                }
-                            } else {
-                                break;
-                            }
-                        } while(terms.next());
-                    } finally {
-                        docs.close();
-                    }
-                } finally {
-                    terms.close();
-                }
-            }
-
+         BitSet result = resultMap.get(cacheKey);
+         if (result == null)
+         {
+            result = new BitSet(reader.maxDoc());
+         }
+         else
+         {
             hitsCalculated = true;
-            // put to cache
-            resultMap.put(cacheKey, hits);
-        }
+         }
+         hits = result;
+      }
 
-        /**
-         * Compares the <code>text</code> with the <code>other</code> String. This
-         * implementation behaves like {@link String#compareTo(Object)} but also
-         * respects the {@link RangeQuery#transform} property.
-         *
-         * @param text   the text to compare to <code>other</code>. The
-         *               transformation function is applied to this parameter before
-         *               it is compared to <code>other</code>.
-         * @param other  the other String.
-         * @param offset start comparing the two strings at <code>offset</code>.
-         * @return see {@link String#compareTo(Object)}. But also respects {@link
-         *         RangeQuery#transform}.
-         */
-        private int termCompare(String text, String other, int offset) {
-            OffsetCharSequence seq1 = new OffsetCharSequence(offset, text, transform);
-            OffsetCharSequence seq2 = new OffsetCharSequence(offset, other);
-            return seq1.compareTo(seq2);
-        }
-    }
+      @Override
+      public int nextDoc() throws IOException
+      {
+         if (nextDoc == NO_MORE_DOCS)
+         {
+            return nextDoc;
+         }
+
+         calculateHits();
+         nextDoc = hits.nextSetBit(nextDoc + 1);
+         if (nextDoc < 0)
+         {
+            nextDoc = NO_MORE_DOCS;
+         }
+         return nextDoc;
+      }
+
+      @Override
+      public int docID()
+      {
+         return nextDoc;
+      }
+
+      @Override
+      public float score()
+      {
+         return 1.0f;
+      }
+
+      @Override
+      public int advance(int target) throws IOException
+      {
+         if (nextDoc == NO_MORE_DOCS)
+         {
+            return nextDoc;
+         }
+
+         calculateHits();
+         nextDoc = hits.nextSetBit(target);
+         if (nextDoc < 0)
+         {
+            nextDoc = NO_MORE_DOCS;
+         }
+         return nextDoc;
+      }
+
+      /**
+       * Calculates the ids of the documents matching this range query.
+       * @throws IOException if an error occurs while reading from the index.
+       */
+      private void calculateHits() throws IOException
+      {
+         if (hitsCalculated)
+         {
+            return;
+         }
+
+         String testField = getField();
+
+         boolean checkLower = false;
+         if (!inclusive || transform != TRANSFORM_NONE)
+         {
+            // make adjustments to set to exclusive
+            checkLower = true;
+         }
+
+         int propNameLength = FieldNames.getNameLength(lowerTerm.text());
+         String namePrefix = "";
+         if (propNameLength > 0)
+         {
+            namePrefix = lowerTerm.text().substring(0, propNameLength);
+         }
+         List<Term> startTerms = new ArrayList<Term>(2);
+
+         if (transform == TRANSFORM_NONE || lowerTerm.text().length() <= propNameLength)
+         {
+            // use lowerTerm as is
+            startTerms.add(lowerTerm);
+         }
+         else
+         {
+            // first enumerate terms using lower case start character
+            StringBuffer termText = new StringBuffer(propNameLength + 1);
+            termText.append(lowerTerm.text().subSequence(0, propNameLength));
+            char startCharacter = lowerTerm.text().charAt(propNameLength);
+            termText.append(Character.toLowerCase(startCharacter));
+            startTerms.add(new Term(lowerTerm.field(), termText.toString()));
+            // second enumerate terms using upper case start character
+            termText.setCharAt(termText.length() - 1, Character.toUpperCase(startCharacter));
+            startTerms.add(new Term(lowerTerm.field(), termText.toString()));
+         }
+
+         for (Term startTerm : startTerms)
+         {
+            TermEnum terms = reader.terms(startTerm);
+            try
+            {
+               TermDocs docs = reader.termDocs();
+               try
+               {
+                  do
+                  {
+                     Term term = terms.term();
+                     if (term != null && term.field() == testField && term.text().startsWith(namePrefix))
+                     {
+                        if (checkLower)
+                        {
+                           int compare = termCompare(term.text(), lowerTerm.text(), propNameLength);
+                           if (compare > 0 || compare == 0 && inclusive)
+                           {
+                              // do not check lower term anymore if no
+                              // transformation is done on the term enum
+                              checkLower = transform != TRANSFORM_NONE;
+                           }
+                           else
+                           {
+                              // continue with next term
+                              continue;
+                           }
+                        }
+                        if (upperTerm != null)
+                        {
+                           int compare = termCompare(term.text(), upperTerm.text(), propNameLength);
+                           // if beyond the upper term, or is exclusive and
+                           // this is equal to the upper term
+                           if ((compare > 0) || (!inclusive && compare == 0))
+                           {
+                              // only break out if no transformation
+                              // was done on the term from the enum
+                              if (transform == TRANSFORM_NONE)
+                              {
+                                 break;
+                              }
+                              else
+                              {
+                                 // because of the transformation
+                                 // it is possible that the next
+                                 // term will be included again if
+                                 // we still enumerate on the same
+                                 // property name
+                                 if (term.text().startsWith(namePrefix))
+                                 {
+                                    continue;
+                                 }
+                                 else
+                                 {
+                                    break;
+                                 }
+                              }
+                           }
+                        }
+
+                        docs.seek(terms);
+                        while (docs.next())
+                        {
+                           hits.set(docs.doc());
+                        }
+                     }
+                     else
+                     {
+                        break;
+                     }
+                  }
+                  while (terms.next());
+               }
+               finally
+               {
+                  docs.close();
+               }
+            }
+            finally
+            {
+               terms.close();
+            }
+         }
+
+         hitsCalculated = true;
+         // put to cache
+         resultMap.put(cacheKey, hits);
+      }
+
+      /**
+       * Compares the <code>text</code> with the <code>other</code> String. This
+       * implementation behaves like {@link String#compareTo(Object)} but also
+       * respects the {@link RangeQuery#transform} property.
+       *
+       * @param text   the text to compare to <code>other</code>. The
+       *               transformation function is applied to this parameter before
+       *               it is compared to <code>other</code>.
+       * @param other  the other String.
+       * @param offset start comparing the two strings at <code>offset</code>.
+       * @return see {@link String#compareTo(Object)}. But also respects {@link
+       *         RangeQuery#transform}.
+       */
+      private int termCompare(String text, String other, int offset)
+      {
+         OffsetCharSequence seq1 = new OffsetCharSequence(offset, text, transform);
+         OffsetCharSequence seq2 = new OffsetCharSequence(offset, other);
+         return seq1.compareTo(seq2);
+      }
+   }
 }

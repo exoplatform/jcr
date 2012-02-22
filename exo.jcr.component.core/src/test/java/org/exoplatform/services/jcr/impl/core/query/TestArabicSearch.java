@@ -17,12 +17,12 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
@@ -67,21 +67,21 @@ public class TestArabicSearch extends BaseQueryTest
       String word = "\u0627\u0644\u0644\u0627\u062a\u064a\u0646\u064a\u0629";
 
       // Check is node indexed
-      Document doc = getDocument(cont.getInternalIdentifier(), false);
+      ScoreDoc doc = getDocument(cont.getInternalIdentifier(), false);
       assertNotNull("Node is not indexed", doc);
 
       IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.FULLTEXT, word));
-      Hits result = is.search(query);
-      assertEquals(1, result.length());
+      TopDocs search = is.search(query, null, Integer.MAX_VALUE);
+      assertEquals(1, search.totalHits);
 
       QueryManager qman = this.workspace.getQueryManager();
 
       Query q = qman.createQuery("SELECT * FROM nt:resource " + " WHERE  CONTAINS(., '" + word + "')", Query.SQL);
       QueryResult res = q.execute();
       assertEquals(1, res.getNodes().getSize());
-      
+
       is.close();
       Util.closeOrRelease(reader);
    }

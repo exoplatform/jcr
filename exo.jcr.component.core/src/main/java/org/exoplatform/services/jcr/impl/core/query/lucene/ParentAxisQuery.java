@@ -256,18 +256,23 @@ class ParentAxisQuery extends Query
 
       /**
        * Map that contains the scores from matching documents from the context
-       * query. To save memory only scores that are not equal to 1.0f are put
-       * to this map.
+       * query. To save memory only scores that are not equal to the score
+       * value of the first match are put to this map.
        * <p/>
        * key=[Integer] id of selected document from context query<br>
        * value=[Float] score for that document
        */
-      private final Map scores = new HashMap();
+      private final Map<Integer, Float> scores = new HashMap<Integer, Float>();
 
       /**
        * The next document id to return
        */
       private int nextDoc = -1;
+
+      /**
+       * The score of the first match.
+       */
+      private Float firstScore;
 
       /**
        * Creates a new <code>ParentAxisScorer</code>.
@@ -286,61 +291,55 @@ class ParentAxisQuery extends Query
          this.hResolver = resolver;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
-      public boolean next() throws IOException
+      public int nextDoc() throws IOException
       {
+         if (nextDoc == NO_MORE_DOCS)
+         {
+            return nextDoc;
+         }
+
          calculateParent();
          nextDoc = hits.nextSetBit(nextDoc + 1);
-         return nextDoc > -1;
+         if (nextDoc < 0)
+         {
+            nextDoc = NO_MORE_DOCS;
+         }
+         return nextDoc;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
-      public int doc()
+      public int docID()
       {
          return nextDoc;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
       public float score() throws IOException
       {
-         Float score = (Float)scores.get(new Integer(nextDoc));
+         Float score = scores.get(nextDoc);
          if (score == null)
          {
-            score = DEFAULT_SCORE;
+            score = firstScore;
          }
-         return score.floatValue();
+         return score;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
-      public boolean skipTo(int target) throws IOException
+      public int advance(int target) throws IOException
       {
+         if (nextDoc == NO_MORE_DOCS)
+         {
+            return nextDoc;
+         }
+
          calculateParent();
          nextDoc = hits.nextSetBit(target);
-         return nextDoc > -1;
-      }
-
-      /**
-       * {@inheritDoc}
-       *
-       * @throws UnsupportedOperationException this implementation always
-       *                                       throws an <code>UnsupportedOperationException</code>.
-       */
-      @Override
-      public Explanation explain(int doc) throws IOException
-      {
-         throw new UnsupportedOperationException();
+         if (nextDoc < 0)
+         {
+            nextDoc = NO_MORE_DOCS;
+         }
+         return nextDoc;
       }
 
       private void calculateParent() throws IOException
@@ -350,44 +349,54 @@ class ParentAxisQuery extends Query
             hits = new BitSet(reader.maxDoc());
 
             final IOException[] ex = new IOException[1];
-            contextScorer.score(new AbstractHitCollector()
+            if (contextScorer != null)
             {
-
-               private int[] docs = new int[1];
-
-               @Override
-               public void collect(int doc, float score)
+               contextScorer.score(new AbstractHitCollector()
                {
-                  try
+                  private int[] docs = new int[1];
+
+                  @Override
+                  protected void collect(int doc, float score)
                   {
-                     docs = hResolver.getParents(doc, docs);
-                     if (docs.length == 1)
+                     try
                      {
-                        // optimize single value
-                        hits.set(docs[0]);
-                        if (score != DEFAULT_SCORE.floatValue())
+                        docs = hResolver.getParents(doc, docs);
+                        if (docs.length == 1)
                         {
-                           scores.put(new Integer(docs[0]), new Float(score));
-                        }
-                     }
-                     else
-                     {
-                        for (int i = 0; i < docs.length; i++)
-                        {
-                           hits.set(docs[i]);
-                           if (score != DEFAULT_SCORE.floatValue())
+                           // optimize single value
+                           hits.set(docs[0]);
+                           if (firstScore == null)
                            {
-                              scores.put(new Integer(docs[i]), new Float(score));
+                              firstScore = score;
+                           }
+                           else if (firstScore != score)
+                           {
+                              scores.put(doc, score);
+                           }
+                        }
+                        else
+                        {
+                           for (int docNum : docs)
+                           {
+                              hits.set(docNum);
+                              if (firstScore == null)
+                              {
+                                 firstScore = score;
+                              }
+                              else if (firstScore != score)
+                              {
+                                 scores.put(doc, score);
+                              }
                            }
                         }
                      }
+                     catch (IOException e)
+                     {
+                        ex[0] = e;
+                     }
                   }
-                  catch (IOException e)
-                  {
-                     ex[0] = e;
-                  }
-               }
-            });
+               });
+            }
 
             if (ex[0] != null)
             {

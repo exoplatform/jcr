@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.document.AbstractField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
@@ -42,8 +43,6 @@ public class ChangesHolder implements Externalizable
 {
 
    private static final int STORED_FLAG = 1;
-
-   private static final int COMPRESSED_FLAG = 1 << 1;
 
    private static final int INDEXED_FLAG = 1 << 2;
 
@@ -120,7 +119,7 @@ public class ChangesHolder implements Externalizable
       }
       return ids;
    }
-   
+
    /**
     * @return the id of the given lucene doc
     */
@@ -128,7 +127,7 @@ public class ChangesHolder implements Externalizable
    {
       return doc.get(FieldNames.UUID);
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -176,12 +175,12 @@ public class ChangesHolder implements Externalizable
       {
          // The value is a String
          field =
-                  new Field(name, (String) value, getStoreParameter(flags), getIndexParameter(flags),
-                           getTermVectorParameter(flags));
+            new Field(name, (String)value, getStoreParameter(flags), getIndexParameter(flags),
+               getTermVectorParameter(flags));
       }
       field.setBoost(boost);
       field.setOmitNorms((flags & OMIT_NORMS_FLAG) > 0);
-      field.setOmitTf((flags & OMIT_TF_FLAG) > 0);
+      field.setOmitTermFreqAndPositions((flags & OMIT_TF_FLAG) > 0);
       return field;
    }
 
@@ -215,11 +214,7 @@ public class ChangesHolder implements Externalizable
     */
    private static Field.Store getStoreParameter(int flags)
    {
-      if ((flags & COMPRESSED_FLAG) > 0)
-      {
-         return Field.Store.COMPRESS;
-      }
-      else if ((flags & STORED_FLAG) > 0)
+      if ((flags & STORED_FLAG) > 0)
       {
          return Field.Store.YES;
       }
@@ -237,8 +232,7 @@ public class ChangesHolder implements Externalizable
     */
    private static Field.TermVector getTermVectorParameter(int flags)
    {
-      if (((flags & STORE_POSITION_WITH_TERM_VECTOR_FLAG) > 0) 
-          && ((flags & STORE_OFFSET_WITH_TERM_VECTOR_FLAG) > 0))
+      if (((flags & STORE_POSITION_WITH_TERM_VECTOR_FLAG) > 0) && ((flags & STORE_OFFSET_WITH_TERM_VECTOR_FLAG) > 0))
       {
          return Field.TermVector.WITH_POSITIONS_OFFSETS;
       }
@@ -307,7 +301,7 @@ public class ChangesHolder implements Externalizable
       if (field.getBoost() != 1.0f)
       {
          // Boost
-         out.writeFloat(field.getBoost());         
+         out.writeFloat(field.getBoost());
       }
       // Value
       writeValue(out, field);
@@ -352,10 +346,6 @@ public class ChangesHolder implements Externalizable
       {
          flags |= STORED_FLAG;
       }
-      if (field.isCompressed())
-      {
-         flags |= COMPRESSED_FLAG;
-      }
       if (field.isIndexed())
       {
          flags |= INDEXED_FLAG;
@@ -388,7 +378,7 @@ public class ChangesHolder implements Externalizable
       {
          flags |= LAZY_FLAG;
       }
-      if (field.getOmitTf())
+      if (field instanceof AbstractField && ((AbstractField)field).getOmitTermFreqAndPositions())
       {
          flags |= OMIT_TF_FLAG;
       }

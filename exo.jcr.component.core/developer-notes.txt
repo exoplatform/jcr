@@ -14,3 +14,4 @@
 * Removed ValueStorageCleanHelper class
 * Removed BackupSchedulerException class
 * EXOJCR-1728: Remove ReadOnly support for WorkspacePersistentDataManager
+* Lucene 3.0

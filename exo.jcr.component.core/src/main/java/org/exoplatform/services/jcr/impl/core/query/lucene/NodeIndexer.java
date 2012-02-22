@@ -264,7 +264,7 @@ public class NodeIndexer
     *
     * @param doc  the lucene document.
     * @param name the name of the multi-value property.
-   * @throws RepositoryException 
+    * @throws RepositoryException 
     */
    private void addMVPName(Document doc, InternalQName name) throws RepositoryException
    {
@@ -712,7 +712,6 @@ public class NodeIndexer
       doc.add(createFieldWithoutNorms(fieldName, pathString.toString(), PropertyType.PATH));
    }
 
-
    /**
     * Adds the string value to the document both as the named field and
     * optionally for full text indexing if <code>tokenized</code> is
@@ -809,33 +808,8 @@ public class NodeIndexer
     */
    protected Field createFulltextField(String value, boolean store, boolean withOffsets)
    {
-      Field.TermVector tv;
-      if (withOffsets)
-      {
-         tv = Field.TermVector.WITH_OFFSETS;
-      }
-      else
-      {
-         tv = Field.TermVector.NO;
-      }
-      if (store)
-      {
-         // store field compressed if greater than 16k
-         Field.Store stored;
-         if (value.length() > 0x4000)
-         {
-            stored = Field.Store.COMPRESS;
-         }
-         else
-         {
-            stored = Field.Store.YES;
-         }
-         return new Field(FieldNames.FULLTEXT, value, stored, Field.Index.ANALYZED, tv);
-      }
-      else
-      {
-         return new Field(FieldNames.FULLTEXT, value, Field.Store.NO, Field.Index.ANALYZED, tv);
-      }
+      return new Field(FieldNames.FULLTEXT, value, store ? Field.Store.YES : Field.Store.NO, Field.Index.ANALYZED,
+         withOffsets ? Field.TermVector.WITH_OFFSETS : Field.TermVector.NO);
    }
 
    /**

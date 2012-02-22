@@ -19,9 +19,9 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
@@ -54,8 +54,8 @@ public class TestRewriteNode extends BaseQueryTest
       IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.FULLTEXT, "fox"));
-      Hits result = is.search(query);
-      assertEquals(1, result.length());
+      TopDocs topDocs = is.search(query, null, Integer.MAX_VALUE);
+      assertEquals(1, topDocs.totalHits);
 
       cont.setProperty("jcr:data", "Bahama mama");
       root.save();
@@ -63,18 +63,18 @@ public class TestRewriteNode extends BaseQueryTest
       reader = defaultSearchIndex.getIndexReader();
       is = new IndexSearcher(reader);
       query = new TermQuery(new Term(FieldNames.FULLTEXT, "mama"));
-      result = is.search(query);
-      assertEquals(1, result.length());
+      topDocs = is.search(query, null, Integer.MAX_VALUE);
+      assertEquals(1, topDocs.totalHits);
 
       reader = defaultSearchIndex.getIndexReader();
       is = new IndexSearcher(reader);
       query = new TermQuery(new Term(FieldNames.FULLTEXT, "fox"));
-      result = is.search(query);
-      assertEquals(0, result.length());
+      topDocs = is.search(query, null, Integer.MAX_VALUE);
+      assertEquals(0, topDocs.totalHits);
 
       is.close();
       Util.closeOrRelease(reader);
-      
+
    }
 
 }

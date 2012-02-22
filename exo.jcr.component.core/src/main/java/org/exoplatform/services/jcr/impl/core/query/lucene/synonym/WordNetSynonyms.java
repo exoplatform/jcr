@@ -16,7 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene.synonym;
 
-import org.apache.lucene.index.memory.SynonymMap;
+import org.apache.lucene.wordnet.SynonymMap;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SynonymProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;

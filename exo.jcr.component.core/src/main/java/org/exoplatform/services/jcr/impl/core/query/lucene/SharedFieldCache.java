@@ -16,6 +16,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.index.TermPositions;
+import org.apache.lucene.search.FieldComparator;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,298 +30,335 @@ import java.util.WeakHashMap;
 
 import javax.jcr.PropertyType;
 
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.index.TermPositions;
-import org.apache.lucene.search.SortComparator;
-
 /**
  * Implements a variant of the lucene class <code>org.apache.lucene.search.FieldCacheImpl</code>.
  * The lucene FieldCache class has some sort of support for custom comparators
  * but it only works on the basis of a field name. There is no further control
  * over the terms to iterate, that's why we use our own implementation.
  */
-public class SharedFieldCache {
+public class SharedFieldCache
+{
 
-    /**
-     * Expert: Stores term text values and document ordering data.
-     */
-    public static class ValueIndex {
+   /**
+    * Expert: Stores term text values and document ordering data.
+    */
+   public static class ValueIndex
+   {
 
-        /**
-         * Some heuristic factor that determines whether the array is sparse. Note that if less then
-         * 1% is set, we already count the array as sparse. This is because it will become memory consuming
-         * quickly by keeping the (sparse) arrays 
-         */
-        private static final int SPARSE_FACTOR = 100;
+      /**
+       * Some heuristic factor that determines whether the array is sparse. Note that if less then
+       * 1% is set, we already count the array as sparse. This is because it will become memory consuming
+       * quickly by keeping the (sparse) arrays 
+       */
+      private static final int SPARSE_FACTOR = 100;
 
-        /**
-         * Values indexed by document id.
-         */
-        private final Comparable[] values;
+      /**
+       * Values indexed by document id.
+       */
+      private final Comparable[] values;
 
-        /**
-         * Values (Comparable) map indexed by document id.
-         */
-        public final Map valuesMap;
+      /**
+       * Values (Comparable) map indexed by document id.
+       */
+      public final Map<Integer, Comparable> valuesMap;
 
-        /**
-         * Boolean indicating whether the {@link #valuesMap} impl has to be used
-         */
-        public final boolean sparse;
+      /**
+       * Boolean indicating whether the {@link #valuesMap} impl has to be used
+       */
+      public final boolean sparse;
 
-        /**
-         * Creates one of these objects
-         */
-        public ValueIndex(Comparable[] values, int setValues) {
-            if (isSparse(values, setValues)) {
-                this.sparse = true;
-                this.values = null;
-                if (setValues == 0) {
-                    this.valuesMap = null;
-                } else {
-                    this.valuesMap = getValuesMap(values, setValues);
-                }
-            } else {
-                this.sparse = false;
-                this.values = values;
-                this.valuesMap = null;
+      /**
+       * Creates one of these objects
+       */
+      public ValueIndex(Comparable[] values, int setValues)
+      {
+         if (isSparse(values, setValues))
+         {
+            this.sparse = true;
+            this.values = null;
+            if (setValues == 0)
+            {
+               this.valuesMap = null;
             }
-        }
-
-        public Comparable getValue(int i) {
-            if (sparse) {
-                return valuesMap == null ? null : (Comparable) valuesMap.get(new Integer(i));
-            } else {
-                return values[i];
+            else
+            {
+               this.valuesMap = getValuesMap(values, setValues);
             }
-        }
+         }
+         else
+         {
+            this.sparse = false;
+            this.values = values;
+            this.valuesMap = null;
+         }
+      }
 
-        private Map getValuesMap(Comparable[] values, int setValues) {
-            Map map = new HashMap(setValues);
-            for (int i = 0; i < values.length && setValues > 0; i++) {
-                if (values[i] != null) {
-                    map.put(new Integer(i), values[i]);
-                    setValues--;
-                }
+      public Comparable getValue(int i)
+      {
+         if (sparse)
+         {
+            return valuesMap == null ? null : valuesMap.get(i);
+         }
+         else
+         {
+            return values[i];
+         }
+      }
+
+      private Map<Integer, Comparable> getValuesMap(Comparable[] values, int setValues)
+      {
+         Map<Integer, Comparable> map = new HashMap<Integer, Comparable>(setValues);
+         for (int i = 0; i < values.length && setValues > 0; i++)
+         {
+            if (values[i] != null)
+            {
+               map.put(i, values[i]);
+               setValues--;
             }
-            return map;
-        }
+         }
+         return map;
+      }
 
-        private boolean isSparse(Comparable[] values, int setValues) {
-            // some really simple test to test whether the array is sparse. 
-            // Currently, when less then 1% is set, the array is already sparse 
-            // for this typical cache to avoid memory issues
-            if (setValues * SPARSE_FACTOR < values.length) {
-                return true;
+      private boolean isSparse(Comparable[] values, int setValues)
+      {
+         // some really simple test to test whether the array is sparse. Currently, when less then 1% is set, the array is already sparse 
+         // for this typical cache to avoid memory issues
+         if (setValues * SPARSE_FACTOR < values.length)
+         {
+            return true;
+         }
+         return false;
+      }
+   }
+
+   /**
+    * Reference to the single instance of <code>SharedFieldCache</code>.
+    */
+   public static final SharedFieldCache INSTANCE = new SharedFieldCache();
+
+   /**
+    * The internal cache. Maps Entry to array of interpreted term values.
+    */
+   private final Map<IndexReader, Map<Key, ValueIndex>> cache = new WeakHashMap<IndexReader, Map<Key, ValueIndex>>();
+
+   /**
+    * Private constructor.
+    */
+   private SharedFieldCache()
+   {
+   }
+
+   /**
+    * Creates a <code>ValueIndex</code> for a <code>field</code> and a term
+    * <code>prefix</code>. The term prefix acts as the property name for the
+    * shared <code>field</code>.
+    * <p/>
+    * This method is an adapted version of: <code>FieldCacheImpl.getStringIndex()</code>
+    *
+    * @param reader     the <code>IndexReader</code>.
+    * @param field      name of the shared field.
+    * @param prefix     the property name, will be used as term prefix.
+    * @param comparator the field comparator instance.
+    * @return a ValueIndex that contains the field values and order
+    *         information.
+    * @throws IOException if an error occurs while reading from the index.
+    */
+   public ValueIndex getValueIndex(IndexReader reader, String field, String prefix, FieldComparator comparator)
+      throws IOException
+   {
+
+      if (reader instanceof ReadOnlyIndexReader)
+      {
+         reader = ((ReadOnlyIndexReader)reader).getBase();
+      }
+
+      field = field.intern();
+      ValueIndex ret = lookup(reader, field, prefix, comparator);
+      if (ret == null)
+      {
+         Comparable[] retArray = new Comparable[reader.maxDoc()];
+         int setValues = 0;
+         if (retArray.length > 0)
+         {
+            IndexFormatVersion version = IndexFormatVersion.getVersion(reader);
+            boolean hasPayloads = version.isAtLeast(IndexFormatVersion.V3);
+            TermDocs termDocs;
+            byte[] payload = null;
+            int type;
+            if (hasPayloads)
+            {
+               termDocs = reader.termPositions();
+               payload = new byte[1];
             }
-            return false;
-        }
-    }
+            else
+            {
+               termDocs = reader.termDocs();
+            }
+            TermEnum termEnum = reader.terms(new Term(field, prefix));
 
-    /**
-     * Reference to the single instance of <code>SharedFieldCache</code>.
-     */
-    public static final SharedFieldCache INSTANCE = new SharedFieldCache();
+            char[] tmp = new char[16];
+            try
+            {
+               if (termEnum.term() == null)
+               {
+                  throw new RuntimeException("no terms in field " + field);
+               }
+               do
+               {
+                  Term term = termEnum.term();
+                  if (term.field() != field || !term.text().startsWith(prefix))
+                  {
+                     break;
+                  }
 
-    /**
-     * The internal cache. Maps Entry to array of interpreted term values.
-     */
-    private final Map cache = new WeakHashMap();
+                  // make sure term is compacted
+                  String text = term.text();
+                  int len = text.length() - prefix.length();
+                  if (tmp.length < len)
+                  {
+                     // grow tmp
+                     tmp = new char[len];
+                  }
+                  text.getChars(prefix.length(), text.length(), tmp, 0);
+                  String value = new String(tmp, 0, len);
 
-    /**
-     * Private constructor.
-     */
-    private SharedFieldCache() {
-    }
-
-    /**
-     * Creates a <code>ValueIndex</code> for a <code>field</code> and a term
-     * <code>prefix</code>. The term prefix acts as the property name for the
-     * shared <code>field</code>.
-     * <p/>
-     * This method is an adapted version of: <code>FieldCacheImpl.getStringIndex()</code>
-     *
-     * @param reader     the <code>IndexReader</code>.
-     * @param field      name of the shared field.
-     * @param prefix     the property name, will be used as term prefix.
-     * @param comparator the sort comparator instance.
-     * @return a ValueIndex that contains the field values and order
-     *         information.
-     * @throws IOException if an error occurs while reading from the index.
-     */
-    public ValueIndex getValueIndex(IndexReader reader,
-                                    String field,
-                                    String prefix,
-                                    SortComparator comparator)
-            throws IOException {
-
-        if (reader instanceof ReadOnlyIndexReader) {
-            reader = ((ReadOnlyIndexReader) reader).getBase();
-        }
-
-        field = field.intern();
-        ValueIndex ret = lookup(reader, field, prefix, comparator);
-        if (ret == null) {
-            Comparable[] retArray = new Comparable[reader.maxDoc()];
-            int setValues = 0;
-            if (retArray.length > 0) {
-                IndexFormatVersion version = IndexFormatVersion.getVersion(reader);
-                boolean hasPayloads = version.isAtLeast(IndexFormatVersion.V3);
-                TermDocs termDocs;
-                byte[] payload = null;
-                int type;
-                if (hasPayloads) {
-                    termDocs = reader.termPositions();
-                    payload = new byte[1];
-                } else {
-                    termDocs = reader.termDocs();
-                }
-                TermEnum termEnum = reader.terms(new Term(field, prefix));
-
-                char[] tmp = new char[16];
-                try {
-                    if (termEnum.term() == null) {
-                        throw new RuntimeException("no terms in field " + field);
-                    }
-                    do {
-                        Term term = termEnum.term();
-                        if (term.field() != field || !term.text().startsWith(prefix)) {
-                            break;
+                  termDocs.seek(termEnum);
+                  while (termDocs.next())
+                  {
+                     type = PropertyType.UNDEFINED;
+                     if (hasPayloads)
+                     {
+                        TermPositions termPos = (TermPositions)termDocs;
+                        termPos.nextPosition();
+                        if (termPos.isPayloadAvailable())
+                        {
+                           payload = termPos.getPayload(payload, 0);
+                           type = PropertyMetaData.fromByteArray(payload).getPropertyType();
                         }
-
-                        // make sure term is compacted
-                        String text = term.text();
-                        int len = text.length() - prefix.length();
-                        if (tmp.length < len) {
-                            // grow tmp
-                            tmp = new char[len];
-                        }
-                        text.getChars(prefix.length(), text.length(), tmp, 0);
-                        String value = new String(tmp, 0, len);
-
-                        termDocs.seek(termEnum);
-                        while (termDocs.next()) {
-                            type = PropertyType.UNDEFINED;
-                            if (hasPayloads) {
-                                TermPositions termPos = (TermPositions) termDocs;
-                                termPos.nextPosition();
-                                if (termPos.isPayloadAvailable()) {
-                                    payload = termPos.getPayload(payload, 0);
-                                    type = PropertyMetaData.fromByteArray(payload).getPropertyType();
-                                }
-                            }
-                            setValues++;
-                            retArray[termDocs.doc()] = getValue(value, type);
-                        }
-                    } while (termEnum.next());
-                } finally {
-                    termDocs.close();
-                    termEnum.close();
-                }
+                     }
+                     setValues++;
+                     retArray[termDocs.doc()] = getValue(value, type);
+                  }
+               }
+               while (termEnum.next());
             }
-            ValueIndex value = new ValueIndex(retArray, setValues);
-            store(reader, field, prefix, comparator, value);
+            finally
+            {
+               termDocs.close();
+               termEnum.close();
+            }
+         }
+         ValueIndex value = new ValueIndex(retArray, setValues);
+         store(reader, field, prefix, comparator, value);
+         return value;
+      }
+      return ret;
+   }
+
+   /**
+    * See if a <code>ValueIndex</code> object is in the cache.
+    */
+   ValueIndex lookup(IndexReader reader, String field, String prefix, FieldComparator comparer)
+   {
+      Key key = new Key(field, prefix, comparer);
+      synchronized (this)
+      {
+         Map<Key, ValueIndex> readerCache = cache.get(reader);
+         if (readerCache == null)
+         {
+            return null;
+         }
+         return readerCache.get(key);
+      }
+   }
+
+   /**
+    * Put a <code>ValueIndex</code> <code>value</code> to cache.
+    */
+   ValueIndex store(IndexReader reader, String field, String prefix, FieldComparator comparer, ValueIndex value)
+   {
+      Key key = new Key(field, prefix, comparer);
+      synchronized (this)
+      {
+         Map<Key, ValueIndex> readerCache = cache.get(reader);
+         if (readerCache == null)
+         {
+            readerCache = new HashMap<Key, ValueIndex>();
+            cache.put(reader, readerCache);
+         }
+         return readerCache.put(key, value);
+      }
+   }
+
+   /**
+    * Returns a comparable for the given <code>value</code> that is read from
+    * the index.
+    *
+    * @param value the value as read from the index.
+    * @param type the property type.
+    * @return a comparable for the <code>value</code>.
+    */
+   private Comparable getValue(String value, int type)
+   {
+      switch (type)
+      {
+         case PropertyType.BOOLEAN :
+            return ComparableBoolean.valueOf(Boolean.valueOf(value).booleanValue());
+         case PropertyType.DATE :
+            return new Long(DateField.stringToTime(value));
+         case PropertyType.LONG :
+            return new Long(LongField.stringToLong(value));
+         case PropertyType.DOUBLE :
+            return new Double(DoubleField.stringToDouble(value));
+         default :
             return value;
-        }
-        return ret;
-    }
+      }
+   }
 
-    /**
-     * See if a <code>ValueIndex</code> object is in the cache.
-     */
-    ValueIndex lookup(IndexReader reader, String field,
-                                  String prefix, SortComparator comparer) {
-        Key key = new Key(field, prefix, comparer);
-        synchronized (this) {
-            HashMap readerCache = (HashMap) cache.get(reader);
-            if (readerCache == null) {
-                return null;
-            }
-            return (ValueIndex) readerCache.get(key);
-        }
-    }
+   /**
+    * A compound <code>Key</code> that consist of <code>field</code>
+    * <code>prefix</code> and <code>comparator</code>.
+    */
+   static class Key
+   {
 
-    /**
-     * Put a <code>ValueIndex</code> <code>value</code> to cache.
-     */
-    Object store(IndexReader reader, String field, String prefix,
-                 SortComparator comparer, ValueIndex value) {
-        Key key = new Key(field, prefix, comparer);
-        synchronized (this) {
-            HashMap readerCache = (HashMap) cache.get(reader);
-            if (readerCache == null) {
-                readerCache = new HashMap();
-                cache.put(reader, readerCache);
-            }
-            return readerCache.put(key, value);
-        }
-    }
+      private final String field;
 
-    /**
-     * Returns a comparable for the given <code>value</code> that is read from
-     * the index.
-     *
-     * @param value the value as read from the index.
-     * @param type the property type.
-     * @return a comparable for the <code>value</code>.
-     */
-    private Comparable getValue(String value, int type) {
-        switch (type) {
-            case PropertyType.BOOLEAN:
-                return ComparableBoolean.valueOf(Boolean.valueOf(value).booleanValue());
-            case PropertyType.DATE:
-                return new Long(DateField.stringToTime(value));
-            case PropertyType.LONG:
-                return new Long(LongField.stringToLong(value));
-            case PropertyType.DOUBLE:
-                return new Double(DoubleField.stringToDouble(value));
-            default:
-                return value;
-        }
-    }
+      private final String prefix;
 
-    /**
-     * A compound <code>Key</code> that consist of <code>field</code>
-     * <code>prefix</code> and <code>comparator</code>.
-     */
-    static class Key {
+      private final Object comparator;
 
-        private final String field;
-        private final String prefix;
-        private final SortComparator comparator;
+      /**
+       * Creates <code>Key</code> for ValueIndex lookup.
+       */
+      Key(String field, String prefix, FieldComparator comparator)
+      {
+         this.field = field.intern();
+         this.prefix = prefix.intern();
+         this.comparator = comparator;
+      }
 
-        /**
-         * Creates <code>Key</code> for ValueIndex lookup.
-         */
-        Key(String field, String prefix, SortComparator comparator) {
-            this.field = field.intern();
-            this.prefix = prefix.intern();
-            this.comparator = comparator;
-        }
+      /**
+       * Returns <code>true</code> if <code>o</code> is a <code>Key</code>
+       * instance and refers to the same field, prefix and comparator object.
+       */
+      public boolean equals(Object o)
+      {
+         if (o instanceof Key)
+         {
+            Key other = (Key)o;
+            return other.field == field && other.prefix == prefix && other.comparator.equals(comparator);
+         }
+         return false;
+      }
 
-        /**
-         * Returns <code>true</code> if <code>o</code> is a <code>Key</code>
-         * instance and refers to the same field, prefix and comparator object.
-         */
-        public boolean equals(Object o) {
-            if (o instanceof Key) {
-                Key other = (Key) o;
-                return other.field == field
-                        && other.prefix == prefix
-                        && other.comparator.equals(comparator);
-            }
-            return false;
-        }
-
-        /**
-         * Composes a hashcode based on the field, prefix and comparator.
-         */
-        public int hashCode() {
-            return field.hashCode() ^ prefix.hashCode() ^ comparator.hashCode();
-        }
-    }
+      /**
+       * Composes a hashcode based on the field, prefix and comparator.
+       */
+      public int hashCode()
+      {
+         return field.hashCode() ^ prefix.hashCode() ^ comparator.hashCode();
+      }
+   }
 
 }

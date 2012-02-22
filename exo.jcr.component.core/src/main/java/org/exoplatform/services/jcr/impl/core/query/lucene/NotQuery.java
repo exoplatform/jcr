@@ -210,14 +210,20 @@ class NotQuery extends Query
        * {@inheritDoc}
        */
       @Override
-      public boolean next() throws IOException
+      public int nextDoc() throws IOException
       {
+         if (docNo == NO_MORE_DOCS)
+         {
+            return docNo;
+         }
+
          if (docNo == -1)
          {
             // get first doc of context scorer
-            if (contextScorer.next())
+            int docId = contextScorer.nextDoc();
+            if (docId != NO_MORE_DOCS)
             {
-               contextNo = contextScorer.doc();
+               contextNo = docId;
             }
          }
          // move to next candidate
@@ -231,23 +237,21 @@ class NotQuery extends Query
          while (contextNo != -1 && contextNo == docNo)
          {
             docNo++;
-            if (contextScorer.next())
-            {
-               contextNo = contextScorer.doc();
-            }
-            else
-            {
-               contextNo = -1;
-            }
+            int docId = contextScorer.nextDoc();
+            contextNo = docId == NO_MORE_DOCS ? -1 : docId;
          }
-         return docNo < reader.maxDoc();
+         if (docNo >= reader.maxDoc())
+         {
+            docNo = NO_MORE_DOCS;
+         }
+         return docNo;
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public int doc()
+      public int docID()
       {
          return docNo;
       }
@@ -265,30 +269,20 @@ class NotQuery extends Query
        * {@inheritDoc}
        */
       @Override
-      public boolean skipTo(int target) throws IOException
+      public int advance(int target) throws IOException
       {
+         if (docNo == NO_MORE_DOCS)
+         {
+            return docNo;
+         }
+
          if (contextNo != -1 && contextNo < target)
          {
-            if (contextScorer.skipTo(target))
-            {
-               contextNo = contextScorer.doc();
-            }
-            else
-            {
-               contextNo = -1;
-            }
+            int docId = contextScorer.advance(target);
+            contextNo = docId == NO_MORE_DOCS ? -1 : docId;
          }
          docNo = target - 1;
-         return next();
-      }
-
-      /**
-       * @throws UnsupportedOperationException always
-       */
-      @Override
-      public Explanation explain(int doc) throws IOException
-      {
-         throw new UnsupportedOperationException();
+         return nextDoc();
       }
    }
 }

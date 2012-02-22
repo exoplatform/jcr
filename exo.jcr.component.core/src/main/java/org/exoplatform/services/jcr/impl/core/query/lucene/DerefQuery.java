@@ -241,7 +241,6 @@ class DerefQuery extends Query
    }
 
    //----------------------< DerefScorer >---------------------------------
-
    /**
     * Implements a <code>Scorer</code> for this <code>DerefQuery</code>.
     */
@@ -261,7 +260,7 @@ class DerefQuery extends Query
       /**
        * List of UUIDs of selected nodes
        */
-      private List uuids = null;
+      private List<String> uuids = null;
 
       /**
        * The next document id to return
@@ -281,67 +280,71 @@ class DerefQuery extends Query
          this.hits = new BitSet(reader.maxDoc());
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
-      public boolean next() throws IOException
+      public int nextDoc() throws IOException
       {
+         if (nextDoc == NO_MORE_DOCS)
+         {
+            return nextDoc;
+         }
+
          calculateChildren();
          nextDoc = hits.nextSetBit(nextDoc + 1);
-         return nextDoc > -1;
+         if (nextDoc < 0)
+         {
+            nextDoc = NO_MORE_DOCS;
+         }
+         return nextDoc;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
-      public int doc()
+      public int docID()
       {
          return nextDoc;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
       public float score() throws IOException
       {
          return 1.0f;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
-      public boolean skipTo(int target) throws IOException
+      public int advance(int target) throws IOException
       {
+         if (nextDoc == NO_MORE_DOCS)
+         {
+            return nextDoc;
+         }
+
          calculateChildren();
          nextDoc = hits.nextSetBit(target);
-         return nextDoc > -1;
+         if (nextDoc < 0)
+         {
+            nextDoc = NO_MORE_DOCS;
+         }
+         return nextDoc;
       }
 
       /**
-       * {@inheritDoc}
-       *
-       * @throws UnsupportedOperationException this implementation always
-       *                                       throws an <code>UnsupportedOperationException</code>.
+       * 1. do context query
+       * 2. go through each document from the query
+       * 3. find reference property UUIDs
+       * 4. Use UUIDs to find document number
+       * 5. Use the name test to filter the documents
+       * 
+       * @throws IOException if an exception occurs while reading from the
+       *                     index.
        */
-      @Override
-      public Explanation explain(int doc) throws IOException
-      {
-         throw new UnsupportedOperationException();
-      }
-
       private void calculateChildren() throws IOException
       {
          if (uuids == null)
          {
-            uuids = new ArrayList();
+            uuids = new ArrayList<String>();
             contextScorer.score(new AbstractHitCollector()
             {
                @Override
-               public void collect(int doc, float score)
+               protected void collect(int doc, float score)
                {
                   hits.set(doc);
                }
@@ -354,7 +357,7 @@ class DerefQuery extends Query
                nameTestScorer.score(new AbstractHitCollector()
                {
                   @Override
-                  public void collect(int doc, float score)
+                  protected void collect(int doc, float score)
                   {
                      nameTestHits.set(doc);
                   }
@@ -371,11 +374,11 @@ class DerefQuery extends Query
                   // no reference properties at all on this node
                   continue;
                }
-               for (int v = 0; v < values.length; v++)
+               for (String value : values)
                {
-                  if (values[v].startsWith(prefix))
+                  if (value.startsWith(prefix))
                   {
-                     uuids.add(values[v].substring(prefix.length()));
+                     uuids.add(value.substring(prefix.length()));
                   }
                }
             }
@@ -383,9 +386,9 @@ class DerefQuery extends Query
             // collect the doc ids of all target nodes. we reuse the existing
             // bitset.
             hits.clear();
-            for (Iterator it = uuids.iterator(); it.hasNext();)
+            for (String uuid : uuids)
             {
-               TermDocs node = reader.termDocs(new Term(FieldNames.UUID, (String)it.next()));
+               TermDocs node = reader.termDocs(new Term(FieldNames.UUID, uuid));
                try
                {
                   while (node.next())

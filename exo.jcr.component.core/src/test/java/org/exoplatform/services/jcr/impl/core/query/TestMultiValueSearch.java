@@ -17,7 +17,7 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.apache.lucene.document.Document;
+import org.apache.lucene.search.ScoreDoc;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
 import javax.jcr.PropertyType;
@@ -39,7 +39,7 @@ public class TestMultiValueSearch extends BaseQueryTest
       root.save();
 
       // Check is node indexed
-      Document doc = getDocument(node.getInternalIdentifier(), false);
+      ScoreDoc doc = getDocument(node.getInternalIdentifier(), false);
       assertNotNull("Node is not indexed", doc);
       System.out.println("its doc " + doc);
 
@@ -65,7 +65,7 @@ public class TestMultiValueSearch extends BaseQueryTest
       root.save();
 
       // Check is node indexed
-      Document doc = getDocument(node.getInternalIdentifier(), false);
+      ScoreDoc doc = getDocument(node.getInternalIdentifier(), false);
       assertNotNull("Node is not indexed", doc);
       System.out.println("its doc " + doc);
 

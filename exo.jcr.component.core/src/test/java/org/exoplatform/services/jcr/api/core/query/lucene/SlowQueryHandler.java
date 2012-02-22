@@ -100,7 +100,7 @@ public class SlowQueryHandler extends AbstractQueryHandler
    public void apply(ChangesHolder changes) throws RepositoryException, IOException
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add)
@@ -123,16 +123,14 @@ public class SlowQueryHandler extends AbstractQueryHandler
    public void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /**
     * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#checkIndex(org.exoplatform.services.jcr.dataflow.ItemDataConsumer, boolean, InspectionLog)
     */
-   @Override
    public void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, InspectionReport inspectionLog)
-      throws RepositoryException,
-      IOException
+      throws RepositoryException, IOException
    {
       // do nothing
    }

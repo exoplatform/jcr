@@ -20,7 +20,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TopFieldDocCollector;
+import org.apache.lucene.search.TopFieldCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,8 +154,9 @@ public final class SortedLuceneQueryHits extends AbstractQueryHits
 
    private void getHits() throws IOException
    {
-      TopFieldDocCollector collector = new TopFieldDocCollector(reader, sort, numHits);
+      TopFieldCollector collector = TopFieldCollector.create(sort, numHits, false, true, false, false);
       searcher.search(query, collector);
+
       this.size = collector.getTotalHits();
       ScoreDoc[] docs = collector.topDocs().scoreDocs;
       for (int i = scoreNodes.size(); i < docs.length; i++)
@@ -167,5 +168,6 @@ public final class SortedLuceneQueryHits extends AbstractQueryHits
       log.debug("getHits() {}/{}", new Integer(scoreNodes.size()), new Integer(numHits));
       // double hits for next round
       numHits *= 2;
+
    }
 }
