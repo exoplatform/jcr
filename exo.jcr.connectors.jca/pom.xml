@@ -56,7 +56,6 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
-            <index>false</index>
             <manifest>
               <addClasspath>true</addClasspath>
             </manifest>
