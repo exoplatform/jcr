@@ -110,15 +110,21 @@ public class TesterConfigurationHelper
       return service.getRepository(repoEntry.getName());
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled)
-      throws Exception
+   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled,
+      boolean cacheShared) throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, null, cacheEnabled);
+      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, null, cacheEnabled, cacheShared);
       service.createRepository(repoEntry);
       service.getConfig().retain();
 
       return service.getRepository(repoEntry.getName());
+   }
+
+   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled)
+      throws Exception
+   {
+      return createRepository(container, isMultiDb, cacheEnabled, false);
    }
 
    public ManageableRepository createRepository(ExoContainer container, RepositoryEntry repoEntry) throws Exception
@@ -130,15 +136,24 @@ public class TesterConfigurationHelper
    }
 
    /**
+    * Create workspace entry. 
+    */
+   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName,
+      boolean cacheEnabled) throws Exception
+   {
+      return createRepositoryEntry(isMultiDb, systemWSName, dsName, cacheEnabled, false);
+   }
+
+   /**
    * Create workspace entry. 
    */
    public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName,
-      boolean cacheEnabled) throws Exception
+      boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       // create system workspace entry
       List<String> ids = new ArrayList<String>();
       ids.add("id");
-      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids, cacheEnabled);
+      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids, cacheEnabled, cacheShared);
 
       if (systemWSName != null)
       {
@@ -173,6 +188,15 @@ public class TesterConfigurationHelper
     */
    public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds,
       boolean cacheEnabled) throws Exception
+   {
+      return createWorkspaceEntry(isMultiDb, dsName, valueStorageIds, cacheEnabled, false);
+   }
+
+   /**
+    * Create workspace entry. 
+    */
+   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds,
+      boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       if (dsName == null)
       {
@@ -239,13 +263,37 @@ public class TesterConfigurationHelper
 
       // Lock
       LockManagerEntry lockManagerEntry = new LockManagerEntry();
-      lockManagerEntry.setTimeout(900000);
-      LockPersisterEntry lockPersisterEntry = new LockPersisterEntry();
-      lockPersisterEntry.setType("org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister");
-      ArrayList<SimpleParameterEntry> lockPersisterParameters = new ArrayList<SimpleParameterEntry>();
-      lockPersisterParameters.add(new SimpleParameterEntry("path", "target/temp/lock/" + wsName));
-      lockPersisterEntry.setParameters(lockPersisterParameters);
-      lockManagerEntry.setPersister(lockPersisterEntry);
+      lockManagerEntry.putParameterValue("time-out", "15m");
+      if (ispnCacheEnabled())
+      {
+         lockManagerEntry
+            .setType("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
+         lockManagerEntry.putParameterValue("infinispan-configuration", "conf/standalone/test-infinispan-lock.xml");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.table.name", "lk");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.table.create", "true");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.table.drop", "false");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.id.column", "id");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.data.column", "data");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.timestamp.column", "timestamp");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.datasource", dsName);
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.connectionFactory",
+            "org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory");
+      }
+      else
+      {
+         lockManagerEntry.setType("org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl");
+         lockManagerEntry.putParameterValue("jbosscache-configuration", "conf/standalone/test-jbosscache-lock.xml");
+         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.name", "jcrlocks");
+         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.create", "true");
+         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.drop", "false");
+         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.primarykey",
+            "jcrlocks_" + IdGenerator.generate());
+         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.fqn.column", "fqn");
+         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.node.column", "node");
+         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.parent.column", "parent");
+         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.datasource", dsName);
+         lockManagerEntry.putParameterValue("jbosscache-shareable", String.valueOf(cacheShared));
+      }
 
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
       workspaceEntry.setContainer(containerEntry);
@@ -256,6 +304,20 @@ public class TesterConfigurationHelper
       workspaceEntry.setUniqueName(wsName);
 
       return workspaceEntry;
+   }
+
+   public boolean ispnCacheEnabled()
+   {
+      try
+      {
+         Class.forName("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
+         return true;
+      }
+      catch (ClassNotFoundException e)
+      {
+         return false;
+      }
+
    }
 
    public List<String> getValueStorageIds(ArrayList<ValueStorageEntry> entries)

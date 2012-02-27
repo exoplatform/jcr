@@ -19,8 +19,11 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.InspectionReport;
+import org.exoplatform.services.jcr.impl.core.lock.LockTableHandlerFactory;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
@@ -39,6 +42,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
+import javax.naming.NamingException;
 
 /**
  * @author <a href="mailto:skarpenko@exoplatform.com">Sergiy Karpenko</a>
@@ -48,6 +52,141 @@ import javax.jcr.RepositoryException;
 public class JDBCWorkspaceDataContainerChecker
 {
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCWorkspaceDataContainerChecker");
+
+   /**
+    * Checks jcr locks for consistency. Defines if there is a node with lockIsDeep or lockOwner property 
+    * (basically means that the node is to be locked)
+    * and has no corresponding record in LockManager persistant layer ( db table); 
+    * or the opposite.
+    */
+   public static void checkLocksInDataBase(JDBCWorkspaceDataContainer jdbcDataContainer, WorkspaceEntry workspaceEntry,
+      InspectionReport report) throws RepositoryException, IOException
+   {
+      String multiDbQueryStatement =
+         "SELECT DISTINCT PARENT_ID from JCR_MITEM WHERE I_CLASS=2 "
+            + "AND (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')";
+
+      String singleDbQueryStatement =
+         "SELECT DISTINCT PARENT_ID from JCR_SITEM WHERE CONTAINER_NAME='"
+            + jdbcDataContainer.containerName
+            + "' AND I_CLASS=2 and (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')";
+
+      InspectionQuery itemTableQuery =
+         new InspectionQuery(jdbcDataContainer.multiDb ? multiDbQueryStatement : singleDbQueryStatement,
+            new String[]{DBConstants.COLUMN_PARENTID}, "Items which have jcr:lockOwner and jcr:lockIsDeep properties");
+
+      ResultSet resultSet = null;
+      PreparedStatement preparedStatement = null;
+
+      // using existing DataSource to get a JDBC Connection.
+      Connection jdbcConnection = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
+      try
+      {
+         preparedStatement = itemTableQuery.prepareStatement(jdbcConnection);
+         resultSet = preparedStatement.executeQuery();
+
+         Set<String> itemTableIds = new HashSet<String>();
+         while (resultSet.next())
+         {
+            itemTableIds.add(jdbcDataContainer.multiDb ? resultSet.getString(DBConstants.COLUMN_PARENTID) : resultSet
+               .getString(DBConstants.COLUMN_PARENTID).substring(workspaceEntry.getName().length()));
+         }
+
+         Set<String> lockTableIds = LockTableHandlerFactory.getHandler(workspaceEntry).getLockedNodesIds();
+
+         checkIdSetsConsistency(report, itemTableIds, lockTableIds);
+      }
+      catch (SQLException e)
+      {
+         report.logExceptionAndSetInconsistency("Exception during Lock DB inspection.", e);
+      }
+      catch (NamingException e)
+      {
+         report.logExceptionAndSetInconsistency("Exception during Lock DB inspection.", e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         report.logExceptionAndSetInconsistency("Exception during Lock DB inspection.", e);
+      }
+      finally
+      {
+         if (resultSet != null)
+         {
+            try
+            {
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error(e.getMessage(), e);
+            }
+         }
+         if (preparedStatement != null)
+         {
+            try
+            {
+               preparedStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error(e.getMessage(), e);
+            }
+         }
+
+         if (jdbcConnection != null)
+         {
+            try
+            {
+               jdbcConnection.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error(e.getMessage(), e);
+            }
+         }
+      }
+   }
+
+   private static void checkIdSetsConsistency(InspectionReport report,
+      Set<String> itemTableIds, Set<String> lockTableIds) throws IOException
+   {
+      // let us make a set to contain all the consistent node IDs
+      // which obviously is an interection of 
+      // itemTableIds set and lockTableIds set
+      Set<String> consistentIds = new HashSet<String>(itemTableIds);
+      consistentIds.retainAll(lockTableIds);
+
+      // simply remove consistent node IDs
+      // and we will have inconsistent nodes left
+      itemTableIds.removeAll(consistentIds);
+      lockTableIds.removeAll(consistentIds);
+
+      if (!itemTableIds.isEmpty())
+      {
+         StringBuffer record = new StringBuffer();
+
+         record.append("Items listed in JCR_XITEM table have lock inconsistency:\n");
+         for (String id : itemTableIds)
+         {
+            record.append("Node UUID: " + id + "\n");
+         }
+
+         report.logBrokenObjectAndSetInconsistency(record.toString(), "");
+      }
+
+      if (!lockTableIds.isEmpty())
+      {
+         StringBuffer record = new StringBuffer();
+
+         record.append("Items listed in LockManager's table have lock inconsistency:\n");
+         for (String id : lockTableIds)
+         {
+            record.append("Node UUID: " + id + "\n");
+         }
+
+         report.logBrokenObjectAndSetInconsistency(record.toString(), "");
+      }
+   }
 
    /**
     * Check database.

@@ -23,6 +23,7 @@ import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -124,6 +125,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    }
 
    protected String checkRepositoryDataConsistency(DataStorage[] storages)
+
    {
       try
       {
@@ -273,6 +275,8 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
             (JDBCWorkspaceDataContainer)getComponent(JDBCWorkspaceDataContainer.class, wsName);
 
          JDBCWorkspaceDataContainerChecker.checkDataBase(dataContainer, lastReport);
+         JDBCWorkspaceDataContainerChecker.checkLocksInDataBase(dataContainer,
+            (WorkspaceEntry)getComponent(WorkspaceEntry.class, wsName), lastReport);
       }
    }
 

@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -32,6 +33,7 @@ import org.exoplatform.services.jcr.impl.RepositoryCheckController.DataStorage;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
@@ -63,6 +65,16 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 {
 
    private TesterRepositoryCheckController checkController;
+
+   private static boolean SHARED_CACHE = true;
+
+   private static boolean NOT_SHARED_CACHE = false;
+
+   private static boolean MULTI_DB = true;
+
+   private static boolean SINGLE_DB = false;
+
+   private static boolean CACHE_ENABLED = true;
 
    private final TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
 
@@ -96,6 +108,169 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       assertNotNull(result);
       assertTrue("Repository data is not consistent, result: " + result,
          result.startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+   }
+
+   public void testConsistentLocksInDataBase() throws Exception
+   {
+      checkConsistentLocksInDataBase(NOT_SHARED_CACHE, SINGLE_DB);
+      checkConsistentLocksInDataBase(NOT_SHARED_CACHE, MULTI_DB);
+   }
+
+   public void testConsistentLocksInDataBaseSharedCache() throws Exception
+   {
+      checkConsistentLocksInDataBase(SHARED_CACHE, SINGLE_DB);
+      checkConsistentLocksInDataBase(SHARED_CACHE, MULTI_DB);
+   }
+
+   private void checkConsistentLocksInDataBase(boolean isCacheShared, boolean isMultiDb) throws Exception
+   {
+      ManageableRepository repository = helper.createRepository(container, isMultiDb, CACHE_ENABLED, isCacheShared);
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
+      node.addMixin("mix:lockable");
+      session.save();
+      node.lock(false, false);
+
+      checkController = new TesterRepositoryCheckController(repository);
+      String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
+      assertNotNull(result);
+
+      assertTrue("Repository data is not consistent, result: " + result,
+         result.startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      checkController.getLastLogFile().delete();
+   }
+
+   public void testInconsistentLocksInDataBase() throws Exception
+   {
+      checkInconsistentLocksInItemTable(NOT_SHARED_CACHE, SINGLE_DB);
+      checkInconsistentLocksInItemTable(NOT_SHARED_CACHE, MULTI_DB);
+
+      checkInconsistentLocksInLockTable(NOT_SHARED_CACHE, SINGLE_DB);
+      checkInconsistentLocksInLockTable(NOT_SHARED_CACHE, MULTI_DB);
+   }
+
+   public void testInconsistentLocksInDataBaseWithSharedCache() throws Exception
+   {
+      checkInconsistentLocksInItemTable(SHARED_CACHE, SINGLE_DB);
+      checkInconsistentLocksInItemTable(SHARED_CACHE, MULTI_DB);
+
+      checkInconsistentLocksInLockTable(SHARED_CACHE, SINGLE_DB);
+      checkInconsistentLocksInLockTable(SHARED_CACHE, MULTI_DB);
+   }
+
+   private void checkInconsistentLocksInItemTable(boolean cacheShared, boolean isMultiDb) throws Exception
+   {
+      ManageableRepository repository = helper.createRepository(container, isMultiDb, CACHE_ENABLED, cacheShared);
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
+      node.addMixin("mix:lockable");
+      session.save();
+      node.lock(false, false);
+
+      WorkspaceEntry workspaceEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
+      String sourceName = workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+
+      String multiDbQueryStatement =
+         "DELETE FROM JCR_MITEM WHERE I_CLASS=2 "
+            + "AND (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')";
+      String singleDbQueryStatement =
+         "DELETE FROM JCR_SITEM WHERE CONTAINER_NAME='"
+            + workspaceEntry.getName()
+            + "' AND I_CLASS=2 AND (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')";
+
+      Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
+
+      // remove constraint
+      conn.prepareStatement(
+         "ALTER TABLE JCR_" + (isMultiDb ? "M" : "S") + "ITEM DROP CONSTRAINT JCR_FK_" + (isMultiDb ? "M" : "S")
+            + "VALUE_PROPERTY").execute();
+      // delete properties (this should cause inconsistency)
+      conn.prepareStatement(isMultiDb ? multiDbQueryStatement : singleDbQueryStatement).execute();
+
+      // remove constriant
+      conn.prepareStatement(
+         "ALTER TABLE JCR_" + (isMultiDb ? "M" : "S") + "VALUE DROP CONSTRAINT JCR_PK_" + (isMultiDb ? "M" : "S")
+            + "VALUE").execute();
+
+      // clean up properties value to avoid another (except needed) cause of inconsistency
+      String lockOwnerPropertyId =
+         (isMultiDb ? "" : workspaceEntry.getName())
+            + ((PropertyImpl)node.getProperty("jcr:lockIsDeep")).getInternalIdentifier();
+      String lockIsDeepPropertyId =
+         (isMultiDb ? "" : workspaceEntry.getName())
+            + ((PropertyImpl)node.getProperty("jcr:lockOwner")).getInternalIdentifier();
+
+      conn.prepareStatement(
+         "DELETE FROM JCR_" + (isMultiDb ? "M" : "S") + "VALUE WHERE PROPERTY_ID = '" + lockOwnerPropertyId
+            + "' OR PROPERTY_ID = '" + lockIsDeepPropertyId + "'").execute();
+      conn.commit();
+      conn.close();
+
+      checkController = new TesterRepositoryCheckController(repository);
+      String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
+      assertNotNull(result);
+      assertTrue("Repository data is consistent, result: " + result,
+         result.startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+      //      checkController.getLastLogFile().delete();
+   }
+
+   private void checkInconsistentLocksInLockTable(boolean cacheShared, boolean isMultiDb) throws Exception
+   {
+      ManageableRepository repository = helper.createRepository(container, isMultiDb, true, cacheShared);
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
+      node.addMixin("mix:lockable");
+      session.save();
+      node.lock(false, false);
+
+      WorkspaceEntry workspaceEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
+      LockManagerEntry lockManagerEntry = workspaceEntry.getLockManager();
+
+      String sourceName = null;
+      String queryStatement = null;
+
+      if (helper.ispnCacheEnabled())
+      {
+         sourceName = lockManagerEntry.getParameterValue("infinispan-cl-cache.jdbc.datasource");
+         
+         queryStatement =
+            "DELETE FROM " + lockManagerEntry.getParameterValue("infinispan-cl-cache.jdbc.table.name") + "_" + "L"
+               + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_");
+      }
+      else
+      {
+         sourceName = lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_CL_DATASOURCE);
+
+         if (cacheShared)
+         {
+            queryStatement =
+               "DELETE FROM " + lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_TABLE_NAME)
+                  + " WHERE PARENT='/" + workspaceEntry.getUniqueName() + "/" + CacheableLockManagerImpl.LOCKS + "'";
+         }
+         else
+         {
+            queryStatement =
+               "DELETE FROM " + lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_TABLE_NAME)
+                  + " WHERE PARENT='/" + CacheableLockManagerImpl.LOCKS + "'";
+         }
+
+      }
+
+      Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
+
+      conn.prepareStatement(queryStatement).execute();
+      conn.commit();
+      conn.close();
+
+      checkController = new TesterRepositoryCheckController(repository);
+      String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
+      assertNotNull(result);
+      assertTrue("Repository data is consistent, result: " + result,
+         result.startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+      //      checkController.getLastLogFile().delete();
    }
 
    public void testValueStorage() throws Exception
