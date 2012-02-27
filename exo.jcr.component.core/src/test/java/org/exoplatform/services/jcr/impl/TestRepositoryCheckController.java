@@ -213,7 +213,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       assertNotNull(result);
       assertTrue("Repository data is consistent, result: " + result,
          result.startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      //      checkController.getLastLogFile().delete();
+      checkController.getLastLogFile().delete();
    }
 
    private void checkInconsistentLocksInLockTable(boolean cacheShared, boolean isMultiDb) throws Exception
@@ -270,7 +270,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       assertNotNull(result);
       assertTrue("Repository data is consistent, result: " + result,
          result.startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      //      checkController.getLastLogFile().delete();
+      checkController.getLastLogFile().delete();
    }
 
    public void testValueStorage() throws Exception
