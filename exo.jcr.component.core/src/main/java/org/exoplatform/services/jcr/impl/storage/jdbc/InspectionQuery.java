@@ -26,7 +26,7 @@ import java.sql.SQLException;
  * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
  * @version $Id: InspectionQuery.java 34360 16.02.2012 andrew.plotnikov $
  */
-class InspectionQuery
+public class InspectionQuery
 {
    /**
     * Data class, contains a combination of SQL states, description, field names and status  

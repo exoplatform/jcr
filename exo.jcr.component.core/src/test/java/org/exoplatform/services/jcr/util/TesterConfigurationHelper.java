@@ -105,15 +105,21 @@ public class TesterConfigurationHelper
       return service.getRepository(repoEntry.getName());
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled)
-      throws Exception
+   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled,
+      boolean cacheShared) throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, null, cacheEnabled);
+      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, null, cacheEnabled, cacheShared);
       service.createRepository(repoEntry);
       service.getConfig().retain();
 
       return service.getRepository(repoEntry.getName());
+   }
+
+   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled)
+      throws Exception
+   {
+      return createRepository(container, isMultiDb, cacheEnabled, false);
    }
 
    public ManageableRepository createRepository(ExoContainer container, RepositoryEntry repoEntry) throws Exception
@@ -125,15 +131,24 @@ public class TesterConfigurationHelper
    }
 
    /**
+    * Create workspace entry. 
+    */
+   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName,
+      boolean cacheEnabled) throws Exception
+   {
+      return createRepositoryEntry(isMultiDb, systemWSName, dsName, cacheEnabled, false);
+   }
+
+   /**
    * Create workspace entry. 
    */
    public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName,
-      boolean cacheEnabled) throws Exception
+      boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       // create system workspace entry
       List<String> ids = new ArrayList<String>();
       ids.add("id");
-      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids, cacheEnabled);
+      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids, cacheEnabled, cacheShared);
 
       if (systemWSName != null)
       {
@@ -168,6 +183,15 @@ public class TesterConfigurationHelper
     */
    public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds,
       boolean cacheEnabled) throws Exception
+   {
+      return createWorkspaceEntry(isMultiDb, dsName, valueStorageIds, cacheEnabled, false);
+   }
+
+   /**
+    * Create workspace entry. 
+    */
+   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds,
+      boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       if (dsName == null)
       {
@@ -267,7 +291,7 @@ public class TesterConfigurationHelper
          lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.node.column", "node");
          lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.parent.column", "parent");
          lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.datasource", dsName);
-         lockManagerEntry.putParameterValue("jbosscache-shareable", "${jbosscache-shareable}");
+         lockManagerEntry.putParameterValue("jbosscache-shareable", String.valueOf(cacheShared));
       }
 
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
@@ -279,6 +303,20 @@ public class TesterConfigurationHelper
       workspaceEntry.setUniqueName(wsName);
 
       return workspaceEntry;
+   }
+
+   public boolean ispnCacheEnabled()
+   {
+      try
+      {
+         Class.forName("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
+         return true;
+      }
+      catch (ClassNotFoundException e)
+      {
+         return false;
+      }
+
    }
 
    public List<String> getValueStorageIds(ArrayList<ValueStorageEntry> entries)
