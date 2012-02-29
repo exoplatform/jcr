@@ -47,14 +47,27 @@ public interface ValueIOChannel
    ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException;
 
    /**
-    * Check ValueData. Check that value storage contain this value and value is readable.
+    * Inspects whether corresponding file exists in value storage or not.
     * 
-    * @param propertyId - Property ID
-    * @param orderNumber - Property order number
-    * @throws ValueDataNotFoundException thrown if value data not exist or can not be read
-    * @throws IOException
+    * @param propertyId 
+    *          Property ID
+    * @param orderNumber 
+    *          Property order number
+    * @throws ValueDataNotFoundException is thrown if file not exist
+    * @throws IOException is thrown if another IO error is occurred
     */
    void checkValueData(String propertyId, int orderNumber) throws ValueDataNotFoundException, IOException;
+
+   /**
+    * Repair value data by creation new corresponding empty file.
+    * 
+    * @param propertyId 
+    *          Property ID
+    * @param orderNumber 
+    *          Property order number
+    * @throws IOException is thrown if can not create new empty file
+    */
+   void repairValueData(String propertyId, int orderNumber) throws IOException;
 
    /**
     * Add or update Property value.

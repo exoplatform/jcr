@@ -18,26 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
-import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
-import org.exoplatform.services.jcr.impl.storage.jdbc.InspectionQuery;
+import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
+import org.exoplatform.services.jcr.impl.core.lock.AbstractLockTableHandler;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 /**
  * Provides means for nodes' IDs extraction in case we use {@link ISPNCacheableLockManagerImpl}
@@ -47,110 +35,88 @@ import javax.sql.DataSource;
  * @version $Id: ISPNLockTableHandler.java 34360 27.02.2012 12:41:39 dkuleshov $
  *
  */
-public class ISPNLockTableHandler implements LockTableHandler
+public class ISPNLockTableHandler extends AbstractLockTableHandler
 {
 
    protected static final Log LOG = ExoLogger
       .getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNLockTableHandler");
 
-   protected final WorkspaceEntry workspaceEntry;
-
-   protected final LockManagerEntry lockManagerEntry;
-
+   /**
+    * ISPNLockTableHandler constructor.
+    */
    public ISPNLockTableHandler(WorkspaceEntry workspaceEntry)
    {
-      this.workspaceEntry = workspaceEntry;
-      this.lockManagerEntry = workspaceEntry.getLockManager();
+      super(workspaceEntry);
    }
 
    /**
     * {@inheritDoc}
     */
-   public Set<String> getLockedNodesIds() throws RepositoryConfigurationException, SQLException, NamingException
+   protected InspectionQuery getSelectQuery() throws SQLException
    {
-      Set<String> lockedNodesIds = new HashSet<String>();
+      return new InspectionQuery("SELECT * FROM " + getTableName(), new String[]{getIdColumn()}, "Locks table match");
+   }
 
-      ResultSet resultSet = null;
-      PreparedStatement preparedStatement = null;
+   /**
+    * {@inheritDoc}
+    */
+   public InspectionQuery getDeleteQuery(String nodeId) throws SQLException
+   {
+      return new InspectionQuery("DELETE FROM " + getTableName() + " WHERE " + getIdColumn() + "='" + nodeId + "'",
+         new String[]{}, "");
+   }
 
-      Connection jdbcConnection = openConnection();
+   /**
+    * Returns the column name which contain node identifier.
+    */
+   private String getIdColumn() throws SQLException
+   {
       try
       {
-         InspectionQuery inspectionQuery = getQuery();
-
-         preparedStatement = inspectionQuery.prepareStatement(jdbcConnection);
-         resultSet = preparedStatement.executeQuery();
-
-         String idColumn =
-            lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_CL_ID_COLUMN_NAME);
-
-         while (resultSet.next())
-         {
-            lockedNodesIds.add(resultSet.getString(idColumn));
-         }
+         return lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_CL_ID_COLUMN_NAME);
       }
-      finally
+      catch (RepositoryConfigurationException e)
       {
-         if (resultSet != null)
-         {
-            try
-            {
-               resultSet.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
-         if (preparedStatement != null)
-         {
-            try
-            {
-               preparedStatement.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
-         if (jdbcConnection != null)
-         {
-            try
-            {
-               jdbcConnection.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
+         throw new SQLException(e);
       }
-
-      return lockedNodesIds;
    }
 
-   protected InspectionQuery getQuery() throws RepositoryConfigurationException
+   /**
+    * Returns the name of LOCK table.
+    */
+   private String getTableName() throws SQLException
    {
-      String tableName =
-         lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME) + "_" + "L"
+      try
+      {
+         return lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME) + "_" + "L"
             + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_");
-
-      return new InspectionQuery("SELECT * FROM " + tableName, new String[]{}, "Locks table match");
-   }
-
-   private Connection openConnection() throws NamingException, RepositoryConfigurationException, SQLException
-   {
-      final DataSource ds =
-         (DataSource)new InitialContext().lookup(lockManagerEntry
-            .getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_CL_DATASOURCE));
-
-      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+      }
+      catch (RepositoryConfigurationException e)
       {
-         public Connection run() throws SQLException
-         {
-            return ds.getConnection();
-         }
-      });
+         throw new SQLException(e);
+      }
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   protected String getDataSourceName() throws SQLException
+   {
+      try
+      {
+         return lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_CL_DATASOURCE);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new SQLException(e);
+      }
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   protected String extractNodeId(String value)
+   {
+      return value;
+   }
 }

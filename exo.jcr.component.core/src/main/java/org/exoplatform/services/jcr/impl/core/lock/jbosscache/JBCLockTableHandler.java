@@ -18,26 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
-import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
-import org.exoplatform.services.jcr.impl.storage.jdbc.InspectionQuery;
+import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
+import org.exoplatform.services.jcr.impl.core.lock.AbstractLockTableHandler;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 /**
  * Provides means for nodes' IDs extraction in case we use {@link CacheableLockManagerImpl}
@@ -47,109 +35,101 @@ import javax.sql.DataSource;
  * @author <a href="mailto:dkuleshov@exoplatform.com">Dmitry Kuleshov</a>
  * @version $Id: JBCLockTableHandler.java 34360 2009-07-22 23:58:59Z dkuleshov $
  */
-public class JBCLockTableHandler implements LockTableHandler
+public class JBCLockTableHandler extends AbstractLockTableHandler
 {
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBCLockTableHandler");
-
-   protected final WorkspaceEntry workspaceEntry;
-
-   protected final LockManagerEntry lockManagerEntry;
 
    /**
     * JBCLockTableHandler constructor.
     */
    public JBCLockTableHandler(final WorkspaceEntry workspaceEntry)
    {
-      this.workspaceEntry = workspaceEntry;
-      this.lockManagerEntry = workspaceEntry.getLockManager();
+      super(workspaceEntry);
    }
 
    /**
     * {@inheritDoc}
     */
-   public Set<String> getLockedNodesIds() throws NamingException, RepositoryConfigurationException, SQLException
+   protected InspectionQuery getSelectQuery() throws SQLException
    {
-      String fqnColumn = lockManagerEntry.getParameterValue("jbosscache-cl-cache.jdbc.fqn.column");
+      return new InspectionQuery("SELECT * FROM " + getTableName() + " WHERE " + getParentColumn() + "='/"
+         + CacheableLockManagerImpl.LOCKS + "'", new String[]{getIdColumn()}, "Locks table match");
+   }
 
-      Set<String> lockedNodesIds = new HashSet<String>();
+   /**
+    * {@inheritDoc}
+    */
+   protected InspectionQuery getDeleteQuery(String nodeId) throws SQLException
+   {
+      return new InspectionQuery("DELETE FROM " + getTableName() + " WHERE " + getIdColumn() + "='/"
+         + CacheableLockManagerImpl.LOCKS + "/" + nodeId + "'", new String[]{}, "");
+   }
 
-      ResultSet resultSet = null;
-      PreparedStatement preparedStatement = null;
-      
-      Connection jdbcConnection = openConnection();
+   /**
+    * Returns the column name which contain node identifier.
+    */
+   protected String getIdColumn() throws SQLException
+   {
       try
       {
-         InspectionQuery inspectionQuery = getQuery();
-
-         preparedStatement = inspectionQuery.prepareStatement(jdbcConnection);
-         resultSet = preparedStatement.executeQuery();
-
-         while (resultSet.next())
-         {
-            String fqn = resultSet.getString(fqnColumn);
-            
-            lockedNodesIds.add(fqn.substring(fqn.lastIndexOf("/") + 1));
-         }
+         return lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_CL_FQN_COLUMN);
       }
-      finally
+      catch (RepositoryConfigurationException e)
       {
-         if (resultSet != null)
-         {
-            try
-            {
-               resultSet.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
-         if (preparedStatement != null)
-         {
-            try
-            {
-               preparedStatement.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
-         if (jdbcConnection != null)
-         {
-            try
-            {
-               jdbcConnection.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
+         throw new SQLException(e);
       }
-
-      return lockedNodesIds;
    }
 
-   protected InspectionQuery getQuery() throws RepositoryConfigurationException
+   /**
+    * Returns the name of parent column.
+    */
+   protected String getParentColumn() throws SQLException
    {
-      return new InspectionQuery("SELECT * FROM "
-         + lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_TABLE_NAME) + " WHERE PARENT='/"
-         + CacheableLockManagerImpl.LOCKS + "'", new String[]{}, "Locks table match");
+      try
+      {
+         return lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_CL_PARENT_COLUMN);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new SQLException(e);
+      }
    }
 
-   private Connection openConnection() throws NamingException, RepositoryConfigurationException, SQLException
+   /**
+    * Returns the name of LOCK table.
+    */
+   protected String getTableName() throws SQLException
    {
-      final DataSource ds =
-         (DataSource)new InitialContext().lookup(lockManagerEntry
-            .getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_CL_DATASOURCE));
-
-      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+      try
       {
-         public Connection run() throws SQLException
-         {
-            return ds.getConnection();
-         }
-      });
+         return lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_TABLE_NAME);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new SQLException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected String getDataSourceName() throws SQLException
+   {
+      try
+      {
+         return lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_CL_DATASOURCE);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new SQLException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected String extractNodeId(String value)
+   {
+      return value.substring(value.lastIndexOf("/") + 1);
    }
 }

@@ -649,4 +649,59 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
 
       return findNodesCount.executeQuery();
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected void deleteLockProperties(String nodeIdentifier) throws SQLException
+   {
+      PreparedStatement removeValuesStatement = null;
+      PreparedStatement removeItemsStatement = null;
+
+      try
+      {
+         removeValuesStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM"
+               + " WHERE CONTAINER_NAME = ? AND PARENT_ID=? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
+         removeValuesStatement.setString(1, containerName);
+         removeValuesStatement.setString(2, getInternalId(nodeIdentifier));
+
+         removeItemsStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND PARENT_ID=? AND"
+               + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+         removeItemsStatement.setString(1, containerName);
+         removeItemsStatement.setString(2, getInternalId(nodeIdentifier));
+
+         removeValuesStatement.executeUpdate();
+         removeItemsStatement.executeUpdate();
+      }
+      finally
+      {
+         if (removeValuesStatement != null)
+         {
+            try
+            {
+               removeValuesStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+
+         if (removeItemsStatement != null)
+         {
+            try
+            {
+               removeItemsStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+      }
+   }
 }

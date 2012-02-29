@@ -18,12 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-
 import java.sql.SQLException;
 import java.util.Set;
-
-import javax.naming.NamingException;
 
 /**
  * Provides method for extraction of set of locked nodes' IDs from
@@ -38,9 +34,17 @@ public interface LockTableHandler
     * Get a set of locked jcr nodes IDs contained in {@link LockManager} persistent layer (database table).
     * 
     * @return {@link Set} of node IDs
-    * @throws NamingException
-    * @throws RepositoryConfigurationException
     * @throws SQLException
     */
-   Set<String> getLockedNodesIds() throws NamingException, RepositoryConfigurationException, SQLException;
+   Set<String> getLockedNodesIds() throws SQLException;
+
+   /**
+    * Removes locked node directly from database.
+    * 
+    * @param nodeId
+    *          node identifier
+    * @return {@link Set} of node IDs
+    * @throws SQLException
+    */
+   void removeLockedNode(String nodeId) throws SQLException;
 }

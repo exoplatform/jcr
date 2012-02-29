@@ -54,10 +54,10 @@ import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.InspectionReport;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
+import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -908,12 +908,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                   if (docs.next())
                   {
                      //multiple entries
-                     report.logBrokenObjectAndSetInconsistency("ID=" + uuid, "Multiple entires.");
+                     report.logComment("Multiple entires.");
+                     report.logBrokenObjectAndSetInconsistency("ID=" + uuid);
                   }
                }
                else
                {
-                  report.logBrokenObjectAndSetInconsistency("ID=" + uuid, "Not indexed.");
+                  report.logComment("Not indexed.");
+                  report.logBrokenObjectAndSetInconsistency("ID=" + uuid);
                }
             }
             catch (IOException e)
@@ -971,7 +973,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             String uuid = d.get(FieldNames.UUID);
             if (!documentUUIDs.contains(uuid))
             {
-               report.logBrokenObjectAndSetInconsistency("ID=" + uuid, "Document corresponds to removed node.");
+               report.logComment("Document corresponds to removed node.");
+               report.logBrokenObjectAndSetInconsistency("ID=" + uuid);
             }
          }
       }

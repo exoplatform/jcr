@@ -1088,6 +1088,61 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   protected void deleteLockProperties(String nodeIdentifier) throws SQLException
+   {
+      PreparedStatement removeValuesStatement = null;
+      PreparedStatement removeItemsStatement = null;
+
+      try
+      {
+         removeValuesStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_MVALUE WHERE PROPERTY_ID IN"
+               + " (SELECT ID FROM JCR_MITEM WHERE PARENT_ID=? AND"
+               + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
+
+         removeItemsStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_MITEM WHERE PARENT_ID=? AND"
+               + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+
+         removeValuesStatement.setString(1, getInternalId(nodeIdentifier));
+         removeItemsStatement.setString(1, getInternalId(nodeIdentifier));
+
+         removeValuesStatement.executeUpdate();
+         removeItemsStatement.executeUpdate();
+      }
+      finally
+      {
+         if (removeValuesStatement != null)
+         {
+            try
+            {
+               removeValuesStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+
+         if (removeItemsStatement != null)
+         {
+            try
+            {
+               removeItemsStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    @Override
    protected ResultSet findNodesCount() throws SQLException
    {

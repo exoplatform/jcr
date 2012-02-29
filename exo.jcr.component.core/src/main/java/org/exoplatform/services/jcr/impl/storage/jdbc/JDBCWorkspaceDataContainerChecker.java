@@ -19,21 +19,25 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.InspectionReport;
+import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
+import org.exoplatform.services.jcr.impl.checker.InspectionQueryFilteredMultivaluedProperties;
+import org.exoplatform.services.jcr.impl.checker.InspectionReport;
+import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandlerFactory;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
+import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -53,138 +57,129 @@ public class JDBCWorkspaceDataContainerChecker
 {
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCWorkspaceDataContainerChecker");
 
+   protected final JDBCWorkspaceDataContainer jdbcDataContainer;
+
+   protected final ValueStoragePluginProvider vsPlugin;
+
+   protected final WorkspaceEntry workspaceEntry;
+
+   protected final InspectionReport report;
+
+   private InspectionQuery vsInspectionQuery;
+
+   private InspectionQuery lockInspectionQuery;
+
+   private LockTableHandler lockHandler;
+
+   /**
+    * JDBCWorkspaceDataContainerChecker constructor.
+    */
+   public JDBCWorkspaceDataContainerChecker(JDBCWorkspaceDataContainer jdbcDataContainer,
+      ValueStoragePluginProvider vsPlugin, WorkspaceEntry workspaceEntry, InspectionReport report)
+   {
+      this.jdbcDataContainer = jdbcDataContainer;
+      this.vsPlugin = vsPlugin;
+      this.workspaceEntry = workspaceEntry;
+      this.report = report;
+      this.lockHandler = LockTableHandlerFactory.getHandler(workspaceEntry);
+
+      initInspectionQueries();
+   }
+
    /**
     * Checks jcr locks for consistency. Defines if there is a node with lockIsDeep or lockOwner property 
     * (basically means that the node is to be locked)
-    * and has no corresponding record in LockManager persistant layer ( db table); 
+    * and has no corresponding record in LockManager persistent layer (db table); 
     * or the opposite.
     */
-   public static void checkLocksInDataBase(JDBCWorkspaceDataContainer jdbcDataContainer, WorkspaceEntry workspaceEntry,
-      InspectionReport report) throws RepositoryException, IOException
+   public void checkLocksInDataBase(boolean autoRepair) throws RepositoryException, IOException
    {
-      String multiDbQueryStatement =
-         "SELECT DISTINCT PARENT_ID from JCR_MITEM WHERE I_CLASS=2 "
-            + "AND (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')";
-
-      String singleDbQueryStatement =
-         "SELECT DISTINCT PARENT_ID from JCR_SITEM WHERE CONTAINER_NAME='"
-            + jdbcDataContainer.containerName
-            + "' AND I_CLASS=2 and (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')";
-
-      InspectionQuery itemTableQuery =
-         new InspectionQuery(jdbcDataContainer.multiDb ? multiDbQueryStatement : singleDbQueryStatement,
-            new String[]{DBConstants.COLUMN_PARENTID}, "Items which have jcr:lockOwner and jcr:lockIsDeep properties");
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       ResultSet resultSet = null;
       PreparedStatement preparedStatement = null;
-
-      // using existing DataSource to get a JDBC Connection.
-      Connection jdbcConnection = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
+      Connection jdbcConnection = null;
       try
       {
-         preparedStatement = itemTableQuery.prepareStatement(jdbcConnection);
+         jdbcConnection = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
+         preparedStatement = lockInspectionQuery.prepareStatement(jdbcConnection);
          resultSet = preparedStatement.executeQuery();
 
-         Set<String> itemTableIds = new HashSet<String>();
+         Set<String> lockedInJCRITEM = new HashSet<String>();
          while (resultSet.next())
          {
-            itemTableIds.add(jdbcDataContainer.multiDb ? resultSet.getString(DBConstants.COLUMN_PARENTID) : resultSet
-               .getString(DBConstants.COLUMN_PARENTID).substring(workspaceEntry.getName().length()));
+            lockedInJCRITEM.add(removeWorkspacePrefix(resultSet.getString(DBConstants.COLUMN_PARENTID)));
          }
 
-         Set<String> lockTableIds = LockTableHandlerFactory.getHandler(workspaceEntry).getLockedNodesIds();
+         Set<String> lockedInJCRLOCK = lockHandler.getLockedNodesIds();
 
-         checkIdSetsConsistency(report, itemTableIds, lockTableIds);
+         checkConsistencyInJCRITEM(lockedInJCRITEM, lockedInJCRLOCK, autoRepair);
+         checkConsistencyInJCRLOCK(lockedInJCRITEM, lockedInJCRLOCK, autoRepair);
       }
       catch (SQLException e)
       {
-         report.logExceptionAndSetInconsistency("Exception during Lock DB inspection.", e);
+         report.logExceptionAndSetInconsistency("Unexpected exception during LOCK DB checking.", e);
       }
       catch (NamingException e)
       {
-         report.logExceptionAndSetInconsistency("Exception during Lock DB inspection.", e);
+         report.logExceptionAndSetInconsistency("Unexpected exception during LOCK DB checking.", e);
       }
       catch (RepositoryConfigurationException e)
       {
-         report.logExceptionAndSetInconsistency("Exception during Lock DB inspection.", e);
+         report.logExceptionAndSetInconsistency("Unexpected exception during LOCK DB checking.", e);
       }
       finally
       {
-         if (resultSet != null)
-         {
-            try
-            {
-               resultSet.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
-         if (preparedStatement != null)
-         {
-            try
-            {
-               preparedStatement.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
+         JDBCUtils.freeResources(resultSet, preparedStatement, jdbcConnection);
+      }
+   }
 
-         if (jdbcConnection != null)
+   private void checkConsistencyInJCRITEM(Set<String> lockedInJCRITEM, Set<String> lockedInJCRLOCK,
+      boolean autoRepair) throws RepositoryException, SQLException
+   {
+      for (String nodeId : lockedInJCRITEM)
+      {
+         if (!lockedInJCRLOCK.contains(nodeId))
          {
-            try
+            logBrokenObjectAndSetInconsistency("Lock exists in ITEM table but not in LOCK table. Node UUID: "
+               + nodeId);
+            
+            if (autoRepair)
             {
-               jdbcConnection.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
+               WorkspaceStorageConnection conn = jdbcDataContainer.openConnection();
+               try
+               {
+                  if (conn instanceof JDBCStorageConnection)
+                  {
+                     ((JDBCStorageConnection)conn).deleteLockProperties(nodeId);
+                  }
+
+                  logComment("Lock has been removed form ITEM table. Node UUID: " + nodeId);
+               }
+               finally
+               {
+                  conn.close();
+               }
             }
          }
       }
    }
 
-   private static void checkIdSetsConsistency(InspectionReport report,
-      Set<String> itemTableIds, Set<String> lockTableIds) throws IOException
+   private void checkConsistencyInJCRLOCK(Set<String> lockedInJCRITEM, Set<String> lockedInJCRLOCK, boolean autoRepair)
+      throws NamingException, RepositoryConfigurationException, SQLException
    {
-      // let us make a set to contain all the consistent node IDs
-      // which obviously is an interection of 
-      // itemTableIds set and lockTableIds set
-      Set<String> consistentIds = new HashSet<String>(itemTableIds);
-      consistentIds.retainAll(lockTableIds);
-
-      // simply remove consistent node IDs
-      // and we will have inconsistent nodes left
-      itemTableIds.removeAll(consistentIds);
-      lockTableIds.removeAll(consistentIds);
-
-      if (!itemTableIds.isEmpty())
+      for (String nodeId : lockedInJCRLOCK)
       {
-         StringBuffer record = new StringBuffer();
-
-         record.append("Items listed in JCR_XITEM table have lock inconsistency:\n");
-         for (String id : itemTableIds)
+         if (!lockedInJCRITEM.contains(nodeId))
          {
-            record.append("Node UUID: " + id + "\n");
+            logBrokenObjectAndSetInconsistency("Lock exists in LOCK table but not in ITEM table. Node UUID: " + nodeId);
+
+            if (autoRepair)
+            {
+               lockHandler.removeLockedNode(nodeId);
+               logComment("Lock has been removed form LOCK table. Node UUID: " + nodeId);
+            }
          }
-
-         report.logBrokenObjectAndSetInconsistency(record.toString(), "");
-      }
-
-      if (!lockTableIds.isEmpty())
-      {
-         StringBuffer record = new StringBuffer();
-
-         record.append("Items listed in LockManager's table have lock inconsistency:\n");
-         for (String id : lockTableIds)
-         {
-            record.append("Node UUID: " + id + "\n");
-         }
-
-         report.logBrokenObjectAndSetInconsistency(record.toString(), "");
       }
    }
 
@@ -199,9 +194,11 @@ public class JDBCWorkspaceDataContainerChecker
     * @throws RepositoryException
     * @throws IOException
     */
-   public static void checkDataBase(JDBCWorkspaceDataContainer jdbcDataContainer, InspectionReport report)
+   public void checkDataBase()
       throws RepositoryException, IOException
    {
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      
       Set<InspectionQuery> queries = new HashSet<InspectionQuery>();
 
       // preload queries
@@ -349,36 +346,14 @@ public class JDBCWorkspaceDataContainerChecker
                         record.append(' ');
                      }
 
-                     report.logBrokenObjectAndSetInconsistency(record.toString(), "");
+                     report.logBrokenObjectAndSetInconsistency(record.toString());
                   }
                   while (resultSet.next());
                }
             }
-            // safely free resources
             finally
             {
-               if (resultSet != null)
-               {
-                  try
-                  {
-                     resultSet.close();
-                  }
-                  catch (SQLException e)
-                  {
-                     LOG.error(e.getMessage(), e);
-                  }
-               }
-               if (st != null)
-               {
-                  try
-                  {
-                     st.close();
-                  }
-                  catch (SQLException e)
-                  {
-                     LOG.error(e.getMessage(), e);
-                  }
-               }
+               JDBCUtils.freeResources(resultSet, st, null);
             }
          }
       }
@@ -388,116 +363,56 @@ public class JDBCWorkspaceDataContainerChecker
       }
       finally
       {
-         // safely close connection
-         if (jdbcConn != null)
-         {
-            try
-            {
-               jdbcConn.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
+         JDBCUtils.freeResources(null, null, jdbcConn);
       }
    }
 
    /**
-    * Inspect ValueStorage. 
+    * Inspect ValueStorage.
     * <p>
     * All ValueDatas that have storage description (that means, value data stored in value storage) will be inspected:
     * <ul>
     * <li> does value exists in value storage;</li>
-    * <li> is this value readable;</li>
     * <ul>
-    *
-    * 
-    * @param vsPlugin - value storages
-    * @param inspectionLog - log where inspection results will be placed
-    * @return resulting InspectionLog
-    * @throws RepositoryException
-    * @throws IOException
     */
-   public static void checkValueStorage(final JDBCWorkspaceDataContainer jdbcDataContainer,
-      ValueStoragePluginProvider vsPlugin, InspectionReport report) throws RepositoryException, IOException
+   public void checkValueStorage(boolean autoRepair)
    {
-      final String valueRecordFormat = "ValueData[PROPERTY_ID=%s ORDER_NUM=%d STORAGE_DESC=%s]";
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
-      Connection connection = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
+      Connection connection = null;
       PreparedStatement st = null;
       ResultSet resultSet = null;
       try
       {
-         st =
-            connection.prepareStatement(jdbcDataContainer.multiDb
-               ? "SELECT PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_MVALUE where STORAGE_DESC is not null"
-               : "SELECT V.PROPERTY_ID, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM I"
-                  + " where I.CONTAINER_NAME='" + jdbcDataContainer.containerName
-                  + "' and V.PROPERTY_ID = I.ID and STORAGE_DESC is not null");
-
+         connection = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
+         st = vsInspectionQuery.prepareStatement(connection);
          resultSet = st.executeQuery();
-         // traverse all values, written to value storage
+
          if (resultSet.next())
          {
-            ValueIOChannel channel = null;
             do
             {
-               final String propertyId = resultSet.getString(DBConstants.COLUMN_VPROPERTY_ID);
-               final int orderNumber = resultSet.getInt(DBConstants.COLUMN_VORDERNUM);
-               final String storageDesc = resultSet.getString(DBConstants.COLUMN_VSTORAGE_DESC);
+               String propertyId = removeWorkspacePrefix(resultSet.getString(DBConstants.COLUMN_VPROPERTY_ID));
+               int orderNumber = resultSet.getInt(DBConstants.COLUMN_VORDERNUM);
+               String storageDesc = resultSet.getString(DBConstants.COLUMN_VSTORAGE_DESC);
 
-               // don't acquire channel if it is already open 
-               if (channel == null || !channel.getStorageId().equals(storageDesc))
-               {
-                  try
-                  {
-                     if (channel != null)
-                     {
-                        channel.close();
-                     }
-                     channel = vsPlugin.getChannel(storageDesc);
-                  }
-                  catch (ValueStorageNotFoundException e)
-                  {
-                     report.logBrokenObjectAndSetInconsistency("ValueStorage " + storageDesc + " not found. "
-                        + String.format(valueRecordFormat, propertyId, orderNumber, storageDesc), e.getMessage());
-                     continue;
-                  }
-               }
-
+               ValueIOChannel channel = null;
                try
                {
-                  // check value data
-                  final ValueIOChannel vdChannel = channel;
-                  SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
-                  {
-                     public Object run() throws ValueDataNotFoundException, IOException
-                     {
-                        vdChannel.checkValueData(
-                           jdbcDataContainer.multiDb ? propertyId : propertyId
-                              .substring(jdbcDataContainer.containerName.length()), orderNumber);
-                        return null;
-                     }
-                  });
+                  channel = getIOChannel(storageDesc);
+                  doCheckAndRepairValueData(channel, resultSet, propertyId, orderNumber, autoRepair);
                }
-               // process exception thrown by checkValueData
-               catch (PrivilegedActionException e)
+               catch (IOException e)
                {
-                  Throwable ex = e.getCause();
-                  if (ex instanceof ValueDataNotFoundException)
+                  logDescription("Unexpected exception during checking");
+                  logBrokenObjectAndSetInconsistency(getBrokenObject(resultSet, vsInspectionQuery.getFieldNames()));
+                  logExceptionAndSetInconsistency(e.getMessage(), e);
+               }
+               finally
+               {
+                  if (channel != null)
                   {
-                     report.logBrokenObjectAndSetInconsistency(
-                        String.format(valueRecordFormat, propertyId, orderNumber, storageDesc) + " not found.",
-                        ex.getMessage());
-                  }
-                  else if (ex instanceof IOException)
-                  {
-                     report.logExceptionAndSetInconsistency(ex.getMessage(), ex);
-                  }
-                  else
-                  {
-                     throw new RepositoryException(ex.getMessage(), ex);
+                     channel.close();
                   }
                }
             }
@@ -506,47 +421,157 @@ public class JDBCWorkspaceDataContainerChecker
       }
       catch (SQLException e)
       {
-         report.logExceptionAndSetInconsistency("Exception during ValueStorage inspection.", e);
+         logExceptionAndSetInconsistency("Unexpected exception during checking.", e);
+      }
+      catch (RepositoryException e)
+      {
+         logExceptionAndSetInconsistency("Unexpected exception during checking.", e);
       }
       finally
       {
-         // safely free resources
-         if (resultSet != null)
-         {
-            try
-            {
-               resultSet.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
+         JDBCUtils.freeResources(resultSet, st, connection);
+      }
+   }
 
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
+   private ValueIOChannel getIOChannel(String storageDesc) throws IOException
+   {
+      ValueIOChannel channel = null;
+      try
+      {
+         channel = vsPlugin.getChannel(storageDesc);
+      }
+      catch (ValueStorageNotFoundException e)
+      {
+         logDescription("ValueStorage " + storageDesc + " not found");
+         logExceptionAndSetInconsistency(e.getMessage(), e);
+      }
 
-         if (connection != null)
+      return channel;
+   }
+
+   private void doCheckAndRepairValueData(ValueIOChannel channel, ResultSet resultSet, String propertyId,
+      int orderNumber, boolean autoRepair) throws IOException
+   {
+      try
+      {
+         channel.checkValueData(propertyId, orderNumber);
+      }
+      catch (ValueDataNotFoundException e)
+      {
+         String brokenObject = getBrokenObject(resultSet, vsInspectionQuery.getFieldNames());
+
+         logDescription("ValueData not found");
+         logBrokenObjectAndSetInconsistency(brokenObject);
+         logExceptionAndSetInconsistency(e.getMessage(), e);
+
+         if (autoRepair)
          {
-            try
-            {
-               connection.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
+            channel.repairValueData(propertyId, orderNumber);
+            logComment("ValueData corresponding to " + brokenObject + " has been repaired. New empty file is created.");
          }
       }
    }
 
+   private String removeWorkspacePrefix(String str)
+   {
+      return jdbcDataContainer.multiDb ? str : str.substring(jdbcDataContainer.containerName.length());
+   }
+
+   private String getBrokenObject(ResultSet resultSet, String[] fieldNames)
+   {
+      StringBuilder record = new StringBuilder();
+      for (String fieldName : fieldNames)
+      {
+         record.append(fieldName);
+         record.append('=');
+
+         try
+         {
+            record.append(resultSet.getString(fieldName));
+         }
+         catch (SQLException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+         record.append(' ');
+      }
+      
+      return record.toString();
+   }
+
+   private void logBrokenObjectAndSetInconsistency(String brokenObject)
+   {
+      try
+      {
+         report.logBrokenObjectAndSetInconsistency(brokenObject);
+      }
+      catch (IOException e)
+      {
+         LOG.error(e.getMessage(), e);
+      }
+   }
+
+   private void logComment(String message)
+   {
+      try
+      {
+         report.logComment(message);
+      }
+      catch (IOException e1)
+      {
+         LOG.error(e1.getMessage(), e1);
+      }
+   }
+
+   private void logDescription(String description)
+   {
+      try
+      {
+         report.logDescription(description);
+      }
+      catch (IOException e1)
+      {
+         LOG.error(e1.getMessage(), e1);
+      }
+   }
+
+   private void logExceptionAndSetInconsistency(String message, Throwable e)
+   {
+      try
+      {
+         report.logExceptionAndSetInconsistency(message, e);
+      }
+      catch (IOException e1)
+      {
+         LOG.error(e1.getMessage(), e1);
+      }
+   }
+
+   private void initInspectionQueries()
+   {
+      String singleDbQuery =
+         "SELECT V.PROPERTY_ID, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM I"
+            + " where I.CONTAINER_NAME='" + jdbcDataContainer.containerName
+            + "' and V.PROPERTY_ID = I.ID and STORAGE_DESC is not null";
+      String multiDbQuery =
+         "SELECT PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_MVALUE where STORAGE_DESC is not null";
+
+      vsInspectionQuery =
+         new InspectionQuery(jdbcDataContainer.multiDb ? multiDbQuery : singleDbQuery, new String[]{
+            DBConstants.COLUMN_VPROPERTY_ID, DBConstants.COLUMN_VORDERNUM, DBConstants.COLUMN_VSTORAGE_DESC},
+            "Items with value data stored in value storage");
+
+      singleDbQuery =
+         "SELECT DISTINCT PARENT_ID from JCR_MITEM WHERE I_CLASS=2 "
+            + "AND (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')";
+
+      multiDbQuery =
+         "SELECT DISTINCT PARENT_ID from JCR_SITEM WHERE CONTAINER_NAME='"
+            + jdbcDataContainer.containerName
+            + "' AND I_CLASS=2 and (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')";
+
+      lockInspectionQuery =
+         new InspectionQuery(jdbcDataContainer.multiDb ? singleDbQuery : multiDbQuery,
+            new String[]{DBConstants.COLUMN_PARENTID}, "Items which have jcr:lockOwner and jcr:lockIsDeep properties");
+   }
 }

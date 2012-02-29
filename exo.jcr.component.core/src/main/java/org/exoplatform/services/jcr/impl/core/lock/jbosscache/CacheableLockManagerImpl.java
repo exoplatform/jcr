@@ -83,9 +83,13 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
 
    public static final String JBOSSCACHE_JDBC_CL_DATASOURCE = "jbosscache-cl-cache.jdbc.datasource";
 
-   public static final String JBOSSCACHE_JDBC_CL_NODE_COLUMN = "jbosscache-cl-cache.jdbc.node.type";
+   public static final String JBOSSCACHE_JDBC_CL_NODE_COLUMN_TYPE = "jbosscache-cl-cache.jdbc.node.type";
 
-   public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN = "jbosscache-cl-cache.jdbc.fqn.type";
+   public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN_TYPE = "jbosscache-cl-cache.jdbc.fqn.type";
+
+   public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN = "jbosscache-cl-cache.jdbc.fqn.column";
+
+   public static final String JBOSSCACHE_JDBC_CL_PARENT_COLUMN = "jbosscache-cl-cache.jdbc.parent.column";
 
    public static final String JBOSSCACHE_JDBC_TABLE_NAME = "jbosscache-cl-cache.jdbc.table.name";
 
@@ -426,16 +430,16 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          // will return JBOSSCACHE_JDBC_CL_AUTO. If parameter is present in configuration and 
          // equals to "auto", then it should be replaced 
          // with correct value for given database
-         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, JBOSSCACHE_JDBC_CL_AUTO)
+         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN_TYPE, JBOSSCACHE_JDBC_CL_AUTO)
             .equalsIgnoreCase(JBOSSCACHE_JDBC_CL_AUTO))
          {
-            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, blobType);
+            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN_TYPE, blobType);
          }
 
-         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, JBOSSCACHE_JDBC_CL_AUTO).equalsIgnoreCase(
+         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN_TYPE, JBOSSCACHE_JDBC_CL_AUTO).equalsIgnoreCase(
             JBOSSCACHE_JDBC_CL_AUTO))
          {
-            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, charType);
+            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN_TYPE, charType);
          }
       }
       else
