@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.impl;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.services.jcr.impl.checker.InspectionReport;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -78,7 +80,7 @@ public class TestInspectionLogFile extends TestCase
 
    public void testLogBrokenObjectInfo() throws Exception
    {
-      report.logBrokenObjectAndSetInconsistency("broken object descr", "message");
+      report.logBrokenObjectAndSetInconsistency("broken object descr");
 
       // read file;
       Reader reader = new FileReader(getFileFromReport());
@@ -86,7 +88,7 @@ public class TestInspectionLogFile extends TestCase
       String s = br.readLine();
       br.close();
 
-      assertEquals("broken object descr message", s);
+      assertEquals("broken object descr", s);
       assertTrue(report.hasInconsistency());
    }
 

@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl;
+package org.exoplatform.services.jcr.impl.checker;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 
@@ -100,13 +100,11 @@ public class InspectionReport
    /**
     * Adds detailed event to log.
     */
-   public void logBrokenObjectAndSetInconsistency(String brokenObjectDesc, String comment) throws IOException
+   public void logBrokenObjectAndSetInconsistency(String brokenObject) throws IOException
    {
       setInconsistency();
 
-      writer.write(brokenObjectDesc);
-      writer.write(WHITE_SPACE);
-      writer.write(comment);
+      writer.write(brokenObject);
       writer.write(DELIMITER);
       writer.flush();
    }

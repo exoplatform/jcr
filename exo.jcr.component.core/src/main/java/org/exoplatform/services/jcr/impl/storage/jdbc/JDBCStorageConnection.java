@@ -2701,6 +2701,12 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     */
    protected abstract void deleteLockProperties() throws SQLException;
 
+   /**
+    * Deletes [http://www.jcp.org/jcr/1.0]lockOwner and [http://www.jcp.org/jcr/1.0]lockIsDeep
+    * properties directly from DB for specific parent.
+    */
+   protected abstract void deleteLockProperties(String nodeIdentifier) throws SQLException;
+
    protected abstract ResultSet findReferences(String nodeIdentifier) throws SQLException;
 
    protected abstract int deleteItemByIdentifier(String identifier) throws SQLException;

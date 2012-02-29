@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc;
+package org.exoplatform.services.jcr.impl.checker;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,10 +28,6 @@ import java.sql.SQLException;
  */
 public class InspectionQuery
 {
-   /**
-    * Data class, contains a combination of SQL states, description, field names and status  
-    */
-
    /**
     * SQL query that must be executed.
     */
@@ -47,6 +43,9 @@ public class InspectionQuery
     */
    public String[] fieldNames;
 
+   /**
+    * Data class, contains a combination of SQL states, description, field names and status  
+    */
    public InspectionQuery(String statement, String[] fieldNames, String headerMessage)
    {
       this.statement = statement;

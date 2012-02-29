@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.checker.RepositoryCheckController;
 
 import java.io.File;
 

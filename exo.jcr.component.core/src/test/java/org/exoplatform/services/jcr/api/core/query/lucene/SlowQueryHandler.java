@@ -19,7 +19,7 @@ package org.exoplatform.services.jcr.api.core.query.lucene;
 import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.InspectionReport;
+import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.AbstractQueryHandler;

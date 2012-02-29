@@ -173,44 +173,23 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
     */
    public void checkValueData(String propertyId, int orderNumber) throws ValueDataNotFoundException, IOException
    {
-      try
+      File f = getFile(propertyId, orderNumber);
+      if (!f.exists())
       {
-         //check that file exists
-         File f = getFile(propertyId, orderNumber);
-         if (!f.exists())
-         {
-            throw new ValueDataNotFoundException("Value data of property with [id=" + propertyId + ", ordernum="
-               + orderNumber + "] do not exists.");
-         }
-         else
-         {
-            //check readability
-            InputStream is = new FileInputStream(f);
-            try
-            {
-               is.read();
-            }
-            finally
-            {
-               try
-               {
-                  is.close();
-               }
-               catch (IOException e)
-               {
-                  if (LOG.isTraceEnabled())
-                  {
-                     LOG.trace("An exception occurred: " + e.getMessage());
-                  }
-               }
-            }
-         }
+         throw new ValueDataNotFoundException("Value data corresponding to property with [id=" + propertyId
+            + ", ordernum=" + orderNumber + "] does not exist.");
       }
-      catch (IOException e)
-      {
-         throw new ValueDataNotFoundException("Value data of property [id=" + propertyId + ", ordernum=" + orderNumber
-            + "] can not be read.");
+   }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void repairValueData(String propertyId, int orderNumber) throws IOException
+   {
+      File f = getFile(propertyId, orderNumber);
+      if (!f.createNewFile())
+      {
+         throw new IOException("Can not create empty file " + f.getAbsolutePath());
       }
    }
 

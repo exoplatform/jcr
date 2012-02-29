@@ -16,10 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
-import org.exoplatform.services.jcr.impl.storage.jdbc.InspectionQuery;
+
+import java.sql.SQLException;
 
 /**
  * Provides means for nodes' IDs extraction in case we use {@link CacheableLockManagerImpl}
@@ -44,12 +45,17 @@ public class JBCShareableLockTableHandler extends JBCLockTableHandler implements
    /**
     * {@inheritDoc}
     */
-   protected InspectionQuery getQuery() throws RepositoryConfigurationException
+   protected InspectionQuery getSelectQuery() throws SQLException
    {
-      return new InspectionQuery("SELECT * FROM "
-         + lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_TABLE_NAME) + " WHERE PARENT='/"
-         + workspaceEntry.getUniqueName() + "/" + CacheableLockManagerImpl.LOCKS + "'", new String[]{},
+      return new InspectionQuery("SELECT * FROM " + getTableName() + " WHERE " + getParentColumn() + "='/"
+         + workspaceEntry.getUniqueName() + "/" + CacheableLockManagerImpl.LOCKS + "'", new String[]{getIdColumn()},
          "Locks table match");
    }
 
+   protected InspectionQuery getDeleteQuery(String nodeId) throws SQLException
+   {
+      return new InspectionQuery("DELETE FROM " + getTableName() + " WHERE " + getIdColumn() + "='/"
+         + workspaceEntry.getUniqueName() + "/" + CacheableLockManagerImpl.LOCKS + "/" + nodeId + "'", new String[]{},
+         "");
+   }
 }

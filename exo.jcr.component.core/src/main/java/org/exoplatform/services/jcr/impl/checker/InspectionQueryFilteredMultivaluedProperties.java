@@ -16,7 +16,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc;
+package org.exoplatform.services.jcr.impl.checker;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -26,7 +27,7 @@ import java.sql.SQLException;
  * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
  * @version $Id: InspectionQueryFilteredMultivaluedProperties.java 34360 16.02.2012 andrew.plotnikov $
  */
-class InspectionQueryFilteredMultivaluedProperties extends InspectionQuery
+public class InspectionQueryFilteredMultivaluedProperties extends InspectionQuery
 {
 
    /**

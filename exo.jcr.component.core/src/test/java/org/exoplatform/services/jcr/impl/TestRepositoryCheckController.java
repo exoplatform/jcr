@@ -29,7 +29,8 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.impl.RepositoryCheckController.DataStorage;
+import org.exoplatform.services.jcr.impl.checker.RepositoryCheckController;
+import org.exoplatform.services.jcr.impl.checker.RepositoryCheckController.DataStorage;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -63,9 +64,6 @@ import javax.sql.DataSource;
  */
 public class TestRepositoryCheckController extends BaseStandaloneTest
 {
-
-   private TesterRepositoryCheckController checkController;
-
    private static boolean SHARED_CACHE = true;
 
    private static boolean NOT_SHARED_CACHE = false;
@@ -95,16 +93,25 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    }
 
-   public void setUp() throws Exception
+   public void tearDown() throws Exception
    {
-      super.setUp();
+      for (File file : new File(".").listFiles())
+      {
+         if (file.getName().startsWith("report"))
+         {
+            file.delete();
+         }
+      }
+
+      super.tearDown();
    }
 
    public void testDB() throws Exception
    {
-      checkController = new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
+      TesterRepositoryCheckController checkController =
+         new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
 
-      String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
+      String result = checkController.checkAndRepair(new DataStorage[]{DataStorage.DB}, false);
       assertNotNull(result);
       assertTrue("Repository data is not consistent, result: " + result,
          result.startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
@@ -132,13 +139,12 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.save();
       node.lock(false, false);
 
-      checkController = new TesterRepositoryCheckController(repository);
-      String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      String result = checkController.checkAndRepair(new DataStorage[]{DataStorage.DB}, false);
       assertNotNull(result);
 
       assertTrue("Repository data is not consistent, result: " + result,
          result.startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
    }
 
    public void testInconsistentLocksInDataBase() throws Exception
@@ -168,6 +174,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       node.addMixin("mix:lockable");
       session.save();
       node.lock(false, false);
+
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
       WorkspaceEntry workspaceEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       String sourceName = workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
@@ -208,12 +216,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.commit();
       conn.close();
 
-      checkController = new TesterRepositoryCheckController(repository);
-      String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
-      assertNotNull(result);
-      assertTrue("Repository data is consistent, result: " + result,
-         result.startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+
+      checkController.repairDataBase("yes");
+      assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
    }
 
    private void checkInconsistentLocksInLockTable(boolean cacheShared, boolean isMultiDb) throws Exception
@@ -265,17 +271,17 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.commit();
       conn.close();
 
-      checkController = new TesterRepositoryCheckController(repository);
-      String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB});
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      String result = checkController.checkAndRepair(new DataStorage[]{DataStorage.DB}, false);
       assertNotNull(result);
       assertTrue("Repository data is consistent, result: " + result,
          result.startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    public void testValueStorage() throws Exception
    {
-      checkController = new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
       File f = this.createBLOBTempFile(20);
       InputStream is = new FileInputStream(f);
@@ -286,7 +292,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
          root.save();
 
-         String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.VALUE_STORAGE});
+         String result = checkController.checkAndRepair(new DataStorage[]{DataStorage.VALUE_STORAGE}, false);
          assertNotNull(result);
          assertTrue("Repository data is not consistent, result: " + result,
             result.startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
@@ -300,9 +306,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    public void testSearchIndex() throws Exception
    {
-      checkController = new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      String result = checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.LUCENE_INDEX});
+      String result = checkController.checkAndRepair(new DataStorage[]{DataStorage.LUCENE_INDEX}, false);
       assertNotNull(result);
       assertTrue("Repository data is not consistent, result: " + result,
          result.startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
@@ -310,12 +316,12 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    public void testAll() throws Exception
    {
-      checkController = new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
       String result =
-         checkController.checkRepositoryDataConsistency(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE,
-            DataStorage.LUCENE_INDEX});
-      checkController.getLastLogFile().delete();
+         checkController.checkAndRepair(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE,
+            DataStorage.LUCENE_INDEX}, false);
+
 
       assertNotNull(result);
       assertTrue("Repository data is not consistent, result: " + result,
@@ -337,10 +343,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositorySearchIndexConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkIndex().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -361,9 +367,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositorySearchIndexConsistency().startsWith(
+      assertTrue(checkController.checkIndex().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -381,10 +387,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositorySearchIndexConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkIndex().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -422,9 +428,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       sm.onSaveItems(log);
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositorySearchIndexConsistency().startsWith(
+      assertTrue(checkController.checkIndex().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -442,10 +448,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositorySearchIndexConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkIndex().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -483,9 +489,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       sm.onSaveItems(log);
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositorySearchIndexConsistency().startsWith(
+      assertTrue(checkController.checkIndex().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -515,10 +521,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -539,9 +545,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -571,10 +577,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -608,9 +614,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -640,10 +646,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -664,9 +670,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -697,10 +703,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -717,9 +723,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    private void checkDBUsecasesIncorrectValueRecords2(ManageableRepository repository) throws Exception
@@ -732,10 +738,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -752,9 +758,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -783,10 +789,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -806,9 +812,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -839,10 +845,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -859,9 +865,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    private void checkDBUsecasesPropertiesHasEmptyMultiValueRecord(ManageableRepository repository) throws Exception
@@ -874,10 +880,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -910,10 +916,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -930,9 +936,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
    }
 
    /**
@@ -964,10 +970,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       PropertyIterator iter = node.getProperties();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -996,9 +1002,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
    }
 
    private void checkDBUsecasesNodeHasPrimaryTypeProperties(ManageableRepository repository) throws Exception
@@ -1012,10 +1017,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       PropertyIterator iter = node.getProperties();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+
 
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
       boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
@@ -1048,9 +1053,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is inconsistent
-      assertTrue(checkController.checkRepositoryDataBaseConsistency().startsWith(
+      assertTrue(checkController.checkDataBase().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
    }
 
    /**
@@ -1082,10 +1086,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       session.logout();
 
       // repository is consistent
-      checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkRepositoryValueStorageConsistency().startsWith(
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkValueStorage().startsWith(
          RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
 
       // remove the file from the value storage
       String vsPath =
@@ -1096,9 +1099,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       assertTrue(vsFile.exists());
       assertTrue(vsFile.delete());
 
-      // repository is inconsistent
-      assertTrue(checkController.checkRepositoryValueStorageConsistency().startsWith(
-         RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-      checkController.getLastLogFile().delete();
+      assertTrue(checkController.checkValueStorage()
+         .startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+
+      checkController.repairValueStorage("yes");
+      assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
    }
 }
