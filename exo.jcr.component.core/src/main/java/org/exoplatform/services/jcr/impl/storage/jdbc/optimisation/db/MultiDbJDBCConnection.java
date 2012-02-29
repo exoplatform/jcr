@@ -1165,11 +1165,11 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
        { 
           findMaxPropertyVersions = dbConnection.prepareStatement(FIND_MAX_PROPERTY_VERSIONS); 
        } 
-....... 
+
        findMaxPropertyVersions.setString(1, getInternalId(parentId)); 
        findMaxPropertyVersions.setString(2, name); 
        findMaxPropertyVersions.setInt(3, index); 
-. 
+
        return findMaxPropertyVersions.executeQuery(); 
     } 
 
