@@ -656,10 +656,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.commit();
       conn.close();
 
-      // repository is inconsistent
-      assertTrue(checkController.checkDataBase().startsWith(
-         RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
+      checkController.repairDataBase("yes");
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
    }
 
    /**
@@ -818,9 +818,10 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.close();
 
       // repository is inconsistent
-      assertTrue(checkController.checkDataBase().startsWith(
-         RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
+      checkController.repairDataBase("yes");
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
    }
 
    /**

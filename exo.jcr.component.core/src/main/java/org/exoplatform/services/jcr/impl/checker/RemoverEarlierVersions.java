@@ -18,11 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.checker;
 
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -44,5 +48,23 @@ public class RemoverEarlierVersions extends AbstractInconsistencyRepair
     */
    protected void repairInternally(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
    {
+      try
+      {
+         PropertyData data = (PropertyData)conn.getItemData(exctractId(resultSet));
+         int maxVersion = conn.getMaxPropertyVersion(data);
+
+         if (resultSet.getInt(DBConstants.COLUMN_VERSION) < maxVersion)
+         {
+            conn.delete(data);
+         }
+      }
+      catch (IllegalStateException e)
+      {
+         throw new SQLException(e);
+      }
+      catch (RepositoryException e)
+      {
+         throw new SQLException(e);
+      }
    }
 }
