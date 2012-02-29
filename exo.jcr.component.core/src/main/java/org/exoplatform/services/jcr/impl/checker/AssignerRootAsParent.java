@@ -31,9 +31,6 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
-import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,51 +43,26 @@ import javax.jcr.RepositoryException;
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
  * @version $Id: AssignRootAsParentRepair.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class AssignRootAsParentRepair implements InconsistencyRepair
+public class AssignerRootAsParent extends AbstractInconsistencyRepair
 {
 
-   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AssignRootAsParentRepair");
-
-   protected final WorkspaceStorageConnectionFactory connFactory;
-
-   public AssignRootAsParentRepair(WorkspaceStorageConnectionFactory connFactory)
+   public AssignerRootAsParent(WorkspaceStorageConnectionFactory connFactory)
    {
-      this.connFactory = connFactory;
+      super(connFactory);
    }
 
    /**
     * {@inheritDoc}
     */
-   public void doRepair(ResultSet resultSet) throws SQLException
+   protected void repairInternally(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
    {
-      WorkspaceStorageConnection conn = null;
-      try
+      if (resultSet.getInt(DBConstants.COLUMN_CLASS) == 1)
       {
-         conn = connFactory.openConnection();
-         if (!(conn instanceof JDBCStorageConnection))
-         {
-            throw new SQLException("Connection is instance of " + conn);
-         }
-
-         if (resultSet.getInt(DBConstants.COLUMN_CLASS) == 1)
-         {
-            repairNode((JDBCStorageConnection)conn, resultSet);
-         }
-         else
-         {
-            repairProperty((JDBCStorageConnection)conn, resultSet);
-         }
-
-         conn.commit();
+         repairNode(conn, resultSet);
       }
-      catch (RepositoryException e)
+      else
       {
-         rollback(conn);
-         throw new SQLException(e);
-      }
-      finally
-      {
-         closeConnection(conn);
+         repairProperty(conn, resultSet);
       }
    }
 
@@ -151,41 +123,6 @@ public class AssignRootAsParentRepair implements InconsistencyRepair
       catch (IllegalNameException e)
       {
          throw new SQLException(e);
-      }
-   }
-
-   private void closeConnection(WorkspaceStorageConnection conn) throws SQLException
-   {
-      try
-      {
-         conn.close();
-      }
-      catch (IllegalStateException e)
-      {
-         throw new SQLException(e);
-      }
-      catch (RepositoryException e)
-      {
-         throw new SQLException(e);
-      }
-   }
-
-   private void rollback(WorkspaceStorageConnection conn)
-   {
-      try
-      {
-         if (conn != null)
-         {
-            conn.rollback();
-         }
-      }
-      catch (IllegalStateException e)
-      {
-         LOG.error("Can not rollback", e);
-      }
-      catch (RepositoryException e)
-      {
-         LOG.error("Can not rollback", e);
       }
    }
 

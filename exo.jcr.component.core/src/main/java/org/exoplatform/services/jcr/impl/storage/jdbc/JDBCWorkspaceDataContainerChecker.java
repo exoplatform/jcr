@@ -224,8 +224,19 @@ public class JDBCWorkspaceDataContainerChecker
                      logBrokenObjectAndSetInconsistency(getBrokenObject(resultSet, query.getFieldNames()));
                      if (autoRepair)
                      {
-                        query.getRepair().doRepair(resultSet);
-                        logComment("Inconsistency has been fixed");
+                        try
+                        {
+                           query.getRepair().doRepair(resultSet);
+                           logComment("Inconsistency has been fixed");
+                        }
+                        catch (SQLException e)
+                        {
+                           if (LOG.isTraceEnabled())
+                           {
+                              LOG.trace(e.getMessage(), e);
+                           }
+                        }
+
                      }
                   }
                   while (resultSet.next());
