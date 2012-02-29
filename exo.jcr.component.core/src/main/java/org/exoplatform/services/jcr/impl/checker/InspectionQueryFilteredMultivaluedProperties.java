@@ -33,9 +33,10 @@ public class InspectionQueryFilteredMultivaluedProperties extends InspectionQuer
    /**
     * {@inheritDoc}
     */
-   public InspectionQueryFilteredMultivaluedProperties(String statement, String[] fieldNames, String headerMessage)
+   public InspectionQueryFilteredMultivaluedProperties(String statement, String[] fieldNames, String headerMessage,
+      InconsistencyRepair repair)
    {
-      super(statement, fieldNames, headerMessage);
+      super(statement, fieldNames, headerMessage, repair);
    }
 
    /**

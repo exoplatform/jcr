@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.checker.DummyRepair;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 import org.exoplatform.services.jcr.impl.core.lock.AbstractLockTableHandler;
 import org.exoplatform.services.log.ExoLogger;
@@ -53,7 +54,7 @@ public class JBCLockTableHandler extends AbstractLockTableHandler
    protected InspectionQuery getSelectQuery() throws SQLException
    {
       return new InspectionQuery("SELECT * FROM " + getTableName() + " WHERE " + getParentColumn() + "='/"
-         + CacheableLockManagerImpl.LOCKS + "'", new String[]{getIdColumn()}, "Locks table match");
+         + CacheableLockManagerImpl.LOCKS + "'", new String[]{getIdColumn()}, "Locks table match", new DummyRepair());
    }
 
    /**
@@ -62,7 +63,7 @@ public class JBCLockTableHandler extends AbstractLockTableHandler
    protected InspectionQuery getDeleteQuery(String nodeId) throws SQLException
    {
       return new InspectionQuery("DELETE FROM " + getTableName() + " WHERE " + getIdColumn() + "='/"
-         + CacheableLockManagerImpl.LOCKS + "/" + nodeId + "'", new String[]{}, "");
+         + CacheableLockManagerImpl.LOCKS + "/" + nodeId + "'", new String[]{}, "", new DummyRepair());
    }
 
    /**

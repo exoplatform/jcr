@@ -203,68 +203,73 @@ public class DBConstants
    /**
     * COLUMN_ID.
     */
-   protected static final String COLUMN_ID = "ID";
+   public static final String COLUMN_ID = "ID";
 
    /**
     * COLUMN_PARENTID.
     */
-   protected static final String COLUMN_PARENTID = "PARENT_ID";
+   public static final String COLUMN_PARENTID = "PARENT_ID";
 
    /**
     * COLUMN_NAME.
     */
-   protected static final String COLUMN_NAME = "NAME";
+   public static final String COLUMN_NAME = "NAME";
 
    /**
     * COLUMN_VERSION.
     */
-   protected static final String COLUMN_VERSION = "VERSION";
+   public static final String COLUMN_VERSION = "VERSION";
+
+   /**
+    * CONTAINER_NAME. Exists only for single-db.
+    */
+   public static final String CONTAINER_NAME = "CONTAINER_NAME";
 
    /**
     * COLUMN_CLASS.
     */
-   protected static final String COLUMN_CLASS = "I_CLASS";
+   public static final String COLUMN_CLASS = "I_CLASS";
 
    /**
     * COLUMN_INDEX.
     */
-   protected static final String COLUMN_INDEX = "I_INDEX";
+   public static final String COLUMN_INDEX = "I_INDEX";
 
    /**
     * COLUMN_NORDERNUM.
     */
-   protected static final String COLUMN_NORDERNUM = "N_ORDER_NUM";
+   public static final String COLUMN_NORDERNUM = "N_ORDER_NUM";
 
    /**
     * COLUMN_PTYPE.
     */
-   protected static final String COLUMN_PTYPE = "P_TYPE";
+   public static final String COLUMN_PTYPE = "P_TYPE";
 
    /**
     * COLUMN_PMULTIVALUED.
     */
-   protected static final String COLUMN_PMULTIVALUED = "P_MULTIVALUED";
+   public static final String COLUMN_PMULTIVALUED = "P_MULTIVALUED";
 
    // VALUE table
    /**
     * PROPERTY_ID
     */
-   protected static final String COLUMN_VPROPERTY_ID = "PROPERTY_ID";
+   public static final String COLUMN_VPROPERTY_ID = "PROPERTY_ID";
 
    /**
     * COLUMN_VDATA.
     */
-   protected static final String COLUMN_VDATA = "DATA";
+   public static final String COLUMN_VDATA = "DATA";
 
    /**
     * COLUMN_VORDERNUM.
     */
-   protected static final String COLUMN_VORDERNUM = "ORDER_NUM";
+   public static final String COLUMN_VORDERNUM = "ORDER_NUM";
 
    /**
     * COLUMN_VSTORAGE_DESC.
     */
-   protected static final String COLUMN_VSTORAGE_DESC = "STORAGE_DESC";
+   public static final String COLUMN_VSTORAGE_DESC = "STORAGE_DESC";
 
    // Dialects
    /**

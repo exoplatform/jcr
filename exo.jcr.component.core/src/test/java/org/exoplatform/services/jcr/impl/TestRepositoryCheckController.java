@@ -500,6 +500,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testDBUsecasesTheParentIdIsIdOfThisNodeSingleDB() throws Exception
    {
       checkDBUsecasesTheParentIdIsIdOfThisNode(helper.createRepository(container, false, false));
+      checkDBUsecasesTheParentIdIsIdOfThisNode2(helper.createRepository(container, false, false));
    }
 
    /**
@@ -508,6 +509,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testDBUsecasesTheParentIdIsIdOfThisNodeMultiDB() throws Exception
    {
       checkDBUsecasesTheParentIdIsIdOfThisNode(helper.createRepository(container, true, false));
+      checkDBUsecasesTheParentIdIsIdOfThisNode2(helper.createRepository(container, true, false));
    }
 
    private void checkDBUsecasesTheParentIdIsIdOfThisNode(ManageableRepository repository) throws Exception
@@ -544,9 +546,49 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       conn.commit();
       conn.close();
 
-      // repository is inconsistent
-      assertTrue(checkController.checkDataBase().startsWith(
-         RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+
+      checkController.repairDataBase("yes");
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+
+   }
+
+   private void checkDBUsecasesTheParentIdIsIdOfThisNode2(ManageableRepository repository) throws Exception
+   {
+      // create repository and add property
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      NodeImpl node = (NodeImpl)session.getRootNode().addNode("testNode");
+      PropertyImpl prop = (PropertyImpl)node.setProperty("prop", "test");
+      session.save();
+      session.logout();
+
+      // repository is consistent
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+
+      WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
+      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+
+      // change ITEM table
+      String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+
+      Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
+
+      conn.prepareStatement("DROP INDEX JCR_IDX_" + (isMultiDb ? "M" : "S") + "ITEM_PARENT").execute();
+      conn.prepareStatement("DROP INDEX JCR_IDX_" + (isMultiDb ? "M" : "S") + "ITEM_PARENT_NAME").execute();
+      conn.prepareStatement(
+         "UPDATE JCR_" + (isMultiDb ? "M" : "S") + "ITEM SET PARENT_ID = '" + (isMultiDb ? "" : wsEntry.getName())
+            + prop.getInternalIdentifier() + "' WHERE ID='" + (isMultiDb ? "" : wsEntry.getName())
+            + prop.getInternalIdentifier() + "'").execute();
+
+      conn.commit();
+      conn.close();
+
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+
+      checkController.repairDataBase("yes");
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
    }
 
@@ -681,7 +723,6 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testDBUsecasesIncorrectValueRecordsSingleDB() throws Exception
    {
       checkDBUsecasesIncorrectValueRecords(helper.createRepository(container, false, false));
-      checkDBUsecasesIncorrectValueRecords2(helper.createRepository(container, false, false));
    }
 
    /**
@@ -690,7 +731,6 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    public void testDBUsecasesIncorrectValueRecordsMultiDB() throws Exception
    {
       checkDBUsecasesIncorrectValueRecords(helper.createRepository(container, true, false));
-      checkDBUsecasesIncorrectValueRecords2(helper.createRepository(container, true, false));
    }
 
    private void checkDBUsecasesIncorrectValueRecords(ManageableRepository repository) throws Exception
@@ -717,41 +757,6 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
       conn.prepareStatement(
          "UPDATE JCR_" + (isMultiDb ? "M" : "S") + "VALUE SET STORAGE_DESC = 'unexisted-desc' WHERE PROPERTY_ID = '"
-            + (isMultiDb ? "" : wsEntry.getName()) + prop.getInternalIdentifier() + "'").execute();
-
-      conn.commit();
-      conn.close();
-
-      // repository is inconsistent
-      assertTrue(checkController.checkDataBase().startsWith(
-         RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
-
-   }
-
-   private void checkDBUsecasesIncorrectValueRecords2(ManageableRepository repository) throws Exception
-   {
-      // create repository and add property
-      SessionImpl session =
-         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
-      PropertyImpl prop = (PropertyImpl)session.getRootNode().addNode("testNode").setProperty("prop", "test");
-      session.save();
-      session.logout();
-
-      // repository is consistent
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkDataBase().startsWith(
-         RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-
-
-      WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
-
-      // change VALUE table
-      String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-
-      Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
-      conn.prepareStatement(
-         "UPDATE JCR_" + (isMultiDb ? "M" : "S") + "VALUE SET DATA = NULL WHERE PROPERTY_ID = '"
             + (isMultiDb ? "" : wsEntry.getName()) + prop.getInternalIdentifier() + "'").execute();
 
       conn.commit();
