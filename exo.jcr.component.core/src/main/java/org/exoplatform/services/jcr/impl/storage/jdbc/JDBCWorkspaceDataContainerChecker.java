@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.checker.AssignRootAsParentRepair;
+import org.exoplatform.services.jcr.impl.checker.AssignerRootAsParent;
 import org.exoplatform.services.jcr.impl.checker.DummyRepair;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 import org.exoplatform.services.jcr.impl.checker.InspectionQueryFilteredMultivaluedProperties;
@@ -456,7 +456,7 @@ public class JDBCWorkspaceDataContainerChecker
          : "select * from JCR_SITEM I where I.CONTAINER_NAME='" + jdbcDataContainer.containerName
             + "' and NOT EXISTS(select * from JCR_SITEM P where P.ID = I.PARENT_ID)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS},
-            "Items that do not have parent nodes", new AssignRootAsParentRepair(jdbcDataContainer
+            "Items that do not have parent nodes", new AssignerRootAsParent(jdbcDataContainer
                .getConnectionFactory())));
 
       itemsInspectionQuery
@@ -524,7 +524,7 @@ public class JDBCWorkspaceDataContainerChecker
          : "select * from JCR_SITEM I where I.ID = I.PARENT_ID and I.CONTAINER_NAME='"
             + jdbcDataContainer.containerName + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "An item is its own parent.",
-         new AssignRootAsParentRepair(jdbcDataContainer.getConnectionFactory())));
+         new AssignerRootAsParent(jdbcDataContainer.getConnectionFactory())));
 
       itemsInspectionQuery
          .add(new InspectionQuery(

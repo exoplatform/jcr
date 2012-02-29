@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.checker.DummyRepair;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 import org.exoplatform.services.jcr.impl.core.lock.AbstractLockTableHandler;
 import org.exoplatform.services.log.ExoLogger;
@@ -54,7 +55,8 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
     */
    protected InspectionQuery getSelectQuery() throws SQLException
    {
-      return new InspectionQuery("SELECT * FROM " + getTableName(), new String[]{getIdColumn()}, "Locks table match");
+      return new InspectionQuery("SELECT * FROM " + getTableName(), new String[]{getIdColumn()}, "Locks table match",
+         new DummyRepair());
    }
 
    /**
@@ -63,7 +65,7 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
    public InspectionQuery getDeleteQuery(String nodeId) throws SQLException
    {
       return new InspectionQuery("DELETE FROM " + getTableName() + " WHERE " + getIdColumn() + "='" + nodeId + "'",
-         new String[]{}, "");
+         new String[]{}, "", new DummyRepair());
    }
 
    /**
