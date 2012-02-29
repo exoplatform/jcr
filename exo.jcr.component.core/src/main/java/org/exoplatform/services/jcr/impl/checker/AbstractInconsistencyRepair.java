@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.checker;
 
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
@@ -73,29 +74,9 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
          rollback(conn);
          throw e;
       }
-      finally
-      {
-         closeConnection(conn);
-      }
    }
 
    abstract void repairInternally(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException;
-
-   protected void closeConnection(WorkspaceStorageConnection conn)
-   {
-      try
-      {
-         conn.close();
-      }
-      catch (IllegalStateException e)
-      {
-         LOG.error("Can not close connection", e);
-      }
-      catch (RepositoryException e)
-      {
-         LOG.error("Can not close connection", e);
-      }
-   }
 
    protected void rollback(WorkspaceStorageConnection conn)
    {
@@ -116,4 +97,17 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       }
    }
 
+   protected String exctractId(ResultSet resultSet) throws SQLException
+   {
+      String containerName = "";
+      try
+      {
+         containerName = resultSet.getString(DBConstants.CONTAINER_NAME);
+      }
+      catch (SQLException e)
+      {
+      }
+
+      return resultSet.getString(DBConstants.COLUMN_ID).substring(containerName.length());
+   }
 }

@@ -28,6 +28,8 @@ import org.exoplatform.services.jcr.impl.checker.DummyRepair;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 import org.exoplatform.services.jcr.impl.checker.InspectionQueryFilteredMultivaluedProperties;
 import org.exoplatform.services.jcr.impl.checker.InspectionReport;
+import org.exoplatform.services.jcr.impl.checker.RemoverEarlierVersions;
+import org.exoplatform.services.jcr.impl.checker.RemoverValueRecords;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandlerFactory;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
@@ -491,14 +493,14 @@ public class JDBCWorkspaceDataContainerChecker
          DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "A node that doesn't have primary type property",
          new DummyRepair()));
 
-      itemsInspectionQuery
-         .add(new InspectionQuery(jdbcDataContainer.multiDb
-            ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
-               + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
-            : "select * from JCR_SVALUE V where NOT EXISTS(select * from JCR_SITEM P "
-               + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
-            DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not related property record",
-            new DummyRepair()));
+      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
+         ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
+            + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
+         : "select * from JCR_SVALUE V where NOT EXISTS(select * from JCR_SITEM P "
+            + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
+         DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not related property record",
+         new RemoverValueRecords(jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerName,
+            jdbcDataContainer.multiDb)));
 
       // The differences in the queries by DB dialect.
       String statement;
@@ -550,7 +552,7 @@ public class JDBCWorkspaceDataContainerChecker
                   + " and I.VERSION != J.VERSION)",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME,
                DBConstants.COLUMN_VERSION, DBConstants.COLUMN_CLASS, DBConstants.COLUMN_INDEX},
-            "Several versions of same item.", new DummyRepair()));
+            "Several versions of same item.", new RemoverEarlierVersions(jdbcDataContainer.getConnectionFactory())));
 
       itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM P, JCR_MVALUE V where P.ID=V.PROPERTY_ID and P.P_TYPE=9 and NOT EXISTS "

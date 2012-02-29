@@ -190,9 +190,8 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
          "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V";
 
-      FIND_LOWEST_PROPERTY_VERSIONS =
-         "select max(VERSION) as MAX_VERSION, PARENT_ID, NAME, CONTAINER_NAME, I_CLASS, I_INDEX from JCR_SITEM WHERE I_CLASS=2"
-            + " GROUP BY PARENT_ID, CONTAINER_NAME, NAME, I_CLASS, I_INDEX HAVING count(VERSION) > 1";
+      FIND_MAX_PROPERTY_VERSIONS =
+         "select max(VERSION) FROM JCR_SITEM WHERE PARENT_ID=? and CONTAINER_NAME=? and NAME=? and I_INDEX=? and I_CLASS=2";
 
       INSERT_NODE =
          "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,?,"
@@ -1065,5 +1064,23 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             }
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findMaxPropertyVersion(String parentId, String name, int index) throws SQLException
+   {
+      if (findMaxPropertyVersions == null)
+      {
+         findMaxPropertyVersions = dbConnection.prepareStatement(FIND_MAX_PROPERTY_VERSIONS);
+      }
+
+      findMaxPropertyVersions.setString(1, getInternalId(parentId));
+      findMaxPropertyVersions.setString(2, containerName);
+      findMaxPropertyVersions.setString(3, name);
+      findMaxPropertyVersions.setInt(4, index);
+
+      return findMaxPropertyVersions.executeQuery();
    }
 }
