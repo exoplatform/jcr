@@ -210,11 +210,6 @@ public class IndexInfos
          out = new IndexOutputStream(dir.createOutput(to));
          in = new IndexInputStream(dir.openInput(from));
          DirectoryHelper.transfer(in, out);
-         // delete old one
-         if (dir.fileExists(from))
-         {
-            dir.deleteFile(from);
-         }
       }
       finally
       {
@@ -228,6 +223,18 @@ public class IndexInfos
             out.flush();
             out.close();
          }
+      }
+      try
+      {
+         // delete old one
+         if (dir.fileExists(from))
+         {
+            dir.deleteFile(from);
+         }
+      }
+      catch (Exception e)
+      {
+         // do noting. Will be removed later
       }
    }
 
