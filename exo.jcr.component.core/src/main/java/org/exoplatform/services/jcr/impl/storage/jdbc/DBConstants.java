@@ -141,6 +141,11 @@ public class DBConstants extends DialectConstants
    protected String FIND_PROPERTIES_BY_PARENTID;
 
    /**
+    * FIND_LOWEST_PROPERTY_VERSIONS.
+    */
+   protected String FIND_LOWEST_PROPERTY_VERSIONS;
+
+   /**
     * INSERT_NODE.
     */
    protected String INSERT_NODE;

@@ -136,6 +136,10 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by ID";
 
+      FIND_LOWEST_PROPERTY_VERSIONS =
+         "select max(VERSION) as MAX_VERSION, PARENT_ID, NAME, I_CLASS, I_INDEX from JCR_SITEM WHERE I_CLASS=2"
+            + " GROUP BY PARENT_ID, NAME, I_CLASS, I_INDEX HAVING count(VERSION) > 1";
+
       INSERT_NODE =
          "insert into JCR_MITEM(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,"
             + I_CLASS_NODE + ",?,?)";

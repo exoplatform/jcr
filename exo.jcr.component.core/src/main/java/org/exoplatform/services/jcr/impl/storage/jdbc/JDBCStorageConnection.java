@@ -167,6 +167,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected PreparedStatement findPropertiesByParentId;
 
+   protected PreparedStatement findLowestPropertyVersions;
+
    protected PreparedStatement insertItem;
 
    protected PreparedStatement insertNode;
@@ -481,6 +483,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (findPropertiesByParentId != null)
          {
             findPropertiesByParentId.close();
+         }
+
+         if (findLowestPropertyVersions != null)
+         {
+            findLowestPropertyVersions.close();
          }
 
          if (insertItem != null)
@@ -2692,6 +2699,16 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
    };
 
+   protected ResultSet findLowestPropertyVersions() throws SQLException
+   {
+      if (findLowestPropertyVersions == null)
+      {
+         findLowestPropertyVersions = dbConnection.prepareStatement(FIND_LOWEST_PROPERTY_VERSIONS);
+      }
+
+      return findLowestPropertyVersions.executeQuery();
+   }
+
    protected abstract int addNodeRecord(NodeData data) throws SQLException;
 
    protected abstract int addPropertyRecord(PropertyData prop) throws SQLException;
@@ -2755,4 +2772,5 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected abstract ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException;
 
    protected abstract ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException;
+
 }
