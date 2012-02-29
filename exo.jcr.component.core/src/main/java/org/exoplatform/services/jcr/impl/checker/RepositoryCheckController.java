@@ -21,10 +21,8 @@ package org.exoplatform.services.jcr.impl.checker;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
-import org.exoplatform.management.annotations.ManagedName;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.AbstractRepositorySuspender;
@@ -311,15 +309,14 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       }
    }
 
-   private void doCheckDataBase(boolean autoRepair) throws RepositoryException, IOException,
-      RepositoryConfigurationException
+   private void doCheckDataBase(boolean autoRepair)
    {
       for (String wsName : repository.getWorkspaceNames())
       {
          logComment("Check DB consistency. Workspace " + wsName);
 
          JDBCWorkspaceDataContainerChecker jdbcChecker = getJDBCChecker(wsName);
-         jdbcChecker.checkDataBase();
+         jdbcChecker.checkDataBase(autoRepair);
          jdbcChecker.checkLocksInDataBase(autoRepair);
       }
    }

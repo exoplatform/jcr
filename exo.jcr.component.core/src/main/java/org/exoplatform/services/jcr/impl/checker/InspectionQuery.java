@@ -44,13 +44,19 @@ public class InspectionQuery
    public String[] fieldNames;
 
    /**
+    * Utility class which help to fix inconsistency.
+    */
+   public InconsistencyRepair repair;
+
+   /**
     * Data class, contains a combination of SQL states, description, field names and status  
     */
-   public InspectionQuery(String statement, String[] fieldNames, String headerMessage)
+   public InspectionQuery(String statement, String[] fieldNames, String headerMessage, InconsistencyRepair repair)
    {
       this.statement = statement;
       this.description = headerMessage;
       this.fieldNames = fieldNames;
+      this.repair = repair;
    }
 
    public String getStatement()
@@ -68,6 +74,11 @@ public class InspectionQuery
       return fieldNames;
    }
 
+   public InconsistencyRepair getRepair()
+   {
+      return repair;
+   }
+
    /**
     * Creates a PreparedStatement object for sending parameterized SQL statements to the database. 
     * 
@@ -82,5 +93,4 @@ public class InspectionQuery
    {
       return connection.prepareStatement(statement);
    }
-
 }

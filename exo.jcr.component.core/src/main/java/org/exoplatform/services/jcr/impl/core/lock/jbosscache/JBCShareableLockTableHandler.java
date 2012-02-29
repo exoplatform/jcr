@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.checker.DummyRepair;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 
@@ -49,14 +50,14 @@ public class JBCShareableLockTableHandler extends JBCLockTableHandler implements
    {
       return new InspectionQuery("SELECT * FROM " + getTableName() + " WHERE " + getParentColumn() + "='/"
          + workspaceEntry.getUniqueName() + "/" + CacheableLockManagerImpl.LOCKS + "'", new String[]{getIdColumn()},
-         "Locks table match");
+         "Locks table match", new DummyRepair());
    }
 
    protected InspectionQuery getDeleteQuery(String nodeId) throws SQLException
    {
       return new InspectionQuery("DELETE FROM " + getTableName() + " WHERE " + getIdColumn() + "='/"
          + workspaceEntry.getUniqueName() + "/" + CacheableLockManagerImpl.LOCKS + "/" + nodeId + "'", new String[]{},
-         "");
+         "", new DummyRepair());
    }
 
 }
