@@ -73,6 +73,10 @@
       <groupId>commons-chain</groupId>
       <artifactId>commons-chain</artifactId>
     </dependency>
+    <dependency>
+      <groupId>commons-pool</groupId>
+      <artifactId>commons-pool</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <pluginManagement>

@@ -148,6 +148,38 @@
        <version>5.1.14</version>
        <scope>test</scope>
     </dependency>
+    <dependency>
+       <groupId>org.codehaus.groovy</groupId>
+       <artifactId>groovy-all</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>commons-dbcp</groupId>
+       <artifactId>commons-dbcp</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.exoplatform.kernel</groupId>
+       <artifactId>exo.kernel.component.common</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.geronimo.specs</groupId>
+       <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.jibx</groupId>
+       <artifactId>jibx-run</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.stream</groupId>
+      <artifactId>stax-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-pool</groupId>
+      <artifactId>commons-pool</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -208,7 +240,7 @@
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Creating Access Policy for tests</echo>
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -223,7 +255,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>                     
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -282,7 +314,7 @@
                            <id>prepare-test-policy</id>
                            <phase>process-test-resources</phase>
                            <configuration>
-                              <tasks>
+                              <target>
                                  <echo>Creating Access Policy for tests</echo>
                                  <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                                  <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -297,7 +329,7 @@
                                        <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                                     </filterset>
                                  </copy>
-                              </tasks>                     
+                              </target>
                            </configuration>
                            <goals>
                               <goal>run</goal>

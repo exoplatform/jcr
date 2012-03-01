@@ -94,6 +94,43 @@
             </exclusion>
          </exclusions>
       </dependency>
+      <dependency>
+        <groupId>org.exoplatform.core</groupId>
+        <artifactId>exo.core.component.database</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.kernel</groupId>
+        <artifactId>exo.kernel.container</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.kernel</groupId>
+        <artifactId>exo.kernel.commons</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.spec.ee</groupId>
+        <artifactId>ow2-jta-1.1-spec</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.jgroups</groupId>
+        <artifactId>jgroups</artifactId>
+         <version>3.0.0.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.kernel</groupId>
+        <artifactId>exo.kernel.component.common</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>jboss.jbossts</groupId>
+        <artifactId>jbossjts</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>javax.jcr</groupId>
+        <artifactId>jcr</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>javax.transaction</groupId>
+        <artifactId>jta</artifactId>
+      </dependency>
       <!-- Excludes jboss-logging-spi since it is in conflict with the
       latest version that is required by infinispan -->
       <dependency>
@@ -250,7 +287,7 @@
                   </configuration>
                </execution>
             </executions>
-          </plugin>                 
+          </plugin>
           <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
@@ -258,7 +295,7 @@
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Creating Access Policy for tests</echo>
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -273,7 +310,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>                     
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -291,6 +328,7 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>taglist-maven-plugin</artifactId>
+            <version>2.4</version>
          </plugin>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>

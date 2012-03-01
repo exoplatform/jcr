@@ -396,6 +396,7 @@
             <executions>
               <execution>
                 <id>attach-sources</id>
+                <phase>generate-sources</phase>                
                 <goals>
                   <goal>test-jar-no-fork</goal>
                 </goals>
@@ -454,7 +455,7 @@
                   <id>delete-sources</id>
                   <phase>process-sources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Remove files that have been customized</echo>
                         <delete>
                            <fileset dir="${project.build.directory}/generated-sources/javacc/org/exoplatform/services/jcr/impl/core/query">
@@ -465,7 +466,7 @@
                               <include name="xpath/SimpleNode.java" />
                            </fileset>
                         </delete>
-                     </tasks>
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -475,7 +476,7 @@
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Creating Access Policy for tests</echo>
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -490,7 +491,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>                     
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -548,6 +549,7 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>taglist-maven-plugin</artifactId>
+            <version>2.4</version>
          </plugin>
          
          <!--  Generate java files from ANTLR grammar files
