@@ -26,31 +26,31 @@
     available:</para>
 
     <table>
-      <title>Available methods</title>
+      <title>Check methods</title>
 
       <tgroup cols="2">
         <tbody>
           <row>
-            <entry>checkRepositoryDataConsistency()</entry>
+            <entry>checkAll()</entry>
 
             <entry>Inspect full repository data (db, value storage and search
             index)</entry>
           </row>
 
           <row>
-            <entry>checkRepositoryDataBaseConsistency()</entry>
+            <entry>checkDataBase()</entry>
 
             <entry>Inspect only DB</entry>
           </row>
 
           <row>
-            <entry>checkRepositoryValueStorageConsistency()</entry>
+            <entry>checkValueStorage()</entry>
 
             <entry>Inspect only ValueStorage</entry>
           </row>
 
           <row>
-            <entry>checkRepositorySearchIndexConsistency()</entry>
+            <entry>checkIndex()</entry>
 
             <entry>Inspect only SearchIndex</entry>
           </row>
@@ -58,15 +58,84 @@
       </tgroup>
     </table>
 
-    <para>All inspection activities and corrupted data identifier are stored
-    in file, which can be found in app directory by name
-    <code>report-&lt;repository name&gt;-dd-MMM-yy-HH-mm.txt</code>. Path to
-    file will be returned in result message also. Please, take in account
-    thare is three types of inconsistency and two of them are critical. They
-    are Errors and Index faults. Index faults are marked as "Reindex" and can
-    be fixed by reindexing the workspace, but the Errors can only be fixed
-    manually. Warnings found by tool can be a normal situation in some cases
-    and usually production system will still remain fully functional.</para>
+    <para>Also tools provides abilities to repair possible inconsistencies:
+    </para>
+
+    <itemizedlist>
+      <listitem>
+        <para><abbrev>Item has no parent node</abbrev> - properties will be
+        removed and root UUID will be assigned in case of nodes</para>
+      </listitem>
+
+      <listitem>
+        <para><abbrev>Node has a single valued property with nothing declared
+        in the VALUE table</abbrev> - property will be removed if it is not
+        required by primary type of its node</para>
+      </listitem>
+
+      <listitem>
+        <para><abbrev>Node has no primary type property</abbrev> - node and
+        whole subtree will be removed if node is not required by primary type
+        of its parent</para>
+      </listitem>
+
+      <listitem>
+        <para><abbrev>Value record has no related property record</abbrev> -
+        value record will be removed from database</para>
+      </listitem>
+
+      <listitem>
+        <para><abbrev>Item is its own parent</abbrev> - properties will be
+        removed and root UUID will be assigned in case of nodes</para>
+      </listitem>
+
+      <listitem>
+        <para><abbrev>Several versions of same item</abbrev> - all earler
+        records with earler versions will be removed from ITEM table</para>
+      </listitem>
+
+      <listitem>
+        <para><abbrev>Reference properties without reference records</abbrev>
+        - property will be removed if it is not required by primary type of
+        its node</para>
+      </listitem>
+
+      <listitem>
+        <para><abbrev>Node is marked as locked in the lockmanager's table but
+        is not in the ITEM table or the opposite</abbrev> - all lock
+        inconsistencies will be removed from both tables</para>
+      </listitem>
+
+      <listitem>
+        <para><abbrev>Property's value is stored in the File System but
+        content is missing</abbrev> - new empty file corresponding to value
+        will be created</para>
+      </listitem>
+    </itemizedlist>
+
+    <table>
+      <title>Repair methods</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>repairDataBase()</entry>
+
+            <entry>repair DB</entry>
+          </row>
+
+          <row>
+            <entry>repairValueStorage()</entry>
+
+            <entry>repair ValueStorage</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>All tool activities are stored in file, which can be found in app
+    directory by name <code>report-&lt;repository
+    name&gt;-dd-MMM-yy-HH-mm.txt</code>.</para>
   </section>
 
   <section>
