@@ -75,7 +75,7 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
    /**
     * The current page index
     */
-   private static final AtomicInteger page = new AtomicInteger();
+   private final AtomicInteger page = new AtomicInteger();
 
    /**
     * Logger.
