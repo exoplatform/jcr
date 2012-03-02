@@ -30,15 +30,15 @@ import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
- * @version $Id: RemoveEarlierVersions.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: EarlierVersionsRemover.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class RemoverEarlierVersions extends AbstractInconsistencyRepair
+public class EarlierVersionsRemover extends AbstractInconsistencyRepair
 {
 
    /**
     * RemoveEarlierVersions constructor.
     */
-   public RemoverEarlierVersions(WorkspaceStorageConnectionFactory connFactory)
+   public EarlierVersionsRemover(WorkspaceStorageConnectionFactory connFactory)
    {
       super(connFactory);
    }
@@ -46,11 +46,11 @@ public class RemoverEarlierVersions extends AbstractInconsistencyRepair
    /**
     * {@inheritDoc}
     */
-   protected void repairInternally(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
+   protected void repairRow(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
    {
       try
       {
-         PropertyData data = (PropertyData)conn.getItemData(exctractId(resultSet));
+         PropertyData data = (PropertyData)conn.getItemData(exctractId(resultSet, DBConstants.COLUMN_ID));
          int maxVersion = conn.getMaxPropertyVersion(data);
 
          if (resultSet.getInt(DBConstants.COLUMN_VERSION) < maxVersion)

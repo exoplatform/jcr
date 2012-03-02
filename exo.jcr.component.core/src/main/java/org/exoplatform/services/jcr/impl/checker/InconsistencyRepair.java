@@ -28,7 +28,7 @@ import java.sql.SQLException;
 public interface InconsistencyRepair
 {
    /**
-    * Repair inconsistency based on resultSet.
+    * Repair inconsistency represented in row of resultSet.
     * 
     * @param resultSet
     * @throws SQLException

@@ -26,6 +26,7 @@ import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.AbstractRepositorySuspender;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainerChecker;
@@ -353,7 +354,9 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
 
       WorkspaceEntry wsEntry = (WorkspaceEntry)getComponent(WorkspaceEntry.class, wsName);
       
-      return new JDBCWorkspaceDataContainerChecker(dataContainer, vsPlugin, wsEntry, lastReport);
+      NodeTypeDataManagerImpl nodeTypeManager = (NodeTypeDataManagerImpl)getComponent(NodeTypeDataManagerImpl.class, wsName);
+
+      return new JDBCWorkspaceDataContainerChecker(dataContainer, vsPlugin, wsEntry, nodeTypeManager, lastReport);
    }
 
    private Object getComponent(Class forClass, String wsName)

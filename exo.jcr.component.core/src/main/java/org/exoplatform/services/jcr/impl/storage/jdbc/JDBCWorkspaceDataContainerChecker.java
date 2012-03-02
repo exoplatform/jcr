@@ -23,15 +23,18 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.checker.AssignerRootAsParent;
 import org.exoplatform.services.jcr.impl.checker.DummyRepair;
+import org.exoplatform.services.jcr.impl.checker.EarlierVersionsRemover;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 import org.exoplatform.services.jcr.impl.checker.InspectionQueryFilteredMultivaluedProperties;
 import org.exoplatform.services.jcr.impl.checker.InspectionReport;
-import org.exoplatform.services.jcr.impl.checker.RemoverEarlierVersions;
-import org.exoplatform.services.jcr.impl.checker.RemoverValueRecords;
+import org.exoplatform.services.jcr.impl.checker.NodeRemover;
+import org.exoplatform.services.jcr.impl.checker.PropertyRemover;
+import org.exoplatform.services.jcr.impl.checker.ValueRecordsRemover;
+import org.exoplatform.services.jcr.impl.checker.RootAsParentAssigner;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandlerFactory;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
@@ -78,17 +81,21 @@ public class JDBCWorkspaceDataContainerChecker
 
    private LockTableHandler lockHandler;
 
+   private NodeTypeDataManagerImpl nodeTypeManager;
+
    /**
     * JDBCWorkspaceDataContainerChecker constructor.
     */
    public JDBCWorkspaceDataContainerChecker(JDBCWorkspaceDataContainer jdbcDataContainer,
-      ValueStoragePluginProvider vsPlugin, WorkspaceEntry workspaceEntry, InspectionReport report)
+      ValueStoragePluginProvider vsPlugin, WorkspaceEntry workspaceEntry, NodeTypeDataManagerImpl nodeTypeManager,
+      InspectionReport report)
    {
       this.jdbcDataContainer = jdbcDataContainer;
       this.vsPlugin = vsPlugin;
       this.workspaceEntry = workspaceEntry;
       this.report = report;
       this.lockHandler = LockTableHandlerFactory.getHandler(workspaceEntry);
+      this.nodeTypeManager = nodeTypeManager;
 
       initInspectionQueries();
    }
@@ -164,12 +171,18 @@ public class JDBCWorkspaceDataContainerChecker
                   {
                      ((JDBCStorageConnection)conn).deleteLockProperties(nodeId);
                   }
-
+                  conn.commit();
                   logComment("Lock has been removed form ITEM table. Node UUID: " + nodeId);
                }
-               finally
+               catch (RepositoryException e)
                {
-                  conn.close();
+                  conn.rollback();
+                  throw e;
+               }
+               catch (SQLException e)
+               {
+                  conn.rollback();
+                  throw e;
                }
             }
          }
@@ -221,6 +234,7 @@ public class JDBCWorkspaceDataContainerChecker
                if (resultSet.next())
                {
                   logDescription(query.getDescription());
+
                   do
                   {
                      logBrokenObjectAndSetInconsistency(getBrokenObject(resultSet, query.getFieldNames()));
@@ -233,12 +247,8 @@ public class JDBCWorkspaceDataContainerChecker
                         }
                         catch (SQLException e)
                         {
-                           if (LOG.isTraceEnabled())
-                           {
-                              LOG.trace(e.getMessage(), e);
-                           }
+                           logExceptionAndSetInconsistency("Inconsistency can not been fixed", e);
                         }
-
                      }
                   }
                   while (resultSet.next());
@@ -287,23 +297,25 @@ public class JDBCWorkspaceDataContainerChecker
 
          if (resultSet.next())
          {
+            logDescription("ValueData not found inconsistency");
+
             do
             {
-               String propertyId = removeWorkspacePrefix(resultSet.getString(DBConstants.COLUMN_VPROPERTY_ID));
-               int orderNumber = resultSet.getInt(DBConstants.COLUMN_VORDERNUM);
                String storageDesc = resultSet.getString(DBConstants.COLUMN_VSTORAGE_DESC);
 
                ValueIOChannel channel = null;
                try
                {
                   channel = getIOChannel(storageDesc);
-                  doCheckAndRepairValueData(channel, resultSet, propertyId, orderNumber, autoRepair);
+                  doCheckAndRepairValueData(channel, resultSet, autoRepair);
                }
                catch (IOException e)
                {
-                  logDescription("Unexpected exception during checking");
-                  logBrokenObjectAndSetInconsistency(getBrokenObject(resultSet, vsInspectionQuery.getFieldNames()));
-                  logExceptionAndSetInconsistency(e.getMessage(), e);
+                  logExceptionAndSetInconsistency("Unexpected exception during checking.", e);
+               }
+               catch (SQLException e)
+               {
+                  logExceptionAndSetInconsistency("Unexpected exception during checking.", e);
                }
                finally
                {
@@ -339,32 +351,37 @@ public class JDBCWorkspaceDataContainerChecker
       }
       catch (ValueStorageNotFoundException e)
       {
-         logDescription("ValueStorage " + storageDesc + " not found");
-         logExceptionAndSetInconsistency(e.getMessage(), e);
+         logExceptionAndSetInconsistency("ValueStorage " + storageDesc + " not found: " + e.getMessage(), e);
       }
 
       return channel;
    }
 
-   private void doCheckAndRepairValueData(ValueIOChannel channel, ResultSet resultSet, String propertyId,
-      int orderNumber, boolean autoRepair) throws IOException
+   private void doCheckAndRepairValueData(ValueIOChannel channel, ResultSet resultSet, boolean autoRepair)
+      throws IOException, SQLException
    {
+      String propertyId = removeWorkspacePrefix(resultSet.getString(DBConstants.COLUMN_VPROPERTY_ID));
+      int orderNumber = resultSet.getInt(DBConstants.COLUMN_VORDERNUM);
+
       try
       {
          channel.checkValueData(propertyId, orderNumber);
       }
       catch (ValueDataNotFoundException e)
       {
-         String brokenObject = getBrokenObject(resultSet, vsInspectionQuery.getFieldNames());
-
-         logDescription("ValueData not found");
-         logBrokenObjectAndSetInconsistency(brokenObject);
-         logExceptionAndSetInconsistency(e.getMessage(), e);
+         logBrokenObjectAndSetInconsistency(getBrokenObject(resultSet, vsInspectionQuery.getFieldNames()));
 
          if (autoRepair)
          {
-            channel.repairValueData(propertyId, orderNumber);
-            logComment("ValueData corresponding to " + brokenObject + " has been repaired. New empty file is created.");
+            try
+            {
+               channel.repairValueData(propertyId, orderNumber);
+               logComment("ValueData has been repaired. New empty file is created.");
+            }
+            catch (IOException e2)
+            {
+               logExceptionAndSetInconsistency("Can not repair value data: " + e.getMessage(), e);
+            }
          }
       }
    }
@@ -469,7 +486,7 @@ public class JDBCWorkspaceDataContainerChecker
          : "select * from JCR_SITEM I where I.CONTAINER_NAME='" + jdbcDataContainer.containerName
             + "' and NOT EXISTS(select * from JCR_SITEM P where P.ID = I.PARENT_ID)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS},
-            "Items that do not have parent nodes", new AssignerRootAsParent(jdbcDataContainer
+            "Items that do not have parent nodes", new RootAsParentAssigner(jdbcDataContainer
                .getConnectionFactory())));
 
       itemsInspectionQuery
@@ -480,7 +497,8 @@ public class JDBCWorkspaceDataContainerChecker
                   + jdbcDataContainer.containerName + "' and P.I_CLASS=2"
                   + " and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-            "A node that has a single valued properties with nothing declared in the VALUE table.", new DummyRepair()));
+            "A node that has a single valued properties with nothing declared in the VALUE table.",
+            new PropertyRemover(jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
 
       itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM N where N.I_CLASS=1 and NOT EXISTS "
@@ -491,7 +509,7 @@ public class JDBCWorkspaceDataContainerChecker
             + "where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' "
             + "and P.CONTAINER_NAME='" + jdbcDataContainer.containerName + "')", new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "A node that doesn't have primary type property",
-         new DummyRepair()));
+         new NodeRemover(jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
 
       itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
@@ -499,7 +517,7 @@ public class JDBCWorkspaceDataContainerChecker
          : "select * from JCR_SVALUE V where NOT EXISTS(select * from JCR_SITEM P "
             + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not related property record",
-         new RemoverValueRecords(jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerName,
+         new ValueRecordsRemover(jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerName,
             jdbcDataContainer.multiDb)));
 
       // The differences in the queries by DB dialect.
@@ -537,7 +555,7 @@ public class JDBCWorkspaceDataContainerChecker
          : "select * from JCR_SITEM I where I.ID = I.PARENT_ID and I.CONTAINER_NAME='"
             + jdbcDataContainer.containerName + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "An item is its own parent.",
-         new AssignerRootAsParent(jdbcDataContainer.getConnectionFactory())));
+         new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
 
       itemsInspectionQuery
          .add(new InspectionQuery(
@@ -552,7 +570,7 @@ public class JDBCWorkspaceDataContainerChecker
                   + " and I.VERSION != J.VERSION)",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME,
                DBConstants.COLUMN_VERSION, DBConstants.COLUMN_CLASS, DBConstants.COLUMN_INDEX},
-            "Several versions of same item.", new RemoverEarlierVersions(jdbcDataContainer.getConnectionFactory())));
+            "Several versions of same item.", new EarlierVersionsRemover(jdbcDataContainer.getConnectionFactory())));
 
       itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM P, JCR_MVALUE V where P.ID=V.PROPERTY_ID and P.P_TYPE=9 and NOT EXISTS "
@@ -561,6 +579,7 @@ public class JDBCWorkspaceDataContainerChecker
             + jdbcDataContainer.containerName
             + "' and P.P_TYPE=9 and NOT EXISTS (select * from JCR_SREF R where P.ID=R.PROPERTY_ID)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-         "Reference properties without reference records", new DummyRepair()));
+         "Reference properties without reference records", new PropertyRemover(jdbcDataContainer
+            .getConnectionFactory(), nodeTypeManager)));
    }
 }
