@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.checker;
 
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -25,8 +27,6 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
@@ -36,81 +36,56 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
- * @version $Id: AssignRootAsParentRepair.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: PropertyRemover.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class AssignerRootAsParent extends AbstractInconsistencyRepair
+public class PropertyRemover extends AbstractInconsistencyRepair
 {
+   private final NodeTypeDataManager nodeTypeManager;
 
-   public AssignerRootAsParent(WorkspaceStorageConnectionFactory connFactory)
+   /**
+    * PropertyRemover constructor.
+    */
+   public PropertyRemover(WorkspaceStorageConnectionFactory connFactory, NodeTypeDataManager nodeTypeManager)
    {
       super(connFactory);
+      this.nodeTypeManager = nodeTypeManager;
    }
 
    /**
     * {@inheritDoc}
     */
-   protected void repairInternally(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
-   {
-      if (resultSet.getInt(DBConstants.COLUMN_CLASS) == 1)
-      {
-         repairNode(conn, resultSet);
-      }
-      else
-      {
-         repairProperty(conn, resultSet);
-      }
-   }
-
-   private void repairProperty(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
+   void repairRow(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
    {
       try
       {
-         String propertyId = exctractId(resultSet);
-         QPath path = QPath.parse(resultSet.getString(DBConstants.COLUMN_NAME));
+         String parentId = exctractId(resultSet, DBConstants.COLUMN_PARENTID);
+         InternalQName propertyName = InternalQName.parse(resultSet.getString(DBConstants.COLUMN_NAME));
+         boolean multiValued = resultSet.getBoolean(DBConstants.COLUMN_PMULTIVALUED);
 
-         PropertyData data = new TransientPropertyData(path, propertyId, 0, 0, null, false, new ArrayList<ValueData>());
-
-         conn.delete(data);
-      }
-      catch (UnsupportedOperationException e)
-      {
-         throw new SQLException(e);
-      }
-      catch (InvalidItemStateException e)
-      {
-         throw new SQLException(e);
-      }
-      catch (IllegalStateException e)
-      {
-         throw new SQLException(e);
-      }
-      catch (RepositoryException e)
-      {
-         throw new SQLException(e);
-      }
-   }
-
-   private void repairNode(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
-   {
-      try
-      {
-         String nodeId = exctractId(resultSet);
-         int orderNum = resultSet.getInt(DBConstants.COLUMN_NORDERNUM);
-         int version = resultSet.getInt(DBConstants.COLUMN_VERSION);
-         QPath path =
-            new QPath(new QPathEntry[]{new QPathEntry(
-               InternalQName.parse(resultSet.getString(DBConstants.COLUMN_NAME)),
-               resultSet.getInt(DBConstants.COLUMN_INDEX))});
-
-         NodeData data =
-            new TransientNodeData(path, nodeId, version, null, null, orderNum, Constants.ROOT_UUID, null);
+         NodeData parent = (NodeData)conn.getItemData(parentId);
          
-         conn.rename(data);
+         PropertyDefinitionDatas def =
+            nodeTypeManager.getPropertyDefinitions(propertyName, parent.getPrimaryTypeName(),
+               parent.getMixinTypeNames());
+         
+         if (def == null || def.getDefinition(multiValued) == null || def.getDefinition(multiValued).isResidualSet())
+         {
+            String propertyId = exctractId(resultSet, DBConstants.COLUMN_ID);
+            QPath path = new QPath(new QPathEntry[]{extractName(resultSet)});
+
+            PropertyData data =
+               new TransientPropertyData(path, propertyId, 0, 0, null, false, new ArrayList<ValueData>());
+
+            conn.delete(data);
+         }
+         else
+         {
+            throw new SQLException("Propety is required by its parent.");
+         }
       }
       catch (IllegalStateException e)
       {

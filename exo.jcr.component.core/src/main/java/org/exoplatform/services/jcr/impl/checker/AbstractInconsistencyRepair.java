@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.checker;
 
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
@@ -41,6 +44,9 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
 
    protected final WorkspaceStorageConnectionFactory connFactory;
 
+   /**
+    * AbstractInconsistencyRepair constructor.
+    */
    AbstractInconsistencyRepair(WorkspaceStorageConnectionFactory connFactory)
    {
       this.connFactory = connFactory;
@@ -60,7 +66,7 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
             throw new SQLException("Connection is instance of " + conn);
          }
 
-         repairInternally((JDBCStorageConnection)conn, resultSet);
+         repairRow((JDBCStorageConnection)conn, resultSet);
 
          conn.commit();
       }
@@ -76,7 +82,7 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       }
    }
 
-   abstract void repairInternally(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException;
+   abstract void repairRow(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException;
 
    protected void rollback(WorkspaceStorageConnection conn)
    {
@@ -97,7 +103,7 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       }
    }
 
-   protected String exctractId(ResultSet resultSet) throws SQLException
+   protected String exctractId(ResultSet resultSet, String column) throws SQLException
    {
       String containerName = "";
       try
@@ -108,6 +114,12 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       {
       }
 
-      return resultSet.getString(DBConstants.COLUMN_ID).substring(containerName.length());
+      return resultSet.getString(column).substring(containerName.length());
+   }
+
+   protected QPathEntry extractName(ResultSet resultSet) throws SQLException, IllegalNameException
+   {
+      return new QPathEntry(InternalQName.parse(resultSet.getString(DBConstants.COLUMN_NAME)),
+         resultSet.getInt(DBConstants.COLUMN_INDEX));
    }
 }

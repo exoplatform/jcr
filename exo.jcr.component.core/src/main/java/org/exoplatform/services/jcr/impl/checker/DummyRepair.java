@@ -33,6 +33,6 @@ public class DummyRepair implements InconsistencyRepair
     */
    public void doRepair(ResultSet resultSet) throws SQLException
    {
-      // do nothing
+      throw new SQLException("Inconsistency can not be fixed automatically");
    }
 }

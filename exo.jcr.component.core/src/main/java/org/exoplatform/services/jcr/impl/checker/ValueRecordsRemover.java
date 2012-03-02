@@ -37,16 +37,19 @@ import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
- * @version $Id: RemoverValueRecords.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: ValueRecordsRemover.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class RemoverValueRecords extends AbstractInconsistencyRepair
+public class ValueRecordsRemover extends AbstractInconsistencyRepair
 {
 
    private final String containerName;
 
    private final boolean multiDb;
 
-   public RemoverValueRecords(WorkspaceStorageConnectionFactory connFactory, String containerName, boolean multiDb)
+   /**
+    * ValueRecordsRemover constructor.
+    */
+   public ValueRecordsRemover(WorkspaceStorageConnectionFactory connFactory, String containerName, boolean multiDb)
    {
       super(connFactory);
       this.containerName = containerName;
@@ -56,11 +59,11 @@ public class RemoverValueRecords extends AbstractInconsistencyRepair
    /**
     * {@inheritDoc}
     */
-   void repairInternally(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
+   void repairRow(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException
    {
       try
       {
-         String propertyId = exctractId(resultSet);
+         String propertyId = exctractId(resultSet, DBConstants.COLUMN_VPROPERTY_ID);
          QPath path = QPath.parse("[]");
 
          PropertyData data = new TransientPropertyData(path, propertyId, 0, 0, null, false, new ArrayList<ValueData>());
@@ -93,8 +96,8 @@ public class RemoverValueRecords extends AbstractInconsistencyRepair
       }
    }
 
-   protected String exctractId(ResultSet resultSet) throws SQLException
+   protected String exctractId(ResultSet resultSet, String column) throws SQLException
    {
-      return resultSet.getString(DBConstants.COLUMN_VPROPERTY_ID).substring(multiDb ? 0 : containerName.length());
+      return resultSet.getString(column).substring(multiDb ? 0 : containerName.length());
    }
 }
