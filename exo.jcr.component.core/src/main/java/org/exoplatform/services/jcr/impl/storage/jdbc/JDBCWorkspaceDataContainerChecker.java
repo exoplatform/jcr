@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
@@ -30,8 +31,8 @@ import org.exoplatform.services.jcr.impl.checker.InspectionQueryFilteredMultival
 import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.checker.NodeRemover;
 import org.exoplatform.services.jcr.impl.checker.PropertyRemover;
-import org.exoplatform.services.jcr.impl.checker.ValueRecordsRemover;
 import org.exoplatform.services.jcr.impl.checker.RootAsParentAssigner;
+import org.exoplatform.services.jcr.impl.checker.ValueRecordsRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandlerFactory;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
