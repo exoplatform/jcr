@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
@@ -136,7 +137,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
 
       try
       {
-         Class.forName(dbDriver).newInstance();
+         Tools.forName(dbDriver, this).newInstance();
       }
       catch (InstantiationException e)
       {

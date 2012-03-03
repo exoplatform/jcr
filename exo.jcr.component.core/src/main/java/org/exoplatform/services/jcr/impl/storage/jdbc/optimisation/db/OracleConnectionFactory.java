@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
@@ -118,8 +119,8 @@ public class OracleConnectionFactory extends DefaultOracleConnectionFactory
       Object cds = null;
       try
       {
-         Class cdsClass = OracleConnectionFactory.class.getClassLoader().loadClass("oracle.jdbc.pool.OracleDataSource");
-         Constructor cdsConstructor = cdsClass.getConstructor(new Class[]{});
+         Class<?> cdsClass = Tools.loadClass("oracle.jdbc.pool.OracleDataSource", this);
+         Constructor<?> cdsConstructor = cdsClass.getConstructor(new Class[]{});
          cds = cdsConstructor.newInstance(new Object[]{});
 
          // set cache properties

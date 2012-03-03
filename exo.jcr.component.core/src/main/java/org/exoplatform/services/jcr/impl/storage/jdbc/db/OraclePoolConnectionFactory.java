@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
@@ -111,9 +112,8 @@ public class OraclePoolConnectionFactory extends GenericConnectionFactory
       Object cpool = null;
       try
       {
-         Class cpoolClass =
-            OraclePoolConnectionFactory.class.getClassLoader().loadClass("oracle.jdbc.pool.OracleOCIConnectionPool");
-         Constructor cpoolConstructor =
+         Class<?> cpoolClass = Tools.loadClass("oracle.jdbc.pool.OracleOCIConnectionPool", this);
+         Constructor<?> cpoolConstructor =
             cpoolClass.getConstructor(new Class[]{String.class, String.class, String.class, Properties.class});
 
          cpool = cpoolConstructor.newInstance(new Object[]{this.dbUserName, this.dbPassword, this.dbUrl, null});

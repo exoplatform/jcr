@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
@@ -290,7 +291,7 @@ public class RepositoryContainer extends ExoContainer
                workspaceContainer.registerComponentImplementation(StandaloneStoragePluginProvider.class);
                try
                {
-                  final Class<?> containerType = Class.forName(wsConfig.getContainer().getType());
+                  final Class<?> containerType = Tools.forName(wsConfig.getContainer().getType(), RepositoryContainer.class);
                   workspaceContainer.registerComponentImplementation(containerType);
                   if (isSystem)
                   {
@@ -309,7 +310,7 @@ public class RepositoryContainer extends ExoContainer
                   String className = wsConfig.getCache().getType();
                   if (className != null && className.length() > 0)
                   {
-                     workspaceContainer.registerComponentImplementation(Class.forName(className));
+                     workspaceContainer.registerComponentImplementation(Tools.forName(className, RepositoryContainer.class));
                   }
                   else
                      workspaceContainer.registerComponentImplementation(LinkedWorkspaceStorageCacheImpl.class);
@@ -330,7 +331,7 @@ public class RepositoryContainer extends ExoContainer
                {
                   try
                   {
-                     final Class<?> lockPersister = Class.forName(wsConfig.getLockManager().getPersister().getType());
+                     final Class<?> lockPersister = Tools.forName(wsConfig.getLockManager().getPersister().getType(), RepositoryContainer.class);
                      workspaceContainer.registerComponentImplementation(lockPersister);
                   }
                   catch (ClassNotFoundException e)
@@ -345,7 +346,7 @@ public class RepositoryContainer extends ExoContainer
                {
                   try
                   {
-                     final Class<?> lockManagerType = Class.forName(wsConfig.getLockManager().getType());
+                     final Class<?> lockManagerType = Tools.forName(wsConfig.getLockManager().getType(), RepositoryContainer.class);
                      workspaceContainer.registerComponentImplementation(lockManagerType);
                   }
                   catch (ClassNotFoundException e)
@@ -376,7 +377,7 @@ public class RepositoryContainer extends ExoContainer
                {
                   try
                   {
-                     final Class<?> am = Class.forName(wsConfig.getAccessManager().getType());
+                     final Class<?> am = Tools.forName(wsConfig.getAccessManager().getType(), RepositoryContainer.class);
                      workspaceContainer.registerComponentImplementation(am);
                   }
                   catch (ClassNotFoundException e)
@@ -393,7 +394,7 @@ public class RepositoryContainer extends ExoContainer
                   // use user defined
                   try
                   {
-                     initilizerType = Class.forName(wsConfig.getInitializer().getType());
+                     initilizerType = Tools.forName(wsConfig.getInitializer().getType(), RepositoryContainer.class);
                   }
                   catch (ClassNotFoundException e)
                   {
@@ -655,7 +656,7 @@ public class RepositoryContainer extends ExoContainer
                }
                try
                {
-                  final Class<?> authenticationPolicyClass = Class.forName(config.getAuthenticationPolicy());
+                  final Class<?> authenticationPolicyClass = Tools.forName(config.getAuthenticationPolicy(), RepositoryContainer.class);
                   registerComponentImplementation(authenticationPolicyClass);
                }
                catch (ClassNotFoundException e)

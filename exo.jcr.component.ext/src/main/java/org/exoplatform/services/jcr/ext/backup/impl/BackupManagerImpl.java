@@ -22,6 +22,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -719,11 +720,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       try
       {
-         if ((Class.forName(log.getFullBackupType()).equals(FullBackupJob.class)))
+         if ((Tools.forName(log.getFullBackupType(), this).equals(FullBackupJob.class)))
          {
             fullbackupType = log.getFullBackupType();
          }
-         else if ((Class.forName(log.getFullBackupType())
+         else if ((Tools.forName(log.getFullBackupType(), this)
             .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
          {
             fullbackupType = log.getFullBackupType();
@@ -1006,7 +1007,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
 
-      if ((Class.forName(fBackupType).equals(FullBackupJob.class)))
+      if ((Tools.forName(fBackupType, this).equals(FullBackupJob.class)))
       {
          // set the initializer SysViewWorkspaceInitializer
          wiEntry.setType(SysViewWorkspaceInitializer.class.getCanonicalName());
@@ -1016,7 +1017,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
          wiEntry.setParameters(wieParams);
       }
-      else if ((Class.forName(fBackupType)
+      else if ((Tools.forName(fBackupType, this)
          .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
       {
          // set the initializer RdbmsWorkspaceInitializer
@@ -1679,9 +1680,9 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       boolean isSameConfigRestore = false;
       try
       {
-         if (Class.forName(
-            workspacesMapping.get(repositoryEntry.getWorkspaceEntries().get(0).getName()).getFullBackupType()).equals(
-            org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class))
+         if (Tools.forName(
+            workspacesMapping.get(repositoryEntry.getWorkspaceEntries().get(0).getName()).getFullBackupType(), this)
+            .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class))
          {
             String newConf = new JsonGeneratorImpl().createJsonObject(repositoryEntry).toString();
             String currnetConf =
@@ -1782,7 +1783,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       boolean isSameConfigRestore = false;
       try
       {
-         if (Class.forName(log.getFullBackupType()).equals(
+         if (Tools.forName(log.getFullBackupType(), this).equals(
             org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class))
          {
 

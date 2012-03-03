@@ -38,6 +38,7 @@ import org.apache.lucene.search.SortField;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -770,8 +771,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             try
             {
                filterClass =
-                  (Class<? extends AbstractRecoveryFilter>)Class.forName(recoveryFilterClassName, true, this.getClass()
-                     .getClassLoader());
+                  (Class<? extends AbstractRecoveryFilter>)Tools.forName(recoveryFilterClassName, this);
                Constructor<? extends AbstractRecoveryFilter> constuctor = filterClass.getConstructor(SearchIndex.class);
                filter = constuctor.newInstance(this);
                recoveryFilters.add(filter);
@@ -1738,7 +1738,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(directoryManagerClass);
+         Class<?> clazz = Tools.forName(directoryManagerClass, this);
          if (!DirectoryManager.class.isAssignableFrom(clazz))
          {
             throw new IOException(directoryManagerClass + " is not a DirectoryManager implementation");
@@ -2369,7 +2369,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class<?> analyzerClass = Class.forName(analyzerClassName);
+         Class<?> analyzerClass = Tools.forName(analyzerClassName, this);
          analyzer.setDefaultAnalyzer((Analyzer)analyzerClass.newInstance());
       }
       catch (Exception e)
@@ -2718,7 +2718,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(className);
+         Class clazz = Tools.forName(className, this);
          if (ExcerptProvider.class.isAssignableFrom(clazz))
          {
             excerptProviderClass = clazz;
@@ -2776,7 +2776,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(className);
+         Class clazz = Tools.forName(className, this);
          if (IndexingConfiguration.class.isAssignableFrom(clazz))
          {
             indexingConfigurationClass = clazz;
@@ -2812,7 +2812,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(className);
+         Class clazz = Tools.forName(className, this);
          if (SynonymProvider.class.isAssignableFrom(clazz))
          {
             synonymProviderClass = clazz;
@@ -2856,7 +2856,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(className);
+         Class clazz = Tools.forName(className, this);
          if (SpellChecker.class.isAssignableFrom(clazz))
          {
             spellCheckerClass = clazz;
@@ -2959,7 +2959,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class<?> similarityClass = Class.forName(className);
+         Class<?> similarityClass = Tools.forName(className, this);
          similarity = (Similarity)similarityClass.newInstance();
       }
       catch (Exception e)

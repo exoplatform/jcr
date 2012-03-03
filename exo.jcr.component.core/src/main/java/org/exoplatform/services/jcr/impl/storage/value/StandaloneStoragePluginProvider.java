@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value;
 
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
@@ -97,7 +98,7 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
                try
                {
                   o =
-                     Class.forName(storageEntry.getType()).getConstructor(FileCleaner.class)
+                     Tools.forName(storageEntry.getType(), this).getConstructor(FileCleaner.class)
                         .newInstance(holder.getFileCleaner());
 
                }

@@ -23,6 +23,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
@@ -843,7 +844,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          try
          {
-            Class<?> changesFilterClass = Class.forName(changesFilterClassName);
+            Class<?> changesFilterClass = Tools.forName(changesFilterClassName, this);
             // Set recoveryFilterUsed, if changes filter implements LocalIndex strategy 
             if (changesFilterClass != null)
             {
@@ -877,7 +878,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       try
       {
          String queryImplClassName = handler.getQueryClass();
-         Object obj = Class.forName(queryImplClassName).newInstance();
+         Object obj = Tools.forName(queryImplClassName, this).newInstance();
          if (obj instanceof AbstractQueryImpl)
          {
             return (AbstractQueryImpl)obj;
@@ -945,8 +946,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          if (changesFilterClassName != null)
          {
             changesFilterClass =
-               (Class<? extends IndexerChangesFilter>)Class.forName(changesFilterClassName, true, this.getClass()
-                  .getClassLoader());
+               (Class<? extends IndexerChangesFilter>)Tools.forName(changesFilterClassName, this);
          }
          Constructor<? extends IndexerChangesFilter> constuctor =
             changesFilterClass.getConstructor(SearchManager.class, SearchManager.class, QueryHandlerEntry.class,
@@ -1009,7 +1009,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
       try
       {
-         Class<?> qHandlerClass = Class.forName(className, true, this.getClass().getClassLoader());
+         Class<?> qHandlerClass = Tools.forName(className, this);
          try
          {
             // We first try a constructor with the workspace id

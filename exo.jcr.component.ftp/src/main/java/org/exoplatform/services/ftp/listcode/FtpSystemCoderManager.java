@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.ftp.listcode;
 
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.ftp.FtpConst;
 import org.exoplatform.services.ftp.config.FtpConfig;
 import org.exoplatform.services.log.ExoLogger;
@@ -47,7 +48,8 @@ public class FtpSystemCoderManager
          {
             try
             {
-               FtpSystemCoder coder = (FtpSystemCoder)Class.forName(availableSysemCoders[i][1]).newInstance();
+               FtpSystemCoder coder =
+                  (FtpSystemCoder)Tools.forName(availableSysemCoders[i][1], FtpSystemCoderManager.class).newInstance();
                return coder;
             }
             catch (Exception exc)

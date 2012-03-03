@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.config;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -87,7 +88,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             try
             {
                Class<ConfigurationPersister> configurationPersisterClass =
-                  (Class<ConfigurationPersister>)Class.forName(cn);
+                  (Class<ConfigurationPersister>)Tools.forName(cn, this);
                configurationPersister = configurationPersisterClass.newInstance();
                configurationPersister.init(params.getPropertiesParam("working-conf"));
             }

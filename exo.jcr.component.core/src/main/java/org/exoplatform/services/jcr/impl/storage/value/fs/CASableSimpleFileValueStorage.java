@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
@@ -58,7 +59,7 @@ public class CASableSimpleFileValueStorage extends FileValueStorage
       // get other vcas specific props and make VCAS
       try
       {
-         vcas = (ValueContentAddressStorage)Class.forName(vcasType).newInstance();
+         vcas = (ValueContentAddressStorage)Tools.forName(vcasType, this).newInstance();
       }
       catch (Exception e)
       {

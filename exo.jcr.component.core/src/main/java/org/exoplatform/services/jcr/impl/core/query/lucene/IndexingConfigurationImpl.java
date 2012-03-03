@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -151,7 +152,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                   String analyzerClassName = analyzerNode.getAttributes().getNamedItem("class").getNodeValue();
                   try
                   {
-                     Class clazz = Class.forName(analyzerClassName);
+                     Class<?> clazz = Tools.forName(analyzerClassName, this);
                      if (clazz == JcrStandartAnalyzer.class)
                      {
                         log.warn("Not allowed to configure " + JcrStandartAnalyzer.class.getName()
