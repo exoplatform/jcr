@@ -1970,14 +1970,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
       catch (RepositoryException e)
       {
-         log.error(
+         LOG.error(
             "Error indexing subtree " + node.getQPath().getAsString() + ". Check JCR consistency. " + e.getMessage(), e);
          return;
       }
 
       if (childState == null)
       {
-         log.error("Error indexing subtree " + node.getQPath().getAsString() + ". Item not found.");
+         LOG.error("Error indexing subtree " + node.getQPath().getAsString() + ". Item not found.");
          return;
       }
 
