@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
+import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -82,6 +83,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
       ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
       config.putParameterValue(PARAM_INFINISPAN_CACHESTORE_CLASS, IndexerCacheStore.class.getName());
       this.cache = factory.createCache("Indexer_" + searchManager.getWsId(), config);
+      PrivilegedISPNCacheHelper.start(this.cache);
 
       CacheLoaderManager cacheLoaderManager =
          cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
@@ -124,5 +126,13 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    public boolean isShared()
    {
       return true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void close()
+   {
+      PrivilegedISPNCacheHelper.stop(cache);
    }
 }

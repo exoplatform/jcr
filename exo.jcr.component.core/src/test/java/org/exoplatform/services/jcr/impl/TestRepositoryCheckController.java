@@ -128,34 +128,54 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private void checkConsistentLocksInDataBase(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      lockNode(node);
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         Node node = addTestNode(repository);
+         lockNode(node);
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      removePropertyInDB(repository, (PropertyImpl)node.getProperty("jcr:lockIsDeep"));
-      removePropertyInDB(repository, (PropertyImpl)node.getProperty("jcr:lockOwner"));
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         removePropertyInDB(repository, (PropertyImpl)node.getProperty("jcr:lockIsDeep"));
+         removePropertyInDB(repository, (PropertyImpl)node.getProperty("jcr:lockOwner"));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    private void checkInconsistentLocksInLockTable(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      lockNode(node);
+         Node node = addTestNode(repository);
+         lockNode(node);
 
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      clearLockTable(repository);
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         clearLockTable(repository);
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testCheckValueStorage() throws Exception
@@ -187,14 +207,25 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testIndexUsecaseWrongDocumentId() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, SINGLE_DB, CACHE_DISABLED);
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
-      
-      Node node = addTestNode(repository);
-      assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      ManageableRepository repository = null;
+      try
+      {
+         repository = helper.createRepository(container, SINGLE_DB, CACHE_DISABLED);
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      removeNodeInDB(repository, node);
-      assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         Node node = addTestNode(repository);
+         assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+
+         removeNodeInDB(repository, node);
+         assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -202,14 +233,25 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testIndexUsecaseMultipleDocuments() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, SINGLE_DB, CACHE_DISABLED);
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      ManageableRepository repository = null;
+      try
+      {
+         repository = helper.createRepository(container, SINGLE_DB, CACHE_DISABLED);
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         Node node = addTestNode(repository);
+         assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      indexNode(repository, node, ItemState.ADDED);
-      assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         indexNode(repository, node, ItemState.ADDED);
+         assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -217,14 +259,25 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testIndexUsecaseDocumentNotExists() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, SINGLE_DB, CACHE_DISABLED);
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      ManageableRepository repository = null;
+      try
+      {
+         repository = helper.createRepository(container, SINGLE_DB, CACHE_DISABLED);
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         Node node = addTestNode(repository);
+         assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      indexNode(repository, node, ItemState.DELETED);
-      assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         indexNode(repository, node, ItemState.DELETED);
+         assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -241,33 +294,52 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private void checkDBUsecasesTheParentIdIsIdOfThisNode(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         Node node = addTestNode(repository);
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      assingItsOwnParent(repository, (ItemImpl)node);
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         assingItsOwnParent(repository, (ItemImpl)node);
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
-
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    private void checkDBUsecasesTheParentIdIsIdOfThisNode2(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      Property prop = addTestProperty(repository, node);
+         Node node = addTestNode(repository);
+         Property prop = addTestProperty(repository, node);
 
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      assingItsOwnParent(repository, (ItemImpl)prop);
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         assingItsOwnParent(repository, (ItemImpl)prop);
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -281,18 +353,28 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private void checkSeveralVersionsOfSameItem(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node);
+         Node node = addTestNode(repository);
+         PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node);
 
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      insertPropertyRecord(repository, prop.getInternalIdentifier(), prop.getParentIdentifier(), prop.getName());
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         insertPropertyRecord(repository, prop.getInternalIdentifier(), prop.getParentIdentifier(), prop.getName());
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -306,14 +388,24 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private void checkDBUsecasesPropertyWithoutParent(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      insertPropertyRecord(repository, IdGenerator.generate(), IdGenerator.generate(), "testName");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         insertPropertyRecord(repository, IdGenerator.generate(), IdGenerator.generate(), "testName");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -327,18 +419,28 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private void checkDBUsecasesIncorrectValueRecords(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node);
+         Node node = addTestNode(repository);
+         PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node);
 
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      updateValueRecord(repository, prop.getInternalIdentifier());
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         updateValueRecord(repository, prop.getInternalIdentifier());
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -352,18 +454,28 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private void checkDBUsecasesValueRecordHasNoItemRecord(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node);
+         Node node = addTestNode(repository);
+         PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node);
 
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      removeItemRecord(repository, prop.getInternalIdentifier());
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         removeItemRecord(repository, prop.getInternalIdentifier());
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -380,30 +492,50 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private void checkDBUsecasesPropertiesHasNoSingleValueRecord(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node);
+         Node node = addTestNode(repository);
+         PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node);
 
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      removeValueRecord(repository, prop.getInternalIdentifier());
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         removeValueRecord(repository, prop.getInternalIdentifier());
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
 
    }
 
    private void checkDBUsecasesPropertiesHasEmptyMultiValueRecord(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      node.setProperty("prop", new String[]{});
-      node.save();
+         Node node = addTestNode(repository);
+         node.setProperty("prop", new String[]{});
+         node.save();
 
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -420,20 +552,30 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    private void checkDBUsecasesReferencePropertyWithoutReferenceRecord(ManageableRepository repository)
       throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      Node node2 = addTestNode(repository);
-      PropertyImpl prop = (PropertyImpl)node2.setProperty("prop", node);
-      node2.save();
+         Node node = addTestNode(repository);
+         Node node2 = addTestNode(repository);
+         PropertyImpl prop = (PropertyImpl)node2.setProperty("prop", node);
+         node2.save();
 
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      removeReferenceRecord(repository, prop.getInternalIdentifier());
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         removeReferenceRecord(repository, prop.getInternalIdentifier());
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -447,16 +589,26 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private void checkDBUsecasesNodeHasNotPrimaryTypeProperties(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
-      Node node = addTestNode(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+         Node node = addTestNode(repository);
 
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      removePropertyInDB(repository, (PropertyImpl)node.getProperty("jcr:primaryType"));
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         removePropertyInDB(repository, (PropertyImpl)node.getProperty("jcr:primaryType"));
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairDataBase("yes");
-      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairDataBase("yes");
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    /**
@@ -470,20 +622,30 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private void checkValueStorageUsecases(ManageableRepository repository) throws Exception
    {
-      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+      try
+      {
+         TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-      Node node = addTestNode(repository);
-      PropertyImpl prop = (PropertyImpl)node.setProperty("prop", new FileInputStream(createBLOBTempFile(300)));
-      node.save();
+         Node node = addTestNode(repository);
+         PropertyImpl prop = (PropertyImpl)node.setProperty("prop", new FileInputStream(createBLOBTempFile(300)));
+         node.save();
 
-      assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
-      removeFileFromVS(repository, prop.getInternalIdentifier());
-      assertTrue(checkController.checkValueStorage()
-         .startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+         removeFileFromVS(repository, prop.getInternalIdentifier());
+         assertTrue(checkController.checkValueStorage().startsWith(
+            RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
-      checkController.repairValueStorage("yes");
-      assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+         checkController.repairValueStorage("yes");
+         assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    private Node addTestNode(ManageableRepository repository) throws LoginException, NoSuchWorkspaceException,

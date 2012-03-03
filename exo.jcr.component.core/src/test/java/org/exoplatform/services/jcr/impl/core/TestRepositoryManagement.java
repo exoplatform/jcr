@@ -22,9 +22,12 @@ import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
@@ -36,7 +39,11 @@ import org.jibx.runtime.IUnmarshallingContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.Session;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -56,134 +63,241 @@ public class TestRepositoryManagement extends JcrImplBaseTest
    private boolean isDefaultWsMultiDb;
 
    private final TesterConfigurationHelper helper;
+   
 
    public TestRepositoryManagement()
    {
       super();
       this.helper = TesterConfigurationHelper.getInstance();
    }
-
+      
    public void testAddNewRepository() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, false, null);
-      assertNotNull(repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName()).getRootNode());
+      ManageableRepository repository = null;
+      try
+      {
+         repository = helper.createRepository(container, false, null);
+
+         Session session = null;
+         try
+         {
+            session = repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+            assertNotNull(session.getRootNode());
+         }
+         finally
+         {
+            if (session != null)
+            {
+               session.logout();
+            }
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testMarshalUnmarshalRepositoryConfiguration() throws Exception
    {
-      ManageableRepository newRepository = helper.createRepository(container, false, null);
-      final long lockManagerTimeOut =
-         newRepository.getConfiguration().getWorkspaceEntries().get(0).getLockManager().getTimeout();
 
-      // 1st marshal configuration
-      File tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
-      PrivilegedFileHelper.deleteOnExit(tempFile);
+      ManageableRepository repository = null;
+      try
+      {
+         repository = helper.createRepository(container, false, null);
 
-      IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-      IMarshallingContext mctx = factory.createMarshallingContext();
+         final long lockManagerTimeOut =
+            repository.getConfiguration().getWorkspaceEntries().get(0).getLockManager().getTimeout();
 
-      FileOutputStream saveStream = new FileOutputStream(tempFile);
-      ArrayList<RepositoryEntry> repositoryEntries = new ArrayList<RepositoryEntry>();
-      repositoryEntries.add(newRepository.getConfiguration());
+         // 1st marshal configuration
+         File tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
+         PrivilegedFileHelper.deleteOnExit(tempFile);
 
-      RepositoryServiceConfiguration newRepositoryServiceConfiguration =
-         new RepositoryServiceConfiguration(repositoryService.getConfig().getDefaultRepositoryName(), repositoryEntries);
-      mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
-      saveStream.close();
+         IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IMarshallingContext mctx = factory.createMarshallingContext();
 
-      // 1st unmarshal
-      factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-      IUnmarshallingContext uctx = factory.createUnmarshallingContext();
-      RepositoryServiceConfiguration conf =
-         (RepositoryServiceConfiguration)uctx.unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
+         FileOutputStream saveStream = new FileOutputStream(tempFile);
+         ArrayList<RepositoryEntry> repositoryEntries = new ArrayList<RepositoryEntry>();
+         repositoryEntries.add(repository.getConfiguration());
 
-      // 1st check
-      RepositoryEntry unmarshledRepositoryEntry =
-         conf.getRepositoryConfiguration(newRepository.getConfiguration().getName());
-      assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
-         .getTimeout());
+         RepositoryServiceConfiguration newRepositoryServiceConfiguration =
+            new RepositoryServiceConfiguration(repositoryService.getConfig().getDefaultRepositoryName(),
+               repositoryEntries);
+         mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
+         saveStream.close();
 
-      
-      // 2nd marshal configuration
-      tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
-      PrivilegedFileHelper.deleteOnExit(tempFile);
+         // 1st unmarshal
+         factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IUnmarshallingContext uctx = factory.createUnmarshallingContext();
+         RepositoryServiceConfiguration conf =
+            (RepositoryServiceConfiguration)uctx
+               .unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
 
-      factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-      mctx = factory.createMarshallingContext();
-      saveStream = new FileOutputStream(tempFile);
-      repositoryEntries = new ArrayList<RepositoryEntry>();
-      repositoryEntries.add(newRepository.getConfiguration());
+         // 1st check
+         RepositoryEntry unmarshledRepositoryEntry =
+            conf.getRepositoryConfiguration(repository.getConfiguration().getName());
+         assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
+            .getTimeout());
 
-      newRepositoryServiceConfiguration =
-         new RepositoryServiceConfiguration(repositoryService.getConfig().getDefaultRepositoryName(), repositoryEntries);
-      mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
-      saveStream.close();
-      
-      // 2nd unmarshal
-      factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-      uctx = factory.createUnmarshallingContext();
-      conf = (RepositoryServiceConfiguration)uctx.unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
+         // 2nd marshal configuration
+         tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
+         PrivilegedFileHelper.deleteOnExit(tempFile);
 
-      // 2nd check
-      unmarshledRepositoryEntry =
-         conf.getRepositoryConfiguration(newRepository.getConfiguration().getName());
-      assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
-         .getTimeout());
+         factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         mctx = factory.createMarshallingContext();
+         saveStream = new FileOutputStream(tempFile);
+         repositoryEntries = new ArrayList<RepositoryEntry>();
+         repositoryEntries.add(repository.getConfiguration());
+
+         newRepositoryServiceConfiguration =
+            new RepositoryServiceConfiguration(repositoryService.getConfig().getDefaultRepositoryName(),
+               repositoryEntries);
+         mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
+         saveStream.close();
+
+         // 2nd unmarshal
+         factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         uctx = factory.createUnmarshallingContext();
+         conf =
+            (RepositoryServiceConfiguration)uctx
+               .unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
+
+         // 2nd check
+         unmarshledRepositoryEntry = conf.getRepositoryConfiguration(repository.getConfiguration().getName());
+         assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
+            .getTimeout());
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testAddNewRepositoryWithSameName() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, false, null);
-
+      ManageableRepository repository = null;
       try
       {
-         RepositoryEntry rEntry = helper.createRepositoryEntry(false, null, null, true);
-         rEntry.setName(repository.getConfiguration().getName());
+         repository = helper.createRepository(container, false, null);
 
-         helper.createRepository(container, rEntry);
-         fail();
+         try
+         {
+            RepositoryEntry rEntry = helper.createRepositoryEntry(false, null, null, true);
+            rEntry.setName(repository.getConfiguration().getName());
+
+            helper.createRepository(container, rEntry);
+            fail();
+         }
+         catch (Exception e)
+         {
+            // ok
+         }
       }
-      catch (Exception e)
+      finally
       {
-         // ok
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
       }
    }
 
    public void testCanRemove() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, false, null);
+      ManageableRepository repository = null;
+      try
+      {
+         repository = helper.createRepository(container, false, null);
 
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+         RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
-      SessionImpl session =
-         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+         SessionImpl session =
+            (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
 
-      assertFalse(service.canRemoveRepository(repository.getConfiguration().getName()));
-      session.logout();
-      assertTrue(service.canRemoveRepository(repository.getConfiguration().getName()));
+         assertFalse(service.canRemoveRepository(repository.getConfiguration().getName()));
+         session.logout();
+         assertTrue(service.canRemoveRepository(repository.getConfiguration().getName()));
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testInitNameSpaces() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, false, null);
+      ManageableRepository repository = null;
+      try
+      {
+         repository = helper.createRepository(container, false, null);
 
-      SessionImpl session =
-         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+         SessionImpl session = null;
+         try
+         {
+            session =
+               (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
 
-      assertEquals("http://www.apache.org/jackrabbit/test", session.getNamespaceURI("test"));
-      assertEquals("http://www.exoplatform.org/jcr/test/1.0", session.getNamespaceURI("exojcrtest"));
+            assertEquals("http://www.apache.org/jackrabbit/test", session.getNamespaceURI("test"));
+            assertEquals("http://www.exoplatform.org/jcr/test/1.0", session.getNamespaceURI("exojcrtest"));
+         }
+         finally
+         {
+            if (session != null)
+            {
+               session.logout();
+            }
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testInitNodeTypes() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, false, null);
+      ManageableRepository repository = null;
+      try
+      {
+         repository = helper.createRepository(container, false, null);
 
-      SessionImpl session =
-         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+         SessionImpl session = null;
+         try
+         {
+            session =
+               (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
 
-      // check if nt:folder nodetype exists
-      session.getRootNode().addNode("folder", "nt:folder");
-      session.save();
+            // check if nt:folder nodetype exists
+            session.getRootNode().addNode("folder", "nt:folder");
+            session.save();
+         }
+         finally
+         {
+            if (session != null)
+            {
+               session.logout();
+            }
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testRemove() throws Exception
@@ -208,49 +322,74 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       int theadsCount = 10;
 
       RepositoryCreationThread[] threads = new RepositoryCreationThread[theadsCount];
-      CountDownLatch latcher = new CountDownLatch(1);
 
-      for (int i = 0; i < theadsCount; i++)
+      try
       {
-         threads[i] = new RepositoryCreationThread(latcher);
-         threads[i].start();
+         CountDownLatch latcher = new CountDownLatch(1);
+
+         for (int i = 0; i < theadsCount; i++)
+         {
+            threads[i] = new RepositoryCreationThread(latcher);
+            threads[i].start();
+         }
+
+         latcher.countDown();
+
+         for (int i = 0; i < theadsCount; i++)
+         {
+            threads[i].join();
+         }
+
+         PropertiesParam props = new PropertiesParam();
+         props.setProperty("dialect", "auto");
+         props.setProperty("source-name", "jdbcjcr");
+
+         JDBCConfigurationPersister persiter = new JDBCConfigurationPersister();
+         persiter.init(props);
+
+         IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IUnmarshallingContext uctx = factory.createUnmarshallingContext();
+         RepositoryServiceConfiguration storedConf =
+            (RepositoryServiceConfiguration)uctx.unmarshalDocument(persiter.read(), null);
+
+         for (int i = 0; i < theadsCount; i++)
+         {
+            // test if respository has been created
+            ManageableRepository repository = threads[i].getRepository();
+            assertNotNull(repository);
+
+            // check configuration in persiter
+            storedConf.getRepositoryConfiguration(repository.getConfiguration().getName());
+
+            // check configuration in RepositoryServic
+            assertNotNull(repositoryService.getConfig().getRepositoryConfiguration(
+               repository.getConfiguration().getName()));
+
+            // login into newly created repository
+            ManageableRepository newRepository =
+               repositoryService.getRepository(repository.getConfiguration().getName());
+
+            Session session = null;
+            try
+            {
+               session = repository.login(credentials, newRepository.getConfiguration().getSystemWorkspaceName());
+               assertNotNull(session.getRootNode());
+            }
+            finally
+            {
+               if (session != null)
+               {
+                  session.logout();
+               }
+            }
+         }
       }
-
-      latcher.countDown();
-
-      for (int i = 0; i < theadsCount; i++)
+      finally
       {
-         threads[i].join();
-      }
-
-      PropertiesParam props = new PropertiesParam();
-      props.setProperty("dialect", "auto");
-      props.setProperty("source-name", "jdbcjcr");
-
-      JDBCConfigurationPersister persiter = new JDBCConfigurationPersister();
-      persiter.init(props);
-
-      IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-      IUnmarshallingContext uctx = factory.createUnmarshallingContext();
-      RepositoryServiceConfiguration storedConf =
-         (RepositoryServiceConfiguration)uctx.unmarshalDocument(persiter.read(), null);
-
-      for (int i = 0; i < theadsCount; i++)
-      {
-         // test if respository has been created
-         ManageableRepository repository = threads[i].getRepository();
-         assertNotNull(repository);
-
-         // check configuration in persiter
-         storedConf.getRepositoryConfiguration(repository.getConfiguration().getName());
-         
-         // check configuration in RepositoryServic
-         assertNotNull(repositoryService.getConfig().getRepositoryConfiguration(repository.getConfiguration().getName()));
-         
-         // login into newly created repository
-         ManageableRepository newRepository = repositoryService.getRepository(repository.getConfiguration().getName());
-         assertNotNull(repository.login(credentials, newRepository.getConfiguration().getSystemWorkspaceName())
-            .getRootNode());
+         for (int i = 0; i < theadsCount; i++)
+         {
+            helper.removeRepository(container, threads[i].getRepository().getConfiguration().getName());
+         }
       }
    }
 
@@ -258,7 +397,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
    {
       private CountDownLatch latcher;
 
-      private ManageableRepository repository;
+      private ManageableRepository tRrepository;
 
       RepositoryCreationThread(CountDownLatch latcher)
       {
@@ -266,24 +405,142 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       }
 
       /**
-       * {@inheritDoc}
-       */
-      public void run()
+        * {@inheritDoc}
+        */
+   
+
+   public void run()
+   {
+   try
+   {
+     latcher.await();
+     tRrepository = helper.createRepository(container, false, null);
+   }
+   catch (Exception e)
+   {
+     e.printStackTrace();
+   }
+   }
+
+   public ManageableRepository getRepository()
+   {
+   return tRrepository;
+   }
+   }
+
+   public void testCreateAterRemoveCheckOldContent() throws Exception
+   {
+      ManageableRepository newRepository = null;
+      try
       {
+         RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+         RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, null, true);
+
          try
          {
-            latcher.await();
-            repository = helper.createRepository(container, false, null);
+            Class
+               .forName("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
+
+            ArrayList cacheParams = new ArrayList();
+            cacheParams.add(new SimpleParameterEntry("infinispan-configuration",
+               "conf/standalone/cluster/test-infinispan-config.xml"));
+            cacheParams.add(new SimpleParameterEntry("jgroups-configuration", "conf/udp-mux-v3.xml"));
+            cacheParams.add(new SimpleParameterEntry("infinispan-cluster-name", "JCR-cluster-Test"));
+            cacheParams.add(new SimpleParameterEntry("use-distributed-cache", "false"));
+            CacheEntry cacheEntry = new CacheEntry(cacheParams);
+            cacheEntry
+               .setType("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
+            cacheEntry.setEnabled(true);
+
+            ArrayList<WorkspaceEntry> wsList = repoEntry.getWorkspaceEntries();
+
+            wsList.get(0).setCache(cacheEntry);
+            repoEntry.setWorkspaceEntries(wsList);
+         }
+         catch (ClassNotFoundException e)
+         {
+         }
+
+         service.createRepository(repoEntry);
+         service.getConfig().retain();
+
+         ManageableRepository repository = service.getRepository(repoEntry.getName());
+
+         // add content
+         Session session =
+            repository.login(new CredentialsImpl("admin", "admin".toCharArray()), repository.getConfiguration()
+               .getSystemWorkspaceName());
+         session.getRootNode().addNode("test");
+         session.save();
+         session.logout();
+
+         // copy repository configuration
+         RepositoryEntry repositoryEntry = helper.copyRepositoryEntry(repository.getConfiguration());
+
+         String newDatasourceName = helper.createDatasource();
+
+         for (WorkspaceEntry ws : repositoryEntry.getWorkspaceEntries())
+         {
+            List<SimpleParameterEntry> parameters = ws.getContainer().getParameters();
+            for (int i = 0; i <= parameters.size(); i++)
+            {
+               SimpleParameterEntry spe = parameters.get(i);
+               if (spe.getName().equals("source-name"))
+               {
+                  parameters.add(i, new SimpleParameterEntry(spe.getName(), newDatasourceName));
+                  break;
+               }
+            }
+         }
+
+         service.removeRepository(repository.getConfiguration().getName());
+
+         try
+         {
+            service.getRepository(repository.getConfiguration().getName());
+            fail();
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+         }
+
+         // create new repository 
+         service.createRepository(repositoryEntry);
+         service.getConfig().retain();
+
+         newRepository = service.getRepository(repositoryEntry.getName());
+
+         Session newSession = null;
+         try
+         {
+            newSession =
+               newRepository.login(new CredentialsImpl("admin", "admin".toCharArray()), newRepository
+                  .getConfiguration().getSystemWorkspaceName());
+
+            try
+            {
+               newSession.getRootNode().getNode("test");
+               fail("Node 'test' should not exists after remove repository and recreate new.");
+            }
+            catch (PathNotFoundException e)
+            {
+               //ok
+            }
+         }
+         finally
+         {
+            if (newSession != null)
+            {
+               newSession.logout();
+            }
          }
       }
-
-      public ManageableRepository getRepository()
+      finally
       {
-         return repository;
+         if (newRepository != null)
+         {
+            helper.removeRepository(container, newRepository.getConfiguration().getName());
+         }
       }
    }
 }

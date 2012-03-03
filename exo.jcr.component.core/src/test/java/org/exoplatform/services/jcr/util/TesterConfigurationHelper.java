@@ -33,7 +33,9 @@ import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
@@ -64,6 +66,26 @@ public class TesterConfigurationHelper
    private TesterConfigurationHelper()
    {
       System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "org.exoplatform.services.naming.SimpleContextFactory");
+   }
+
+   /**
+    * Remove repository.
+    * @throws RepositoryConfigurationException 
+    */
+   public void removeRepository(ExoContainer container, String repositoryName) throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+
+      ManageableRepository mr = service.getRepository(repositoryName);
+      for (String wsName : mr.getWorkspaceNames())
+      {
+         WorkspaceContainerFacade wc = mr.getWorkspaceContainer(wsName);
+         SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
+         sessionRegistry.closeSessions(wsName);
+      }
+      
+      service.removeRepository(repositoryName);
    }
 
    /**
@@ -253,13 +275,34 @@ public class TesterConfigurationHelper
       QueryHandlerEntry qEntry =
          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", params);
 
+
       // Cache
-      ArrayList cacheParams = new ArrayList();
-      cacheParams.add(new SimpleParameterEntry("maxSize", "2000"));
-      cacheParams.add(new SimpleParameterEntry("liveTime", "20m"));
-      CacheEntry cacheEntry = new CacheEntry(cacheParams);
-      cacheEntry.setEnabled(cacheEnabled);
-      cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
+      CacheEntry cacheEntry = null;
+
+      try
+      {
+         Class
+            .forName("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
+
+         //TODO EXOJCR-1784
+         ArrayList cacheParams = new ArrayList();
+         cacheParams.add(new SimpleParameterEntry("maxSize", "2000"));
+         cacheParams.add(new SimpleParameterEntry("liveTime", "20m"));
+         cacheEntry = new CacheEntry(cacheParams);
+         cacheEntry.setEnabled(cacheEnabled);
+         cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
+      }
+      catch (ClassNotFoundException e)
+      {
+         ArrayList cacheParams = new ArrayList();
+         cacheParams.add(new SimpleParameterEntry("jbosscache-configuration",
+            "conf/standalone/test-jbosscache-config.xml"));
+         cacheParams.add(new SimpleParameterEntry("jbosscache-shareable", "true"));
+         cacheEntry = new CacheEntry(cacheParams);
+         cacheEntry
+            .setType("org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache");
+         cacheEntry.setEnabled(cacheEnabled);
+      }
 
       // Lock
       LockManagerEntry lockManagerEntry = new LockManagerEntry();
@@ -434,12 +477,13 @@ public class TesterConfigurationHelper
 
       LockManagerEntry lockManagerEntry = new LockManagerEntry();
       lockManagerEntry.setTimeout(900000);
-      LockPersisterEntry persisterEntry = new LockPersisterEntry();
-      persisterEntry.setType("org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister");
-      ArrayList lpParams = new ArrayList();
-      lpParams.add(new SimpleParameterEntry("path", "target/temp/lock"));
-      persisterEntry.setParameters(lpParams);
-      lockManagerEntry.setPersister(persisterEntry);
+      LockPersisterEntry lockPersisterEntry = new LockPersisterEntry();
+      lockPersisterEntry.setType("org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister");
+      ArrayList<SimpleParameterEntry> lockPersisterParameters = new ArrayList<SimpleParameterEntry>();
+      lockPersisterParameters.add(new SimpleParameterEntry("path", "target/temp/lock/" + wsName));
+      lockPersisterEntry.setParameters(lockPersisterParameters);
+      lockManagerEntry.setPersister(lockPersisterEntry);
+
       workspaceEntry.setLockManager(lockManagerEntry);
 
       // workspaceEntry
@@ -467,5 +511,108 @@ public class TesterConfigurationHelper
       }
 
       return instance;
+   }
+
+   public RepositoryEntry copyRepositoryEntry(RepositoryEntry configuration)
+   {
+      ArrayList<WorkspaceEntry> workspases = new ArrayList<WorkspaceEntry>();
+
+      for (WorkspaceEntry ws : configuration.getWorkspaceEntries())
+      {
+         workspases.add(copyWorkspaceEntry(ws));
+      }
+
+      RepositoryEntry repository = new RepositoryEntry();
+      repository.setSystemWorkspaceName(configuration.getSystemWorkspaceName());
+      repository.setDefaultWorkspaceName(configuration.getDefaultWorkspaceName());
+      repository.setName(configuration.getName());
+      repository.setSessionTimeOut(configuration.getSessionTimeOut());
+      repository.setAuthenticationPolicy(configuration.getAuthenticationPolicy());
+      repository.setSecurityDomain(configuration.getSecurityDomain());
+
+      for (WorkspaceEntry ws : workspases)
+      {
+         repository.addWorkspace(ws);
+      }
+
+      return repository;
+   }
+
+   private WorkspaceEntry copyWorkspaceEntry(WorkspaceEntry wsEntry)
+   {
+      // container entry
+      ArrayList<SimpleParameterEntry> params = new ArrayList();
+      params.addAll(wsEntry.getContainer().getParameters());
+
+      ContainerEntry containerEntry = new ContainerEntry(wsEntry.getContainer().getType(), (ArrayList)params);
+      containerEntry.setParameters(params);
+
+      // value storage
+      ArrayList<ValueStorageEntry> list = new ArrayList<ValueStorageEntry>();
+      if (wsEntry.getContainer().getValueStorages() != null)
+      {
+         for (ValueStorageEntry vse : wsEntry.getContainer().getValueStorages())
+         {
+            ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
+
+            for (ValueStorageFilterEntry vsfe : vse.getFilters())
+            {
+               ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
+               filterEntry.setPropertyType(vsfe.getPropertyType());
+               filterEntry.setPropertyName(vsfe.getPropertyName());
+               filterEntry.setMinValueSize(vsfe.getMinValueSize());
+               filterEntry.setAncestorPath(vsfe.getAncestorPath());
+               vsparams.add(filterEntry);
+            }
+
+            ValueStorageEntry valueStorageEntry = new ValueStorageEntry(vse.getType(), vsparams);
+            ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
+            spe.addAll(vse.getParameters());
+            valueStorageEntry.setId(vse.getId());
+            valueStorageEntry.setParameters(spe);
+            valueStorageEntry.setFilters(vsparams);
+
+            // containerEntry.setValueStorages();
+            containerEntry.setParameters(params);
+            list.add(valueStorageEntry);
+         }
+      }
+
+      containerEntry.setValueStorages(list);
+
+      // Indexer
+      params = new ArrayList();
+      params.addAll(wsEntry.getQueryHandler().getParameters());
+      QueryHandlerEntry qEntry = new QueryHandlerEntry(wsEntry.getQueryHandler().getType(), params);
+
+      // Cache
+      ArrayList cacheParams = new ArrayList();
+      cacheParams.addAll(wsEntry.getCache().getParameters());
+      CacheEntry cacheEntry = new CacheEntry(cacheParams);
+      cacheEntry.setEnabled(wsEntry.getCache().getEnabled());
+      cacheEntry.setType(wsEntry.getCache().getType());
+
+      // Lock
+      LockManagerEntry lockManagerEntry = new LockManagerEntry();
+      lockManagerEntry.setTimeout(wsEntry.getLockManager().getTimeout());
+      if (wsEntry.getLockManager().getPersister() != null)
+      {
+         LockPersisterEntry lockPersisterEntry = new LockPersisterEntry();
+         lockPersisterEntry.setType(wsEntry.getLockManager().getPersister().getType());
+         ArrayList<SimpleParameterEntry> lockPersisterParameters = new ArrayList<SimpleParameterEntry>();
+         lockPersisterParameters.addAll(wsEntry.getLockManager().getPersister().getParameters());
+         lockPersisterEntry.setParameters(lockPersisterParameters);
+         lockManagerEntry.setPersister(lockPersisterEntry);
+      }
+
+      WorkspaceEntry workspaceEntry = new WorkspaceEntry();
+      workspaceEntry.setContainer(containerEntry);
+      workspaceEntry.setCache(cacheEntry);
+      workspaceEntry.setQueryHandler(qEntry);
+      workspaceEntry.setLockManager(lockManagerEntry);
+      workspaceEntry.setName(wsEntry.getName());
+      workspaceEntry.setUniqueName(wsEntry.getUniqueName());
+
+      return workspaceEntry;
    }
 }

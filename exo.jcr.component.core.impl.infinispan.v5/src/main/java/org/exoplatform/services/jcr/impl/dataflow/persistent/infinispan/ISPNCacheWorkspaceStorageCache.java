@@ -71,6 +71,7 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
+import org.picocontainer.Startable;
 
 import java.io.File;
 import java.io.IOException;
@@ -118,7 +119,7 @@ import javax.transaction.TransactionManager;
  * @version $Id: ISPNCacheWorkspaceStorageCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  */
 @SuppressWarnings("unchecked")
-public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable
+public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable, Startable
 {
    private static final Log LOG = ExoLogger//NOSONAR
       .getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNCacheWorkspaceStorageCache");//NOSONAR
@@ -592,6 +593,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          this.caller = new GlobalOperationCaller();
          cache.addListener(new CacheEventListener());
       }
+      this.cache.start();
    }
 
    private boolean isDistributedMode()
@@ -2308,5 +2310,20 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          // we force the reloading
          cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.FAIL_SILENTLY).remove(key);
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void start()
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void stop()
+   {
+      cache.stop();
    }
 }
