@@ -1905,7 +1905,18 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          checkVolatileCommit();
       }
 
-      List<NodeData> children = stateMgr.getChildNodesData(node);
+      List<NodeData> children = null;
+      try
+      {
+         children = stateMgr.getChildNodesData(node);
+      }
+      catch (RepositoryException e)
+      {
+         log.error(
+            "Error indexing subtree " + node.getQPath().getAsString() + ". Check JCR consistency. " + e.getMessage(), e);
+         return;
+      }
+
       for (final NodeData nodeData : children)
       {
 
@@ -1953,6 +1964,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       IOException, InterruptedException
    {
       NodeData childState = (NodeData)stateMgr.getItemData(nodeData.getIdentifier());
+
       if (childState == null)
       {
          handler.getOnWorkspaceInconsistencyHandler().handleMissingChildNode(
