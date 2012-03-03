@@ -1963,12 +1963,22 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       final AtomicLong count, final NodeData nodeData, final AtomicLong processed) throws RepositoryException,
       IOException, InterruptedException
    {
-      NodeData childState = (NodeData)stateMgr.getItemData(nodeData.getIdentifier());
+      NodeData childState = null;
+      try
+      {
+         childState = (NodeData)stateMgr.getItemData(nodeData.getIdentifier());
+      }
+      catch (RepositoryException e)
+      {
+         log.error(
+            "Error indexing subtree " + node.getQPath().getAsString() + ". Check JCR consistency. " + e.getMessage(), e);
+         return;
+      }
 
       if (childState == null)
       {
-         handler.getOnWorkspaceInconsistencyHandler().handleMissingChildNode(
-            new ItemNotFoundException("Child not found "), handler, nodeData.getQPath(), node, nodeData);
+         log.error("Error indexing subtree " + node.getQPath().getAsString() + ". Item not found.");
+         return;
       }
 
       if (nodeData != null)
