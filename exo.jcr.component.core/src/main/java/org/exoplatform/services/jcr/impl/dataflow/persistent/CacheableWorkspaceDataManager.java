@@ -128,8 +128,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private volatile BloomFilter<String> filterOwner;
 
-   private TransactionManager transactionManager;
-
    /**
     * The service for executing commands on all nodes of cluster.
     */
@@ -397,7 +395,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       WorkspaceStorageCache cache, SystemDataContainerHolder systemDataContainerHolder,
       TransactionableResourceManager txResourceManager, TransactionService transactionService, RPCService rpcService)
    {
-      super(dataContainer, systemDataContainerHolder, txResourceManager);
+      super(dataContainer, systemDataContainerHolder, txResourceManager, transactionService.getTransactionManager());
 
       bfProbability =
          wsConfig.getContainer().getParameterDouble(WorkspaceDataContainer.ACL_BF_FALSE_PROPBABILITY,
@@ -421,8 +419,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
       addItemPersistenceListener(new CacheItemsPersistenceListener());
-
-      transactionManager = transactionService.getTransactionManager();
 
       this.rpcService = rpcService;
       this.txResourceManager = txResourceManager;
@@ -469,7 +465,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       WorkspaceStorageCache cache, SystemDataContainerHolder systemDataContainerHolder,
       TransactionableResourceManager txResourceManager, RPCService rpcService)
    {
-      super(dataContainer, systemDataContainerHolder, txResourceManager);
+      super(dataContainer, systemDataContainerHolder, txResourceManager, getTransactionManagerFromCache(cache));
 
       bfProbability =
          wsConfig.getContainer().getParameterDouble(WorkspaceDataContainer.ACL_BF_FALSE_PROPBABILITY,
@@ -493,18 +489,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
       addItemPersistenceListener(new CacheItemsPersistenceListener());
-
-      try
-      {
-         transactionManager =
-            (TransactionManager)cache.getClass().getMethod("getTransactionManager", (Class<?>[])null)
-               .invoke(cache, (Object[])null);
-      }
-      catch (Exception e)
-      {
-         LOG.debug("Could not get the transaction manager from the cache", e);
-         transactionManager = null;
-      }
 
       this.rpcService = rpcService;
       this.txResourceManager = txResourceManager;
@@ -550,6 +534,24 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       this(wsConfig, dataContainer, cache, systemDataContainerHolder, null, (RPCService)null);
    }
 
+   /**
+    * Try to get the TransactionManager from the cache by calling by reflection
+    * getTransactionManager() on the cache instance, by default it will return null
+    */
+   private static TransactionManager getTransactionManagerFromCache(WorkspaceStorageCache cache)
+   {
+      try
+      {
+         return (TransactionManager)cache.getClass().getMethod("getTransactionManager", (Class<?>[])null)
+            .invoke(cache, (Object[])null);
+      }
+      catch (Exception e)
+      {
+         LOG.debug("Could not get the transaction manager from the cache", e);
+      }
+      return null;
+   }
+   
    /**
     * Get Items Cache.
     * 

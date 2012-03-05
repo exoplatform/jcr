@@ -651,6 +651,10 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
       {
       }
 
+      public void prepare() throws IllegalStateException, RepositoryException
+      {
+      }
+
       public void commit() throws IllegalStateException, RepositoryException
       {
          if (wait.get() != null && wait.get())

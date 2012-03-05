@@ -80,33 +80,46 @@ public class WriteValue extends ValueFileOperation
       fileLock.lock();
    }
 
+   public void prepare() throws IOException
+   {
+      if (fileLock != null)
+      {
+         // be sure the destination dir exists (case for Tree-style storage)
+         file.getParentFile().mkdirs();
+         // write value to the file
+         writeValue(file, value);
+      }
+   }
+
    /**
     * {@inheritDoc}
     */
    public void rollback() throws IOException
    {
       if (fileLock != null)
-         fileLock.unlock();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void commit() throws IOException
-   {
-      if (fileLock != null)
+      {
          try
          {
-            // be sure the destination dir exists (case for Tree-style storage)
-            file.getParentFile().mkdirs();
-
-            // write value to the file
-            writeValue(file, value);
+            if (file.exists() && !file.delete())
+            {
+               cleaner.addFile(file);
+            }
          }
          finally
          {
             fileLock.unlock();
          }
+      }
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void twoPhaseCommit() throws IOException
+   {
+      if (fileLock != null)
+      {
+         fileLock.unlock();
+      }
+   }
 }

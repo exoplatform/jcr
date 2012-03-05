@@ -308,8 +308,9 @@ session.logout();
      &lt;properties&gt;
         &lt;property name="jbosscache-configuration" value="test-jbosscache-data.xml" /&gt;
         &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-        &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-        &lt;property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws" /&gt;
+        &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
+        &lt;property name="jbosscache-cluster-name" value="JCR-cluster-data" /&gt;
+        &lt;property name="jbosscache-shareable" value="true"/&gt;
      &lt;/properties&gt;
 &lt;/cache&gt;</programlisting>
 
@@ -326,8 +327,9 @@ session.logout();
               </listitem>
 
               <listitem>
-                <para>"jgroups-multiplexer-stack" just simply "true". Strongly
-                recommended;</para>
+                <para>"jgroups-multiplexer-stack" set to "false" with the
+                jgroups configuration with the shared transport enabled in
+                order to use the shared transport.</para>
               </listitem>
 
               <listitem>
@@ -335,6 +337,11 @@ session.logout();
                 It should be different for each workspace and each workspace
                 component. I.e.:
                 &lt;repository_name&gt;-&lt;ws_name&gt;-&lt;component(cache\|lock\|index)&gt;</para>
+              </listitem>
+
+              <listitem>
+                <para>"jbosscache-shareable" set "true" in order to share the
+                same JBoss Cache instance between several workspaces.</para>
               </listitem>
             </itemizedlist>
           </listitem>
@@ -357,8 +364,9 @@ session.logout();
 
                 <programlisting language="xml">&lt;property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" /&gt;
 &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-&lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-&lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws" /&gt;
+&lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
+&lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer" /&gt;
+&lt;property name="jbosscache-shareable" value="true"/&gt;
 &lt;property name="max-volatile-time" value="60" /&gt;</programlisting>
               </listitem>
             </itemizedlist>
@@ -385,16 +393,17 @@ session.logout();
       &lt;property name="time-out" value="15m" /&gt;
       &lt;property name="jbosscache-configuration" value="test-jbosscache-lock.xml" /&gt;
       &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws" /&gt;
+      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
+      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-locks" /&gt;
+      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws_pk" /&gt;
+      &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+      &lt;property name="jbosscache-shareable" value="true"/&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;
 

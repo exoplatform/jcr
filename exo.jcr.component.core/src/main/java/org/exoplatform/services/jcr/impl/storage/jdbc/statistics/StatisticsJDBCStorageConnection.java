@@ -69,6 +69,12 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
 
    /**
     * The description of the statistics corresponding to the method 
+    * <code>prepare()</code>
+    */
+   private static final String PREPARE_DESCR = "prepare";   
+
+   /**
+    * The description of the statistics corresponding to the method 
     * <code>rename(NodeData data)</code>
     */
    private static final String RENAME_NODE_DATA_DESCR = "renameNodeData";
@@ -233,6 +239,8 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       ALL_STATISTICS.put(RENAME_NODE_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, RENAME_NODE_DATA_DESCR));
       // Rollback
       ALL_STATISTICS.put(ROLLBACK_DESCR, new Statistics(GLOBAL_STATISTICS, ROLLBACK_DESCR));
+      // Prepare
+      ALL_STATISTICS.put(PREPARE_DESCR, new Statistics(GLOBAL_STATISTICS, PREPARE_DESCR));
       // Others
       ALL_STATISTICS.put(IS_OPENED_DESCR, new Statistics(null, IS_OPENED_DESCR));
       ALL_STATISTICS.put(CLOSE_DESCR, new Statistics(null, CLOSE_DESCR));
@@ -626,6 +634,23 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void prepare() throws IllegalStateException, RepositoryException
+   {
+      Statistics s = ALL_STATISTICS.get(PREPARE_DESCR);
+      try
+      {
+         s.begin();
+         wcs.prepare();
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+   
    /**
     * {@inheritDoc}
     */

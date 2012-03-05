@@ -253,6 +253,10 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
    {
    }
 
+   public void prepare() throws IllegalStateException, RepositoryException
+   {
+   }
+
    public void close() throws IllegalStateException, RepositoryException
    {
    }
