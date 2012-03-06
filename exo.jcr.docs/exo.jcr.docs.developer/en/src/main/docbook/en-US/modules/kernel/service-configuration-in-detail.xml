@@ -5,6 +5,15 @@
   <?dbhtml filename="ch-service-configuration-in-detail.html"?>
 
   <title>Service Configuration in Detail</title>
+  
+    <para>This chapter shows you how to set up a sample service with some
+    configurations and how to access the configuration parameters. The
+    later sections describe all details of the configuration file (parameters,
+    object-params, plugins, imports, and more). It also shows how to access the
+    configuration values. You may consider this document as a <emphasis
+    role="bold">reference</emphasis>, but you can also use this document as a
+    <emphasis role="bold">tutorial</emphasis> and read it from the beginning
+    to the end.</para>
 
   <para><emphasis role="bold">Related documents</emphasis></para>
 
@@ -25,19 +34,6 @@
       Configuration File</link></para>
     </listitem>
   </itemizedlist>
-
-  <section>
-    <title>Objectives</title>
-
-    <para>This article shows how to setup a sample service with some
-    configurations and how to access to the configuration parameters. The
-    later chapters describe all details of the configuration file (parameters,
-    object-params, plugins, imports, etc.), it also shows how to access the
-    configuration values. You may consider this article as a <emphasis
-    role="bold">reference</emphasis>, but you can also use this article as a
-    <emphasis role="bold">tutorial</emphasis> and read it from the beginning
-    to the end.</para>
-  </section>
 
   <section>
     <title>Requirements</title>
@@ -128,7 +124,7 @@ public interface ArticleStatsService {
       <title>Init Parameters</title>
 
       <para>You see your service has a configuration file, but you wonder how
-      the file could possibly access to its configuration. Imagine that you
+      the file can gain access to its configuration. Imagine that you
       are asked to implement two different calculation methods: fast and
       exact.</para>
 
@@ -159,7 +155,7 @@ public interface ArticleStatsService {
         role="bold">totally free</emphasis>. You can provide as many <emphasis
         role="bold">value-param</emphasis>, <emphasis
         role="bold">property-param</emphasis>, and <emphasis
-        role="bold">properties</emphasis> you wish and you can give them any
+        role="bold">properties</emphasis> as you wish, and you can give them any
         names or values. You only must respect the xml structure.</para>
       </note>
 
@@ -431,7 +427,7 @@ public class LDAPConnectionConfig {
       </itemizedlist>
 
       <para>Have a look on this type test xml file: <ulink
-      url="https://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk/exo.kernel.container/src/test/resources/object.xml">https://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk/exo.kernel.container/src/test/resources/object.xml</ulink>.</para>
+      url="https://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk/exo.kernel.container/src/test/resources/object.xml">object.xml</ulink>.</para>
     </section>
 
     <section>

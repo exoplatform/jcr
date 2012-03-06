@@ -5,8 +5,9 @@
   <?dbhtml filename="ch-jndi-naming.html"?>
 
   <title>JNDI naming</title>
+  <para>This chapter provides you the basic knowledge about JNDI naming, such as, what it is, how it works and how it is used.</para>
 
-  <section>
+  <section id="Kernel.JNDINaming.Prerequisites">
     <title>Prerequisites</title>
 
     <para>We need to configure JNDI environment properties and Reference
@@ -29,7 +30,7 @@
       </itemizedlist></para>
   </section>
 
-  <section>
+  <section id="Kernel.JNDINaming.How_it_works">
     <title>How it works</title>
 
     <para>Make sure you understand the <ulink
@@ -77,7 +78,7 @@
       <para>and others (see JNDI docs)</para>
     </section>
 
-    <section>
+    <section id="Kernel.JNDINaming.JNDI_ref_binding">
       <title>JNDI reference binding</title>
 
       <para>Another responsibility of Context Initializer
@@ -112,7 +113,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.JNDINaming.Configuration_examples">
     <title>Configuration examples</title>
 
     <para>The <envar>InitialContextInitializer</envar> configuration
@@ -187,7 +188,7 @@
   &lt;/component-plugin&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="Kernel.JNDINaming.Recommendations_for_application_developers">
     <title>Recommendations for Application Developers</title>
 
     <para><itemizedlist>
@@ -203,7 +204,7 @@
       </itemizedlist></para>
   </section>
 
-  <section>
+  <section id="Kernel.JNDINaming.InitialContextInitializer">
     <title>InitialContextInitializer API</title>
 
     <para><envar>InitialContextInitalizer</envar> also provides feature of

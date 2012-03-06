@@ -4,9 +4,6 @@
 <chapter id="JCR.Extensions">
   <?dbhtml filename="ch-jcr-extensions.html"?>
 
-  <title>JCR Extensions</title>
-
-  <section>
     <title>JCR Service Extensions</title>
 
     <section>
@@ -107,15 +104,12 @@
       already assigned NodeType(s) of the current node (can be both primary
       and mixin).</para>
 
-      <para><emphasis role="bold">NOTE:</emphasis> the list of fields can be
-      extended.</para>
+      <note><para> The list of fields can be extended.</para></note>
 
-      <para><emphasis role="bold">NOTE2:</emphasis> no spaces between list
-      elements.</para>
+      <note><para> No spaces between list elements.</para></note>
 
-      <para><emphasis role="bold">NOTE3:</emphasis> <emphasis
-      role="bold">isDeep=false</emphasis> means <emphasis role="bold">node,
-      node properties and child nodes</emphasis>.</para>
+      <note><para> <emphasis role="bold">isDeep=false</emphasis> means <emphasis role="bold">node,
+      node properties and child nodes</emphasis>.</para></note>
 
       <para>The list of supported Event names: <emphasis role="bold">addNode,
       addProperty, changeProperty, removeProperty, removeNode, addMixin,
@@ -154,7 +148,6 @@
     &lt;/component-plugins&gt;
 &lt;/component&gt;</programlisting>
     </section>
-  </section>
 
   <section>
     <title>Related Pages</title>

@@ -4,13 +4,11 @@
 <chapter id="JCR.SearchIndexBackup">
   <?dbhtml filename="ch-search-index-backup.html"?>
 
-  <title>Use external backup tool</title>
-
-  <section>
+  <section id="JCR.SearchIndexBackup.Repository_suspending">
     <title>Repository suspending</title>
 
     <para>To have the repository content consistent with the search index and
-    value storate, the repository should be suspened. It means all working
+    value storage, the repository should be suspended. It means all working
     threads are suspended until resume operation performed. Index will be
     flushed.</para>
 
@@ -36,7 +34,7 @@
     suspended, check console to see stacktraces.</para>
   </section>
 
-  <section>
+  <section id="JCR.SearchIndexBackup.Backup">
     <title>Backup</title>
 
     <para>Now we can backup content manually or using third part software. We
@@ -57,7 +55,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.SearchIndexBackup.Repository_resuming">
     <title>Repository resuming</title>
 
     <para>Once backup is done need to invoke resume() operation to switch

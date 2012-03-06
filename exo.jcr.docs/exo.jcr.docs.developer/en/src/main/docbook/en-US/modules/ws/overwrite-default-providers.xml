@@ -4,9 +4,10 @@
 <chapter id="WS.OverwriteDefaultProviders">
   <?dbhtml filename="overwrite-default-providers.html"?>
 
-  <title>OverwriteDefaultProviders</title>
+  <title>Overwrite default providers</title>
+  <para>This chapter will show you how to overwrite the default providers in eXo JAX-RS implementation.</para>
 
-  <section>
+  <section id="WS.OverwriteDefaultProviders.Motivation">
     <title>Motivation</title>
 
     <para>There is set of providers embedded in eXo JAX-RS
@@ -136,7 +137,7 @@
     services.</para>
   </section>
 
-  <section>
+  <section id="WS.OverwriteDefaultProviders.Usage">
     <title>Usage</title>
 
     <para>To be able overwrite default JAX-RS provider(s) developer
@@ -167,7 +168,7 @@
     </orderedlist>
   </section>
 
-  <section>
+  <section id="WS.OverwriteDefaultProviders.Example">
     <title>Example</title>
 
     <para>In example below see how to use Jackson JSON provider instead of

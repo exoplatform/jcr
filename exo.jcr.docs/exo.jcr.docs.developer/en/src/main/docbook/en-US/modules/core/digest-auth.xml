@@ -4,9 +4,6 @@
 <chapter>
   <title>Digest Authentication</title>
 
-  <section>
-    <title>Overview</title>
-
     <para>Digest access authentication is one of the agreed methods a web
     server can use to negotiate credentials with a web user's browser. It uses
     encryption to send the password over the network which is safer than the
@@ -15,7 +12,6 @@
     <para>Technically digest authentication is an application of MD5
     cryptographic hashing with usage of nonce values to discourage
     cryptanalysis. It uses the HTTP protocol.</para>
-  </section>
 
   <section>
     <title>Server configuration</title>

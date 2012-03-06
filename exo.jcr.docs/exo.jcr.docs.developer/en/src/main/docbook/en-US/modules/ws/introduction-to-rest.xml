@@ -6,9 +6,6 @@
 
   <title>Introduction to the Representational State Transfer (REST)</title>
 
-  <section>
-    <title>Introduction</title>
-
     <para><command>Representational State Transfer (REST)</command> is a style
     of software architecture for distributed hypermedia systems such as the
     World Wide Web. The term was introduced in the doctoral dissertation in
@@ -189,9 +186,9 @@
       </listitem>
     </itemizedlist>
 
-    <para><command>Note</command>: RESTful architecture is not limited to
+    <note><para>RESTful architecture is not limited to
     those methods, one of good examples of extension is the WebDAV
-    protocol.</para>
+    protocol.</para></note>
 
     <para>The <command>CRUD</command> (Create, Read, Update and Delete) verbs
     are designed to operate with atomic data within the context of a database
@@ -207,6 +204,5 @@
 
     <para>As a result, neither the client nor the server needs to remember any
     communication-state between messages. Any state retained by the server
-    must be modeled as a resource..</para>
-  </section>
+    must be modeled as a resource.</para>
 </chapter>

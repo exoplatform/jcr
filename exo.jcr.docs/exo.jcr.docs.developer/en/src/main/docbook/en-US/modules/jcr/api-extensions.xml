@@ -6,22 +6,15 @@
 
   <title>JCR API Extensions</title>
 
-  <section>
-    <title>"Lazy" child nodes iteration</title>
-
-    <section>
-      <title>Concept</title>
-
       <para>eXo JCR implementation offers new extended feature beyond JCR
-      specification. Sometimes it happens that one JCR Node has hundreds or
+      specification. Sometimes one JCR Node has hundreds or
       even thousands of child nodes. This situation is highly not recommended
-      for content repository data storage, but some times it occurs. JCR Team
+       for content repository data storage, but sometimes it occurs. JCR Team
       is pleased to announce new feature that will help to have a deal with
       huge child lists. They can be iterated in a "lazy" manner now giving
       improvement in term of performance and RAM usage.</para>
-    </section>
 
-    <section>
+    <section id="JCR.APIExtensions.API_and_Usage">
       <title>API and usage</title>
 
       <para>Lazy child nodes iteration feature is accessible via extended
@@ -60,7 +53,7 @@
       to be used as a production solution.</para>
     </section>
 
-    <section>
+    <section id="JCR.APIExtensions.Configuration">
       <title>Configuration</title>
 
       <para>In order to enable add the
@@ -87,7 +80,7 @@
       size.</para>
     </section>
 
-    <section>
+    <section id="JCR.APIExtensions.Implementation_notices">
       <title>Implementation notices</title>
 
       <para>Current "lazy" child nodes iterator supports caching, when pages
@@ -102,5 +95,4 @@
       numerous conditions and should not be used as a feature, it more likely
       implementation specific issue typical for "lazy-pattern".</para>
     </section>
-  </section>
 </chapter>

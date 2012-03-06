@@ -5,8 +5,11 @@
   <?dbhtml filename="ch-binary-values-processing.html"?>
 
   <title>Binary Values Processing</title>
+  <para>Processing binary large object (BLOB) is very important in eXo JCR, so this chapter focuses on explaining how to
+  do it.
+  </para>
 
-  <section>
+  <section id="JCR.BinaryValuesProcessing.Configuration">
     <title>Configuration</title>
 
     <para>Binary large object (BLOB) properties can be stored in two ways in
@@ -41,7 +44,7 @@
     </note>
   </section>
 
-  <section>
+  <section id="JCR.BinaryValuesProcessing.Usage">
     <title>Usage</title>
 
     <para>In both of the cases, a developer can set/update the binary Property
@@ -139,7 +142,7 @@ while (source.dataAvailable()) {
 node.setProperty("BinData", extValue);</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.BinaryValuesProcessing.Value_implementations">
     <title>Value implementations</title>
 
     <mediaobject>

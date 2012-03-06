@@ -6,11 +6,8 @@
 
   <title>Groovy Scripts as REST Services</title>
 
-  <section>
-    <title>Overview</title>
-
-    <para>This article describes how to use Groovy scripts as REST services.
-    We are going to consider these operations:</para>
+    <para>This chapter describes how to use Groovy scripts as REST services.
+    Consider these operations:</para>
 
     <itemizedlist>
       <listitem>
@@ -22,7 +19,7 @@
       </listitem>
 
       <listitem>
-        <para>Deploy newly created Class as RESTful service.</para>
+        <para>Deploy a newly created Class as RESTful service.</para>
       </listitem>
 
       <listitem>
@@ -30,15 +27,13 @@
       </listitem>
 
       <listitem>
-        <para>And finally we will discover simple example which can get JCR
+        <para>Finally, we will discover simple example which can get JCR
         node UUID</para>
       </listitem>
     </itemizedlist>
 
-    <para>In this article, we consider RESTful service compatible with JSR-311
-    specification. Currently last feature available in version 1.11-SNAPSHOT
-    of JCR, 2.0-SNAPSHOT of WS and version 2.1.4-SNAPSHOT of core.</para>
-  </section>
+    <para>In this chapter, we consider RESTful service to be compatible with JSR-311
+    specification. The last feature is currently available in version 1.11-SNAPSHOT.</para>
 
   <section>
     <title>Loading script and save it in JCR</title>

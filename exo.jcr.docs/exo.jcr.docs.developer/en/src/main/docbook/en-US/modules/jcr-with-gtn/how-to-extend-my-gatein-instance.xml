@@ -6,19 +6,12 @@
 
   <title>How to extend my GateIn instance?</title>
 
-  <section>
-    <title>Introduction</title>
-
-    <section>
-      <title>Overview</title>
-
-      <para>Since GateIn beta 2, we added a set of features in order to
-      customize a GateIn instance without modifying the GateIn binary, this
+      <para>Since GateIn beta 2, there are a set of features added to
+      customize a GateIn instance without modifying the GateIn binary. This
       usecase will be called <emphasis>portal extension</emphasis> in this
       documentation. Those features are also required to be able to launch
       several portal instances at the same time, in "eXo terminology" that
       means to have several "portal.war".</para>
-    </section>
 
     <section>
       <title>Motivations</title>
@@ -48,7 +41,6 @@
       help/enforce all the GateIn developers to follow the "good
       practices".</para>
     </section>
-  </section>
 
   <section>
     <title>Prerequisites</title>

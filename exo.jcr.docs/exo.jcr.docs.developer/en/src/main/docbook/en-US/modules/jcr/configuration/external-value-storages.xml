@@ -6,9 +6,6 @@
 
   <title>External Value Storages</title>
 
-  <section>
-    <title>Introduction</title>
-
     <para>By default JCR Values are stored in the Workspace Data container
     along with the JCR structure (i.e. Nodes and Properties). eXo JCR offers
     an additional option of storing JCR Values separately from Workspace Data
@@ -23,7 +20,6 @@
     application on Amazon EC2 - the S3 option may be interesting for
     architecture. Simple 'flat' storage is good in speed of creation/deletion
     of values, it might be a compromise for a small storages.</para>
-  </section>
 
   <section>
     <title>Tree File Value Storage</title>

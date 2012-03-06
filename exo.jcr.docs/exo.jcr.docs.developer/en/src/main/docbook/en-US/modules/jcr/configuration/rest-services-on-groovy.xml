@@ -6,16 +6,12 @@
 
   <title>REST Services on Groovy</title>
 
-  <section>
-    <title>Concept</title>
-
     <para>Starting from version 1.9, JCR Service supports REST services
     creation on <ulink url="http://groovy.codehaus.org">Groovy
     script</ulink>.</para>
 
     <para>The feature bases on <link linkend="WS.RestFramework">RESTful
     framework</link> and uses ResourceContainer concept.</para>
-  </section>
 
   <section>
     <title>Usage</title>

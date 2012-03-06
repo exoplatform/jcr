@@ -6,20 +6,16 @@
 
   <title>JBossTransactionsService</title>
 
-  <section>
-    <title>Introduction</title>
-
     <para>JBossTransactionsService implements eXo <link
     linkend="Kernel.TransactionService">TransactionService</link> and provides
     access to <ulink url="http://www.jboss.org/jbosstm/">JBoss Transaction
     Service (JBossTS)</ulink> JTA implementation via eXo container
     dependency.</para>
 
-    <para>TransactionService used in JCR cache
+    <para>TransactionService is used in JCR cache
     <emphasis>org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache</emphasis>
     implementaion. See <link linkend="JCR.ClusterConfig">Cluster
     configuration</link> for example.</para>
-  </section>
 
   <section>
     <title>Configuration</title>

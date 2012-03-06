@@ -5,8 +5,9 @@
   <?dbhtml filename="ch-query-handler-config.html"?>
 
   <title>QueryHandler configuration</title>
+  <para>This chapter shows you how to configure <emphasis>QueryHandler</emphasis>: <link linkend="JCR.QueryHandlerConfiguration.Indexing_in_clustered_environment">Indexing in clustered environment</link>.</para>
 
-  <section>
+  <section id="JCR.QueryHandlerConfiguration.Indexing_in_clustered_environment">
     <title>Indexing in clustered environment</title>
 
     <para>JCR offers multiple indexing strategies. They include both for
@@ -85,7 +86,7 @@
     Configuration</link>.</para>
   </section>
 
-  <section>
+  <section id="JCR.QueryHandlerConfiguration.Configuration">
     <title>Configuration</title>
 
     <section>
@@ -422,7 +423,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.QueryHandlerConfiguration.Asynchronous_reindexing">
     <title>Asynchronous reindexing</title>
 
     <para>Managing a big set of data using JCR in production environment
@@ -538,7 +539,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.QueryHandlerConfiguration.Advanced_tuning">
     <title>Advanced tuning</title>
 
     <section>

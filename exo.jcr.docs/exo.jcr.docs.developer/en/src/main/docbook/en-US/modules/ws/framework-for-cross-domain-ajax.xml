@@ -5,11 +5,12 @@
   <?dbhtml filename="ch-framework-for-cross-domain-ajax.html"?>
 
   <title>Framework for cross-domain AJAX</title>
+  <para>eXo Webservice provides a framework to cross-domain AJAX. This chapter shows you how to use this framework.</para>
 
-  <para>(<ulink
-  url="https://anonsvn.jboss.org/repos/exo-jcr/ws/trunk/exo.ws.frameworks.javascript.cross-domain-ajax">https://anonsvn.jboss.org/repos/exo-jcr/ws/trunk/exo.ws.frameworks.javascript.cross-domain-ajax</ulink>)</para>
+  <para>You can checkout the source code at <ulink
+  url="https://anonsvn.jboss.org/repos/exo-jcr/ws/trunk/exo.ws.frameworks.javascript.cross-domain-ajax">https://anonsvn.jboss.org/repos/exo-jcr/ws/trunk/exo.ws.frameworks.javascript.cross-domain-ajax</ulink>.</para>
 
-  <section>
+  <section id="WS.CrossDomainAJAX.Motivation">
     <title>Motivation</title>
 
     <para>XmlHttpRequest objects are bound by the same origin security policy
@@ -32,7 +33,7 @@
     limitation of AJAX.</para>
   </section>
 
-  <section>
+  <section id="WS.CrossDomainAJAX.Scheme">
     <title>Scheme (how it works)</title>
 
     <para>To describe our method for cross-domain AJAX solution, let's
@@ -57,7 +58,7 @@
     </mediaobject>
   </section>
 
-  <section>
+  <section id="WS.CrossDomainAJAX.Working_Sequence">
     <title>A Working Sequence:</title>
 
     <para>1) A Browser requests the Start page from the ServerA</para>
@@ -83,7 +84,7 @@
     information that we want.</para>
   </section>
 
-  <section>
+  <section id="WS.CrossDomainAJAX.How_to_Use_it">
     <title>How to use it</title>
 
     <para>1). Place the file client.html and xda.js on the serverA.</para>

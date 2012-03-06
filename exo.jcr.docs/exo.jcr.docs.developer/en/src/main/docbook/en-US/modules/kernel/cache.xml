@@ -6,7 +6,10 @@
 
   <title>eXo Cache</title>
 
-  <section>
+  <para>
+    This chapter will provide you all the basic knowledge about eXo Cache, from basic concepts to advanced concepts, sample codes, and more.
+  </para>
+  <section id="Kernel.Cache.Basic_concepts">
     <title>Basic concepts</title>
 
     <para>All applications on the top of eXo JCR that need a cache, can rely
@@ -156,7 +159,7 @@
     </table>
   </section>
 
-  <section>
+  <section id="Kernel.Cache.Advanced_concepts">
     <title>Advanced concepts</title>
 
     <section>
@@ -264,7 +267,7 @@ import org.exoplatform.services.cache.future.FutureExoCache;
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.Cache.Extension">
     <title>eXo Cache extension</title>
 
     <para>In the previous versions of eXo kernel, it was quite complex to
@@ -314,7 +317,7 @@ public interface ExoCacheFactory {
     </note>
   </section>
 
-  <section>
+  <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache">
     <title>eXo Cache based on JBoss Cache</title>
 
     <section>
@@ -1309,7 +1312,7 @@ public interface ExoCacheCreator {
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.Cache.Based_Infinispan">
     <title>eXo Cache based on Infinispan</title>
 
     <section>

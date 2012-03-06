@@ -6,15 +6,10 @@
 
   <title>JCR Performance Tuning Guide</title>
 
-  <section>
-    <title>Introduction</title>
-
-    <para>This guide will show you possible ways of improving JCR
-    performance.</para>
+    <para>This chapter will show you possible ways of improving JCR</para>
 
     <para>It is intended to GateIn Administrators and those who wants to use
     JCR features.</para>
-  </section>
 
   <section>
     <title>JCR Performance and Scalability</title>

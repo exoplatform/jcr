@@ -6,11 +6,8 @@
 
   <title>RestServicesList Service</title>
 
-  <section>
-    <title>Overview.</title>
-
-    <para>RestServicesList service is intendet to provide information about
-    rest services deployed to the application server.</para>
+    <para>RestServicesList service provides information about
+    REST services deployed to the application server.</para>
 
     <itemizedlist>
       <listitem>
@@ -27,7 +24,6 @@
     </itemizedlist>
 
     <para>The list can be provided in two formats: HTML and JSON.</para>
-  </section>
 
   <section>
     <title>Usage</title>
@@ -55,8 +51,9 @@ public byte[] listHTML()
       <para>To do this, perform a simple GET request to the RestServicesList
       link.</para>
 
-      <para>f.e. curl -u root:exo http://localhost:8080/rest/ will return such
-      HTML code:</para>
+     <para>f.e. curl -u root:exo http://localhost:8080/rest/ will return such
+       HTML code:
+     </para>
 
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
 &lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;

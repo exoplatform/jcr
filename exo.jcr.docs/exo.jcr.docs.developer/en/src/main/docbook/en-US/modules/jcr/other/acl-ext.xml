@@ -6,18 +6,7 @@
 
   <title>Access Control Extension</title>
 
-  <section>
-    <title>Prerequisites</title>
-
-    <para>This is an extension of eXo JCR Access Control features. Please read
-    <link linkend="JCR.AccessControl">Access Control</link> and <link
-    linkend="JCR.Extensions">JCR Extensions</link> topics first.</para>
-  </section>
-
-  <section>
-    <title>Overview</title>
-
-    <para>An extended Access Control system consists of:</para>
+  <para>An extended Access Control system consists of:</para>
 
     <itemizedlist>
       <listitem>
@@ -42,6 +31,13 @@
         performed and the current eXo Container</para>
       </listitem>
     </itemizedlist>
+    
+  <section>
+    <title>Prerequisites</title>
+
+    <para>This is an extension of eXo JCR Access Control features. Please read
+    <link linkend="JCR.AccessControl">Access Control</link> and <link
+    linkend="JCR.Extensions">JCR Extensions</link> topics first.</para>
   </section>
 
   <section>

@@ -6,9 +6,6 @@
 
   <title>ListenerService</title>
 
-  <section>
-    <title>Asynchronous Event Broadcast</title>
-
     <para>Basicaly, ListenerService used to store Listeners and broadcast
     events to them.</para>
 
@@ -16,7 +13,7 @@
     destination listeners and executes event on those listeners.</para>
 
     <para>But, some events may take a lot of time, so idea to make event
-    processing asynchronous is usefull.</para>
+    processing asynchronous is useful.</para>
 
     <blockquote>
       What do I need to make my listener asynchronous?
@@ -53,5 +50,4 @@ class AsynchListenerWithException&lt;S,D&gt; extends Listener&lt;S,D&gt;
       &lt;/init-params&gt;
 
    &lt;/component&gt;</programlisting>
-  </section>
 </chapter>

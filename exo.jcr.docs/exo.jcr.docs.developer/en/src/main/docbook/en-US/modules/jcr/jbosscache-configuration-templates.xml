@@ -6,12 +6,15 @@
 
   <title>JBoss Cache configuration</title>
 
-  <section>
+  <para>This chapter will show you how to use and configure Jboss Cache in the clustered environment.
+  Also, you will know how to use a template-based configuration offered by eXo JCR for JBoss Cache instances.</para>
+
+  <section id="JCR.JBossCacheConfigurationTemplates.JBoss_Cache_Config_for_Indexer">
     <title>JBoss cache configuration for indexer, lock manager and data
     container</title>
 
     <para>Each mentioned components uses instances of JBoss Cache product for
-    caching in clustered environment. So every element has it's own transport
+    caching in clustered environment. So every element has its own transport
     and has to be configured in a proper way. As usual, workspaces have
     similar configuration but with different cluster-names and may-be some
     other parameters. The simplest way to configure them is to define their
@@ -43,7 +46,7 @@
 ...</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.JBossCacheConfigurationTemplates.Jboss_Configuration">
     <title>JGroups configuration</title>
 
     <para>JGroups is used by JBoss Cache for network communications and
@@ -78,7 +81,7 @@
 &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.JBossCacheConfigurationTemplates.Allow_to_share_JBOSS_Cache_Instances">
     <title>Allow to share JBoss Cache instances</title>
 
     <para>A JBoss Cache instance is quite resource consuming and by default we
@@ -108,7 +111,7 @@
     defined.</para>
   </section>
 
-  <section>
+  <section id="JCR.JBossCacheConfigurationTemplates.Shipped_Jboss_Cache_Config_template">
     <title>Shipped JBoss Cache configuration templates</title>
 
     <para>eXo JCR implementation is shipped with ready-to-use JBoss Cache

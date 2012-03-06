@@ -5,6 +5,8 @@
   <?dbhtml filename="ch-understanding-listeners-service.html"?>
 
   <title>Understanding the ListenerService</title>
+  <para>This chapter will first describe how the ListenerService works and
+    then it will show you how to configure the ListenerService.</para>
 
   <para><emphasis role="bold">Related documents</emphasis></para>
 
@@ -24,13 +26,6 @@
       Configuration</link></para>
     </listitem>
   </itemizedlist>
-
-  <section>
-    <title>Objectives</title>
-
-    <para>This article will first describe how the ListenerService works and
-    then it will show you how to configure the ListenerService.</para>
-  </section>
 
   <section>
     <title>What is the ListenerService ?</title>

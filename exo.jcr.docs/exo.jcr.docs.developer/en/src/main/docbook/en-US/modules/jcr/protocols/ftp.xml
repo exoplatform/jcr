@@ -6,17 +6,13 @@
 
   <title>FTP</title>
 
-  <section>
-    <title>Introdution</title>
-
     <para>The JCR-FTP Server represents the standard eXo service, operates as
     an FTP server with an access to a content stored in JCR repositories in
     the form of <emphasis role="bold">nt:file/nt:folder</emphasis> nodes or
     their successors. The client of an executed Server can be any FTP client.
     The FTP server is supported by a standard configuration which can be
     changed as required.</para>
-  </section>
-
+    
   <section>
     <title>Configuration Parameters</title>
 

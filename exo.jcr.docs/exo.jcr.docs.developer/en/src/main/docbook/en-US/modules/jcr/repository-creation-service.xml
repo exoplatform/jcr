@@ -6,13 +6,9 @@
 
   <title>RepositoryCreationService</title>
 
-  <section>
-    <title>Intro</title>
-
-    <para>RepositoryCreationService is the service for creation repositories
-    in runtime. The service can be used in standalone or cluster
+    <para><emphasis>RepositoryCreationService</emphasis> is the service which is used to create repositories
+    in runtime. The service can be used in a standalone or cluster
     environment.</para>
-  </section>
 
   <section>
     <title>Dependencies</title>

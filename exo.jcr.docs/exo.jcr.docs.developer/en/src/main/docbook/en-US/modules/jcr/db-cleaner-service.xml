@@ -6,19 +6,22 @@
 
   <title>DBCleanService</title>
 
-  <section>
-    <title>Description</title>
+    <para>It is a special service for data removal from database. The chapter
+    shortly describes the principles of work <emphasis>DBCleaner</emphasis> under all
+    databases.</para>
 
     <para>It is special service for data removal from database. The article
     shortly describes the principles of work DBCleaner under all
     databases</para>
 
-    <note>
-      <para>Code that invokes methods of DBCleanService must have
-      JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION permission;</para>
+    <section id="JCR.DBCleanerService.Methods_of_DBCleanerService">
+      <title>Methods of DBCleanerService </title>
+     <note>
+      <para>Code that invokes the methods of DBCleanService must have
+      JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION permission.</para>
     </note>
 
-    <para>There are several methods of DBCleanerService:</para>
+    <para>There are several methods of <emphasis>DBCleanerService</emphasis> :</para>
 
     <table>
       <title>API</title>

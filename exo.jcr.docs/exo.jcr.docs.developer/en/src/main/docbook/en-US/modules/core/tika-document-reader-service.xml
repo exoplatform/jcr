@@ -6,16 +6,12 @@
 
   <title>Tika Document Reader Service</title>
 
-  <section>
-    <title>Intro</title>
-
     <para>DocumentReaderService provides API to retrieve DocumentReader by
     mimetype.</para>
 
     <para>DocumentReader lets the user fetch content of document as String or,
     in case of TikaDocumentReader, as Reader.</para>
-  </section>
-
+    
   <section>
     <title>Architecture</title>
 

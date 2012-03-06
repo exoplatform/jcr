@@ -6,11 +6,8 @@
 
   <title>Organization Listener</title>
 
-  <section>
-    <title>Overview</title>
-
     <para>The <link linkend="Core.OrganizationService">Organization
-    Service</link> provides a mechanism to receive notifications when :</para>
+    Service</link> provides a mechanism to receive notifications when:</para>
 
     <itemizedlist>
       <listitem>
@@ -44,8 +41,7 @@
         <para>Create drives and personal areas in ECM.</para>
       </listitem>
     </itemizedlist>
-  </section>
-
+  
   <section>
     <title>Writing your own listeners</title>
 
@@ -84,8 +80,8 @@
     <section>
       <title>GroupEventListener</title>
 
-      <para>To listen to group changes, you need to extend
-      &lt;&gt;org.exoplatform.services.organization.GroupEventListener&lt;/&gt;
+      <para>To listen group changes, you need to extend
+      org.exoplatform.services.organization.GroupEventListener
       :</para>
 
       <programlisting language="java">public class MyGroupListener extends GroupEventListener {
@@ -112,7 +108,7 @@
       <title>MembershipEventListener</title>
 
       <para>To listen to membership changes, you need to extend
-      &lt;&gt;org.exoplatform.services.organization.MembershipEventListener&lt;/&gt;
+      org.exoplatform.services.organization.MembershipEventListener
       :</para>
 
       <programlisting language="java">public class MyMembershipListener extends MembershipEventListener {
@@ -145,7 +141,7 @@
     for Beginners</link> article.</para>
 
     <para>To effectively register organization service's listeners you simply
-    need to use the &lt;&gt;addListenerPlugin&lt;/&gt; seer injector.</para>
+    need to use the addListenerPlugin seer injector.</para>
 
     <para>So, the easiest way to register your listeners is to pack them into
     a .jar and create a configuration file into it under <emphasis

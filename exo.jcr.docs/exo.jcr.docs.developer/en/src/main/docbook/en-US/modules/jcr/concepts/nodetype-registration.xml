@@ -383,8 +383,8 @@ nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.REPLACE_IF_EXISTS )
   <section>
     <title>Removing node type</title>
     <note>
-      <para>Node type is only possibly removed when the repository does not
-      contain this node type.</para>
+      <para>Node type is possible to remove only when the repository does not
+      contain nodes of this type.</para>
     </note>
     <programlisting language="java">nodeTypeManager.unregisterNodeType(&quot;myNodeType&quot;);</programlisting>
   </section>

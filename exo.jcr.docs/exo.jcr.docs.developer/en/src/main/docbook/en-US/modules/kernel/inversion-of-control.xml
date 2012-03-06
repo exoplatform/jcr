@@ -6,9 +6,6 @@
 
   <title>Inversion Of Control</title>
 
-  <section>
-    <title>Overview</title>
-
     <para>The services are not responsible for the instantiation of the
     components on which they depend.</para>
 
@@ -16,11 +13,11 @@
     implementation of dependant services can be transparently
     exchanged.</para>
 
-    <para>This pattern has several names :</para>
+    <para>This pattern has several names:</para>
 
     <itemizedlist>
       <listitem>
-        <para>Hollywood principle : "don't call me, I will call you"</para>
+        <para>Hollywood principle: "don't call me, I will call you"</para>
       </listitem>
 
       <listitem>
@@ -31,7 +28,6 @@
         <para>Dependency injection</para>
       </listitem>
     </itemizedlist>
-  </section>
 
   <section>
     <title>How</title>
@@ -50,7 +46,7 @@
   <section>
     <title>Injection</title>
 
-    <para>There are two ways to inject a dependency :</para>
+    <para>There are two ways to inject a dependency:</para>
 
     <para>Using a constructor:</para>
 

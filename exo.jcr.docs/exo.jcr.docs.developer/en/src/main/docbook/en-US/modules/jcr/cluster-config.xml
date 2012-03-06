@@ -7,7 +7,7 @@
 
   <title>Configuring JBoss AS with eXo JCR in cluster</title>
 
-  <section>
+  <section id="JCR.ClusterConfig.Launching_Cluster">
     <title>Launching Cluster</title>
 
     <section>
@@ -166,7 +166,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.ClusterConfig.Requirements">
     <title>Requirements</title>
 
     <section>
@@ -273,8 +273,8 @@
     </section>
   </section>
 
-  <section>
-    <title>How properly stop the node</title>
+  <section id="JCR.ClusterConfig.How_to_stop_the_node_properly">
+    <title>How to stop the node properly</title>
 
     <para>To be sure that all transactions are over and JCR is in consistent
     state after stopping node, you need to follow next steps:</para>

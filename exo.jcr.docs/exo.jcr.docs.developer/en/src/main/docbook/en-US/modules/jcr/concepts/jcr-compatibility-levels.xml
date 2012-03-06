@@ -6,17 +6,14 @@
 
   <title>Compatibility Levels</title>
 
-  <section>
-    <title>Introduction</title>
-
     <para>The Java Content Repository specification JSR-170 has been split
-    into two compliance levels as well as a set of optional features. Level 1
-    defines a read-only repository, level 2 defines methods for writing
+    into two compliance levels as well as a set of optional features.</para>
+    <para>Level 1 defines a read-only repository.</para>
+    <para>Level 2 defines methods for writing
     content and bidirectional interaction with the repository.</para>
 
     <para>eXo JCR supports JSR-170 level 1 and level 2 and all optional
     features. The recent JSR-283 is not yet supported.</para>
-  </section>
 
   <section>
     <title>Level 1</title>

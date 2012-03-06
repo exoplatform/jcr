@@ -5,6 +5,13 @@
   <?dbhtml filename="ch-service-configuration-for-beginners.html"?>
 
   <title>Service Configuration for Beginners</title>
+    <para>This chapter provides you the basic knowledge
+    about modes, services and containers. You will find out where the service
+    configuration files should be placed, and you will also see the overriding
+    mechanism of configurations. </para>
+    <para>Finally, you will understand how the container
+    creates the services one after the other and what <emphasis>Inversion of
+    Control</emphasis> really means.</para>
 
   <para><emphasis role="bold">Related documents</emphasis></para>
 
@@ -24,17 +31,6 @@
       Configuration</link></para>
     </listitem>
   </itemizedlist>
-
-  <section>
-    <title>Objective</title>
-
-    <para>We are going to talk about service configuration. You will learn
-    about modes, services and containers, you will find out where the service
-    configuration files have to be placed and you will also see the overriding
-    mechanism of configurations. Finally you will understand how the container
-    creates the services one after the other and what <emphasis>Inversion of
-    Control</emphasis> really means.</para>
-  </section>
 
   <section>
     <title>Requirements</title>
@@ -551,7 +547,7 @@
     problems to be expected. That's easy.</para>
 
     <para>But now look at <ulink
-    url="https://anonsvn.jboss.org/repos/exo-jcr/core/trunk/exo.core.component.organization.jdbc/src/main/java/org/exoplatform/services/organization/jdbc/OrganizationServiceImpl.java">https://anonsvn.jboss.org/repos/exo-jcr/core/trunk/exo.core.component.organization.jdbc/src/main/java/org/exoplatform/services/organization/jdbc/OrganizationServiceImpl.java</ulink></para>
+    url="https://anonsvn.jboss.org/repos/exo-jcr/core/trunk/exo.core.component.organization.jdbc/src/main/java/org/exoplatform/services/organization/jdbc/OrganizationServiceImpl.java">OrganizationServiceImpl.java</ulink></para>
 
     <para>This JDBC implementation of BaseOrganizationService interface has
     only one constructor:</para>
@@ -575,10 +571,10 @@
 
     <note>
       <para>What happens if one service has more than one constructor? The
-      container always tries first to use the constructor with a maximum of
-      arguments, if this is not possible the container continues step by step
+      container always tries first to use the constructor with a maximum number
+      of arguments, if this is not possible the container continues step by step
       with constructors that have less arguments until arriving at the
-      zero-argument constructor (if there is one).</para>
+      zero-argument constructor (if there is any).</para>
     </note>
   </section>
 
@@ -599,7 +595,7 @@
     <section>
       <title>Inversion of Control</title>
 
-      <para><emphasis role="bold">Retrospection</emphasis> Do you remember
+      <para><emphasis role="bold">Retrospection</emphasis>. Do you remember
       your last project where you had some small components and several larger
       services? How was this organized? Some services had their own
       configuration files, others had static values in the source code. Most
@@ -626,7 +622,7 @@
         </listitem>
       </itemizedlist>
 
-      <para><emphasis role="bold">New Approach</emphasis> You have seen that
+      <para><emphasis role="bold">New Approach</emphasis>. You have seen that
       eXo uses the <emphasis>Inversion of Control</emphasis> (IoC) pattern
       which means that the control of the services is given to an independent
       outside entity, in this case a <emphasis>container</emphasis>. Now the
@@ -651,7 +647,7 @@
         </listitem>
       </itemizedlist>
 
-      <para><emphasis role="bold">Dependency Injection</emphasis> You also saw
+      <para><emphasis role="bold">Dependency Injection</emphasis>. You also saw
       two types of dependency injections:</para>
 
       <itemizedlist>
@@ -755,7 +751,7 @@ import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml
   <section>
     <title>Further Reading</title>
 
-    <para>Do you feel an expert now? Not yet. Get a deeper look and read this
+    <para>Do you feel yourself to be an expert now? Not yet? Get a deeper look and read this
     <link linkend="Kernel.ServicesWiring">Services Wiring</link> article. You
     read so much about configuration, that you should wonder what the <link
     linkend="Kernel.ContainerConfiguration.ConfigurationNamespace">XML Schema

@@ -6,9 +6,6 @@
 
   <title>Using JCR</title>
 
-  <section>
-    <title>1 Using eXo JCR in an application</title>
-
     <section>
       <title>Obtaining a Repository object</title>
 
@@ -94,7 +91,6 @@
           </listitem>
         </itemizedlist></para>
     </section>
-  </section>
 
   <section>
     <title>JCR Application practices</title>

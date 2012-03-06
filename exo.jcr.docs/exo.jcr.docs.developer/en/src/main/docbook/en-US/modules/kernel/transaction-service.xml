@@ -6,9 +6,6 @@
 
   <title>TransactionService</title>
 
-  <section>
-    <title>Base information</title>
-
     <para>TransactionServices provides access to the TransactionManager and
     the UserTransaction (See JTA specification for details).</para>
 
@@ -55,7 +52,6 @@
         </tbody>
       </tgroup>
     </table>
-  </section>
 
   <section>
     <title>Existing TransactionService implementations</title>
