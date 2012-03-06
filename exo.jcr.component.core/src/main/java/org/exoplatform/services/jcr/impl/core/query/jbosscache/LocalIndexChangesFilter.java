@@ -30,12 +30,13 @@ import org.exoplatform.services.jcr.impl.core.query.LocalIndexMarker;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
+import org.jboss.cache.CacheException;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.config.CacheLoaderConfig;
@@ -45,6 +46,8 @@ import org.jboss.cache.jmx.JmxRegistrationManager;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 import javax.jcr.RepositoryException;
 
@@ -176,19 +179,20 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter implements Loc
       cache.put(Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER, changes);
    }
 
+
    /**
-    * @see java.lang.Object#finalize()
+    * {@inheritDoc}
     */
    @Override
-   protected void finalize() throws Throwable
+   public void close()
    {
       try
       {
          if (jmxManager != null)
          {
-            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
             {
-               public Void run()
+               public Void run() throws CacheException
                {
                   jmxManager.unregisterAllMBeans();
                   return null;
@@ -196,9 +200,18 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter implements Loc
             });
          }
       }
-      finally
+      catch (PrivilegedActionException e)
       {
-         super.finalize();
+         log.warn("Not all JBoss Cache MBeans were unregistered.");
+      }
+
+      try
+      {
+         ExoJBossCacheFactory.releaseUniqueInstance(CacheType.INDEX_CACHE, cache);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         log.error("Can not release cache instance", e);
       }
    }
 }

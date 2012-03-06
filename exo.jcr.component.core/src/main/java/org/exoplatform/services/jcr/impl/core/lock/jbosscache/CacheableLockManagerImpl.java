@@ -506,6 +506,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    public void stop()
    {
       super.stop();
+
       if (shareable)
       {
          // The cache cannot be stopped since it can be shared so we evict the root node instead
@@ -513,10 +514,16 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          cache.evict(lockRoot, true);
          cache.getRegion(lockRoot, false).processEvictionQueues();
       }
-      else
+
+      try
       {
-         PrivilegedJBossCacheHelper.stop(cache);
+         ExoJBossCacheFactory.releaseUniqueInstance(CacheType.LOCK_CACHE, cache);
       }
+      catch (RepositoryConfigurationException e)
+      {
+         LOG.error("Can not release cache instance", e);
+      }
+
       if (jmxManager != null)
       {
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()

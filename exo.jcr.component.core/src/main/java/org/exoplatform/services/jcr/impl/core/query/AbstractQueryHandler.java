@@ -155,7 +155,6 @@ public abstract class AbstractQueryHandler implements QueryHandler
       {
          addNode(add.next());
       }
-
    }
 
    /**

@@ -734,7 +734,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                return null;
             }
          });
-      }      
+      }
+
+      cache.stop();
 
       if (shareable)
       {

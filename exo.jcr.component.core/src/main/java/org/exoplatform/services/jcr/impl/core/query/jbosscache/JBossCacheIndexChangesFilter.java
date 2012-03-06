@@ -282,6 +282,13 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
          LOG.warn("Not all JBoss Cache MBeans were unregistered.");
       }
 
-      PrivilegedJBossCacheHelper.stop(cache);
+      try
+      {
+         ExoJBossCacheFactory.releaseUniqueInstance(CacheType.INDEX_CACHE, cache);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         LOG.error("Can not release cache instance", e);
+      }
    }
 }
