@@ -1,0 +1,2185 @@
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/query-handler-config.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/query-handler-config.xml	(revision 5698)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/query-handler-config.xml	(working copy)
+@@ -177,14 +177,6 @@
+       &lt;jgroupsConfig multiplexerStack="jcr.stack" /&gt;
+       &lt;sync /&gt;
+    &lt;/clustering&gt;
+-   &lt;!-- Eviction configuration --&gt;
+-   &lt;eviction wakeUpInterval="5000"&gt;
+-      &lt;default algorithmClass="org.jboss.cache.eviction.FIFOAlgorithm" eventQueueSize="1000000"&gt;
+-         &lt;property name="maxNodes" value="10000" /&gt;
+-         &lt;property name="minTimeToLive" value="60000" /&gt;
+-      &lt;/default&gt;
+-   &lt;/eviction&gt;
+-
+ &lt;/jbosscache&gt;</programlisting></para>
+ 
+       <para>See more about template configurations <link
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/lock-manager-config.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/lock-manager-config.xml	(revision 5698)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/lock-manager-config.xml	(working copy)
+@@ -1,143 +1,160 @@
+-<?xml version='1.0' encoding='UTF-8'?>
+-<!-- This document was created with Syntext Serna Free. --><!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
++<?xml version="1.0" encoding="UTF-8"?>
++<!-- This document was created with Syntext Serna Free. -->
++<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
++"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+ <chapter id="JCR.LockManagerConfiguration">
+-<?dbhtml filename="ch-lock-manager-config.html"?>  <title>LockManager configuration</title>
++  <?dbhtml filename="ch-lock-manager-config.html"?>
++
++  <title>LockManager configuration</title>
++
+   <section>
+     <title>Introduction</title>
++
+     <para>What LockManager does?</para>
++
+     <para>In general, LockManager stores Lock objects, so it can give a Lock
+     object or can release it, etc.</para>
++
+     <para>Also, LockManager is responsible for removing Locks that live too
+-    long. This parameter may be configured with &quot;time-out&quot; property.</para>
+-    <para>JCR provides two basic  implementations of LockManager:</para>
++    long. This parameter may be configured with "time-out" property.</para>
++
++    <para>JCR provides two basic implementations of LockManager:</para>
++
+     <itemizedlist>
+       <listitem>
+         <para><classname>org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl</classname>;</para>
+       </listitem>
++
+       <listitem>
+         <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname>;</para>
+       </listitem>
+     </itemizedlist>
++
+     <para>In this article, we will mostly mention about
+     CacheableLockManagerImpl.</para>
++
+     <para>You can enable LockManager by adding lock-manager-configuration to
+     workspace-configuration.</para>
++
+     <para>For example:</para>
+-    <programlisting>&lt;workspace name=&quot;ws&quot;&gt;
++
++    <programlisting>&lt;workspace name="ws"&gt;
+    ...
+-   &lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
++   &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+       &lt;properties&gt;
+-         &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
++         &lt;property name="time-out" value="15m" /&gt;
+          ...
+       &lt;/properties&gt;
+    &lt;/lock-manager&gt;               
+    ...
+ &lt;/workspace&gt;</programlisting>
+   </section>
++
+   <section>
+     <title>LockManagerImpl</title>
++
+     <para>LockManagerImpl is a simple implementation of LockManager, and also
+     faster than CacheableLockManager. It stores Lock objects in HashMap and
+     may also persist Locks if LockPersister is configured. LockManagerImpl
+     does not support replication in any way.</para>
+-    <para>See more about LockManager Configuration at <link linkend="JCR.eXoJCRconfiguration">here</link>.</para>
++
++    <para>See more about LockManager Configuration at <link
++    linkend="JCR.eXoJCRconfiguration">here</link>.</para>
+   </section>
++
+   <section>
+     <title>CacheableLockManagerImpl</title>
+-    <para>CacheableLockManagerImpl stores Lock objects in JBoss-cache, so Locks
+-    are replicable and affect on cluster, not only a single node. Also,
++
++    <para>CacheableLockManagerImpl stores Lock objects in JBoss-cache, so
++    Locks are replicable and affect on cluster, not only a single node. Also,
+     JBoss-cache has JDBCCacheLoader, so Locks will be stored to the
+     database.</para>
+-    <para>Both of the implementations support to remove Expired Locks. LockRemover separates threads, that periodically ask LockManager to remove Locks
+-    that live so long. So, the timeout for LockRemover may be set
+-    as follows, the default value is 30m.</para>
++
++    <para>Both of the implementations support to remove Expired Locks.
++    LockRemover separates threads, that periodically ask LockManager to remove
++    Locks that live so long. So, the timeout for LockRemover may be set as
++    follows, the default value is 30m.</para>
++
+     <programlisting>&lt;properties&gt;
+-   &lt;property name=&quot;time-out&quot; value=&quot;10m&quot; /&gt;
++   &lt;property name="time-out" value="10m" /&gt;
+    ...
+ &lt;/properties&gt;</programlisting>
++
+     <section>
+       <title>Configuration</title>
++
+       <para>Replication requirements are the same for Cache.</para>
+-      <para> You can see a full JCR configuration example at <link linkend="JCR.ClusterConfig.JCRExternalConfig">here</link>.</para>
++
++      <para>You can see a full JCR configuration example at <link
++      linkend="JCR.ClusterConfig.JCRExternalConfig">here</link>.</para>
++
+       <para>Common tips:</para>
++
+       <itemizedlist>
+         <listitem>
+-          <para><parameter>clusterName</parameter> (&quot;jbosscache-cluster-name&quot;)
++          <para><parameter>clusterName</parameter> ("jbosscache-cluster-name")
+           must be unique;</para>
+         </listitem>
++
+         <listitem>
+           <para><parameter>cache.jdbc.table.name</parameter> must be unique
+           per datasource;</para>
+         </listitem>
++
+         <listitem>
+           <para><parameter>cache.jdbc.fqn.type</parameter> and
+-          cache.jdbc.node.type must be configured according to used
+-          database;</para>
++          cache.jdbc.node.type must be configured according to your
++          database.</para>
+         </listitem>
+       </itemizedlist>
+-      <para>There are a few ways to configure CacheableLockManagerImpl, and all
+-      of them configure JBoss-cache and JDBCCacheLoader.</para>
+-      <para>See <ulink url="http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader">http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader</ulink></para>
++
++      <para>There are a few ways to configure CacheableLockManagerImpl, and
++      all of them configure JBoss-cache and JDBCCacheLoader.</para>
++
++      <para>See <ulink
++      url="http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader">http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader</ulink></para>
+     </section>
++
+     <section>
+       <title>Simple JbossCache Configuration</title>
+-      <para>The first one is  putting JbossCache configuraion file path to
++
++      <para>The first one is putting JbossCache configuration file path to
+       CacheableLockManagerImpl.</para>
++
+       <para><note>
+-          <para>This configuration is not so good as you  think. Because
+-          the repository may contain many workspaces, and each workspace must
++          <para>This configuration is not so good as you think. Because the
++          repository may contain many workspaces, and each workspace must
+           contain LockManager configuration, and LockManager configuration may
+-          contain the JbossCache config file. So, the total configuration will grow
+-          up. But it is useful if we want to have a single LockManager with a special
+-          configuration.</para>
++          contain the JbossCache config file. So, the total configuration will
++          grow up. But it is useful if we want to have a single LockManager
++          with a special configuration.</para>
+         </note></para>
++
+       <para>Configuration is as follows:</para>
+-      <programlisting>&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
++
++      <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+    &lt;properties&gt;
+-     &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
+-     &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;conf/standalone/cluster/test-jbosscache-lock-config.xml&quot; /&gt;
++     &lt;property name="time-out" value="15m" /&gt;
++     &lt;property name="jbosscache-configuration" value="conf/standalone/cluster/test-jbosscache-lock-config.xml" /&gt;
+    &lt;/properties&gt;
+ &lt;/lock-manager&gt;</programlisting>
+-      <para><filename>test-jbosscache-lock-config.xml</filename><programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+-&lt;jbosscache xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns=&quot;urn:jboss:jbosscache-core:config:3.2&quot;&gt;
+ 
+- &lt;locking useLockStriping=&quot;false&quot; concurrencyLevel=&quot;50000&quot; lockParentForChildInsertRemove=&quot;false&quot; lockAcquisitionTimeout=&quot;20000&quot; /&gt;
++      <para><filename>test-jbosscache-lock-config.xml</filename><programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
++&lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.2"&gt;
+ 
+- &lt;clustering mode=&quot;replication&quot; clusterName=&quot;JBoss-Cache-Lock-Cluster_Name&quot;&gt;
+-  &lt;stateRetrieval timeout=&quot;20000&quot; fetchInMemoryState=&quot;false&quot; nonBlocking=&quot;true&quot; /&gt;
+-  &lt;jgroupsConfig&gt;
++ &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false" lockAcquisitionTimeout="20000" /&gt;
+ 
+-   &lt;TCP bind_addr=&quot;127.0.0.1&quot; start_port=&quot;9800&quot; loopback=&quot;true&quot; recv_buf_size=&quot;20000000&quot; send_buf_size=&quot;640000&quot; discard_incompatible_packets=&quot;true&quot;
+-    max_bundle_size=&quot;64000&quot; max_bundle_timeout=&quot;30&quot; use_incoming_packet_handler=&quot;true&quot; enable_bundling=&quot;false&quot; use_send_queues=&quot;false&quot; sock_conn_timeout=&quot;300&quot;
+-    skip_suspected_members=&quot;true&quot; use_concurrent_stack=&quot;true&quot; thread_pool.enabled=&quot;true&quot; thread_pool.min_threads=&quot;1&quot; thread_pool.max_threads=&quot;25&quot;
+-    thread_pool.keep_alive_time=&quot;5000&quot; thread_pool.queue_enabled=&quot;false&quot; thread_pool.queue_max_size=&quot;100&quot; thread_pool.rejection_policy=&quot;run&quot;
+-    oob_thread_pool.enabled=&quot;true&quot; oob_thread_pool.min_threads=&quot;1&quot; oob_thread_pool.max_threads=&quot;8&quot; oob_thread_pool.keep_alive_time=&quot;5000&quot;
+-    oob_thread_pool.queue_enabled=&quot;false&quot; oob_thread_pool.queue_max_size=&quot;100&quot; oob_thread_pool.rejection_policy=&quot;run&quot; /&gt;
+-   &lt;MPING timeout=&quot;2000&quot; num_initial_members=&quot;2&quot; mcast_port=&quot;34540&quot; bind_addr=&quot;127.0.0.1&quot; mcast_addr=&quot;224.0.0.1&quot; /&gt;
+-
+-
+-   &lt;MERGE2 max_interval=&quot;30000&quot; min_interval=&quot;10000&quot; /&gt;
+-   &lt;FD_SOCK /&gt;
+-   &lt;FD max_tries=&quot;5&quot; shun=&quot;true&quot; timeout=&quot;10000&quot; /&gt;
+-   &lt;VERIFY_SUSPECT timeout=&quot;1500&quot; /&gt;
+-   &lt;pbcast.NAKACK discard_delivered_msgs=&quot;true&quot; gc_lag=&quot;0&quot; retransmit_timeout=&quot;300,600,1200,2400,4800&quot; use_mcast_xmit=&quot;false&quot; /&gt;
+-   &lt;UNICAST timeout=&quot;300,600,1200,2400,3600&quot; /&gt;
+-   &lt;pbcast.STABLE desired_avg_gossip=&quot;50000&quot; max_bytes=&quot;400000&quot; stability_delay=&quot;1000&quot; /&gt;
+-   &lt;pbcast.GMS join_timeout=&quot;5000&quot; print_local_addr=&quot;true&quot; shun=&quot;false&quot; view_ack_collection_timeout=&quot;5000&quot; view_bundling=&quot;true&quot; /&gt;
+-   &lt;FRAG2 frag_size=&quot;60000&quot; /&gt;
+-   &lt;pbcast.STREAMING_STATE_TRANSFER /&gt;
+-  &lt;pbcast.FLUSH timeout=&quot;0&quot; /&gt;
+-
+-  &lt;/jgroupsConfig
+-
+-  &lt;sync /&gt;
++ &lt;clustering mode="replication" clusterName="JBoss-Cache-Lock-Cluster_Name"&gt;
++   &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
++   &lt;jgroupsConfig multiplexerStack="jcr.stack" /&gt;
++   &lt;sync /&gt;
+  &lt;/clustering&gt;
+ 
+- &lt;loaders passivation=&quot;false&quot; shared=&quot;true&quot;&gt;
++ &lt;loaders passivation="false" shared="true"&gt;
+   &lt;preload&gt;
+-   &lt;node fqn=&quot;/&quot; /&gt;
++   &lt;node fqn="/" /&gt;
+   &lt;/preload&gt;
+-  &lt;loader class=&quot;org.jboss.cache.loader.JDBCCacheLoader&quot; async=&quot;false&quot; fetchPersistentState=&quot;false&quot; ignoreModifications=&quot;false&quot; purgeOnStartup=&quot;false&quot;&gt;
++  &lt;loader class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader" async="false" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false"&gt;
+    &lt;properties&gt;
+     cache.jdbc.table.name=jcrlocks_ws
+     cache.jdbc.table.create=true
+@@ -155,53 +172,69 @@
+  &lt;/loaders&gt;
+ 
+ &lt;/jbosscache&gt;</programlisting></para>
++
+       <para>Configuration requirements:</para>
++
+       <itemizedlist>
+         <listitem>
+-          <para>&lt;clustering mode=&quot;replication&quot;
+-          clusterName=&quot;JBoss-Cache-Lock-Cluster_Name&quot;&gt; - the cluster name must
+-          be unique;</para>
++          <para>&lt;clustering mode="replication"
++          clusterName="JBoss-Cache-Lock-Cluster_Name"&gt; - the cluster name
++          must be unique;</para>
+         </listitem>
++
+         <listitem>
+           <para><parameter>cache.jdbc.table.name</parameter> must be unique
+           per datasource;</para>
+         </listitem>
++
+         <listitem>
+           <para><parameter>cache.jdbc.node.type</parameter> and
+           <parameter>cache.jdbc.fqn.type</parameter> must be configured
+-          according to using the database. See <link endterm="datatypes.title" linkend="datatypes"/> .</para>
++          according to your database.</para>
++
++          <note>
++            <para>To prevent any consistency issue regarding the lock data
++            please ensure that your cache loader is
++            <emphasis>org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader</emphasis>
++            and that your database engine is transactional.</para>
++          </note>
+         </listitem>
+       </itemizedlist>
+     </section>
++
+     <section>
+       <title>Template JBossCache Configuration</title>
+-      <para>The second one is using the template JBoss-cache configuration for all
+-      LockManagers.</para>
++
++      <para>The second one is using the template JBoss-cache configuration for
++      all LockManagers.</para>
++
+       <para><citetitle>Lock template configuration</citetitle></para>
++
+       <para><filename>test-jbosscache-lock.xml</filename></para>
+-      <programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+-&lt;jbosscache xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns=&quot;urn:jboss:jbosscache-core:config:3.1&quot;&gt;
+ 
+-   &lt;locking useLockStriping=&quot;false&quot; concurrencyLevel=&quot;50000&quot; lockParentForChildInsertRemove=&quot;false&quot;
+-      lockAcquisitionTimeout=&quot;20000&quot; /&gt;
++      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
++&lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+ 
+-   &lt;clustering mode=&quot;replication&quot; clusterName=&quot;${jbosscache-cluster-name}&quot;&gt;
+-      &lt;stateRetrieval timeout=&quot;20000&quot; fetchInMemoryState=&quot;false&quot; /&gt;
+-      &lt;jgroupsConfig multiplexerStack=&quot;jcr.stack&quot; /&gt;
++   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
++      lockAcquisitionTimeout="20000" /&gt;
++
++   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
++      &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
++      &lt;jgroupsConfig multiplexerStack="jcr.stack" /&gt;
+       &lt;sync /&gt;
+    &lt;/clustering&gt;
+ 
+-   &lt;loaders passivation=&quot;false&quot; shared=&quot;true&quot;&gt;
++   &lt;loaders passivation="false" shared="true"&gt;
+       &lt;!-- All the data of the JCR locks needs to be loaded at startup --&gt;
+       &lt;preload&gt;
+-         &lt;node fqn=&quot;/&quot; /&gt;
++         &lt;node fqn="/" /&gt;
+       &lt;/preload&gt;  
+       &lt;!--
+       For another cache-loader class you should use another template with
+       cache-loader specific parameters
+       -&gt;
+-      &lt;loader class=&quot;org.jboss.cache.loader.JDBCCacheLoader&quot; async=q&quot;false&quot; fetchPersistentState=&quot;false&quot;
+-         ignoreModifications=&quot;false&quot; purgeOnStartup=&quot;false&quot;&gt;
++      &lt;loader class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader" async="false" fetchPersistentState="false"
++         ignoreModifications="false" purgeOnStartup="false"&gt;
+          &lt;properties&gt;
+             cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
+             cache.jdbc.table.create=${jbosscache-cl-cache.jdbc.table.create}
+@@ -217,70 +250,76 @@
+       &lt;/loader&gt;
+    &lt;/loaders&gt;
+ &lt;/jbosscache&gt;</programlisting>
++
+       <para>As you see, all configurable parameters are filled by templates
+       and will be replaced by LockManagers configuration parameters:</para>
+-      <programlisting>&lt;lock-manager class=&quot;org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl&quot;&gt;
++
++      <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+    &lt;properties&gt;
+-      &lt;property name=&quot;time-out&quot; value=&quot;15m&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-configuration&quot; value=&quot;test-jbosscache-lock.xml&quot; /&gt;
+-      &lt;property name=&quot;jgroups-configuration&quot; value=&quot;udp-mux.xml&quot; /&gt;
+-      &lt;property name=&quot;jgroups-multiplexer-stack&quot; value=&quot;true&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-cluster-name&quot; value=&quot;JCR-cluster-locks-ws&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.name&quot; value=&quot;jcrlocks_ws&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.create&quot; value=&quot;true&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.drop&quot; value=&quot;false&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.table.primarykey&quot; value=&quot;jcrlocks_ws_pk&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.fqn.column&quot; value=&quot;fqn&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.fqn.type&quot; value=&quot;AUTO&quot;/&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.node.column&quot; value=&quot;node&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.node.type&quot; value=&quot;AUTO&quot;/&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.parent.column&quot; value=&quot;parent&quot; /&gt;
+-      &lt;property name=&quot;jbosscache-cl-cache.jdbc.datasource&quot; value=&quot;jdbcjcr&quot; /&gt;
++      &lt;property name="time-out" value="15m" /&gt;
++      &lt;property name="jbosscache-configuration" value="test-jbosscache-lock.xml" /&gt;
++      &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
++      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
++      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-locks-ws" /&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_ws" /&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_ws_pk" /&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.fqn.type" value="AUTO"/&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.node.type" value="AUTO"/&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
++      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+    &lt;/properties&gt;
+ &lt;/lock-manager&gt;</programlisting>
++
+       <para>Configuration requirements:<itemizedlist>
+           <listitem>
+             <para><parameter>jbosscache-cl-cache.jdbc.fqn.column</parameter>
+             and <parameter>jbosscache-cl-cache.jdbc.node.type</parameter> is
+-            the same  as cache.jdbc.fqn.type and cache.jdbc.node.type in
++            the same as cache.jdbc.fqn.type and cache.jdbc.node.type in
+             JBoss-Cache configuration. You can set those data types according
+-            to database type (See <link endterm="datatypes.title" linkend="datatypes"/>) or set it as AUTO (or do not set at
+-            all) and data type will be detected automatically.</para>
++            to your database type or set it as AUTO (or do not set at all) and
++            data type will be detected automatically.</para>
+           </listitem>
++
+           <listitem>
+-            <para>As you see, jgroups-configuration is moved to separate the configuration
+-            file - udp-mux.xml. In this case, the udp-mux.xml file is a common JGroup
+-            configuration  for all components (QueryHandler, Cache, LockManager), but
+-            we can still create our own configuration.</para>
++            <para>As you see, jgroups-configuration is moved to separate the
++            configuration file - udp-mux.xml. In this case, the udp-mux.xml
++            file is a common JGroup configuration for all components
++            (QueryHandler, Cache, LockManager), but we can still create our
++            own configuration.</para>
+           </listitem>
+         </itemizedlist></para>
+-      <para><filename>our-udp-mux.xml</filename><programlisting>&lt;protocol_stacks&gt;
+-   &lt;stack name=&quot;jcr.stack&quot;&gt;
++
++      <para><filename>our udp-mux.xml</filename><programlisting>&lt;protocol_stacks&gt;
++   &lt;stack name="jcr.stack"&gt;
+       &lt;config&gt;
+-         &lt;UDP mcast_addr=&quot;228.10.10.10&quot; mcast_port=&quot;45588&quot; tos=&quot;8&quot; ucast_recv_buf_size=&quot;20000000&quot;
+-            ucast_send_buf_size=&quot;640000&quot; mcast_recv_buf_size=&quot;25000000&quot; mcast_send_buf_size=&quot;640000&quot; loopback=&quot;false&quot;
+-            discard_incompatible_packets=&quot;true&quot; max_bundle_size=&quot;64000&quot; max_bundle_timeout=&quot;30&quot;
+-            use_incoming_packet_handler=&quot;true&quot; ip_ttl=&quot;2&quot; enable_bundling=&quot;true&quot; enable_diagnostics=&quot;true&quot;
+-            thread_naming_pattern=&quot;cl&quot; use_concurrent_stack=&quot;true&quot; thread_pool.enabled=&quot;true&quot; thread_pool.min_threads=&quot;2&quot;
+-            thread_pool.max_threads=&quot;8&quot; thread_pool.keep_alive_time=&quot;5000&quot; thread_pool.queue_enabled=&quot;true&quot;
+-            thread_pool.queue_max_size=&quot;1000&quot; thread_pool.rejection_policy=&quot;discard&quot; oob_thread_pool.enabled=&quot;true&quot;
+-            oob_thread_pool.min_threads=&quot;1&quot; oob_thread_pool.max_threads=&quot;8&quot; oob_thread_pool.keep_alive_time=&quot;5000&quot;
+-            oob_thread_pool.queue_enabled=&quot;false&quot; oob_thread_pool.queue_max_size=&quot;100&quot; oob_thread_pool.rejection_policy=&quot;Run&quot; /&gt;
++         &lt;UDP mcast_addr="228.10.10.10" mcast_port="45588" tos="8" ucast_recv_buf_size="20000000"
++            ucast_send_buf_size="640000" mcast_recv_buf_size="25000000" mcast_send_buf_size="640000" loopback="false"
++            discard_incompatible_packets="true" max_bundle_size="64000" max_bundle_timeout="30"
++            use_incoming_packet_handler="true" ip_ttl="2" enable_bundling="true" enable_diagnostics="true"
++            thread_naming_pattern="cl" use_concurrent_stack="true" thread_pool.enabled="true" thread_pool.min_threads="2"
++            thread_pool.max_threads="8" thread_pool.keep_alive_time="5000" thread_pool.queue_enabled="true"
++            thread_pool.queue_max_size="1000" thread_pool.rejection_policy="discard" oob_thread_pool.enabled="true"
++            oob_thread_pool.min_threads="1" oob_thread_pool.max_threads="8" oob_thread_pool.keep_alive_time="5000"
++            oob_thread_pool.queue_enabled="false" oob_thread_pool.queue_max_size="100" oob_thread_pool.rejection_policy="Run" /&gt;
+ 
+-         &lt;PING timeout=&quot;2000&quot; num_initial_members=&quot;3&quot; /&gt;
+-         &lt;MERGE2 max_interval=&quot;30000&quot; min_interval=&quot;10000&quot; /&gt;
++         &lt;PING timeout="2000" num_initial_members="3" /&gt;
++         &lt;MERGE2 max_interval="30000" min_interval="10000" /&gt;
+          &lt;FD_SOCK /&gt;
+-         &lt;FD timeout=&quot;10000&quot; max_tries=&quot;5&quot; shun=&quot;true&quot; /&gt;
+-         &lt;VERIFY_SUSPECT timeout=&quot;1500&quot; /&gt;
++         &lt;FD timeout="10000" max_tries="5" shun="true" /&gt;
++         &lt;VERIFY_SUSPECT timeout="1500" /&gt;
+          &lt;BARRIER /&gt;
+-         &lt;pbcast.NAKACK use_stats_for_retransmission=&quot;false&quot; exponential_backoff=&quot;150&quot; use_mcast_xmit=&quot;true&quot;
+-            gc_lag=&quot;0&quot; retransmit_timeout=&quot;50,300,600,1200&quot; discard_delivered_msgs=&quot;true&quot; /&gt;
+-         &lt;UNICAST timeout=&quot;300,600,1200&quot; /&gt;
+-         &lt;pbcast.STABLE stability_delay=&quot;1000&quot; desired_avg_gossip=&quot;50000&quot; max_bytes=&quot;1000000&quot; /&gt;
+-         &lt;VIEW_SYNC avg_send_interval=&quot;60000&quot; /&gt;
+-         &lt;pbcast.GMS print_local_addr=&quot;true&quot; join_timeout=&quot;3000&quot; shun=&quot;false&quot; view_bundling=&quot;true&quot; /&gt;
+-         &lt;FC max_credits=&quot;500000&quot; min_threshold=&quot;0.20&quot; /&gt;
+-         &lt;FRAG2 frag_size=&quot;60000&quot; /&gt;
++         &lt;pbcast.NAKACK use_stats_for_retransmission="false" exponential_backoff="150" use_mcast_xmit="true"
++            gc_lag="0" retransmit_timeout="50,300,600,1200" discard_delivered_msgs="true" /&gt;
++         &lt;UNICAST timeout="300,600,1200" /&gt;
++         &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000" max_bytes="1000000" /&gt;
++         &lt;VIEW_SYNC avg_send_interval="60000" /&gt;
++         &lt;pbcast.GMS print_local_addr="true" join_timeout="3000" shun="false" view_bundling="true" /&gt;
++         &lt;FC max_credits="500000" min_threshold="0.20" /&gt;
++         &lt;FRAG2 frag_size="60000" /&gt;
+          &lt;!--pbcast.STREAMING_STATE_TRANSFER /--&gt;
+          &lt;pbcast.STATE_TRANSFER /&gt;
+          &lt;!-- pbcast.FLUSH  /--&gt;
+@@ -288,62 +327,94 @@
+    &lt;/stack&gt;
+ &lt;/protocol_stacks&gt; </programlisting></para>
+     </section>
++
+     <section id="datatypes">
+       <title id="datatypes.title">Data Types in Different Databases</title>
++
+       <table>
+         <title>FQN type and node type in different databases</title>
++
+         <tgroup cols="3">
+           <thead>
+             <row>
+               <entry>DataBase name</entry>
++
+               <entry>Node data type</entry>
++
+               <entry>FQN data type</entry>
+             </row>
+           </thead>
++
+           <tbody>
+             <row>
+               <entry>default</entry>
++
+               <entry>BLOB</entry>
++
+               <entry>VARCHAR(512)</entry>
+             </row>
++
+             <row>
+               <entry>HSSQL</entry>
++
+               <entry>OBJECT</entry>
++
+               <entry>VARCHAR(512)</entry>
+             </row>
++
+             <row>
+               <entry>MySQL</entry>
++
+               <entry>LONGBLOB</entry>
++
+               <entry>VARCHAR(512)</entry>
+             </row>
++
+             <row>
+               <entry>ORACLE</entry>
++
+               <entry>BLOB</entry>
++
+               <entry>VARCHAR2(512)</entry>
+             </row>
++
+             <row>
+               <entry>PostgreSQL</entry>
++
+               <entry>bytea</entry>
++
+               <entry>VARCHAR(512)</entry>
+             </row>
++
+             <row>
+               <entry>MSSQL</entry>
++
+               <entry>VARBINARY(MAX)</entry>
++
+               <entry>VARCHAR(512)</entry>
+             </row>
++
+             <row>
+               <entry>DB2</entry>
++
+               <entry>BLOB</entry>
++
+               <entry>VARCHAR(512)</entry>
+             </row>
++
+             <row>
+               <entry>Sybase</entry>
++
+               <entry>IMAGE</entry>
++
+               <entry>VARCHAR(512)</entry>
+             </row>
++
+             <row>
+               <entry>Ingres</entry>
++
+               <entry>long byte</entry>
++
+               <entry>VARCHAR(512)</entry>
+             </row>
+           </tbody>
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/jbosscache-configuration-templates.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/jbosscache-configuration-templates.xml	(revision 5698)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/jbosscache-configuration-templates.xml	(working copy)
+@@ -84,7 +84,7 @@
+       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+ 
+-   &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
++   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
+       lockAcquisitionTimeout="20000" /&gt;
+ 
+    &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
+@@ -95,11 +95,11 @@
+ 
+    &lt;!-- Eviction configuration --&gt;
+    &lt;eviction wakeUpInterval="5000"&gt;
+-      &lt;default algorithmClass="org.jboss.cache.eviction.LRUAlgorithm"
++      &lt;default algorithmClass="org.jboss.cache.eviction.ExpirationAlgorithm"
+          actionPolicyClass="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ParentNodeEvictionActionPolicy"
+          eventQueueSize="1000000"&gt;
+          &lt;property name="maxNodes" value="1000000" /&gt;
+-         &lt;property name="timeToLive" value="120000" /&gt;
++         &lt;property name="warnNoExpirationKey" value="false" /&gt;
+       &lt;/default&gt;
+    &lt;/eviction&gt;
+ &lt;/jbosscache&gt;</programlisting>
+@@ -133,7 +133,7 @@
+       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+ 
+-   &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
++   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
+       lockAcquisitionTimeout="20000" /&gt;
+    &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
+       &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
+@@ -144,7 +144,7 @@
+       &lt;preload&gt;
+          &lt;node fqn="/" /&gt;
+       &lt;/preload&gt;
+-      &lt;loader class="org.jboss.cache.loader.JDBCCacheLoader" async="false" fetchPersistentState="false"
++      &lt;loader class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader" async="false" fetchPersistentState="false"
+          ignoreModifications="false" purgeOnStartup="false"&gt;
+          &lt;properties&gt;
+             cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
+@@ -162,6 +162,13 @@
+    &lt;/loaders&gt;
+ &lt;/jbosscache&gt;</programlisting>
+ 
++      <para><note>
++          <para>To prevent any consistency issue regarding the lock data
++          please ensure that your cache loader is
++          <emphasis>org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader</emphasis>
++          and that your database engine is transactional.</para>
++        </note></para>
++
+       <table>
+         <title>Template variables</title>
+ 
+@@ -228,20 +235,13 @@
+ 
+       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+-   &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
++   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
+       lockAcquisitionTimeout="20000" /&gt;
+    &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
+       &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
+       &lt;jgroupsConfig multiplexerStack="jcr.stack" /&gt;
+       &lt;sync /&gt;
+    &lt;/clustering&gt;
+-   &lt;!-- Eviction configuration --&gt;
+-   &lt;eviction wakeUpInterval="5000"&gt;
+-      &lt;default algorithmClass="org.jboss.cache.eviction.FIFOAlgorithm" eventQueueSize="1000000"&gt;
+-         &lt;property name="maxNodes" value="10000" /&gt;
+-         &lt;property name="minTimeToLive" value="60000" /&gt;
+-      &lt;/default&gt;
+-   &lt;/eviction&gt;
+ &lt;/jbosscache&gt;</programlisting>
+ 
+       <table>
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(revision 5698)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/jbosscache/TestJBossCacheWorkspaceStorageCacheInClusterMode.java	(working copy)
+@@ -759,6 +759,10 @@
+       public void rollback() throws IllegalStateException, RepositoryException
+       {
+       }
++      
++      public void prepare() throws IllegalStateException, RepositoryException
++      {
++      }
+ 
+       public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
+          InvalidItemStateException, IllegalStateException
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java	(revision 5698)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/dataflow/persistent/TestCacheableWorkspaceDataManager.java	(working copy)
+@@ -412,6 +412,10 @@
+       public void commit() throws IllegalStateException, RepositoryException
+       {
+       }
++      
++      public void prepare() throws IllegalStateException, RepositoryException
++      {
++      }
+ 
+       public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
+          InvalidItemStateException, IllegalStateException
+@@ -526,7 +530,6 @@
+       {
+       }
+ 
+-      @Override
+       public int getLastOrderNumber(NodeData parent) throws RepositoryException
+       {
+          return -1;
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-lock.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-lock.xml	(revision 5698)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-lock.xml	(working copy)
+@@ -19,7 +19,7 @@
+ 			For another cache-loader class you should use another template with
+ 			cache-loader specific parameters
+ 		-->
+-      <loader class="org.jboss.cache.loader.JDBCCacheLoader" async="false" fetchPersistentState="false"
++      <loader class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader" async="false" fetchPersistentState="false"
+          ignoreModifications="false" purgeOnStartup="false">
+          <properties>
+             cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/test-jbosscache-lock.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/test-jbosscache-lock.xml	(revision 5698)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/test-jbosscache-lock.xml	(working copy)
+@@ -13,7 +13,7 @@
+ 			For another cache-loader class you should use another template with
+ 			cache-loader specific parameters
+ 		-->
+-      <loader class="org.jboss.cache.loader.JDBCCacheLoader" async="false" fetchPersistentState="false"
++      <loader class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader" async="false" fetchPersistentState="false"
+          ignoreModifications="false" purgeOnStartup="false">
+          <properties>
+             cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/JDBCConnectionFactory.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/JDBCConnectionFactory.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/JDBCConnectionFactory.java	(revision 0)
+@@ -0,0 +1,244 @@
++/*
++ * Copyright (C) 2012 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
++
++import org.exoplatform.services.log.ExoLogger;
++import org.exoplatform.services.log.Log;
++import org.jboss.cache.loader.AdjListJDBCCacheLoaderConfig;
++import org.jboss.cache.loader.ConnectionFactory;
++
++import java.sql.Connection;
++import java.sql.SQLException;
++
++import javax.naming.InitialContext;
++import javax.naming.NamingException;
++import javax.sql.DataSource;
++
++/**
++ * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>
++ * @version $Id$
++ */
++public class JDBCConnectionFactory implements ConnectionFactory
++{
++
++   /**
++    * Logger
++    */
++   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NonManagedConnectionFactory");
++   private static final boolean trace = LOG.isTraceEnabled();
++
++   static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
++
++   private DataSource dataSource;
++   private String datasourceName;
++
++   public void setConfig(AdjListJDBCCacheLoaderConfig config)
++   {
++      datasourceName = config.getDatasourceName();
++   }
++
++   public void start() throws Exception
++   {
++      // A datasource will be registered in JNDI in the start portion of
++      // its lifecycle, so now that we are in start() we can look it up
++      InitialContext ctx = null;
++      try
++      {
++         ctx = new InitialContext();
++         dataSource = (DataSource) ctx.lookup(datasourceName);
++         if (trace)
++         {
++            LOG.trace("Datasource lookup for " + datasourceName + " succeded: " + dataSource);
++         }
++      }
++      catch (NamingException e)
++      {
++         reportAndRethrowError("Failed to lookup datasource " + datasourceName, e);
++      }
++      finally
++      {
++         if (ctx != null)
++         {
++            try
++            {
++               ctx.close();
++            }
++            catch (NamingException e)
++            {
++               LOG.warn("Failed to close naming context.", e);
++            }
++         }
++      }
++   }
++
++   public void prepare(Object tx)
++   {
++      Connection con = getConnection();
++      try
++      {
++         if (con.getAutoCommit())
++         {
++            con.setAutoCommit(false);
++         }
++      }
++      catch (Exception e)
++      {
++         reportAndRethrowError("Failed to set auto-commit", e);
++      }
++
++      /* Connection set in ThreadLocal, no reason to return. It was previously returned for legacy purpouses
++      and to trace log the connection opening in JDBCCacheLoader. */
++      connection.set(con);
++
++      if (trace)
++      {
++         LOG.trace("opened tx connection: tx=" + tx + ", con=" + con);
++      }
++
++   }
++
++   public Connection getConnection()
++   {
++      Connection con = connection.get();
++
++      if (con == null)
++      {
++         try
++         {
++            con = checkoutConnection();
++            //               connection.set(con);
++         }
++         catch (SQLException e)
++         {
++            reportAndRethrowError("Failed to get connection for datasource=" + datasourceName, e);
++         }
++      }
++
++      if (trace)
++      {
++         LOG.trace("using connection: " + con);
++      }
++
++      return con;
++   }
++
++   public Connection checkoutConnection() throws SQLException
++   {
++      return dataSource.getConnection();
++   }
++
++   public void commit(Object tx)
++   {
++      Connection con = connection.get();
++      if (con == null)
++      {
++         throw new IllegalStateException("Failed to commit: thread is not associated with the connection!");
++      }
++
++      try
++      {
++         con.commit();
++         if (trace)
++         {
++            LOG.trace("committed tx=" + tx + ", con=" + con);
++         }
++      }
++      catch (SQLException e)
++      {
++         reportAndRethrowError("Failed to commit", e);
++      }
++      finally
++      {
++         closeTxConnection(con);
++      }
++   }
++
++   public void rollback(Object tx)
++   {
++      Connection con = connection.get();
++
++      try
++      {
++         con.rollback();
++         if (trace)
++         {
++            LOG.trace("rolledback tx=" + tx + ", con=" + con);
++         }
++      }
++      catch (SQLException e)
++      {
++         reportAndRethrowError("Failed to rollback", e);
++      }
++      finally
++      {
++         closeTxConnection(con);
++      }
++   }
++
++   public void close(Connection con)
++   {
++      if (con != null && con != connection.get())
++      {
++         try
++         {
++            con.close();
++
++            if (trace)
++            {
++               LOG.trace("closed non tx connection: " + con);
++            }
++         }
++         catch (SQLException e)
++         {
++            LOG.warn("Failed to close connection " + con, e);
++         }
++      }
++   }
++
++   public void stop()
++   {
++   }
++
++   private void closeTxConnection(Connection con)
++   {
++      safeClose(con);
++      connection.set(null);
++   }
++
++   private void safeClose(Connection con)
++   {
++      if (con != null)
++      {
++         try
++         {
++            con.close();
++         }
++         catch (SQLException e)
++         {
++            LOG.warn("Failed to close connection", e);
++         }
++      }
++   }
++
++   private void reportAndRethrowError(String message, Exception cause) throws IllegalStateException
++   {
++      LOG.error(message, cause);
++      throw new IllegalStateException(message, cause);
++   }
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/JDBCCacheLoader.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/JDBCCacheLoader.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/JDBCCacheLoader.java	(revision 0)
+@@ -0,0 +1,62 @@
++/*
++ * Copyright (C) 2012 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
++
++import org.jboss.cache.config.CacheLoaderConfig;
++import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
++import org.jboss.cache.loader.AdjListJDBCCacheLoaderConfig;
++
++/**
++ * This class is used to override the method AdjListJDBCCacheLoader#setConfig in order
++ * to be able to use a data source name even in case of non managed data sources.
++ * 
++ * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>
++ * @version $Id$
++ */
++public class JDBCCacheLoader extends org.jboss.cache.loader.JDBCCacheLoader
++{
++
++   @Override
++   public void setConfig(IndividualCacheLoaderConfig base)
++   {
++      super.setConfig(base);
++      AdjListJDBCCacheLoaderConfig config = processConfig(base);
++
++      if (config.getDatasourceName() == null)
++      {
++         return;
++      }
++      /* We create the JDBCConnectionFactory instance but the JNDI lookup is no done until
++the start method is called, since that's when its registered in its lifecycle */
++      cf = new JDBCConnectionFactory();
++      /* We set the configuration */
++      cf.setConfig(config);
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   @Override
++   protected AdjListJDBCCacheLoaderConfig processConfig(CacheLoaderConfig.IndividualCacheLoaderConfig base)
++   {
++      AdjListJDBCCacheLoaderConfig config = super.processConfig(base);
++      config.setClassName(getClass().getName());
++      return config;
++   }
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/WorkspacePersistentDataManager.java	(working copy)
+@@ -58,6 +58,9 @@
+ 
+ import javax.jcr.InvalidItemStateException;
+ import javax.jcr.RepositoryException;
++import javax.transaction.Status;
++import javax.transaction.Synchronization;
++import javax.transaction.TransactionManager;
+ 
+ /**
+  * Created by The eXo Platform SAS.<br>
+@@ -86,10 +89,6 @@
+    protected final WorkspaceDataContainer systemDataContainer;
+ 
+    /**
+-    * Value sorages provider (for dest file suggestion on save).
+-    */
+-   // TODO protected final ValueStoragePluginProvider valueStorageProvider;
+-   /**
+     * Persistent level listeners. This listeners can be filtered by filters from
+     * <code>liestenerFilters</code> list.
+     */
+@@ -109,6 +108,11 @@
+     * Read-only status.
+     */
+    protected boolean readOnly = false;
++   
++   /**
++    * The transaction manager
++    */
++   protected final TransactionManager transactionManager;
+ 
+    /**
+     * WorkspacePersistentDataManager constructor.
+@@ -119,9 +123,24 @@
+     *          holder of system workspace data container
+     */
+    public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
+-   //ValueStoragePluginProvider valueStorageProvider, 
+       SystemDataContainerHolder systemDataContainerHolder)
+    {
++      this(dataContainer, systemDataContainerHolder, null);
++   }
++
++   /**
++    * WorkspacePersistentDataManager constructor.
++    * 
++    * @param dataContainer
++    *          workspace data container
++    * @param systemDataContainerHolder
++    *          holder of system workspace data container
++    * @param tm
++    *          the transaction manager
++    */
++   public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
++      SystemDataContainerHolder systemDataContainerHolder, TransactionManager transactionManager)
++   {
+       this.dataContainer = dataContainer;
+       this.systemDataContainer = systemDataContainerHolder.getContainer();
+       // this.valueStorageProvider = valueStorageProvider;
+@@ -129,6 +148,7 @@
+       this.listeners = new ArrayList<ItemsPersistenceListener>();
+       this.mandatoryListeners = new ArrayList<MandatoryItemsPersistenceListener>();
+       this.liestenerFilters = new ArrayList<ItemsPersistenceListenerFilter>();
++      this.transactionManager = transactionManager;
+    }
+ 
+    /**
+@@ -146,7 +166,7 @@
+ 
+       // whole log will be reconstructed with persisted data 
+       ItemStateChangesLog persistedLog;
+-
++      boolean failed = true;
+       try
+       {
+          if (changesLog instanceof PlainChangesLogImpl)
+@@ -172,7 +192,10 @@
+             // we don't support other types now... i.e. add else-if for that type here
+             throw new RepositoryException("Unsupported changes log class " + changesLog.getClass());
+          }
+-         persister.commit();
++         persister.prepare();
++         notifySaveItems(persistedLog, true);
++         onCommit(persister);
++         failed = false;
+       }
+       catch (IOException e)
+       {
+@@ -180,12 +203,73 @@
+       }
+       finally
+       {
+-         persister.rollback();
++         persister.clear();
++         if (failed)
++         {
++            persister.rollback();
++         }
+       }
+ 
+-      notifySaveItems(persistedLog, true);
+    }
++   
++   private void onCommit(final ChangesLogPersister persister) throws RepositoryException
++   {
++      if (transactionManager == null)
++      {
++         persister.commit();
++      }
++      else
++      {
++         try
++         {
++            transactionManager.getTransaction().registerSynchronization(new Synchronization()
++            {
+ 
++               public void beforeCompletion()
++               {
++               }
++
++               public void afterCompletion(int status)
++               {
++                  switch (status)
++                  {
++                     case Status.STATUS_COMMITTED:
++                        try
++                        {
++                           persister.commit();
++                        }
++                        catch (Exception e)
++                        {
++                           throw new RuntimeException("Could not commit the transaction", e);
++                        }
++                        break;
++                     case Status.STATUS_UNKNOWN:
++                        LOG.warn("Status UNKNOWN received in afterCompletion method, some data could have been corrupted !!");
++                     case Status.STATUS_MARKED_ROLLBACK:
++                     case Status.STATUS_ROLLEDBACK:
++                        try
++                        {
++                           persister.rollback();
++                        }
++                        catch (Exception e)
++                        {
++                           LOG.error("Could not roll back the transaction", e);
++                        }
++                        break;
++
++                     default:
++                        throw new IllegalStateException("illegal status: " + status);
++                  }                  
++               }
++            });
++         }
++         catch (Exception e)
++         {
++            throw new RepositoryException("Cannot register the synchronization for a late commit", e);
++         }
++      }
++   }
++   
+    class ChangesLogPersister
+    {
+ 
+@@ -207,20 +291,35 @@
+          }
+       }
+ 
+-      protected void rollback() throws IllegalStateException, RepositoryException
++      protected void prepare() throws IllegalStateException, RepositoryException
+       {
+          if (thisConnection != null && thisConnection.isOpened())
+          {
+-            thisConnection.rollback();
++            thisConnection.prepare();
+          }
+          if (systemConnection != null && !systemConnection.equals(thisConnection) && systemConnection.isOpened())
+          {
+-            systemConnection.rollback();
++            systemConnection.prepare();
+          }
++      }
+ 
++      protected void clear()
++      {
+          // help to GC
+          addedNodes.clear();
+       }
++      
++      protected void rollback() throws IllegalStateException, RepositoryException
++      {
++         if (thisConnection != null && thisConnection.isOpened())
++         {
++            thisConnection.rollback();
++         }
++         if (systemConnection != null && !systemConnection.equals(thisConnection) && systemConnection.isOpened())
++         {
++            systemConnection.rollback();
++         }
++      }
+ 
+       protected WorkspaceStorageConnection getSystemConnection() throws RepositoryException
+       {
+@@ -475,7 +574,6 @@
+    /**
+     * {@inheritDoc}
+     */
+-   @Override
+    public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
+    {
+       final WorkspaceStorageConnection con = dataContainer.openConnection();
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
+@@ -43,7 +43,6 @@
+ import java.util.concurrent.CountDownLatch;
+ 
+ import javax.jcr.RepositoryException;
+-import javax.transaction.TransactionManager;
+ 
+ /**
+  * Created by The eXo Platform SAS. 
+@@ -67,8 +66,6 @@
+     */
+    protected final ConcurrentMap<Integer, DataRequest> requestCache;
+ 
+-   private TransactionManager transactionManager;
+-
+    /**
+     * ItemData request, used on get operations.
+     * 
+@@ -297,13 +294,11 @@
+    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
+       SystemDataContainerHolder systemDataContainerHolder, TransactionService transactionService)
+    {
+-      super(dataContainer, systemDataContainerHolder);
++      super(dataContainer, systemDataContainerHolder, transactionService.getTransactionManager());
+       this.cache = cache;
+ 
+       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
+       addItemPersistenceListener(cache);
+-
+-      transactionManager = transactionService.getTransactionManager();
+    }
+ 
+    /**
+@@ -319,20 +314,13 @@
+    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
+       SystemDataContainerHolder systemDataContainerHolder)
+    {
+-      super(dataContainer, systemDataContainerHolder);
++      super(dataContainer, systemDataContainerHolder, cache instanceof JBossCacheWorkspaceStorageCache
++         ? ((JBossCacheWorkspaceStorageCache)cache).getTransactionManager() : null);
+       this.cache = cache;
+ 
+       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
+       addItemPersistenceListener(cache);
+ 
+-      if (cache instanceof JBossCacheWorkspaceStorageCache)
+-      {
+-         transactionManager = ((JBossCacheWorkspaceStorageCache)cache).getTransactionManager();
+-      }
+-      else
+-      {
+-         transactionManager = null;
+-      }
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/inmemory/InmemoryStorageConnection.java	(working copy)
+@@ -235,6 +235,10 @@
+    public void rollback() throws IllegalStateException, RepositoryException
+    {
+    }
++   
++   public void prepare() throws IllegalStateException, RepositoryException
++   {
++   }
+ 
+    public void close() throws IllegalStateException, RepositoryException
+    {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCStorageConnection.java	(working copy)
+@@ -336,18 +336,40 @@
+       {
+          closeStatements();
+ 
+-         if (!this.readOnly)
++         if (!readOnly)
+          {
+-            dbConnection.rollback();
++            try
++            {
++               dbConnection.rollback();               
++            }
++            finally
++            {
++               // rollback from the end
++               IOException e = null;
++               for (int p = valueChanges.size() - 1; p >= 0; p--)
++               {
++                  try
++                  {
++                     valueChanges.get(p).rollback();
++                  }
++                  catch (IOException e1)
++                  {
++                     if (e == null)
++                     {
++                        e = e1;
++                     }
++                     else
++                     {
++                        LOG.error("Could not rollback value change", e1);
++                     }
++                  }
++               }               
++               if (e != null)
++               {
++                  throw e;
++               }
++            }
+          }
+-
+-         dbConnection.close();
+-
+-         // rollback from the end
+-         for (int p = valueChanges.size() - 1; p >= 0; p--)
+-         {
+-            valueChanges.get(p).rollback();
+-         }
+       }
+       catch (SQLException e)
+       {
+@@ -360,6 +382,17 @@
+       finally
+       {
+          valueChanges.clear();
++         try
++         {
++            dbConnection.close();
++         }
++         catch (SQLException e)
++         {
++            if (LOG.isWarnEnabled())
++            {
++               LOG.warn("Could not close the connection", e);
++            }
++         }         
+       }
+    }
+ 
+@@ -561,6 +594,24 @@
+          LOG.error("Can't close the statement: " + e);
+       }
+    }
++   
++   /**
++    * {@inheritDoc}
++    */
++   public final void prepare() throws IllegalStateException, RepositoryException
++   {
++      try
++      {
++         for (ValueIOChannel vo : valueChanges)
++         {
++            vo.prepare();
++         }
++      }
++      catch (IOException e)
++      {
++         throw new RepositoryException(e);
++      }
++   }
+ 
+    /**
+     * {@inheritDoc}
+@@ -572,33 +623,44 @@
+       {
+          closeStatements();
+ 
+-         if (!this.readOnly)
++         if (!readOnly)
+          {
+-            dbConnection.commit();
+-         }
+-
+-         dbConnection.close();
+-
+-         try
+-         {
+-            for (ValueIOChannel vo : valueChanges)
++            try
+             {
+-               vo.commit();
++               for (ValueIOChannel vo : valueChanges)
++               {
++                  vo.twoPhaseCommit();
++               }
+             }
++            catch (IOException e)
++            {
++               throw new RepositoryException(e);
++            }
++            finally
++            {
++               valueChanges.clear();
++            }
++            dbConnection.commit();
+          }
+-         catch (IOException e)
+-         {
+-            throw new RepositoryException(e);
+-         }
+-         finally
+-         {
+-            valueChanges.clear();
+-         }
+       }
+       catch (SQLException e)
+       {
+          throw new RepositoryException(e);
+       }
++      finally
++      {
++         try
++         {
++            dbConnection.close();
++         }
++         catch (SQLException e)
++         {
++            if (LOG.isWarnEnabled())
++            {
++               LOG.warn("Could not close the connection", e);
++            }
++         }         
++      }
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/statistics/StatisticsJDBCStorageConnection.java	(working copy)
+@@ -63,6 +63,12 @@
+     * <code>rollback()</code>
+     */
+    private static final String ROLLBACK_DESCR = "rollback";
++   
++   /**
++    * The description of the statistics corresponding to the method 
++    * <code>prepare()</code>
++    */
++   private static final String PREPARE_DESCR = "prepare";   
+ 
+    /**
+     * The description of the statistics corresponding to the method 
+@@ -200,6 +206,8 @@
+       ALL_STATISTICS.put(RENAME_NODE_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, RENAME_NODE_DATA_DESCR));
+       // Rollback
+       ALL_STATISTICS.put(ROLLBACK_DESCR, new Statistics(GLOBAL_STATISTICS, ROLLBACK_DESCR));
++      // Prepare
++      ALL_STATISTICS.put(PREPARE_DESCR, new Statistics(GLOBAL_STATISTICS, PREPARE_DESCR));
+       // Others
+       ALL_STATISTICS.put(IS_OPENED_DESCR, new Statistics(null, IS_OPENED_DESCR));
+       ALL_STATISTICS.put(CLOSE_DESCR, new Statistics(null, CLOSE_DESCR));
+@@ -524,6 +532,23 @@
+    /**
+     * {@inheritDoc}
+     */
++   public void prepare() throws IllegalStateException, RepositoryException
++   {
++      Statistics s = ALL_STATISTICS.get(PREPARE_DESCR);
++      try
++      {
++         s.begin();
++         wcs.prepare();
++      }
++      finally
++      {
++         s.end();
++      }
++   }
++   
++   /**
++    * {@inheritDoc}
++    */
+    public void rollback() throws IllegalStateException, RepositoryException
+    {
+       Statistics s = ALL_STATISTICS.get(ROLLBACK_DESCR);
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileIOChannel.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileIOChannel.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileIOChannel.java	(working copy)
+@@ -121,6 +121,15 @@
+    /**
+     * {@inheritDoc}
+     */
++   public void prepare() throws IOException
++   {
++      for (ValueOperation vo : changes)
++         vo.prepare();
++   }
++   
++   /**
++    * {@inheritDoc}
++    */
+    public void commit() throws IOException
+    {
+       try
+@@ -133,6 +142,22 @@
+          changes.clear();
+       }
+    }
++   
++   /**
++    * {@inheritDoc}
++    */
++   public void twoPhaseCommit() throws IOException
++   {
++      try
++      {
++         for (ValueOperation vo : changes)
++            vo.twoPhaseCommit();
++      }
++      finally
++      {
++         changes.clear();
++      }
++   }
+ 
+    /**
+     * {@inheritDoc}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/CASableWriteValue.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/CASableWriteValue.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/CASableWriteValue.java	(working copy)
+@@ -148,61 +148,67 @@
+     * {@inheritDoc}
+     */
+    @Override
+-   public void commit() throws IOException
++   public void prepare() throws IOException
+    {
+       if (fileLock != null)
++      {
++         // write VCAS record first
+          try
+          {
+-            // write VCAS record first
+-            try
++            vcas.addValue(propertyId, orderNumb, vcasHash);
++         }
++         catch (RecordAlreadyExistsException e)
++         {
++            if (tempFile != null && tempFile.exists() && !tempFile.delete())
+             {
+-               vcas.addValue(propertyId, orderNumb, vcasHash);
++               LOG.warn("Can't delete CAS temp file. Added to file cleaner. " + tempFile.getAbsolutePath());
++               cleaner.addFile(tempFile);
+             }
+-            catch (RecordAlreadyExistsException e)
+-            {
+-               if (tempFile != null && tempFile.exists() && !tempFile.delete())
+-               {
+-                  LOG.warn("Can't delete CAS temp file. Added to file cleaner. " + tempFile.getAbsolutePath());
+-                  cleaner.addFile(tempFile);
+-               }
+-               throw new RecordAlreadyExistsException("Write error: " + e, e);
+-            }
++            throw new RecordAlreadyExistsException("Write error: " + e, e);
++         }
+ 
+-            if (!vcasFile.exists())
+-            {
+-               // it's new CAS Value, we have to move temp to vcas location
+-               // use RENAME only, don't copy - as copy will means that destination already exists etc.
++         if (!vcasFile.exists())
++         {
++            // it's new CAS Value, we have to move temp to vcas location
++            // use RENAME only, don't copy - as copy will means that destination already exists etc.
+ 
+-               // make sure parent dir exists
+-               vcasFile.getParentFile().mkdirs();
+-               // rename propetynamed file to hashnamed one
+-               if (!tempFile.renameTo(vcasFile))
+-               {
+-                  throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
+-                     + vcasFile.getAbsolutePath());
+-               }
+-            } // else - CASed Value already exists
+-
+-            if (!value.isByteArray() && value instanceof StreamPersistedValueData)
++            // make sure parent dir exists
++            vcasFile.getParentFile().mkdirs();
++            // rename propetynamed file to hashnamed one
++            if (!tempFile.renameTo(vcasFile))
+             {
+-               // set persisted file
+-               ((StreamPersistedValueData)value).setPersistedFile(vcasFile);
++               throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
++                  + vcasFile.getAbsolutePath());
+             }
++         } // else - CASed Value already exists
+ 
+-         }
+-         finally
++         if (!value.isByteArray() && value instanceof StreamPersistedValueData)
+          {
+-            // remove temp file
+-            tempFile.delete(); // should be ok without file cleaner
+-
+-            fileLock.unlock();
++            // set persisted file
++            ((StreamPersistedValueData)value).setPersistedFile(vcasFile);
+          }
++      }
+    }
+ 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
++   public void twoPhaseCommit() throws IOException
++   {
++      if (fileLock != null)
++      {
++         // remove temp file
++         tempFile.delete(); // should be ok without file cleaner
++
++         fileLock.unlock();
++      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   @Override
+    public void rollback() throws IOException
+    {
+       if (fileLock != null)
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/DeleteValues.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/DeleteValues.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/DeleteValues.java	(working copy)
+@@ -23,6 +23,7 @@
+ 
+ import java.io.File;
+ import java.io.IOException;
++import java.util.concurrent.atomic.AtomicLong;
+ 
+ /**
+  * Created by The eXo Platform SAS.
+@@ -35,6 +36,7 @@
+  */
+ public class DeleteValues extends ValueFileOperation
+ {
++   private static final AtomicLong SEQUENCE = new AtomicLong();
+ 
+    /**
+     * Files to be deleted.
+@@ -47,6 +49,11 @@
+    private ValueFileLock[] locks;
+ 
+    /**
++    * The backup files
++    */
++   protected File[] bckFiles;
++
++   /**
+     * DeleteValues constructor.
+     * 
+     * @param files
+@@ -83,24 +90,61 @@
+    /**
+     * {@inheritDoc}
+     */
++   public void prepare() throws IOException
++   {
++      if (locks != null)
++      {
++         bckFiles = new File[files.length];
++         for (int i = 0,length = files.length; i < length; i++)
++         {
++            File file = files[i];
++            if (file.exists())
++            {
++               bckFiles[i] = new File(file.getAbsolutePath() + "." + System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet());
++               if (!file.renameTo(bckFiles[i]))
++               {
++                  throw new IOException("Could not rename the file " + file.getAbsolutePath() + " to " + bckFiles[i].getAbsolutePath());
++               }
++            }           
++         }
++      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
+    public void rollback() throws IOException
+    {
+       if (locks != null)
+-         for (ValueFileLock fl : locks)
+-            fl.unlock();
++         try
++         {
++            for (int i = 0,length = files.length; i < length; i++)
++            {
++               File f = bckFiles[i];
++               if (f != null)
++               {
++                  f.renameTo(files[i]);
++               }
++            }
++         }
++         finally
++         {
++            for (ValueFileLock fl : locks)
++               fl.unlock();
++         }
+    }
+ 
+    /**
+     * {@inheritDoc}
+     */
+-   public void commit() throws IOException
++   public void twoPhaseCommit() throws IOException
+    {
+       if (locks != null)
+          try
+          {
+-            for (File f : files)
++            for (File f : bckFiles)
+             {
+-               if (!f.delete())
++               if (f != null && !f.delete())
+                   // TODO possible place of error: FileNotFoundException when we delete/update existing
+                   // Value and then add/update again.
+                   // After the time the Cleaner will delete the file which is mapped to the Value.
+@@ -110,9 +154,8 @@
+          }
+          finally
+          {
+-            if (locks != null)
+-               for (ValueFileLock fl : locks)
+-                  fl.unlock();
++            for (ValueFileLock fl : locks)
++               fl.unlock();
+          }
+    }
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/WriteValue.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/WriteValue.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/WriteValue.java	(working copy)
+@@ -79,34 +79,47 @@
+       fileLock = new ValueFileLock(file);
+       fileLock.lock();
+    }
+-
+-   /**
+-    * {@inheritDoc}
+-    */
+-   public void rollback() throws IOException
++   
++   public void prepare() throws IOException
+    {
+       if (fileLock != null)
+-         fileLock.unlock();
++      {
++         // be sure the destination dir exists (case for Tree-style storage)
++         file.getParentFile().mkdirs();
++         // write value to the file
++         writeValue(file, value);
++      }
+    }
+ 
+    /**
+     * {@inheritDoc}
+     */
+-   public void commit() throws IOException
++   public void rollback() throws IOException
+    {
+       if (fileLock != null)
++      {
+          try
+          {
+-            // be sure the destination dir exists (case for Tree-style storage)
+-            file.getParentFile().mkdirs();
+-
+-            // write value to the file
+-            writeValue(file, value);
++            if (file.exists() && !file.delete())
++            {
++               cleaner.addFile(file);
++            }
+          }
+          finally
+          {
+             fileLock.unlock();
+          }
++      }
+    }
+ 
++   /**
++    * {@inheritDoc}
++    */
++   public void twoPhaseCommit() throws IOException
++   {
++      if (fileLock != null)
++      {
++         fileLock.unlock();
++      }
++   }
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/CASableDeleteValues.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/CASableDeleteValues.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/CASableDeleteValues.java	(working copy)
+@@ -81,11 +81,11 @@
+     * {@inheritDoc}
+     */
+    @Override
+-   public void commit() throws IOException
++   public void prepare() throws IOException
+    {
+       try
+       {
+-         super.commit();
++         super.prepare();
+       }
+       finally
+       {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/ValueFileOperation.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/ValueFileOperation.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/operations/ValueFileOperation.java	(working copy)
+@@ -276,4 +276,19 @@
+ 
+       performed = true;
+    }
++
++   /**
++    * {@inheritDoc}
++    */
++   public void commit() throws IOException
++   {
++      try
++      {
++         prepare();         
++      }
++      finally
++      {
++         twoPhaseCommit();         
++      }
++   }
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/ValueOperation.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/ValueOperation.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/ValueOperation.java	(working copy)
+@@ -49,11 +49,26 @@
+    void rollback() throws IOException;
+ 
+    /**
+-    * Commit Value content.
++    * Commit Value content (one phase).
+     * 
+     * @throws IOException
+     *           if error occurs
+     */
+    void commit() throws IOException;
+ 
++   /**
++    * Prepare Value content.
++    * 
++    * @throws IOException
++    *           if error occurs
++    */
++   void prepare() throws IOException;
++   
++   /**
++    * Commit Value content (two phases).
++    * 
++    * @throws IOException
++    *           if error occurs
++    */
++   void twoPhaseCommit() throws IOException;
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/WorkspaceStorageConnection.java	(working copy)
+@@ -38,7 +38,7 @@
+  * should have "opened" state. The connection becomes "closed" (invalid for using) after calling
+  * commit() or rollback() methods. In this case methods calling will cause an IllegalStateException
+  * 
+- * Connection object intendend to be as "light" as possible i.e. connection creation SHOULD NOT be
++ * Connection object intends to be as "light" as possible i.e. connection creation SHOULD NOT be
+  * expensive operation, so better NOT to open/close potentially EXPENSIVE resources using by
+  * Connection (WorkspaceDataContainer should be responsible for that). The Connection IS NOT a
+  * thread-safe object and normally SHOULD NOT be pooled/cached.
+@@ -57,10 +57,10 @@
+     *          - the item's parent NodeData
+     * @param name
+     *          - item's path entry (QName + index)
+-    * @return - stored ItemData wich has exact the same path Entry (name+index) inside the parent; or
++    * @return - stored ItemData which has exact the same path Entry (name+index) inside the parent; or
+     *         null if not such an item data found
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -77,10 +77,10 @@
+     *          - item's path entry (QName + index)
+     * @param itemType
+     *             item type         
+-    * @return - stored ItemData wich has exact the same path Entry (name+index) inside the parent; or
++    * @return - stored ItemData which has exact the same path Entry (name+index) inside the parent; or
+     *         null if not such an item data found
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -92,12 +92,12 @@
+     * 
+     * @param identifier
+     *          - Item identifier
+-    * @return stored ItemData or null if no item foudn with given id. Basically used for
++    * @return stored ItemData or null if no item found with given id. Basically used for
+     *         Session.getNodeByUUID but not necessarily refers to jcr:uuid property (In fact, this
+     *         identifier should not necessary be equal of referenceable node's UUID if any) thereby
+     *         can return NodeData for not referenceable node data or PropertyData.
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -110,7 +110,7 @@
+     *          NodeData
+     * @return child nodes data or empty <code>List</code>
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -142,7 +142,7 @@
+     *          NodeData
+     * @return child properties data or empty <code>List</code>
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -153,13 +153,13 @@
+     * storage using item's parent location.
+     * 
+     * <br/>
+-    * This methiod specially dedicated for non-content modification operations (e.g. Items delete).
++    * This method specially dedicated for non-content modification operations (e.g. Items delete).
+     * 
+     * @param parent
+     *          NodeData
+     * @return child properties data (with empty data) or empty <code>List</code>
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -178,7 +178,7 @@
+     *          of referenceable Node
+     * @return list of referenced property data or empty <code>List</code>
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     * @throws UnsupportedOperationException
+@@ -197,7 +197,7 @@
+     * @throws UnsupportedOperationException
+     *           if operation is not supported (it is container for level 1)
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -214,7 +214,7 @@
+     * @throws UnsupportedOperationException
+     *           if operation is not supported (it is container for level 1)
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -229,12 +229,12 @@
+     * @throws InvalidItemStateException
+     *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
+     *           of new data's persisted version value (2) if the persisted data is not NodeData (i.e.
+-    *           it is PropertyData). It means that some other proccess deleted original data and
++    *           it is PropertyData). It means that some other process deleted original data and
+     *           replace it with other type of data.
+     * @throws UnsupportedOperationException
+     *           if operation is not supported (it is container for level 1)
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -249,12 +249,12 @@
+     * @throws InvalidItemStateException
+     *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
+     *           of new data's persisted version value (2) if the persisted data is not PropertyData
+-    *           (i.e. it is NodeData). It means that some other proccess deleted original data and
++    *           (i.e. it is NodeData). It means that some other process deleted original data and
+     *           replace it with other type of data.
+     * @throws UnsupportedOperationException
+     *           if operation is not supported (it is container for level 1)
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -269,12 +269,12 @@
+     * @throws InvalidItemStateException
+     *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
+     *           of new data's persisted version value (2) if the persisted data is not PropertyData
+-    *           (i.e. it is NodeData). It means that some other proccess deleted original data and
++    *           (i.e. it is NodeData). It means that some other process deleted original data and
+     *           replace it with other type of data.
+     * @throws UnsupportedOperationException
+     *           if operation is not supported (it is container for level 1)
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -292,7 +292,7 @@
+     * @throws UnsupportedOperationException
+     *           if operation is not supported (it is container for level 1)
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -310,7 +310,7 @@
+     * @throws UnsupportedOperationException
+     *           if operation is not supported (it is container for level 1)
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     * @throws IllegalStateException
+     *           if connection is closed
+     */
+@@ -318,23 +318,33 @@
+       IllegalStateException;
+ 
+    /**
++    * Prepare the commit phase.
++    * 
++    * @throws IllegalStateException
++    *           if connection is already closed
++    * @throws RepositoryException
++    *           if some exception occurred
++    */
++   void prepare() throws IllegalStateException, RepositoryException;
++   
++   /**
+     * Persist changes and closes connection. It can be database transaction commit for instance etc.
+     * 
+     * @throws IllegalStateException
+     *           if connection is already closed
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     */
+    void commit() throws IllegalStateException, RepositoryException;
+ 
+    /**
+-    * Refuses persistent changes and closes connection. It can be database transaction rollback for
++    * Refuses persistent changes and closes connection. It can be database transaction roll back for
+     * instance etc.
+     * 
+     * @throws IllegalStateException
+     *           if connection is already closed
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     */
+    void rollback() throws IllegalStateException, RepositoryException;
+ 
+@@ -344,7 +354,7 @@
+     * @throws IllegalStateException
+     *           if connection is already closed
+     * @throws RepositoryException
+-    *           if some exception occured
++    *           if some exception occurred
+     */
+    void close() throws IllegalStateException, RepositoryException;
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/value/ValueIOChannel.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/value/ValueIOChannel.java	(revision 5698)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/storage/value/ValueIOChannel.java	(working copy)
+@@ -78,12 +78,28 @@
+    String getStorageId();
+ 
+    /**
+-    * Commit channel changes.
++    * Prepare channel changes.
+     * 
+     * @throws IOException
+     *           if error occurs
+     */
++   void prepare() throws IOException;
++   
++   /**
++    * Commit channel changes (one phase).
++    * 
++    * @throws IOException
++    *           if error occurs
++    */
+    void commit() throws IOException;
++   
++   /**
++    * Commit channel changes (two phases).
++    * 
++    * @throws IOException
++    *           if error occurs
++    */
++   void twoPhaseCommit() throws IOException;
+ 
+    /**
+     * Rollback channel changes.
+Index: exo.jcr.component.core/src/main/resources/conf/portal/cluster/jbosscache-lock.xml
+===================================================================
+--- exo.jcr.component.core/src/main/resources/conf/portal/cluster/jbosscache-lock.xml	(revision 5698)
++++ exo.jcr.component.core/src/main/resources/conf/portal/cluster/jbosscache-lock.xml	(working copy)
+@@ -18,7 +18,7 @@
+ 			For another cache-loader class you should use another template with
+ 			cache-loader specific parameters
+ 		-->
+-      <loader class="org.jboss.cache.loader.JDBCCacheLoader" async="false" fetchPersistentState="false"
++      <loader class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader" async="false" fetchPersistentState="false"
+          ignoreModifications="false" purgeOnStartup="false">
+          <properties>
+             cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
