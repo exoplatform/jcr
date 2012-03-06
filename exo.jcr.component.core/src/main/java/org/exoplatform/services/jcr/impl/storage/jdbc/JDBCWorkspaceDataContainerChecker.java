@@ -23,6 +23,10 @@ import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.datamodel.ItemType;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.checker.DummyRepair;
 import org.exoplatform.services.jcr.impl.checker.EarlierVersionsRemover;
@@ -168,19 +172,22 @@ public class JDBCWorkspaceDataContainerChecker
                WorkspaceStorageConnection conn = jdbcDataContainer.openConnection();
                try
                {
-                  if (conn instanceof JDBCStorageConnection)
-                  {
-                     ((JDBCStorageConnection)conn).deleteLockProperties(nodeId);
-                  }
+                  NodeData parent = (NodeData)conn.getItemData(nodeId);
+                  PropertyData prop =
+                     (PropertyData)conn.getItemData(parent, new QPathEntry(Constants.JCR_LOCKISDEEP, 0),
+                        ItemType.PROPERTY);
+                  conn.delete(prop);
+
+                  prop =
+                     (PropertyData)conn.getItemData(parent, new QPathEntry(Constants.JCR_LOCKOWNER, 0),
+                        ItemType.PROPERTY);
+                  conn.delete(prop);
+
                   conn.commit();
+
                   logComment("Lock has been removed form ITEM table. Node UUID: " + nodeId);
                }
                catch (RepositoryException e)
-               {
-                  conn.rollback();
-                  throw e;
-               }
-               catch (SQLException e)
                {
                   conn.rollback();
                   throw e;
