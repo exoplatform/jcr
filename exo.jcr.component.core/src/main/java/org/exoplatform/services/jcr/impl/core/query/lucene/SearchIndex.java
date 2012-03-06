@@ -84,7 +84,16 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.RepositoryException;
@@ -1219,37 +1228,40 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void close()
    {
-      // cleanup resources obtained by filters
-      if (recoveryFilters != null)
+      if (!closed)
       {
-         for (AbstractRecoveryFilter filter : recoveryFilters)
+         // cleanup resources obtained by filters
+         if (recoveryFilters != null)
          {
-            filter.close();
+            for (AbstractRecoveryFilter filter : recoveryFilters)
+            {
+               filter.close();
+            }
+            recoveryFilters.clear();
+            recoveryFilters = null;
          }
-         recoveryFilters.clear();
-         recoveryFilters = null;
-      }
 
-      if (synonymProviderConfigFs != null)
-      {
-         try
+         if (synonymProviderConfigFs != null)
          {
-            synonymProviderConfigFs.close();
+            try
+            {
+               synonymProviderConfigFs.close();
+            }
+            catch (IOException e)
+            {
+               log.warn("Exception while closing FileSystem", e);
+            }
          }
-         catch (IOException e)
+         if (spellChecker != null)
          {
-            log.warn("Exception while closing FileSystem", e);
+            spellChecker.close();
          }
+         errorLog.close();
+         index.close();
+         getContext().destroy();
+         closed = true;
+         log.info("Index closed: " + path);
       }
-      if (spellChecker != null)
-      {
-         spellChecker.close();
-      }
-      errorLog.close();
-      index.close();
-      getContext().destroy();
-      closed = true;
-      log.info("Index closed: " + path);
    }
 
    /**
@@ -1958,9 +1970,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                            //t = field.tokenStreamValue().next(t);
                            field.tokenStreamValue().incrementToken();
                            TermAttribute term =
-                              (TermAttribute)field.tokenStreamValue().getAttribute(TermAttribute.class);
+                              field.tokenStreamValue().getAttribute(TermAttribute.class);
                            PayloadAttribute payload =
-                              (PayloadAttribute)field.tokenStreamValue().getAttribute(PayloadAttribute.class);
+                              field.tokenStreamValue().getAttribute(PayloadAttribute.class);
 
                            String value = new String(t.termBuffer(), 0, t.termLength());
                            if (value.startsWith(namePrefix))
