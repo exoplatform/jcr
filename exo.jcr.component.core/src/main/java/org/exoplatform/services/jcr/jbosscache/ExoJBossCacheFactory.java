@@ -40,9 +40,11 @@ import org.jgroups.JChannelFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
@@ -88,8 +90,8 @@ public class ExoJBossCacheFactory<K, V>
     * A Map that contains all the registered JBC instances, ordered by
     * {@link ExoContainer} instances, {@link CacheType} and JBC Configuration.
     */
-   private static Map<ExoContainer, Map<CacheType, Map<ConfigurationKey, Cache>>> CACHES =
-      new HashMap<ExoContainer, Map<CacheType, Map<ConfigurationKey, Cache>>>();
+   private static Map<ExoContainer, Map<CacheType, Map<ConfigurationKey, CacheInstance>>> CACHES =
+      new HashMap<ExoContainer, Map<CacheType, Map<ConfigurationKey, CacheInstance>>>();
 
    private final TemplateConfigurationHelper configurationHelper;
 
@@ -272,16 +274,16 @@ public class ExoJBossCacheFactory<K, V>
          return cache;
       }
       ExoContainer container = ExoContainerContext.getCurrentContainer();
-      Map<CacheType, Map<ConfigurationKey, Cache>> allCacheTypes = CACHES.get(container);
+      Map<CacheType, Map<ConfigurationKey, CacheInstance>> allCacheTypes = CACHES.get(container);
       if (allCacheTypes == null)
       {
-         allCacheTypes = new HashMap<CacheType, Map<ConfigurationKey, Cache>>();
+         allCacheTypes = new HashMap<CacheType, Map<ConfigurationKey, CacheInstance>>();
          CACHES.put(container, allCacheTypes);
       }
-      Map<ConfigurationKey, Cache> caches = allCacheTypes.get(cacheType);
+      Map<ConfigurationKey, CacheInstance> caches = allCacheTypes.get(cacheType);
       if (caches == null)
       {
-         caches = new HashMap<ConfigurationKey, Cache>();
+         caches = new HashMap<ConfigurationKey, CacheInstance>();
          allCacheTypes.put(cacheType, caches);
       }
       Configuration cfg = cache.getConfiguration();
@@ -294,13 +296,21 @@ public class ExoJBossCacheFactory<K, V>
       {
          throw new RepositoryConfigurationException("Cannot clone the configuration.", e);
       }
+
       if (caches.containsKey(key))
       {
-         cache = caches.get(key);
+         CacheInstance cacheInstance = caches.get(key);
+         cacheInstance.acquire();
+
+         cache = cacheInstance.cache;
       }
       else
       {
-         caches.put(key, cache);
+         CacheInstance cacheInstance = new CacheInstance(cache);
+         cacheInstance.acquire();
+
+         caches.put(key, cacheInstance);
+
          if (LOG.isInfoEnabled())
          {
             LOG.info("A new JBoss Cache instance has been registered for the region " + rootFqn + ", a cache of type "
@@ -314,6 +324,29 @@ public class ExoJBossCacheFactory<K, V>
             + " and the container " + container.getContext().getName());
       }
       return cache;
+   }
+
+   public static synchronized <K, V> void releaseUniqueInstance(CacheType cacheType, Cache<K, V> cache)
+      throws RepositoryConfigurationException
+   {
+      ExoContainer container = ExoContainerContext.getCurrentContainer();
+      Map<CacheType, Map<ConfigurationKey, CacheInstance>> allCacheTypes = CACHES.get(container);
+      Map<ConfigurationKey, CacheInstance> caches = allCacheTypes.get(cacheType);
+
+      for (Entry<ConfigurationKey, CacheInstance> entry : caches.entrySet())
+      {
+         CacheInstance cacheInstance = entry.getValue();
+         if (cacheInstance.isSame(cache))
+         {
+            cacheInstance.release();
+
+            if (!cacheInstance.hasReferences())
+            {
+               caches.remove(entry.getKey());
+               PrivilegedJBossCacheHelper.stop((Cache<Serializable, Object>)cache);
+            }
+         }
+      }
    }
 
    /**
@@ -420,6 +453,41 @@ public class ExoJBossCacheFactory<K, V>
             return false;
          }
          return true;
+      }
+   }
+
+   /**
+    * This class is used to store the actual amount of times cache was used.
+    */
+   private static class CacheInstance
+   {
+      private final Cache cache;
+
+      private int references;
+
+      public CacheInstance(Cache cache)
+      {
+         this.cache = cache;
+      }
+
+      private void acquire()
+      {
+         references++;
+      }
+
+      private void release()
+      {
+         references--;
+      }
+
+      private boolean hasReferences()
+      {
+         return references > 0;
+      }
+
+      private boolean isSame(Cache cache)
+      {
+         return this.cache == cache;
       }
    }
 }

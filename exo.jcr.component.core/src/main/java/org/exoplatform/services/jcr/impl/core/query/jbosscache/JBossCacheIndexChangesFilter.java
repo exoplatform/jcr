@@ -30,8 +30,8 @@ import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -232,6 +232,13 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
          log.warn("Not all JBoss Cache MBeans were unregistered.");
       }
       
-      PrivilegedJBossCacheHelper.stop(cache);
+      try
+      {
+         ExoJBossCacheFactory.releaseUniqueInstance(CacheType.INDEX_CACHE, cache);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         log.error("Can not release cache instance", e);
+      }
    } 
 }

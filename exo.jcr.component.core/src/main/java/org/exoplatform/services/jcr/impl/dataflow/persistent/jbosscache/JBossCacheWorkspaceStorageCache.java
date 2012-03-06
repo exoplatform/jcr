@@ -51,7 +51,6 @@ import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -61,8 +60,8 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.config.Configuration.CacheMode;
+import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.picocontainer.Startable;
@@ -768,13 +767,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.getNode(childPropsByPatternList).setResident(false);
          cache.evict(childPropsByPatternList, true);
          cache.getRegion(childPropsByPatternList, false).processEvictionQueues();
-
-      }
-      else
-      {
-         PrivilegedJBossCacheHelper.stop(cache);
       }
 
+      cache.stop();
    }
 
    /**
