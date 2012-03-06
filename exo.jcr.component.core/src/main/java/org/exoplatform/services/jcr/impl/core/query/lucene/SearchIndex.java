@@ -1239,37 +1239,40 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void close()
    {
-      // cleanup resources obtained by filters
-      if (recoveryFilters != null)
+      if (!closed)
       {
-         for (AbstractRecoveryFilter filter : recoveryFilters)
+         // cleanup resources obtained by filters
+         if (recoveryFilters != null)
          {
-            filter.close();
+            for (AbstractRecoveryFilter filter : recoveryFilters)
+            {
+               filter.close();
+            }
+            recoveryFilters.clear();
+            recoveryFilters = null;
          }
-         recoveryFilters.clear();
-         recoveryFilters = null;
-      }
 
-      if (synonymProviderConfigFs != null)
-      {
-         try
+         if (synonymProviderConfigFs != null)
          {
-            synonymProviderConfigFs.close();
+            try
+            {
+               synonymProviderConfigFs.close();
+            }
+            catch (IOException e)
+            {
+               log.warn("Exception while closing FileSystem", e);
+            }
          }
-         catch (IOException e)
+         if (spellChecker != null)
          {
-            log.warn("Exception while closing FileSystem", e);
+            spellChecker.close();
          }
+         errorLog.close();
+         index.close();
+         getContext().destroy();
+         closed = true;
+         log.info("Index closed: " + path);
       }
-      if (spellChecker != null)
-      {
-         spellChecker.close();
-      }
-      errorLog.close();
-      index.close();
-      getContext().destroy();
-      closed = true;
-      log.info("Index closed: " + path);
    }
 
    /**
