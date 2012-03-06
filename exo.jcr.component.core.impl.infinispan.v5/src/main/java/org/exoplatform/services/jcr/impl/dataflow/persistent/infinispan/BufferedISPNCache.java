@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.AdvancedCache;
@@ -33,7 +33,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.NotifyingFuture;
 import org.infinispan.util.concurrent.locks.LockManager;
 
-import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -953,15 +952,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    public void start()
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            parentCache.start();
-            return null;
-         }
-      };
-      SecurityHelper.doPrivilegedAction(action);
+      PrivilegedISPNCacheHelper.start((Cache)parentCache);
    }
 
    /**
@@ -969,15 +960,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    public void stop()
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            parentCache.stop();
-            return null;
-         }
-      };
-      SecurityHelper.doPrivilegedAction(action);
+      PrivilegedISPNCacheHelper.stop((Cache)parentCache);
    }
 
    /**

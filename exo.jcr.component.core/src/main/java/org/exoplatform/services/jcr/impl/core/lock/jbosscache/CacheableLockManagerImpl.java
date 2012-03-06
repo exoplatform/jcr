@@ -33,8 +33,8 @@ import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -509,7 +509,9 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       if (shareable)
       {
          // The cache cannot be stopped since it can be shared so we evict the root node instead
-         cache.evict(lockRoot);
+         cache.getNode(lockRoot).setResident(false);
+         cache.evict(lockRoot, true);
+         cache.getRegion(lockRoot, false).processEvictionQueues();
       }
       else
       {

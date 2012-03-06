@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -724,15 +725,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     */
    public void start() throws CacheException
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            parentCache.start();
-            return null;
-         }
-      };
-      SecurityHelper.doPrivilegedAction(action);
+      PrivilegedJBossCacheHelper.start(parentCache);
    }
 
    /* (non-Javadoc)
@@ -748,15 +741,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     */
    public void stop()
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            parentCache.stop();
-            return null;
-         }
-      };
-      SecurityHelper.doPrivilegedAction(action);
+      PrivilegedJBossCacheHelper.stop(parentCache);
    }
 
    public TransactionManager getTransactionManager()

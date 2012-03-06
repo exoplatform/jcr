@@ -62,52 +62,74 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 
    public void testRestore() throws RepositoryConfigurationException, Exception
    {
-      String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
+      ManageableRepository repository = null;
+      try
+      {
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
 
-      WorkspaceEntry workspaceEntry =
-         helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
-      helper.addWorkspace(repository, workspaceEntry);
+         WorkspaceEntry workspaceEntry =
+            helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
+         helper.addWorkspace(repository, workspaceEntry);
 
-      InputStream is = TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
-      repository.importWorkspace(workspaceEntry.getName(), is);
+         InputStream is = TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
+         repository.importWorkspace(workspaceEntry.getName(), is);
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testRestoreBadXml() throws Exception
    {
-      String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
-
-      WorkspaceEntry workspaceEntry =
-         helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
-      helper.addWorkspace(repository, workspaceEntry);
-
-      Session defSession = repository.login(this.credentials, workspaceEntry.getName());
-      Node defRoot = defSession.getRootNode();
-
-      Node node1 = defRoot.addNode("node1");
-      node1.setProperty("p1", 2);
-      defSession.save();
-
-      File content = File.createTempFile("data", ".xml");
-      content.deleteOnExit();
-      OutputStream os = new BufferedOutputStream(new FileOutputStream(content));
-      defSession.exportSystemView(node1.getPath(), os, false, false);
-      os.close();
-      defSession.logout();
-      
+      ManageableRepository repository = null;
       try
       {
-         InputStream is = TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
-         repository.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
 
-         fail();
+         WorkspaceEntry workspaceEntry =
+            helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
+         helper.addWorkspace(repository, workspaceEntry);
+
+         Session defSession = repository.login(this.credentials, workspaceEntry.getName());
+         Node defRoot = defSession.getRootNode();
+
+         Node node1 = defRoot.addNode("node1");
+         node1.setProperty("p1", 2);
+         defSession.save();
+
+         File content = File.createTempFile("data", ".xml");
+         content.deleteOnExit();
+         OutputStream os = new BufferedOutputStream(new FileOutputStream(content));
+         defSession.exportSystemView(node1.getPath(), os, false, false);
+         os.close();
+         defSession.logout();
+
+         try
+         {
+            InputStream is =
+               TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
+            repository.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
+
+            fail();
+         }
+         catch (RepositoryException e)
+         {
+            // ok
+         }
       }
-      catch (RepositoryException e)
+      finally
       {
-         // ok
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
       }
-
    }
 
    private void doTestOnWorkspace(String wsName) throws RepositoryException, RepositoryConfigurationException

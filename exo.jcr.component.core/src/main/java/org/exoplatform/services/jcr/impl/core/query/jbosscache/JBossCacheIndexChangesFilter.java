@@ -32,8 +32,8 @@ import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -281,5 +281,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       {
          LOG.warn("Not all JBoss Cache MBeans were unregistered.");
       }
+
+      PrivilegedJBossCacheHelper.stop(cache);
    }
 }

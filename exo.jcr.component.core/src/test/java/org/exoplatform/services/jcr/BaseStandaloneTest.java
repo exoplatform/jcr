@@ -142,7 +142,7 @@ public abstract class BaseStandaloneTest extends TestCase
 
       String loginConf = BaseStandaloneTest.class.getResource("/login.conf").toString();
 
-      container = StandaloneContainer.getInstance();
+       container = StandaloneContainer.getInstance();
 
       if (System.getProperty("java.security.auth.login.config") == null)
       {

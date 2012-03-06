@@ -51,6 +51,7 @@ import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -60,8 +61,8 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionRegionConfig;
+import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.picocontainer.Startable;
@@ -123,6 +124,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheWorkspaceStorageCache");
 
    private final boolean enabled;
+
+   private final boolean shareable;
 
    public static final String JBOSSCACHE_CONFIG = "jbosscache-configuration";
 
@@ -568,6 +571,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
       enabled = wsConfig.getCache().isEnabled();
 
+      shareable =
+         wsConfig.getCache().getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT).booleanValue();
+
       // create cache using custom factory
       ExoJBossCacheFactory<Serializable, Object> factory;
 
@@ -729,6 +735,51 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
          });
       }      
+
+      if (shareable)
+      {
+         // The cache cannot be stopped since it can be shared so we evict the root node instead
+         cache.getNode(itemsRoot).setResident(false);
+         cache.evict(itemsRoot, true);
+         cache.getRegion(itemsRoot, false).processEvictionQueues();
+
+         cache.getNode(refRoot).setResident(false);;
+         cache.evict(refRoot, true);
+         cache.getRegion(refRoot, false).processEvictionQueues();
+
+         cache.getNode(childNodes).setResident(false);;
+         cache.evict(childNodes, true);
+         cache.getRegion(childNodes, false).processEvictionQueues();
+
+         cache.getNode(childProps).setResident(false);;
+         cache.evict(childProps, true);
+         cache.getRegion(childProps, false).processEvictionQueues();
+
+         cache.getNode(childNodesList).setResident(false);
+         cache.evict(childNodesList, true);
+         cache.getRegion(childNodesList, false).processEvictionQueues();
+
+         cache.getNode(childPropsList).setResident(false);
+         cache.evict(childPropsList, true);
+         cache.getRegion(childPropsList, false).processEvictionQueues();
+
+         cache.getNode(childNodesByPageList).setResident(false);
+         cache.evict(childNodesByPageList, true);
+         cache.getRegion(childNodesByPageList, false).processEvictionQueues();
+
+         cache.getNode(childNodesByPatternList).setResident(false);
+         cache.evict(childNodesByPatternList, true);
+         cache.getRegion(childNodesByPatternList, false).processEvictionQueues();
+
+         cache.getNode(childPropsByPatternList).setResident(false);
+         cache.evict(childPropsByPatternList, true);
+         cache.getRegion(childPropsByPatternList, false).processEvictionQueues();
+
+      }
+      else
+      {
+         PrivilegedJBossCacheHelper.stop(cache);
+      }
    }
 
    /**

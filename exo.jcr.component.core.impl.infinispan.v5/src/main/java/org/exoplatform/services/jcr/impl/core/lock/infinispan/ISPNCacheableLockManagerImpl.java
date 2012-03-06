@@ -120,6 +120,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          configureJDBCCacheLoader(config.getLockManager());
 
          cache = factory.createCache("L" + config.getUniqueName().replace("_", ""), config.getLockManager());
+         PrivilegedISPNCacheHelper.start(cache);
       }
       else
       {

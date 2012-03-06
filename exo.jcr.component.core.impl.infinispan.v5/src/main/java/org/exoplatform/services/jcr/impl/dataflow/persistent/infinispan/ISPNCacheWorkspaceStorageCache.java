@@ -58,6 +58,7 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
+import org.picocontainer.Startable;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,7 +99,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: ISPNCacheWorkspaceStorageCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  */
-public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable
+public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable, Startable
 {
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNCacheWorkspaceStorageCache");
 
@@ -477,6 +478,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       }
       this.cache = new BufferedISPNCache(parentCache, allowLocalChanges);
       cache.addListener(new CacheEventListener());
+
+      this.cache.start();
    }
 
    /**
@@ -1647,5 +1650,20 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             onCacheEntryUpdated(value);
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void start()
+   {
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void stop()
+   {
+      cache.stop();
    }   
 }
