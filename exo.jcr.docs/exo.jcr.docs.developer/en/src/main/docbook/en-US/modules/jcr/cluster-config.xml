@@ -224,8 +224,9 @@
    &lt;properties&gt;
       &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-data.xml" /&gt;     &lt;!--    path to JBoss Cache configuration for data storage --&gt;
       &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                     &lt;!--    path to JGroups configuration --&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_cache_production" /&gt;                   &lt;!--    JBoss Cache data storage cluster name --&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
+      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_cache" /&gt;                              &lt;!--    JBoss Cache data storage cluster name --&gt;
+      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
+      &lt;property name="jbosscache-shareable" value="true" /&gt;
    &lt;/properties&gt;
 &lt;/cache&gt; </programlisting>
         </listitem>
@@ -239,8 +240,9 @@
       &lt;property name="index-dir" value="/mnt/tornado/temp/jcrlucenedb/production" /&gt;                       &lt;!--    path within NFS where ValueStorage will hold it's data --&gt;
       &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-indexer.xml" /&gt;    &lt;!--    path to JBoss Cache configuration for indexer --&gt;
       &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                       &lt;!--    path to JGroups configuration --&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_indexer_production" /&gt;                   &lt;!--    JBoss Cache indexer cluster name --&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
+      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_indexer" /&gt;                              &lt;!--    JBoss Cache indexer cluster name --&gt;
+      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
+      &lt;property name="jbosscache-shareable" value="true" /&gt;
    &lt;/properties&gt;
 &lt;/query-handler&gt; </programlisting>
         </listitem>
@@ -253,17 +255,17 @@
       &lt;property name="time-out" value="15m" /&gt;
       &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-lock.xml" /&gt;       &lt;!--    path to JBoss Cache configuration for lock manager --&gt;
       &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                       &lt;!--    path to JGroups configuration --&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_lock_production" /&gt;                      &lt;!--    JBoss Cache locks cluster name --&gt;
-                     
-      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_production"/&gt;                   &lt;!--    the name of the DB table where lock's data will be stored --&gt;
+      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_locks" /&gt;                                &lt;!--    JBoss Cache locks cluster name --&gt;                    
+      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks"/&gt;                              &lt;!--    the name of the DB table where lock's data will be stored --&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true"/&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_production_pk"/&gt;
+      &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk"/&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn"/&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node"/&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent"/&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr"/&gt;
+      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
+      &lt;property name="jbosscache-shareable" value="true" /&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
         </listitem>

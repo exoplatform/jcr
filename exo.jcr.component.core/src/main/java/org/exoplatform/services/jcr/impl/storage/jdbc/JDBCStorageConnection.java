@@ -348,15 +348,37 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
          if (!readOnly)
          {
-            dbConnection.rollback();
-         }
-
-         dbConnection.close();
-
-         // rollback from the end
-         for (int p = valueChanges.size() - 1; p >= 0; p--)
-         {
-            valueChanges.get(p).rollback();
+            try
+            {
+               dbConnection.rollback();               
+            }
+            finally
+            {
+               // rollback from the end
+               IOException e = null;
+               for (int p = valueChanges.size() - 1; p >= 0; p--)
+               {
+                  try
+                  {
+                     valueChanges.get(p).rollback();
+                  }
+                  catch (IOException e1)
+                  {
+                     if (e == null)
+                     {
+                        e = e1;
+                     }
+                     else
+                     {
+                        LOG.error("Could not rollback value change", e1);
+                     }
+                  }
+               }               
+               if (e != null)
+               {
+                  throw e;
+               }
+            }
          }
       }
       catch (SQLException e)
@@ -370,6 +392,17 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       finally
       {
          valueChanges.clear();
+         try
+         {
+            dbConnection.close();
+         }
+         catch (SQLException e)
+         {
+            if (LOG.isWarnEnabled())
+            {
+               LOG.warn("Could not close the connection", e);
+            }
+         }         
       }
    }
 
@@ -580,6 +613,24 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          LOG.error("Can't close the statement: " + e.getMessage());
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public final void prepare() throws IllegalStateException, RepositoryException
+   {
+      try
+      {
+         for (ValueIOChannel vo : valueChanges)
+         {
+            vo.prepare();
+         }
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
 
    /**
     * {@inheritDoc}
@@ -591,32 +642,43 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          closeStatements();
 
-         if (!this.readOnly)
+         if (!readOnly)
          {
-            dbConnection.commit();
-         }
-
-         dbConnection.close();
-
-         try
-         {
-            for (ValueIOChannel vo : valueChanges)
+            try
             {
-               vo.commit();
+               for (ValueIOChannel vo : valueChanges)
+               {
+                  vo.twoPhaseCommit();
+               }
             }
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException(e);
-         }
-         finally
-         {
-            valueChanges.clear();
+            catch (IOException e)
+            {
+               throw new RepositoryException(e);
+            }
+            finally
+            {
+               valueChanges.clear();
+            }
+            dbConnection.commit();
          }
       }
       catch (SQLException e)
       {
          throw new RepositoryException(e);
+      }
+      finally
+      {
+         try
+         {
+            dbConnection.close();
+         }
+         catch (SQLException e)
+         {
+            if (LOG.isWarnEnabled())
+            {
+               LOG.warn("Could not close the connection", e);
+            }
+         }
       }
    }
 

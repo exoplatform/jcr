@@ -747,6 +747,11 @@ public abstract class BaseStandaloneTest extends TestCase
          throw new UnsupportedOperationException();
       }
 
+      public void prepare() throws IllegalStateException, RepositoryException
+      {
+         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
+      }
+
    }
 
 }

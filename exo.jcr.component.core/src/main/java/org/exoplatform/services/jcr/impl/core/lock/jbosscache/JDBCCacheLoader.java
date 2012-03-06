@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.jboss.cache.config.CacheLoaderConfig;
+import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.loader.AdjListJDBCCacheLoaderConfig;
 
 import java.sql.Connection;
@@ -27,7 +28,8 @@ import java.sql.Connection;
 
 /**
  * This class is used to override the method AdjListJDBCCacheLoader#tableExists in order
- * to more easily ensure multi-schema support.
+ * to more easily ensure multi-schema support and the method AdjListJDBCCacheLoader#setConfig
+ * in order to be able to use a data source name even in case of non managed data sources.
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
@@ -41,7 +43,23 @@ public class JDBCCacheLoader extends org.jboss.cache.loader.JDBCCacheLoader
    {
       return JDBCUtils.tableExists(tableName, con);
    }
+   @Override
+   public void setConfig(IndividualCacheLoaderConfig base)
+   {
+      super.setConfig(base);
+      AdjListJDBCCacheLoaderConfig config = processConfig(base);
 
+      if (config.getDatasourceName() == null)
+      {
+         return;
+      }
+      /* We create the JDBCConnectionFactory instance but the JNDI lookup is no done until
+the start method is called, since that's when its registered in its lifecycle */
+      cf = new JDBCConnectionFactory();
+      /* We set the configuration */
+      cf.setConfig(config);
+   }
+   
    /**
     * {@inheritDoc}
     */

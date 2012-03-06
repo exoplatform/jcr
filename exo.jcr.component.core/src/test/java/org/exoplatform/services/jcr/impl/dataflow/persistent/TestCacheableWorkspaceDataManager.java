@@ -473,6 +473,10 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
       {
       }
 
+      public void prepare() throws IllegalStateException, RepositoryException
+      {
+      }
+
       public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {

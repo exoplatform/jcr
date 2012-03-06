@@ -291,6 +291,10 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       {
       }
 
+      public void prepare() throws IllegalStateException, RepositoryException
+      {
+      }
+
       public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {

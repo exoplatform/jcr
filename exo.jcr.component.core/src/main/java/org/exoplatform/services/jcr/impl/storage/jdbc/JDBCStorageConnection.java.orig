@@ -167,7 +167,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected PreparedStatement findPropertiesByParentId;
 
-   protected PreparedStatement findLowestPropertyVersions;
+   protected PreparedStatement findMaxPropertyVersions;
 
    protected PreparedStatement insertItem;
 
@@ -485,9 +485,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             findPropertiesByParentId.close();
          }
 
-         if (findLowestPropertyVersions != null)
+         if (findMaxPropertyVersions != null)
          {
-            findLowestPropertyVersions.close();
+            findMaxPropertyVersions.close();
          }
 
          if (insertItem != null)
@@ -994,6 +994,44 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             catch (SQLException e)
             {
                LOG.error("Can't close the ResultSet: " + e.getMessage());
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getMaxPropertyVersion(PropertyData data) throws RepositoryException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet count = findMaxPropertyVersion(data.getParentIdentifier(), data.getQPath().getName().getAsString(), data.getQPath().getIndex());
+         try
+         {
+            if (count.next())
+            {
+               return count.getInt(1);
+            }
+            else
+            {
+               return 0;
+            }
+         }
+         finally
+         {
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
             }
          }
       }
@@ -2699,16 +2737,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
    };
 
-   protected ResultSet findLowestPropertyVersions() throws SQLException
-   {
-      if (findLowestPropertyVersions == null)
-      {
-         findLowestPropertyVersions = dbConnection.prepareStatement(FIND_LOWEST_PROPERTY_VERSIONS);
-      }
-
-      return findLowestPropertyVersions.executeQuery();
-   }
-
    protected abstract int addNodeRecord(NodeData data) throws SQLException;
 
    protected abstract int addPropertyRecord(PropertyData prop) throws SQLException;
@@ -2772,5 +2800,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected abstract ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException;
 
    protected abstract ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException;
+
+   protected abstract ResultSet findMaxPropertyVersion(String parentId, String name, int index) throws SQLException;
 
 }

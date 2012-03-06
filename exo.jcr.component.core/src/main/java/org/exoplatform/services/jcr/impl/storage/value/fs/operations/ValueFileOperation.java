@@ -282,4 +282,19 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
 
       performed = true;
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void commit() throws IOException
+   {
+      try
+      {
+         prepare();         
+      }
+      finally
+      {
+         twoPhaseCommit();         
+      }
+   }
 }

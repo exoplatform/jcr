@@ -61,6 +61,9 @@ import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS.<br>
@@ -102,7 +105,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * Persistent level listeners filters.
     */
-   protected final List<ItemsPersistenceListenerFilter> liestenerFilters;
+   protected final List<ItemsPersistenceListenerFilter> listenerFilters;
 
    /**
     * Read-only status.
@@ -114,6 +117,10 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    private final TransactionableResourceManager txResourceManager;
 
+   /**
+    * The transaction manager
+    */
+   protected final TransactionManager transactionManager;
    /**
     * Changes log wrapper adds possibility to replace changes log.
     * Changes log contains transient data on save but listeners should be notifyed
@@ -177,7 +184,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    protected WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
       SystemDataContainerHolder systemDataContainerHolder)
    {
-      this(dataContainer, systemDataContainerHolder, null);
+      this(dataContainer, systemDataContainerHolder, null, null);
    }
 
    /**
@@ -191,15 +198,16 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     *          the resource manager used to manage the whole tx
     */
    public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager)
+      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager, TransactionManager transactionManager)
    {
       this.dataContainer = dataContainer;
       this.systemDataContainer = systemDataContainerHolder.getContainer();
 
       this.listeners = new ArrayList<ItemsPersistenceListener>();
       this.mandatoryListeners = new ArrayList<MandatoryItemsPersistenceListener>();
-      this.liestenerFilters = new ArrayList<ItemsPersistenceListenerFilter>();
+      this.listenerFilters = new ArrayList<ItemsPersistenceListenerFilter>();
       this.txResourceManager = txResourceManager;
+      this.transactionManager = transactionManager;
    }
 
    /**
@@ -248,7 +256,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          }
          // replace log with persisted data only
          logWrapper.setLog(persistedLog);
-
+         persister.prepare();
          notifySaveItems(persistedLog, true);
          onCommit(persister, mode);
          failed = false;
@@ -262,7 +270,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          persister.clear();
          if (failed)
          {
-            onRollback(persister, mode);
+            persister.rollback();
          }
       }
    }
@@ -274,22 +282,13 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    {
       if (txResourceManager != null && txResourceManager.isGlobalTxActive())
       {
-         return ConnectionMode.PARTIALLY_MANAGED;
+         return ConnectionMode.GLOBAL_TX;
+      }
+      else if (transactionManager != null)
+      {
+         return ConnectionMode.WITH_TRANSACTION_MANAGER;
       }
       return ConnectionMode.NORMAL;
-   }
-
-   /**
-    * @param persister
-    * @throws RepositoryException
-    */
-   private void onRollback(final ChangesLogPersister persister, ConnectionMode mode) throws RepositoryException
-   {
-      if (mode == ConnectionMode.NORMAL || mode == ConnectionMode.PARTIALLY_MANAGED)
-      {
-         // The rollback is done normally
-         persister.rollback();
-      }
    }
 
    /**
@@ -303,7 +302,57 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          // The commit is done normally
          persister.commit();
       }
-      else if (mode == ConnectionMode.PARTIALLY_MANAGED)
+      else if (mode == ConnectionMode.WITH_TRANSACTION_MANAGER)
+      {
+         try
+         {
+            transactionManager.getTransaction().registerSynchronization(new Synchronization()
+            {
+
+               public void beforeCompletion()
+               {
+               }
+
+               public void afterCompletion(int status)
+               {
+                  switch (status)
+                  {
+                     case Status.STATUS_COMMITTED:
+                        try
+                        {
+                           persister.commit();
+                        }
+                        catch (Exception e)
+                        {
+                           throw new RuntimeException("Could not commit the transaction", e);
+                        }
+                        break;
+                     case Status.STATUS_UNKNOWN:
+                        LOG.warn("Status UNKNOWN received in afterCompletion method, some data could have been corrupted !!");
+                     case Status.STATUS_MARKED_ROLLBACK:
+                     case Status.STATUS_ROLLEDBACK:
+                        try
+                        {
+                           persister.rollback();
+                        }
+                        catch (Exception e)
+                        {
+                           LOG.error("Could not roll back the transaction", e);
+                        }
+                        break;
+
+                     default:
+                        throw new IllegalStateException("illegal status: " + status);
+                  }                  
+               }
+            });
+         }
+         catch (Exception e)
+         {
+            throw new RepositoryException("Cannot register the synchronization for a late commit", e);
+         }
+      }
+      else if (mode == ConnectionMode.GLOBAL_TX)
       {
          // The commit or rollback will be done by callback once the tx will be completed since it could
          // fail later in the tx
@@ -328,7 +377,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    }
 
    private enum ConnectionMode {
-      NORMAL, PARTIALLY_MANAGED
+      NORMAL, WITH_TRANSACTION_MANAGER, GLOBAL_TX
    }
 
    class ChangesLogPersister
@@ -349,6 +398,18 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          if (systemConnection != null && !systemConnection.equals(thisConnection))
          {
             systemConnection.commit();
+         }
+      }
+
+      protected void prepare() throws IllegalStateException, RepositoryException
+      {
+         if (thisConnection != null && thisConnection.isOpened())
+         {
+            thisConnection.prepare();
+         }
+         if (systemConnection != null && !systemConnection.equals(thisConnection) && systemConnection.isOpened())
+         {
+            systemConnection.prepare();
          }
       }
 
@@ -961,7 +1022,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public void addItemPersistenceListenerFilter(ItemsPersistenceListenerFilter filter)
    {
-      this.liestenerFilters.add(filter);
+      this.listenerFilters.add(filter);
    }
 
    /**
@@ -969,7 +1030,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public void removeItemPersistenceListenerFilter(ItemsPersistenceListenerFilter filter)
    {
-      this.liestenerFilters.remove(filter);
+      this.listenerFilters.remove(filter);
    }
 
    /**
@@ -982,7 +1043,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    protected boolean isListenerAccepted(ItemsPersistenceListener listener)
    {
-      for (ItemsPersistenceListenerFilter f : liestenerFilters)
+      for (ItemsPersistenceListenerFilter f : listenerFilters)
       {
          if (!f.accept(listener))
          {

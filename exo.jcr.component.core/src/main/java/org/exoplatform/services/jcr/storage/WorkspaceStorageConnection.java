@@ -41,7 +41,7 @@ import javax.jcr.RepositoryException;
  * should have "opened" state. The connection becomes "closed" (invalid for using) after calling
  * commit() or rollback() methods. In this case methods calling will cause an IllegalStateException
  * 
- * Connection object intended to be as "light" as possible i.e. connection creation SHOULD NOT be
+ * Connection object intends to be as "light" as possible i.e. connection creation SHOULD NOT be
  * expensive operation, so better NOT to open/close potentially EXPENSIVE resources using by
  * Connection (WorkspaceDataContainer should be responsible for that). The Connection IS NOT a
  * thread-safe object and normally SHOULD NOT be pooled/cached.
@@ -369,6 +369,16 @@ public interface WorkspaceStorageConnection
    void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
       IllegalStateException;
 
+   /**
+    * Prepare the commit phase.
+    * 
+    * @throws IllegalStateException
+    *           if connection is already closed
+    * @throws RepositoryException
+    *           if some exception occurred
+    */
+   void prepare() throws IllegalStateException, RepositoryException;
+   
    /**
     * Persist changes and closes connection. It can be database transaction commit for instance etc.
     * 

@@ -19,10 +19,12 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,6 +37,7 @@ import java.io.IOException;
  */
 public class DeleteValues extends ValueFileOperation
 {
+   private static final AtomicLong SEQUENCE = new AtomicLong();
 
    /**
     * Files to be deleted.
@@ -45,6 +48,11 @@ public class DeleteValues extends ValueFileOperation
     * Locks on files.
     */
    private ValueFileLock[] locks;
+
+   /**
+    * The backup files
+    */
+   protected File[] bckFiles;
 
    /**
     * DeleteValues constructor.
@@ -83,24 +91,58 @@ public class DeleteValues extends ValueFileOperation
    /**
     * {@inheritDoc}
     */
-   public void rollback() throws IOException
+   public void prepare() throws IOException
    {
       if (locks != null)
-         for (ValueFileLock fl : locks)
-            fl.unlock();
+      {
+         bckFiles = new File[files.length];
+         for (int i = 0,length = files.length; i < length; i++)
+         {
+            File file = files[i];
+            if (file.exists())
+            {
+               bckFiles[i] = new File(file.getAbsolutePath() + "." + System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet());
+               DirectoryHelper.renameFile(file, bckFiles[i]);
+            }           
+         }
+      }
    }
 
    /**
     * {@inheritDoc}
     */
-   public void commit() throws IOException
+   public void rollback() throws IOException
    {
       if (locks != null)
          try
          {
-            for (File f : files)
+            for (int i = 0,length = files.length; i < length; i++)
             {
-               if (!f.delete())
+               File f = bckFiles[i];
+               if (f != null)
+               {
+                  DirectoryHelper.renameFile(f, files[i]);
+               }
+            }
+         }
+         finally
+         {
+            for (ValueFileLock fl : locks)
+               fl.unlock();
+         }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void twoPhaseCommit() throws IOException
+   {
+      if (locks != null)
+         try
+         {
+            for (File f : bckFiles)
+            {
+               if (f != null && !f.delete())
                   // Possible place of error: FileNotFoundException when we delete/update existing
                   // Value and then add/update again.
                   // After the time the Cleaner will delete the file which is mapped to the Value.
@@ -110,9 +152,8 @@ public class DeleteValues extends ValueFileOperation
          }
          finally
          {
-            if (locks != null)
-               for (ValueFileLock fl : locks)
-                  fl.unlock();
+            for (ValueFileLock fl : locks)
+               fl.unlock();
          }
    }
 }
