@@ -22,6 +22,10 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.datamodel.ItemType;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.checker.DummyRepair;
 import org.exoplatform.services.jcr.impl.checker.EarlierVersionsRemover;
@@ -30,8 +34,8 @@ import org.exoplatform.services.jcr.impl.checker.InspectionQueryFilteredMultival
 import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.checker.NodeRemover;
 import org.exoplatform.services.jcr.impl.checker.PropertyRemover;
-import org.exoplatform.services.jcr.impl.checker.ValueRecordsRemover;
 import org.exoplatform.services.jcr.impl.checker.RootAsParentAssigner;
+import org.exoplatform.services.jcr.impl.checker.ValueRecordsRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandlerFactory;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
@@ -167,19 +171,22 @@ public class JDBCWorkspaceDataContainerChecker
                WorkspaceStorageConnection conn = jdbcDataContainer.openConnection();
                try
                {
-                  if (conn instanceof JDBCStorageConnection)
-                  {
-                     ((JDBCStorageConnection)conn).deleteLockProperties(nodeId);
-                  }
+                  NodeData parent = (NodeData)conn.getItemData(nodeId);
+                  PropertyData prop =
+                     (PropertyData)conn.getItemData(parent, new QPathEntry(Constants.JCR_LOCKISDEEP, 0),
+                        ItemType.PROPERTY);
+                  conn.delete(prop);
+
+                  prop =
+                     (PropertyData)conn.getItemData(parent, new QPathEntry(Constants.JCR_LOCKOWNER, 0),
+                        ItemType.PROPERTY);
+                  conn.delete(prop);
+
                   conn.commit();
+
                   logComment("Lock has been removed form ITEM table. Node UUID: " + nodeId);
                }
                catch (RepositoryException e)
-               {
-                  conn.rollback();
-                  throw e;
-               }
-               catch (SQLException e)
                {
                   conn.rollback();
                   throw e;
