@@ -297,7 +297,7 @@ public class TesterConfigurationHelper
          ArrayList cacheParams = new ArrayList();
          cacheParams.add(new SimpleParameterEntry("jbosscache-configuration",
             "conf/standalone/test-jbosscache-config.xml"));
-         cacheParams.add(new SimpleParameterEntry("jbosscache-shareable", "true"));
+         cacheParams.add(new SimpleParameterEntry("jbosscache-shareable", Boolean.toString(cacheShared)));
          cacheEntry = new CacheEntry(cacheParams);
          cacheEntry
             .setType("org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache");
