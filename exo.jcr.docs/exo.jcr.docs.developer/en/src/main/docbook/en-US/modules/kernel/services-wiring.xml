@@ -6,9 +6,6 @@
 
   <title id="KernelServicesWiring.Title">Services Wiring</title>
 
-  <section>
-    <title>Overview</title>
-
     <para>The container package is responsible of building a hierarchy of
     containers. Each service will then be registered in one container or the
     other according to the XML configuration file it is defined in. It is
@@ -34,8 +31,7 @@
     There are three configuration.xml files, one for each container type. In
     that XML file, we define the list of services and their init parameters
     that will be loaded in the corresponding container.</para>
-  </section>
-
+  
   <section>
     <title>Portal Instance</title>
 

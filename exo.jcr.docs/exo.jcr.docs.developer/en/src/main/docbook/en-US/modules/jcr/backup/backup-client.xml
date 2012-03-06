@@ -25,9 +25,6 @@
     requests.</para>
   </highlights>
 
-  <section>
-    <title>Introduction</title>
-
     <para>The service
     org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent is
     REST-based front-end to service
@@ -36,7 +33,6 @@
     of current or completed backup/restore, etc.</para>
 
     <para>The backup client is http client for HTTPBackupAgent.</para>
-  </section>
 
   <section>
     <title>HTTPBackupAgent</title>

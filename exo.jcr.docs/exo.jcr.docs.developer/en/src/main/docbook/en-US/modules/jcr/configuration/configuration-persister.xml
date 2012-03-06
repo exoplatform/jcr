@@ -5,8 +5,10 @@
   <?dbhtml filename="ch-jcr-configuration-persister.html"?>
 
   <title>JCR Configuration persister</title>
+  <para>eXo JCR allows using <emphasis>persister</emphasis> to store configuration. In this chapter, you will understand how to use and configure
+  eXo JCR persister.</para>
 
-  <section>
+  <section id="JCR.ConfigurationPersister.Idea">
     <title>Idea</title>
 
     <para>JCR Repository Service uses
@@ -36,7 +38,7 @@
     which allows to store the configuration in different locations.</para>
   </section>
 
-  <section>
+  <section id="JCR.ConfigurationPersister.Usage">
     <title>Usage</title>
 
     <para>On startup <classname>RepositoryServiceConfiguration</classname>

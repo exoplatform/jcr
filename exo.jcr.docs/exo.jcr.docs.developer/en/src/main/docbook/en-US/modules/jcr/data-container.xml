@@ -6,25 +6,23 @@
 
   <title>JCR Workspace Data Container (architecture contract)</title>
 
-  <section>
-    <title>Goals</title>
+  <para>The goals of this chapter are:</para>
 
     <itemizedlist>
       <listitem>
-        <para>Cover the requirements on Workspace Data Container
+        <para>Coverage of the requirements of Workspace Data Container
         implementation</para>
       </listitem>
 
       <listitem>
-        <para>Describe container life cycle</para>
+        <para>Description of container life cycle</para>
       </listitem>
 
       <listitem>
-        <para>Describe relations between container and high-level
+        <para>Description relations between container and high-level
         DataManagers</para>
       </listitem>
     </itemizedlist>
-  </section>
 
   <section>
     <title>Concepts</title>

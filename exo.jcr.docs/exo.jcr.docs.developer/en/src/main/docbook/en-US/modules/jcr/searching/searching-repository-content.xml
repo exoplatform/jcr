@@ -6,14 +6,10 @@
 
   <title>Searching Repository Content</title>
 
-  <section>
-    <title>Introduction</title>
-
-    <para>You can find the JCR configuration file here:
-    .../portal/WEB-INF/conf/jcr/repository-configuration.xml. Please read also
+    <para>You can find the JCR configuration file at
+    <emphasis>.../portal/WEB-INF/conf/jcr/repository-configuration.xml</emphasis>. Please read also
     <link linkend="JCR.SearchConfiguration">Search Configuration</link> for
     more information about index configuration.</para>
-  </section>
 
   <section>
     <title>Bi-directional RangeIterator (since 1.9)</title>

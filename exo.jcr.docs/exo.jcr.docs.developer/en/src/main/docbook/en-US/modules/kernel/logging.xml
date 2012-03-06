@@ -6,16 +6,13 @@
 
   <title>Logs configuration</title>
 
-  <section>
-    <title>Introdution</title>
-
     <para>In order to accommodate to the different target runtime where it can
     be deployed, eXo is capable of leveraging several logging systems. eXo
     lets you choose the underlying logging engine to use and even configure
     that engine (as a quick alternative to doing it directly in your runtime
     environment).</para>
 
-    <para>The currently supported logging engines are : <itemizedlist>
+    <para>The currently supported logging engines are: <itemizedlist>
         <listitem>
           <para>Apache Log4J</para>
         </listitem>
@@ -29,7 +26,6 @@
           abstraction)</para>
         </listitem>
       </itemizedlist></para>
-  </section>
 
   <section>
     <title>Logs configuration initializer</title>

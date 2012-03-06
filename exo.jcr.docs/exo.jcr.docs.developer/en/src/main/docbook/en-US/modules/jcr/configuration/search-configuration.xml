@@ -5,8 +5,9 @@
   <?dbhtml filename="ch-search-configuration.html"?>
 
   <title>Search Configuration</title>
+  <para>Search is an important function in eXo JCR, so it is very necessary for you to know how to configure the eXo JCR Search tool.</para>
 
-  <section>
+  <section id="JCR.SearchConfiguration.XMLConfig">
     <title>XML Configuration</title>
 
     <para>JCR index configuration. You can find this file here:
@@ -36,7 +37,7 @@
 &lt;/repository-service&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.SearchConfiguration.Config_Parameters">
     <title>Configuration parameters</title>
 
     <table>
@@ -371,7 +372,7 @@
     </table>
   </section>
 
-  <section>
+  <section id="JCR.SearchConfiguration.Global_Search_Index">
     <title>Global Search Index</title>
 
     <section>
@@ -518,7 +519,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.SearchConfiguration.Indexing_Adjustments">
     <title>Indexing Adjustments</title>
 
     <section>

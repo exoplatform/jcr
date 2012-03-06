@@ -7,20 +7,6 @@
 
   <title>WebDAV</title>
 
-  <section>
-    <title>Related documents</title>
-
-    <itemizedlist>
-      <listitem>
-        <para><link linkend="JCR.LinkProducerService">Link
-        Producer</link></para>
-      </listitem>
-    </itemizedlist>
-  </section>
-
-  <section>
-    <title>Introduction</title>
-
     <para>The WebDAV protocol enables you to use the third party tools to
     communicate with hierarchical content servers via HTTP. It is possible to
     add and remove documents or a set of documents from a path on the server.
@@ -69,7 +55,20 @@
      org.exoplatform.services.security.jaas.BasicLoginModule required domain=ecm;
 };</programlisting>
     </note>
-  </section>
+
+    <para>
+        <emphasis role="bold">Related documents</emphasis>
+    </para>
+
+    <itemizedlist>
+        <listitem>
+            <para>
+                <link linkend="JCR.LinkProducerService">Link
+                    Producer
+                </link>
+            </para>
+        </listitem>
+    </itemizedlist>
 
   <section>
     <title>Configuration</title>

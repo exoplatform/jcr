@@ -4,13 +4,11 @@
 <chapter id="JCRMultilanguageSupport">
   <?dbhtml filename="ch-multilanguage-support.html"?>
 
-  <title>Multilanguage support in eXo JCR RDB backend</title>
+  <title>Multi-language support in eXo JCR RDB backend</title>
 
-  <section>
-    <title>Introduction</title>
 
     <para>Whenever relational database is used to store multilingual text data
-    of eXo Java Content Repository, we need to adapt configuration in order to
+    of eXo Java Content Repository, it is necessary to adapt configuration in order to
     support UTF-8 encoding. Here is a short HOWTO instruction for several
     supported RDBMS with examples.</para>
 
@@ -22,7 +20,6 @@
       configured via <classname>InitialContextInitializer</classname>
       component.</para>
     </note>
-  </section>
 
   <section>
     <title>Oracle</title>

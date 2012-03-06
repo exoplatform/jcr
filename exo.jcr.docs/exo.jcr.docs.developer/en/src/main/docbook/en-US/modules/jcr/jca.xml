@@ -6,9 +6,6 @@
 
   <title>The <emphasis>JCA</emphasis> Resource Adapter</title>
 
-  <section>
-    <title>Overview</title>
-
     <para>eXo JCR supports <emphasis>J2EE Connector Architecture</emphasis>
     1.5, thus If you would like to delegate the JCR Session lifecycle to your
     application server, you can use the JCA Resource Adapter for eXo JCR if
@@ -16,7 +13,6 @@
     Transaction, in other words you cannot use it for local transactions.
     Since the JCR Sessions have not been designed to be shareable, the session
     pooling is simply not covered by the adapter.</para>
-  </section>
 
   <section>
     <title>The <emphasis>SessionFactory</emphasis></title>

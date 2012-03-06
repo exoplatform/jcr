@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 <chapter id="JCR.eXoImplementation">
-<?dbhtml filename="ch-jcr-exo-implementation.html"?>  <title>eXo JCR Implementation</title>
+<?dbhtml filename="ch-jcr-exo-implementation.html"?> 
+  <title>eXo JCR Implementation</title>
   <section>
     <title>Related Documents</title>
     <para>Access Control Configuration, Export Import Implementation, External
@@ -10,7 +11,7 @@
     Repository container life cycle, Workspace, Persistence Storage Workspace,
     SimpleDB storage</para>
   </section>
-  <section>
+  <section id="JCR.eXoImplementation.How_it_works">
     <title>How it works</title>
     <para>eXo Repository Service is a standard eXo service and is a registered
     IoC component, i.e. can be deployed in some eXo Containers (see <link linkend="JCR.eXoJCRconfiguration.RepositoryConfiguration">Service configuration</link> for details). The relationships between components
@@ -56,7 +57,7 @@
       </listitem>
     </itemizedlist>
   </section>
-  <section>
+  <section id="JCR.eXoImplementation.Workspace_Data_Model">
     <title>Workspace Data Model</title>
     <para>The following diagram explains which components of eXo JCR
     implementation are used in a data flow to perform operations specified in

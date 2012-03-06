@@ -6,9 +6,6 @@
 
   <title>Security Service</title>
 
-  <section>
-    <title>1 Overview</title>
-
     <para>The purpose is to make a simple, unified way for the authentication
     and the storing/propagation of user sessions through all the eXo
     components and J2EE containers. JAAS is supposed to be the primary login
@@ -17,10 +14,9 @@
     JAAS in the <ulink
     url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jaas/tutorials/GeneralAcnAndAzn.html">Java
     Tutorial</ulink></para>
-  </section>
 
   <section>
-    <title>1 Framework</title>
+    <title>Framework</title>
 
     <para>The central point of this framework is the <emphasis
     role="bold">ConversationState</emphasis> object which stores all
@@ -36,7 +32,7 @@
     logout() methods respectively.</para>
 
     <section>
-      <title>1.1 ConversationState and ConversationRegistry</title>
+      <title>ConversationState and ConversationRegistry</title>
 
       <para>The ConversationState can be stored</para>
 
@@ -88,9 +84,9 @@ conversationRegistry.getState("key");</programlisting>
     </section>
 
     <section>
-      <title>1.1 Authenticator</title>
+      <title>Authenticator</title>
 
-      <para>An Authenticator is responsible for Identity creating, it contains
+      <para>An Authenticator is responsible for Identity creation, it consists of
       two methods:</para>
 
       <itemizedlist>
@@ -245,7 +241,7 @@ if (conversationState != null) {
     </section>
 
     <section>
-      <title>1.1 Predefinded JAAS login modules</title>
+      <title>Predefinded JAAS login modules</title>
 
       <para>There are several JAAS Login modules included in eXo Platform
       sources:</para>
@@ -277,7 +273,7 @@ if (conversationState != null) {
     </section>
 
     <section>
-      <title>1.1 J2EE container authentication</title>
+      <title>J2EE container authentication</title>
 
       <para>As you know, when a user in JAAS is authenticated, a Subject is
       created as a result. This Subject represents the authenticated user. It

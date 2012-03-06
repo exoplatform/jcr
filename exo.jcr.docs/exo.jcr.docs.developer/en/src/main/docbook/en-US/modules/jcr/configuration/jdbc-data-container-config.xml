@@ -6,10 +6,7 @@
 
   <title>JDBC Data Container Config</title>
 
-  <section>
-    <title>Introduction</title>
-
-    <para>eXo JCR persistent data container can work in two configuration
+  <para>eXo JCR persistent data container can work in two configuration
     modes:<itemizedlist>
         <listitem>
           <para><phrase>Multi-database</phrase>: One database for each
@@ -248,7 +245,6 @@
 
     <para>Read more about <link linkend="JCR.eXoJCRconfiguration">Repository
     configuration</link>.</para>
-  </section>
 
   <section>
     <title>General recommendations for database configuration</title>

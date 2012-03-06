@@ -6,9 +6,6 @@
 
   <title>Manageability</title>
 
-  <section>
-    <title>Introduction</title>
-
     <para>The kernel has a framework for exposing a management view of the
     various sub systems of the platform. The management view is a lose term
     for defining how we can access relevant information about the system and
@@ -20,7 +17,6 @@
     framework is still in use but is deprecated in favor of the new framework
     as it is less tested and less efficient. It will be removed by
     sanitization in the future.</para>
-  </section>
 
   <section>
     <title>Managed framework API</title>

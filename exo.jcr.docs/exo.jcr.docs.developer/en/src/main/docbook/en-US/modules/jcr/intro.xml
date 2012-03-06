@@ -6,9 +6,6 @@
 
   <title>Introduction in eXoJCR</title>
 
-  <section>
-    <title>JCR (JSR-170) API main concepts</title>
-
     <para>Java Content Repository API as well as other Java language related
     standards is created within the Java Community Process http://jcp.org/ as
     a result of collaboration of an expert group and the Java community. It is
@@ -67,5 +64,4 @@
       repository configuration, rather than part of the application
       programming task.</para>
     </section>
-  </section>
 </chapter>

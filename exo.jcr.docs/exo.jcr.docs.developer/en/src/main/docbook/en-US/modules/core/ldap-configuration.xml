@@ -6,16 +6,12 @@
 
   <title>LDAP Configuration</title>
 
-  <section>
-    <title>Overview</title>
-
-    <para>You may decide that you want eXo users to be mapped to an existing
+    <para>You may decide to make eXo users to be mapped to an existing
     directory. eXo provides a flexible implementation of its
     OrganizationService on top of LDAP. It can be used on any LDAP compliant
     directory and even Active Directory. This page will guide you how to
     configure eXo Platform to work with your directory.</para>
-  </section>
-
+    
   <section>
     <title>Quickstart</title>
 
@@ -23,7 +19,7 @@
     comes with a predefined ldap configuration. You just need to activate it
     and eXo will create all it needs to work at startup.</para>
 
-    <para>You need to have a working ldap server and a user with write
+    <para>You need to have a working LDAP server and a user with write
     permissions.</para>
 
     <itemizedlist>

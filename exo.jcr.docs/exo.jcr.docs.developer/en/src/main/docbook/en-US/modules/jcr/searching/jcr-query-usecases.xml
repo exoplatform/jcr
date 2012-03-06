@@ -6,14 +6,10 @@
 
   <title>JCR Query Usecases</title>
 
-  <section>
-    <title>Intro</title>
-
     <para>JCR supports two query languages - JCR and XPath. A query, whether
     XPath or SQL, specifies a subset of nodes within a workspace, called the
     result set. The result set constitutes all the nodes in the workspace that
     meet the constraints stated in the query.</para>
-  </section>
 
   <section>
     <title>Query Lifecycle</title>

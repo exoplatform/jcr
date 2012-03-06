@@ -6,9 +6,6 @@
 
   <title>Database Creator</title>
 
-  <section>
-    <title>About</title>
-
     <para>Database creator<envar> DBCreator</envar> is responsible for
     execution DDL script in runtime. A DDL script may contain templates for
     database name, user name and password which will be replaced by real
@@ -29,7 +26,6 @@
         <para><envar>${password}</envar> for user's password;</para>
       </listitem>
     </itemizedlist>
-  </section>
 
   <section>
     <title>API</title>

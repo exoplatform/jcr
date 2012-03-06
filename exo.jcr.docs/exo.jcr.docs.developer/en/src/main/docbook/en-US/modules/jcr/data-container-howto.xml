@@ -6,9 +6,8 @@
 
   <?dbhtml filename="ch-data-container-howto.html"?>
 
-  <section id="ShortintrointoWorkspacedatacontainerimplementationpractices">
-    <title>Short intro about Workspace data container implementation
-    practices:</title>
+    <para>To implement Workspace data container, you need to do the following:
+    </para>
 
     <orderedlist>
       <listitem>
@@ -17,9 +16,8 @@
       </listitem>
 
       <listitem>
-        <para>Start new implementation project pom.xml with
-        org.exoplatform.jcr parent. (optional, but will makes the development
-        easy)</para>
+        <para>Start a new implementation project pom.xml with
+        <emphasis>org.exoplatform.jcr</emphasis> parent. It is not required, but will ease the development.</para>
       </listitem>
 
       <listitem>
@@ -110,7 +108,6 @@
 </programlisting>
 
     <para>Container can be configured by using set properties.</para>
-  </section>
 
   <section id="Valuestorageusagenotes">
     <title>Notes on Value storage usage:</title>

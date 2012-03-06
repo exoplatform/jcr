@@ -6,11 +6,8 @@
 
   <title>Organization Service</title>
 
-  <section id="Overview">
-    <title>Overview</title>
-
     <para>OrganizationService is the service that allows to access the
-    Organization model. This model is composed of :</para>
+    Organization model. This model is composed of:</para>
 
     <itemizedlist>
       <listitem>
@@ -28,23 +25,22 @@
 
     <para>It is the basis of eXo personalization and authorizations in eXo and
     is used to all over the platform. The model is abstract and does not rely
-    on any specific storage. Multiple implementations exist in eXo :</para>
+    on any specific storage. Multiple implementations exist in eXo:</para>
 
     <itemizedlist>
       <listitem>
-        <para>Hibernate : for storage into a RDBMS</para>
+        <para>Hibernate: for storage into a RDBMS</para>
       </listitem>
 
       <listitem>
-        <para>Jndi : for storage into a directory such as an LDAP or MS Active
+        <para>Jndi: for storage into a directory such as an LDAP or MS Active
         Directory</para>
       </listitem>
 
       <listitem>
-        <para>Jcr : for storage inside a Java Content Repository</para>
+        <para>Jcr: for storage inside a Java Content Repository</para>
       </listitem>
     </itemizedlist>
-  </section>
 
   <section>
     <title>Organizational Model</title>

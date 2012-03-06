@@ -5,8 +5,9 @@
   <?dbhtml filename="ch-statistics.html"?>
 
   <title>eXo JCR statistics</title>
-
-  <section>
+  <para>This chapter will show you how to get and manage all statistics provided by eXo JCR.</para>
+  
+  <section id="JCR.Statistics.Database_access_layer">
     <title>Statistics on the Database Access Layer</title>
 
     <para>In order to have a better idea of the time spent into the database
@@ -49,7 +50,7 @@
       </listitem>
     </itemizedlist>
 
-    <para>Those figures are also available globaly for all the methods which
+    <para>Those figures are also available globally for all the methods which
     gives us the global behavior of this layer.</para>
 
     <para>If you want to enable the statistics, you just need to set the JVM
@@ -221,7 +222,7 @@
     your eXo JCR to better fit your requirements.</para>
 
     <para>In order to allow you to specify the configuration which part of eXo
-    JCR needs to be monitored whithout applying any changes in your code
+    JCR needs to be monitored without applying any changes in your code
     and/or building anything, we choose to rely on the Load-time Weaving
     proposed by AspectJ.</para>
 
@@ -252,7 +253,7 @@
     command line, for more details please refer to <ulink
     url="http://www.eclipse.org/aspectj/doc/released/devguide/ltw-configuration.html">http://www.eclipse.org/aspectj/doc/released/devguide/ltw-configuration.html</ulink>.</para>
 
-    <para>By default, the configuration will collect statistcs on all the
+    <para>By default, the configuration will collect statistics on all the
     methods of the internal interfaces
     <emphasis>org.exoplatform.services.jcr.core.ExtendedSession</emphasis> and
     <emphasis>org.exoplatform.services.jcr.core.ExtendedNode</emphasis>, and
@@ -286,7 +287,7 @@
 &lt;/configuration&gt;</programlisting>
 
     <para>The file content below is the content of
-    <emphasis>META-INF/aop.xml</emphasis> that you will to need to modify to
+    <emphasis>META-INF/aop.xml</emphasis> that you will need to modify to
     add and/or remove the full qualified name of the interfaces to monitor,
     into the expression filter of the pointcut called
     <emphasis>JCRAPIPointcut</emphasis>. As you can see below, by default only
@@ -326,7 +327,7 @@
     JCR so it must be used with caution.</remark>
   </section>
 
-  <section>
+  <section id="JCR.Statistics.Statistics_Manager">
     <title>Statistics Manager</title>
 
     <para>The statistics manager manages all the statistics provided by eXo

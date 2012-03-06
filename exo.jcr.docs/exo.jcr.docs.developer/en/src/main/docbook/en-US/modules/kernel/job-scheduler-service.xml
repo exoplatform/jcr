@@ -2,10 +2,7 @@
 <!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 <chapter id="Kernel.JobSchedulerService">
 <?dbhtml filename="ch-job-scheduler-service.html"?>  <title>Job Scheduler Service</title>
-  <section>
-    <title>What is Job Scheduler?</title>
-    <para><emphasis role="bold">Job scheduler</emphasis>  defines a job to execute a given number of times during a given period. It is a service that is in charge of unattended background executions, commonly known for historical reasons as batch processing. It is used to create and run jobs automatically and continuously, to schedule event-driven jobs and reports.</para>
-  </section>
+  <para><emphasis role="bold">Job scheduler</emphasis>  defines a job to execute a given number of times during a given period. It is a service that is in charge of unattended background executions, commonly known for historical reasons as batch processing. It is used to create and run jobs automatically and continuously, to schedule event-driven jobs and reports.</para>
   <section>
     <title>Where is Job Scheduler Service used in eXo Products?</title>
     <para>Job Scheduler Service is widely used in many eXo products such as Social, DMS, WCM, eXo Knowledge and eXo Collaboration.</para>

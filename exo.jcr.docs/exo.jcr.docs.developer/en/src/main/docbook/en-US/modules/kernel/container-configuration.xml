@@ -6,9 +6,6 @@
 
   <title>Container Configuration</title>
 
-  <section>
-    <title>Intro</title>
-
     <para>eXo Portal uses PicoContainer, which implements the Inversion of
     Control (IoC) design pattern. All eXo containers inherit from a
     PicoContainer. There are mainly two eXo containers used, each of them can
@@ -23,8 +20,7 @@
 
     <para>Confused? - You might be interested in the <link
     linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
-    for Beginners</link> article, which explains the basics.</para>
-  </section>
+    for Beginners</link> chapter to understand the basics.</para>
 
   <section id="Kernel.ContainerConfiguration.ConfigurationNamespace">
     <title>Kernel configuration namespace</title>

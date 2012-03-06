@@ -6,14 +6,11 @@
 
   <title>The data source provider</title>
 
-  <section>
-    <title>Description</title>
-
     <para>The <emphasis>DataSourceProvider</emphasis> is a service used to
     give access to a data source in an uniform manner in order to be able to
     support data sources that are managed by the application server.</para>
 
-    <para><table>
+      <table>
         <title>List methods</title>
 
         <tgroup cols="2">
@@ -38,8 +35,7 @@
             </row>
           </tbody>
         </tgroup>
-      </table></para>
-  </section>
+      </table>
 
   <section>
     <title>Configuration</title>

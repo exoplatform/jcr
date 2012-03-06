@@ -5,6 +5,7 @@
   <?dbhtml filename="part-faq.html"?>
 
   <title>Frequently Asked Question</title>
+  <para>This part provides you all FAQs related to the contents mentioned above.</para>
 
   <xi:include href="faq/jcr-faq.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />

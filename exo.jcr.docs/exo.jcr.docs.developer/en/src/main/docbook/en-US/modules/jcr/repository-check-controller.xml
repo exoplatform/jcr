@@ -6,9 +6,6 @@
 
   <title>Checking repository integrity and consistency</title>
 
-  <section>
-    <title>JMX-based consistency tool</title>
-
     <para>Production and any other system may have faults some day. They may
     be caused by hardware problems, human faults, software errors during
     updates and many other circumstances. It is important to check integrity
@@ -136,7 +133,6 @@
     <para>All tool activities are stored in file, which can be found in app
     directory by name <code>report-&lt;repository
     name&gt;-dd-MMM-yy-HH-mm.txt</code>.</para>
-  </section>
 
   <section>
     <title>Recommendations on how to fix corrupted JCR</title>

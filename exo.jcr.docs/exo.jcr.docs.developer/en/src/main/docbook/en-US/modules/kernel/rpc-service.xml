@@ -6,15 +6,12 @@
 
   <title>RPC Service</title>
 
-  <section>
-    <title>Description</title>
-
     <para>The <emphasis>RPCService</emphasis> is only needed in a cluser
     environment, it is used to communicate with the other cluster nodes. It
     allows to execute a command on all the cluster nodes or on the coordinator
     i.e. the oldest node in the cluster. The <emphasis>RPCService</emphasis>
-    has been designed to rely on JGroups capabilites and should not be used
-    for heavy load. It can be used for example to notify other nodes that
+    has been designed to rely on JGroups capabilities and should not be used
+    for heavy load. It can be used, for example, to notify other nodes that
     something happened or to collect some information from the other
     nodes.</para>
 
@@ -112,7 +109,7 @@
    }
 }</programlisting>
 
-    <para>In the previous example, We register the command
+    <para>In the previous example, we register the command
     <emphasis>sayHelloCommand</emphasis> in the constructor of
     <emphasis>MyService</emphasis> and we execute this command in the start
     method.</para>
@@ -122,7 +119,6 @@
       <emphasis>PortalContainer</emphasis> in a portal mode and only one
       <emphasis>RPCService</emphasis> instance in a standalone mode</para>
     </note>
-  </section>
 
   <section>
     <title>Configuration</title>

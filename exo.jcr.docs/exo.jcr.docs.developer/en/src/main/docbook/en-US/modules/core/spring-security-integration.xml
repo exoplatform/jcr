@@ -6,12 +6,6 @@
 
   <title>Spring Security Integration</title>
 
-  <section>
-    <title>Introduction</title>
-
-    <para>How to Integrate the spring security framework in the eXo
-    portal?</para>
-
     <para>This tutorial will guide you through a few steps and show you how
     easy it is to integrate spring security (or the Spring framework in
     general) in eXo portal. We will create a login portlet example as a
@@ -23,7 +17,6 @@
     1.2, the JBoss portlet bridge and Spring and can serve as a example
     project from where you can start your own portlet development targeting
     the eXo platform.</para>
-  </section>
 
   <section>
     <title>Installation</title>
@@ -32,10 +25,10 @@
     running under JBoss 4.2.x.</para>
 
     <para>Download the spring framework: <ulink
-    url="http://s3.amazonaws.com/dist.springframework.org/release/SPR/spring-framework-2.5.6-with-dependencies.zip">http://s3.amazonaws.com/dist.springframework.org/release/SPR/spring-framework-2.5.6-with-dependencies.zip</ulink></para>
+    url="http://s3.amazonaws.com/dist.springframework.org/release/SPR/spring-framework-2.5.6-with-dependencies.zip">spring-framework-2.5.6-with-dependencies.zip</ulink>.</para>
 
-    <para>Download spring-security: <ulink
-    url="http://sourceforge.net/project/showfiles.php?group_id=73357&amp;package_id=270072&amp;release_id=630203">http://sourceforge.net/project/showfiles.php?group_id=73357&amp;package_id=270072&amp;release_id=630203</ulink></para>
+    <para>Download spring-security using <ulink
+    url="http://sourceforge.net/project/showfiles.php?group_id=73357&amp;package_id=270072&amp;release_id=630203">this</ulink>link.</para> 
 
     <para>Unzip the 02portal.war file in the jboss
     server/default/deploy/exoplatform.sar directory and copy the following
@@ -389,19 +382,22 @@ eXo.core.Browser.addOnLoadCallback("validateUser", validateUser);</programlistin
     <para>Until now we haven't discussed about any integration strategies
     concerning a potential existing security realm outside of the eXo
     platform. To address this problem we have the choice between at least two
-    different strategies:</para>
+    different strategies.</para>
 
-    <para>1.1.1 <emphasis role="bold">Direct integration</emphasis> We can
-    directly integrate eXo with the external realm. Everything related to
-    organisation and user management in exo is cleanly separated in its own
-    abstraction accessible through the OrganisationService. The authentication
-    process itself is encapsulated in the Authenticator abstraction which sits
-    on top of the organization service. eXo provides several implementations
-    of both. So whether your realm is based on LDAP or JDBC and because the
-    default implementations are generic enough, you will be able to use them
-    and fits them to your needs with a matter of a little configuration. You
-    can even develop a custom implementation to meet your more specific
-    needs.</para>
+    <section>
+      <title>Direct integration</title>
+      <para>We can
+      directly integrate eXo with the external realm. Everything related to
+      organisation and user management in exo is cleanly separated in its own
+      abstraction accessible through the OrganisationService. The authentication
+      process itself is encapsulated in the Authenticator abstraction which sits
+      on top of the organization service. eXo provides several implementations
+      of both. So whether your realm is based on LDAP or JDBC and because the
+      default implementations are generic enough, you will be able to use them
+      and fits them to your needs with a matter of a little configuration. You
+      can even develop a custom implementation to meet your more specific
+      needs.</para>
+    </section>
 
     <section>
       <title>Replication</title>
@@ -496,7 +492,7 @@ public class SpringSecurityEventHandler implements ApplicationListener {
 
 }</programlisting>
 
-    <para>Basically the bean retrieves user login and password from the
+    <para>Basically, the bean retrieves user login and password from the
     InteractiveAuthenticationSuccessEvent object and tries to get the user
     from the organization service. In case he cannot find it in the
     repository, he simply creates it on the fly. In this example the user is
@@ -635,8 +631,8 @@ public class PortletSideSecurityContextFilter implements Filter {
 }</programlisting>
 
       <para>The PortletSideSecurityContextFilter retrieves the security
-      context from the request and proceeds to a serialization
-      de-serialization of it to avoid a potential class cast exception that
+      context from the request and proceeds to a serialization/de-serialization
+      of it to avoid a potential class cast exception that
       may occur when propagating an object across webapps. Then the context is
       simply set or cleared whether the context is null or not.</para>
 

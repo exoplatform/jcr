@@ -6,7 +6,7 @@
 
   <title>Fulltext Search And Affecting Settings</title>
 
-  <section>
+  <section id="JCR.FulltextSearchAndSettings.Property_content_indexing">
     <title>Property content indexing</title>
 
     <para>Each property of a node (if it is indexable) is processed with
@@ -15,7 +15,7 @@
     properties.</para>
   </section>
 
-  <section>
+  <section id="JCR.FulltextSearchAndSettings.Lucene_Analyzers">
     <title>Lucene Analyzers</title>
 
     <para>The sense of analyzers is to transform all strings stored in the
@@ -146,7 +146,7 @@
     linkend="JCR.SearchConfiguration">Search Configuration</link></para>
   </section>
 
-  <section>
+  <section id="JCR.FulltextSearchAndSettings.How_different_properties_indexed">
     <title>How are different properties indexed?</title>
 
     <para>Different properties are indexed in different ways, this affects to
@@ -203,7 +203,7 @@
     <programlisting>SELECT * FROM nt:resource WHERE CONTAINS( * , 'some string')</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.FulltextSearchAndSettings.Fulltext_search_query_examples">
     <title>Fulltext search query examples</title>
 
     <itemizedlist>
@@ -229,7 +229,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.FulltextSearchAndSettings.Different_analyzers_in_action">
     <title>Different analyzers in action</title>
 
     <para>First of all, we will fill repository by nodes with mixin type

@@ -6,8 +6,8 @@
 
   <?dbhtml filename="ch-how-to-use-managed-datasource-under-jboss.html"?>
 
-  <section>
-    <title>Configurations Steps</title>
+    <para>This chapter will show you how to use AS Managed DataSource under JBoss AS.
+    </para>
 
     <important>
       <para>Checked under Gatein 3.1.0-GA Final</para>
@@ -99,5 +99,4 @@
 
       <para>Running eXo after these configurations goes well.</para>
     </section>
-  </section>
 </chapter>

@@ -7,13 +7,10 @@
 
   <title>LockManager configuration</title>
 
-  <section>
-    <title>Introduction</title>
-
     <para>What LockManager does?</para>
 
     <para>In general, LockManager stores Lock objects, so it can give a Lock
-    object or can release it, etc.</para>
+    object or can release it.</para>
 
     <para>Also, LockManager is responsible for removing Locks that live too
     long. This parameter may be configured with "time-out" property.</para>
@@ -25,7 +22,6 @@
         <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname>;</para>
       </listitem>
     </itemizedlist>
-  </section>
 
   <section>
     <title>CacheableLockManagerImpl</title>

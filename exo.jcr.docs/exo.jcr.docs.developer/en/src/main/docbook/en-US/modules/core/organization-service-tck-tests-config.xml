@@ -6,9 +6,6 @@
 
   <title>Organization Service TCK tests configuration</title>
 
-  <section>
-    <title>Introduction</title>
-
     <para>The process of launching the Organization Service TCK tests against
     your Organization Service is quite easy. For instance you may add TCK
     tests to your maven project and launch them during unit testing phase. To
@@ -23,13 +20,12 @@
         <para>Configure standalone container and Organization Service</para>
 
         <note>
-          <para>If you need deeper investigation you can find Organization
+          <para>If you need more profound information you can find Organization
           Service TCK test sources at <ulink
           url="https://anonsvn.jboss.org/repos/exo-jcr/core/trunk/exo.core.component.organization.tests/">svn</ulink></para>
         </note>
       </listitem>
     </itemizedlist>
-  </section>
 
   <section>
     <title>Maven pom.xml file configuration</title>
