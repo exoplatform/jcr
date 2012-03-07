@@ -15,3 +15,4 @@
 * Removed BackupSchedulerException class
 * EXOJCR-1728: Remove ReadOnly support for WorkspacePersistentDataManager
 * Lucene 3.0
+* Isolated DB Concept (EXOJCR-1754)
