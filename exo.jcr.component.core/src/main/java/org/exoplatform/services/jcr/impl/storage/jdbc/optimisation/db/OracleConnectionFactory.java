@@ -19,10 +19,8 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.commons.utils.ClassLoading;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -57,35 +55,8 @@ public class OracleConnectionFactory extends DefaultOracleConnectionFactory
 
    /**
     * OracleConnectionFactory constructor. For CLI interface ONLY!
-    * 
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    * @param forceQueryHints
-    *          - use Oracle queries with query hints
-    * @throws RepositoryException
-    *           if error occurs
     */
-   public OracleConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner, boolean forceQueryHints) throws RepositoryException
+   public OracleConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
    {
 
       // ;D:\Devel\oracle_instantclient_10_2\;C:\oracle\ora92\bin;
@@ -113,8 +84,7 @@ public class OracleConnectionFactory extends DefaultOracleConnectionFactory
        * (OracleOCIConnectionPool.java:893)
        */
 
-      super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner, forceQueryHints);
+      super(containerConfig);
 
       Object cds = null;
       try
@@ -132,13 +102,13 @@ public class OracleConnectionFactory extends DefaultOracleConnectionFactory
          prop.setProperty("AbandonedConnectionTimeout", String.valueOf(CONNCACHE_ABADONDED_TIMEOUT));
 
          Method setURL = cds.getClass().getMethod("setURL", new Class[]{String.class});
-         setURL.invoke(cds, new Object[]{this.dbUrl});
+         setURL.invoke(cds, new Object[]{this.containerConfig.dbUrl});
 
          Method setUser = cds.getClass().getMethod("setUser", new Class[]{String.class});
-         setUser.invoke(cds, new Object[]{this.dbUserName});
+         setUser.invoke(cds, new Object[]{this.containerConfig.dbUserName});
 
          Method setPassword = cds.getClass().getMethod("setPassword", new Class[]{String.class});
-         setPassword.invoke(cds, new Object[]{this.dbPassword});
+         setPassword.invoke(cds, new Object[]{this.containerConfig.dbPassword});
 
          Method setConnectionCachingEnabled =
             cds.getClass().getMethod("setConnectionCachingEnabled", new Class[]{boolean.class});
@@ -149,22 +119,26 @@ public class OracleConnectionFactory extends DefaultOracleConnectionFactory
          setConnectionCacheProperties.invoke(cds, new Object[]{prop});
 
          Method setConnectionCacheName = cds.getClass().getMethod("setConnectionCacheName", new Class[]{String.class});
-         setConnectionCacheName.invoke(cds, new Object[]{"EXOJCR_OCI__" + containerName});
+         setConnectionCacheName.invoke(cds, new Object[]{"EXOJCR_OCI__" + containerConfig.containerName});
 
       }
       catch (Throwable e)
       {
          cds = null;
-         StringBuilder err = new StringBuilder("Oracle OCI connection cache is unavailable due to error ").append(e); 
+         StringBuilder err = new StringBuilder("Oracle OCI connection cache is unavailable due to error ").append(e);
          if (e.getCause() != null)
          {
             err.append(" (").append(e.getCause()).append(")");
          }
          err.append(". Standard JDBC DriverManager will be used for connections opening.");
          if (log.isDebugEnabled())
+         {
             log.warn(err, e);
+         }
          else
+         {
             log.warn(err);
+         }
       }
       this.ociDataSource = cds; // actually instance of javax.sql.DataSource
    }
@@ -176,6 +150,7 @@ public class OracleConnectionFactory extends DefaultOracleConnectionFactory
    public Connection getJdbcConnection(boolean readOnly) throws RepositoryException
    {
       if (ociDataSource != null)
+      {
          try
          {
             Connection conn = getCachedConnection();
@@ -192,6 +167,7 @@ public class OracleConnectionFactory extends DefaultOracleConnectionFactory
          {
             throw new RepositoryException("Oracle OCI cached connection open error " + e, e);
          }
+      }
 
       return super.getJdbcConnection(readOnly);
    }

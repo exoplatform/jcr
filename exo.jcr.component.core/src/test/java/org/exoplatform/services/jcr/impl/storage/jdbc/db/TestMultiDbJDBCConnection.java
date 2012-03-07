@@ -17,6 +17,8 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 
 import java.sql.SQLException;
@@ -36,9 +38,14 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
    private void setUp(String scriptPath, boolean multiDB) throws Exception
    {
       super.setUp();
-      new StorageDBInitializer("ws3", getJNDIConnection(), scriptPath, multiDB).init();
+      JDBCDataContainerConfig containerConfig = new JDBCDataContainerConfig();
+      containerConfig.containerName = "ws3";
+      containerConfig.initScriptPath = scriptPath;
+      containerConfig.dbStructureType = multiDB ? DatabaseStructureType.MULTI : DatabaseStructureType.SINGLE;
+      containerConfig.multiDb = multiDB;
+      new StorageDBInitializer(getJNDIConnection(), containerConfig).init();
    }
-   
+
    @Override
    public void setUp() throws Exception
    {
@@ -56,7 +63,12 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
             + "('0xce',16,'B','testConn2')");
          st.executeUpdate("insert into JCR_MREF values" + "('D','A',2)");
          st.executeUpdate("insert into JCR_MREF values" + "('E','B',2)");
-         jdbcConn = new MultiDbJDBCConnection(getJNDIConnection(), false, "ws3", null, 10, null, null);
+         JDBCDataContainerConfig jdbcDataContainerConfig = new JDBCDataContainerConfig();
+         jdbcDataContainerConfig.containerName = "ws3";
+         jdbcDataContainerConfig.maxBufferSize = 10;
+         jdbcDataContainerConfig.dbStructureType = DatabaseStructureType.MULTI;
+         jdbcDataContainerConfig.multiDb = true;
+         jdbcConn = new MultiDbJDBCConnection(getJNDIConnection(), false, jdbcDataContainerConfig);
          tableType = "M";
          st.close();
       }

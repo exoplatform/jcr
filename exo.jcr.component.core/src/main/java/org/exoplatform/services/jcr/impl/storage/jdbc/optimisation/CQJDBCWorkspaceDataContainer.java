@@ -80,6 +80,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
    {
       super(wsConfig, repConfig, contextInit, valueStorageProvider, fileCleanerHolder, dsProvider);
    }
+
    /**
     * Init storage database.
     * 
@@ -95,177 +96,154 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
    {
 
       StorageDBInitializer dbInitializer = null;
-      String sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-      if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
+      if (containerConfig.dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
       {
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
          // sample of connection factory customization
-         if (dbSourceName != null)
+         if (containerConfig.dbSourceName != null)
          {
-            this.connFactory =
-               new DefaultOracleConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner, useQueryHints);
+            this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
          }
          else
-            this.connFactory =
-               new OracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner, useQueryHints);
+         {
+            this.connFactory = new OracleConnectionFactory(containerConfig);
+         }
 
          // a particular db initializer may be configured here too
-         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer =
+            new OracleDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_ORACLE)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_ORACLE)
       {
 
-         if (dbSourceName != null)
+         if (containerConfig.dbSourceName != null)
          {
-            this.connFactory =
-               new DefaultOracleConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner, useQueryHints);
+            this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
          }
          else
-            this.connFactory =
-               new DefaultOracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner, useQueryHints);
-         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         {
+            this.connFactory = new DefaultOracleConnectionFactory(containerConfig);
+         }
 
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL)
       {
-         if (dbSourceName != null)
+         if (containerConfig.dbSourceName != null)
          {
-            this.connFactory =
-               new PostgreConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider,
-                  maxBufferSize, swapDirectory, swapCleaner);
+            this.connFactory = new PostgreConnectionFactory(getDataSource(), containerConfig);
          }
          else
-            this.connFactory =
-               new PostgreConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         {
+            this.connFactory = new PostgreConnectionFactory(containerConfig);
+         }
 
-         dbInitializer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer =
+            new PgSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8 ||
-               dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL
+         || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8
+         || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM
+         || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
       {
-         if (dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+         if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM
+            || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
          {
             LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only"
                + " if you don't expect any support and performances in read accesses are more important than the consistency"
                + " in your use-case. This dialect is only dedicated to the community.");
          }
-         if (dbSourceName != null)
+         if (containerConfig.dbSourceName != null)
          {
-            this.connFactory =
-               new MySQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
+            this.connFactory = new MySQLConnectionFactory(getDataSource(), containerConfig);
          }
          else
-            this.connFactory =
-               new MySQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         {
+            this.connFactory = new MySQLConnectionFactory(containerConfig);
+         }
 
-         dbInitializer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer();
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_MSSQL)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MSSQL)
       {
-         if (dbSourceName != null)
+         if (containerConfig.dbSourceName != null)
          {
-            this.connFactory =
-               new MSSQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
+            this.connFactory = new MSSQLConnectionFactory(getDataSource(), containerConfig);
          }
          else
          {
-            this.connFactory =
-               new MSSQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            this.connFactory = new MSSQLConnectionFactory(containerConfig);
          }
 
-         dbInitializer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer();
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_DERBY)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DERBY)
       {
          this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer();
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_DB2)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2)
       {
-         if (dbSourceName != null)
+         if (containerConfig.dbSourceName != null)
          {
-            this.connFactory =
-               new DB2ConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
+            this.connFactory = new DB2ConnectionFactory(getDataSource(), containerConfig);
          }
          else
          {
-            this.connFactory =
-               new DB2ConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            this.connFactory = new DB2ConnectionFactory(containerConfig);
          }
 
-         dbInitializer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer();
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
-         if (dbSourceName != null)
+         if (containerConfig.dbSourceName != null)
          {
-            this.connFactory =
-               new DB2ConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
+            this.connFactory = new DB2ConnectionFactory(getDataSource(), containerConfig);
          }
          else
          {
-            this.connFactory =
-               new DB2ConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            this.connFactory = new DB2ConnectionFactory(containerConfig);
          }
 
-         dbInitializer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer();
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_SYBASE)
       {
-         if (dbSourceName != null)
+         if (containerConfig.dbSourceName != null)
          {
-            this.connFactory =
-               new SybaseConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
+            this.connFactory = new SybaseConnectionFactory(getDataSource(), containerConfig);
          }
          else
          {
-            this.connFactory =
-               new SybaseConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            this.connFactory = new SybaseConnectionFactory(containerConfig);
          }
 
-         dbInitializer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer();
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_INGRES)
       {
          this.connFactory = defaultConnectionFactory();
          // using Postgres initializer
          dbInitializer =
-            new IngresSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+            new IngresSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_HSQLDB)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_HSQLDB)
       {
-         if (dbSourceName != null)
+         if (containerConfig.dbSourceName != null)
          {
-            this.connFactory =
-               new HSQLDBConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
+            this.connFactory = new HSQLDBConnectionFactory(getDataSource(), containerConfig);
          }
          else
-            this.connFactory =
-               new HSQLDBConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-         dbInitializer = defaultDBInitializer(sqlPath);
+         {
+            this.connFactory = new HSQLDBConnectionFactory(containerConfig);
+         }
+         dbInitializer = defaultDBInitializer();
       }
       else
       {
          // generic, DB_HSQLDB
          this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer();
       }
 
       // database type
@@ -292,13 +270,11 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
    protected GenericConnectionFactory defaultConnectionFactory() throws NamingException, RepositoryException
    {
       // by default
-      if (dbSourceName != null)
+      if (containerConfig.dbSourceName != null)
       {
-         return new GenericCQConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
-            swapDirectory, swapCleaner);
+         return new GenericCQConnectionFactory(getDataSource(), containerConfig);
       }
 
-      return new GenericCQConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-         valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-   } 
+      return new GenericCQConnectionFactory(containerConfig);
+   }
 }

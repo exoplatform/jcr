@@ -20,10 +20,8 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -45,29 +43,17 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     * MySQL Multidatabase JDBC Connection constructor.
     * 
     * @param dbConnection
-    *          JDBC connection, shoudl be opened before
+    *          JDBC connection, should be opened before
     * @param readOnly
     *          boolean if true the dbConnection was marked as READ-ONLY.
-    * @param containerName
-    *          Workspace Storage Container name (see configuration)
-    * @param valueStorageProvider
-    *          External Value Storages provider
-    * @param maxBufferSize
-    *          Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          Swap directory File (see configuration)
-    * @param swapCleaner
-    *          Swap cleaner (internal FileCleaner).
-    * @throws SQLException
-    * 
-    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    * @param containerConfig
+    *          Workspace Storage Container configuration
     */
-   public MySQLMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public MySQLMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
 
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -80,12 +66,13 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
 
       FIND_NODES_AND_PROPERTIES =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
-            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I force index(PRIMARY)"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from " + JCR_VALUE + " V, " + JCR_ITEM + " P"
+            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from " + JCR_ITEM
+            + " I force index(PRIMARY)"
             + " where I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
 
-      FIND_ITEM_BY_NAME = "select * from JCR_MITEM where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS";
+      FIND_ITEM_BY_NAME = "select * from " + JCR_ITEM + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS";
    }
 
    /**
@@ -101,7 +88,9 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
          try
          {
             if (!item.next())
+            {
                throw new SQLException("Parent is not found. Behaviour of " + JCR_FK_ITEM_PARENT);
+            }
          }
          finally
          {
@@ -131,7 +120,9 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
          try
          {
             if (!item.next())
+            {
                throw new SQLException("Parent is not found. Behaviour of " + JCR_FK_ITEM_PARENT);
+            }
          }
          finally
          {

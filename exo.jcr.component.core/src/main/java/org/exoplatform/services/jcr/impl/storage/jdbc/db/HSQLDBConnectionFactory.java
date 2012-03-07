@@ -16,11 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
-import java.io.File;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -38,65 +36,20 @@ public class HSQLDBConnectionFactory extends GenericConnectionFactory
 {
 
    /**
-      * HSQLDBConnectionFactory constructor.
-      * 
-      * @param dataSource
-      *          - DataSource
-      * @param containerName
-      *          - Container name (see configuration)
-      * @param multiDb
-      *          - multidatabase state flag
-      * @param valueStorageProvider
-      *          - external Value Storages provider
-      * @param maxBufferSize
-      *          - Maximum buffer size (see configuration)
-      * @param swapDirectory
-      *          - Swap directory (see configuration)
-      * @param swapCleaner
-      *          - Swap cleaner (internal FileCleaner).
-      */
-   public HSQLDBConnectionFactory(DataSource dataSource, String containerName, boolean multiDb,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+    * HSQLDBConnectionFactory constructor.
+    */
+   public HSQLDBConnectionFactory(DataSource dataSource, JDBCDataContainerConfig containerConfig)
    {
-
-      super(dataSource, containerName, multiDb, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dataSource, containerConfig);
    }
 
    /**
     * HSQLDBConnectionFactory constructor.
-    * 
-    *@param dataSource
-    *          - DataSource
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    * @throws RepositoryException
-    *           if error eccurs
     */
-   public HSQLDBConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
+   public HSQLDBConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
    {
 
-      super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
+      super(containerConfig);
    }
 
    /**
@@ -106,15 +59,12 @@ public class HSQLDBConnectionFactory extends GenericConnectionFactory
    {
       try
       {
-
-         if (multiDb)
+         if (this.containerConfig.dbStructureType.isSimpleTable())
          {
-            return new HSQLDBMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            return new HSQLDBMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
 
-         return new HSQLDBSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-            valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         return new HSQLDBSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
 
       }
       catch (SQLException e)

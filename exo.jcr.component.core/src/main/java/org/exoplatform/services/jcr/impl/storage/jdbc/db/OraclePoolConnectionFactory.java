@@ -19,10 +19,8 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.commons.utils.ClassLoading;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -52,33 +50,8 @@ public class OraclePoolConnectionFactory extends GenericConnectionFactory
 
    /**
     * OraclePoolConnectionFactory constructor. For CLI interface ONLY!
-    * 
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    * @throws RepositoryException
-    *           if error occurs
     */
-   public OraclePoolConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
+   public OraclePoolConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
    {
 
       // ;D:\Devel\oracle_instantclient_10_2\;C:\oracle\ora92\bin;
@@ -106,8 +79,7 @@ public class OraclePoolConnectionFactory extends GenericConnectionFactory
        * (OracleOCIConnectionPool.java:893)
        */
 
-      super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
+      super(containerConfig);
 
       Object cpool = null;
       try
@@ -116,7 +88,9 @@ public class OraclePoolConnectionFactory extends GenericConnectionFactory
          Constructor<?> cpoolConstructor =
             cpoolClass.getConstructor(new Class[]{String.class, String.class, String.class, Properties.class});
 
-         cpool = cpoolConstructor.newInstance(new Object[]{this.dbUserName, this.dbPassword, this.dbUrl, null});
+         cpool =
+            cpoolConstructor.newInstance(new Object[]{this.containerConfig.dbUserName, this.containerConfig.dbPassword,
+               this.containerConfig.dbUrl, null});
          Method setConnectionCachingEnabled =
             cpool.getClass().getMethod("setConnectionCachingEnabled", new Class[]{boolean.class});
          setConnectionCachingEnabled.invoke(cpool, new Object[]{true});
@@ -124,16 +98,20 @@ public class OraclePoolConnectionFactory extends GenericConnectionFactory
       catch (Throwable e)
       {
          cpool = null;
-         StringBuilder err = new StringBuilder("Oracle OCI connection pool is unavailable due to error ").append(e); 
+         StringBuilder err = new StringBuilder("Oracle OCI connection pool is unavailable due to error ").append(e);
          if (e.getCause() != null)
          {
             err.append(" (").append(e.getCause()).append(")");
          }
          err.append(". Standard JDBC DriverManager will be used for connections opening.");
          if (log.isDebugEnabled())
+         {
             log.warn(err, e);
+         }
          else
+         {
             log.warn(err);
+         }
       }
       this.ociPool = cpool;
 
@@ -146,9 +124,13 @@ public class OraclePoolConnectionFactory extends GenericConnectionFactory
       catch (Throwable e)
       {
          if (log.isDebugEnabled())
+         {
             log.warn("Oracle OCI connection pool configuration error " + e, e);
+         }
          else
+         {
             log.warn("Oracle OCI connection pool configuration error " + e);
+         }
       }
    }
 
@@ -159,6 +141,7 @@ public class OraclePoolConnectionFactory extends GenericConnectionFactory
    public Connection getJdbcConnection(boolean readOnly) throws RepositoryException
    {
       if (ociPool != null)
+      {
          try
          {
             Connection conn = getPoolConnection();
@@ -175,6 +158,7 @@ public class OraclePoolConnectionFactory extends GenericConnectionFactory
          {
             throw new RepositoryException("Oracle OCI pool connection open error " + e, e);
          }
+      }
 
       return super.getJdbcConnection(readOnly);
    }

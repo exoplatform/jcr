@@ -26,8 +26,26 @@ import org.exoplatform.services.database.utils.DialectConstants;
  * @author Gennady Azarenkov
  * @version $Id: DBConstants.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
+/**
+ * @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a>
+ * @version $Id: DBConstants.java 34360 2009-07-22 23:58:59Z nzamosenchuk $
+ *
+ */
+/**
+ * @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a>
+ * @version $Id: DBConstants.java 34360 2009-07-22 23:58:59Z nzamosenchuk $
+ *
+ */
 public class DBConstants extends DialectConstants
 {
+   // ============================= Tables ============================
+
+   protected String JCR_ITEM;
+
+   protected String JCR_VALUE;
+
+   protected String JCR_REF;
+
    // ======================== Error constants ======================== 
    /**
     * JCR_PK_ITEM.
@@ -73,6 +91,16 @@ public class DBConstants extends DialectConstants
     * JCR_IDX_REF_PROPERTY.
     */
    protected String JCR_IDX_REF_PROPERTY;
+   
+   /**
+    * JCR_IDX_ITEM_N_ORDER_NUM
+    */
+   protected String JCR_IDX_ITEM_N_ORDER_NUM;
+   
+   /**
+    * JCR_IDX_ITEM_PARENT_FK
+    */
+   protected String JCR_IDX_ITEM_PARENT_FK;
 
    // ======================== SQL scripts ======================== 
    /**

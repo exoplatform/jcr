@@ -37,18 +37,16 @@ import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.PrimaryTypeNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -56,16 +54,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.PropertyType;
@@ -163,30 +152,21 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected Statement findNodesByParentIdAndComplexPatternCQ;
 
    /**
-     * JDBCStorageConnection constructor.
-     * 
-     * @param dbConnection
-     *          JDBC connection
-     * @param containerName
-     *          Workspace container name
-     * @param valueStorageProvider
-     *          External Value Storage provider
-     * @param maxBufferSize
-     *          maximum buffer size (configuration)
-     * @param swapDirectory
-     *          swap directory (configuration)
-     * @param swapCleaner
-     *          swap cleaner (FileCleaner)
-     * @throws SQLException
-     *           database error
-     */
-   protected CQJDBCStorageConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+    * JDBCStorageConnection constructor.
+    * 
+    * @param dbConnection
+    *          JDBC connection, should be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
+    * @param containerConfig
+    *          Workspace Storage Container configuration
+    */
+   protected CQJDBCStorageConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -201,7 +181,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          // query will return all the ACL holder
          resultSet = findACLHolders();
          Map<String, ACLHolder> mHolders = new HashMap<String, ACLHolder>();
-         
+
          while (resultSet.next())
          {
             String cpid = resultSet.getString(COLUMN_PARENTID);
@@ -242,7 +222,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
          }
       }
-   }   
+   }
 
    /**
     * {@inheritDoc}
@@ -563,7 +543,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       for (int i = 0; i < vdata.size(); i++)
       {
          ValueData vd = vdata.get(i);
-         ValueIOChannel channel = valueStorageProvider.getApplicableChannel(data, i);
+         ValueIOChannel channel = this.containerConfig.valueStorageProvider.getApplicableChannel(data, i);
          InputStream stream;
          int streamLength;
          String storageId;
@@ -580,7 +560,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             {
                StreamPersistedValueData streamData = (StreamPersistedValueData)vd;
 
-               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion());
+               SwapFile swapFile =
+                  SwapFile.get(this.containerConfig.swapDirectory, cid + i + "." + data.getPersistedVersion());
                try
                {
                   writeValueHelper.writeStreamedValue(swapFile, streamData);
@@ -630,7 +611,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    {
       for (String storageId : storageDescs)
       {
-         final ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
+         final ValueIOChannel channel = this.containerConfig.valueStorageProvider.getChannel(storageId);
          try
          {
             channel.delete(pdata.getIdentifier());
@@ -685,8 +666,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                try
                {
                   qpath =
-                     QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName
-                        .parse(cname));
+                     QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath,
+                        InternalQName.parse(cname));
                }
                catch (IllegalNameException e)
                {
@@ -703,8 +684,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   {
                      final String storageId = resultSet.getString(COLUMN_VSTORAGE_DESC);
                      ValueData vdata =
-                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion, resultSet
-                           .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion,
+                           resultSet.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
                      data.add(vdata);
                   }
 
@@ -786,8 +767,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                try
                {
                   qpath =
-                     QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName
-                        .parse(cname));
+                     QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath,
+                        InternalQName.parse(cname));
                }
                catch (IllegalNameException e)
                {
@@ -804,8 +785,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   {
                      final String storageId = resultSet.getString(COLUMN_VSTORAGE_DESC);
                      ValueData vdata =
-                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion, resultSet
-                           .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion,
+                           resultSet.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
                      data.add(vdata);
                   }
 
@@ -1007,7 +988,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          if (primaryType == null || primaryType.isEmpty())
          {
             throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
-               + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
+               + qpath.getAsString() + ", id " + cid + ", container " + this.containerConfig.containerName, null);
          }
 
          byte[] data = primaryType.first().getValueData().getAsByteArray();
@@ -1060,8 +1041,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                {
                   // use permissions from existed parent
                   acl =
-                     new AccessControlList(readACLOwner(cid, properties), parentACL.hasPermissions() ? parentACL
-                        .getPermissionEntries() : null);
+                     new AccessControlList(readACLOwner(cid, properties), parentACL.hasPermissions()
+                        ? parentACL.getPermissionEntries() : null);
                }
                else
                {
@@ -1095,8 +1076,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                {
                   // construct ACL from existed parent ACL
                   acl =
-                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
-                        .getPermissionEntries() : null);
+                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions()
+                        ? parentACL.getPermissionEntries() : null);
                }
                else
                {

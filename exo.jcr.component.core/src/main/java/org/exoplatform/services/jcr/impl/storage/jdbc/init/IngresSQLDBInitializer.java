@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -38,10 +40,9 @@ import java.sql.Statement;
 public class IngresSQLDBInitializer extends StorageDBInitializer
 {
 
-   public IngresSQLDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
-      throws IOException
+   public IngresSQLDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
-      super(containerName, connection, scriptPath, multiDb);
+      super(connection, containerConfig);
    }
 
    /**
@@ -76,7 +77,9 @@ public class IngresSQLDBInitializer extends StorageDBInitializer
       {
          // check if sequence does not exist
          if (e.getMessage().indexOf("DEFINE CURSOR") >= 0 && e.getMessage().indexOf("Sequence") >= 0)
+         {
             return false;
+         }
          throw new SQLException(e.getMessage())
          {
             /**

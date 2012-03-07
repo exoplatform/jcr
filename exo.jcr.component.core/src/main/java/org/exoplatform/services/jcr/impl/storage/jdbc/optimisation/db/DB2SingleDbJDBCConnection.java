@@ -16,10 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,25 +39,13 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
     *          JDBC connection, should be opened before
     * @param readOnly
     *          boolean if true the dbConnection was marked as READ-ONLY.
-    * @param containerName
-    *          Workspace Storage Container name (see configuration)
-    * @param valueStorageProvider
-    *          External Value Storages provider
-    * @param maxBufferSize
-    *          Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          Swap directory File (see configuration)
-    * @param swapCleaner
-    *          Swap cleaner (internal FileCleaner).
-    * @throws SQLException
-    * 
-    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    * @param containerConfig
+    *          Workspace Storage Container configuration
     */
-   public DB2SingleDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public DB2SingleDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -92,11 +78,11 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
          findNodesAndProperties.clearParameters();
       }
 
-      findNodesAndProperties.setString(1, containerName);
+      findNodesAndProperties.setString(1, this.containerConfig.containerName);
       findNodesAndProperties.setString(2, getInternalId(lastNodeId));
       findNodesAndProperties.setInt(3, offset);
       findNodesAndProperties.setInt(4, limit);
-      findNodesAndProperties.setString(5, containerName);
+      findNodesAndProperties.setString(5, this.containerConfig.containerName);
 
       return findNodesAndProperties.executeQuery();
    }   

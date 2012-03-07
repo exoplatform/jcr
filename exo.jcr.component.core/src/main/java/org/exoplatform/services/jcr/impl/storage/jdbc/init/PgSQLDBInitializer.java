@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -36,10 +38,9 @@ import java.sql.SQLException;
 public class PgSQLDBInitializer extends StorageDBInitializer
 {
 
-   public PgSQLDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
-      throws IOException
+   public PgSQLDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
-      super(containerName, connection, scriptPath, multiDb);
+      super(connection, containerConfig);
    }
 
    @Override

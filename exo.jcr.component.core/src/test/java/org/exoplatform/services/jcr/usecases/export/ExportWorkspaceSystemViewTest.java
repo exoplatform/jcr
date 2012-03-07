@@ -21,12 +21,15 @@ package org.exoplatform.services.jcr.usecases.export;
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import java.io.File;
@@ -131,11 +134,17 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
          SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
 
          if (isMultiDB(session) && newp.getName().equals("source-name"))
+         {
             newp.setValue(sourceName);
+         }
          else if (newp.getName().equals("swap-directory"))
+         {
             newp.setValue("target/temp/swap/" + name);
+         }
          else if (isMultiDB(session) && newp.getName().equals("dialect"))
+         {
             newp.setValue("hsqldb");
+         }
 
          params.add(newp);
       }
@@ -151,16 +160,16 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
    {
       WorkspaceEntry ws1e = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
-      for (Iterator i = ws1e.getContainer().getParameters().iterator(); i.hasNext();)
+      try
       {
-         SimpleParameterEntry p = (SimpleParameterEntry)i.next();
-         SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
-
-         if (newp.getName().equals("multi-db"))
-            return Boolean.valueOf(newp.getValue());
+         DatabaseStructureType databaseType = JDBCWorkspaceDataContainer.getDatabaseType(ws1e);
+         return !databaseType.isSingleDatabase();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RuntimeException("Can not get property 'multi-db' in configuration on workspace '" + ws1e.getName()
+            + "'");
       }
 
-      throw new RuntimeException("Can not get property 'multi-db' in configuration on workspace '" + ws1e.getName()
-         + "'");
    }
 }

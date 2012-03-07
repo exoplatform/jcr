@@ -16,10 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,12 +34,7 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     * Template for query. Since there is no way to set parameter for TOP via prepared statement.
     * We need to replace it in the code.
     */
-   public static final String FIND_NODES_AND_PROPERTIES_TEMPLATE =
-      "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-         + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V WITH (INDEX (JCR_IDX_MVALUE_PROPERTY)), JCR_MITEM P"
-         + " join (select TOP ${TOP} I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I"
-         + " WITH (INDEX (JCR_PK_MITEM)) where I.I_CLASS=1 AND I.ID > ? order by I.ID) J on P.PARENT_ID = J.ID"
-         + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
+   public String FIND_NODES_AND_PROPERTIES_TEMPLATE;
 
    /**
     * MSSQL Multidatabase JDBC Connection constructor.
@@ -50,25 +43,13 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     *          JDBC connection, should be opened before
     * @param readOnly
     *          boolean if true the dbConnection was marked as READ-ONLY.
-    * @param containerName
-    *          Workspace Storage Container name (see configuration)
-    * @param valueStorageProvider
-    *          External Value Storages provider
-    * @param maxBufferSize
-    *          Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          Swap directory File (see configuration)
-    * @param swapCleaner
-    *          Swap cleaner (internal FileCleaner).
-    * @throws SQLException
-    * 
-    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    * @param containerConfig
+    *          Workspace Storage Container configuration
     */
-   public MSSQLMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public MSSQLMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -78,6 +59,14 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected void prepareQueries() throws SQLException
    {
       super.prepareQueries();
+      FIND_NODES_AND_PROPERTIES_TEMPLATE =
+         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from " + JCR_VALUE + " V WITH (INDEX (" + JCR_IDX_VALUE_PROPERTY
+            + ")), " + JCR_ITEM + " P"
+            + " join (select TOP ${TOP} I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from "
+            + JCR_ITEM + " I" + " WITH (INDEX (" + JCR_PK_ITEM
+            + ")) where I.I_CLASS=1 AND I.ID > ? order by I.ID) J on P.PARENT_ID = J.ID"
+            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
    }
 
    /**

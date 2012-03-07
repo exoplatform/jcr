@@ -19,10 +19,8 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,28 +42,16 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
     * HSQLDB Multidatabase JDBC Connection constructor.
     * 
     * @param dbConnection
-    *          JDBC connection, shoudl be opened before
+    *          JDBC connection, should be opened before
     * @param readOnly
     *          boolean if true the dbConnection was marked as READ-ONLY.
-    * @param containerName
-    *          Workspace Storage Container name (see configuration)
-    * @param valueStorageProvider
-    *          External Value Storages provider
-    * @param maxBufferSize
-    *          Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          Swap directory File (see configuration)
-    * @param swapCleaner
-    *          Swap cleaner (internal FileCleaner).
-    * @throws SQLException
-    * 
-    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    * @param containerConfig
+    *          Workspace Storage Container configuration
     */
-   public HSQLDBMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public HSQLDBMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -76,18 +62,19 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    {
       super.prepareQueries();
       FIND_PROPERTY_BY_NAME =
-         "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
+         "select V.DATA" + " from " + JCR_ITEM + " I, " + JCR_VALUE + " V"
             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
-      FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
+      FIND_NODES_BY_PARENTID =
+         "select * from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
 
       FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where PARENT_ID=? and I_CLASS=1";
+         "select count(*), max(N_ORDER_NUM) from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=1";
 
-      FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1";
-      FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
+      FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=1";
+      FIND_PROPERTIES_BY_PARENTID = "select * from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
       FIND_NODES_BY_PARENTID_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
-            + " where I.PARENT_ID=? and I.I_CLASS=1 and (P.PARENT_ID=I.ID and P.I_CLASS=2 and"
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_ITEM + " I, " + JCR_ITEM + " P, "
+            + JCR_VALUE + " V" + " where I.PARENT_ID=? and I.I_CLASS=1 and (P.PARENT_ID=I.ID and P.I_CLASS=2 and"
             + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
             + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
@@ -95,9 +82,10 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
             + " order by I.N_ORDER_NUM, I.ID";
       FIND_PROPERTIES_BY_PARENTID_CQ =
          "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED,"
-            + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from JCR_MITEM I LEFT OUTER JOIN JCR_MVALUE V ON (V.PROPERTY_ID=I.ID)"
-            + " where I.PARENT_ID=? and I.I_CLASS=2 order by I.NAME";
+            + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from " + JCR_ITEM + " I LEFT OUTER JOIN " + JCR_VALUE
+            + " V ON (V.PROPERTY_ID=I.ID)" + " where I.PARENT_ID=? and I.I_CLASS=2 order by I.NAME";
    }
+
    /**
     * Use simple queries since it is much faster
     */
@@ -159,7 +147,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
          throw new SQLException("Pattern list is empty.");
       }
       else
-       {
+      {
          if (findPropertiesByParentIdAndComplexPatternCQ == null)
          {
             findPropertiesByParentIdAndComplexPatternCQ = dbConnection.createStatement();

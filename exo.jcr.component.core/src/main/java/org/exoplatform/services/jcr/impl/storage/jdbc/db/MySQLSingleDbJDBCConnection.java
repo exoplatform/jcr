@@ -20,10 +20,8 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,29 +41,17 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
     * MySQL Singledatabase JDBC Connection constructor.
     * 
     * @param dbConnection
-    *          JDBC connection, shoudl be opened before
+    *          JDBC connection, should be opened before
     * @param readOnly
     *          boolean if true the dbConnection was marked as READ-ONLY.
-    * @param containerName
-    *          Workspace Storage Container name (see configuration)
-    * @param valueStorageProvider
-    *          External Value Storages provider
-    * @param maxBufferSize
-    *          Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          Swap directory File (see configuration)
-    * @param swapCleaner
-    *          Swap cleaner (internal FileCleaner).
-    * @throws SQLException
-    * 
-    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    * @param containerConfig
+    *          Workspace Storage Container configuration
     */
-   public MySQLSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public MySQLSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
 
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -81,7 +67,9 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
          try
          {
             if (!item.next())
+            {
                throw new SQLException("Parent is not found. Behaviour of " + JCR_FK_ITEM_PARENT);
+            }
          }
          finally
          {
@@ -111,7 +99,9 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
          try
          {
             if (!item.next())
+            {
                throw new SQLException("Parent is not found. Behaviour of " + JCR_FK_ITEM_PARENT);
+            }
          }
          finally
          {

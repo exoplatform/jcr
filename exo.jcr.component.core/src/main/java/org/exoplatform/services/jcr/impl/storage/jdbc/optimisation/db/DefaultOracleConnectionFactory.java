@@ -16,11 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
-import java.io.File;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -34,75 +32,21 @@ import javax.sql.DataSource;
  */
 public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
 {
-
-   protected boolean forceQueryHints;
-
    /**
     * DefaultOracleConnectionFactory constructor.
-    * 
-    * @param dataSource
-    *          - DataSource
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    * @param forceQueryHints
-    *          - use Oracle queries with query hints
     */
-   public DefaultOracleConnectionFactory(DataSource dataSource, String containerName, boolean multiDb,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner,
-      boolean forceQueryHints)
+   public DefaultOracleConnectionFactory(DataSource dataSource, JDBCDataContainerConfig containerConfig)
    {
-      super(dataSource, containerName, multiDb, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-      this.forceQueryHints = forceQueryHints;
+      super(dataSource, containerConfig);
    }
 
    /**
     * DefaultOracleConnectionFactory constructor.
-    * 
-    *@param dataSource
-    *          - DataSource
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    * @param forceQueryHints
-    *          - use Oracle queries with query hints
-    * @throws RepositoryException
-    *           if error eccurs
     */
-   public DefaultOracleConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner, boolean forceQueryHints) throws RepositoryException
+   public DefaultOracleConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
    {
 
-      super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
-      this.forceQueryHints = forceQueryHints;
+      super(containerConfig);
    }
 
    /**
@@ -113,16 +57,16 @@ public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
    {
       try
       {
-         if (forceQueryHints)
+         if (containerConfig.useQueryHints)
          {
-            if (multiDb)
+            if (this.containerConfig.dbStructureType.isSimpleTable())
             {
-               return new OracleMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+               return new OracleMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly,
+                  containerConfig);
             }
 
-            return new OracleSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            return new OracleSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly,
+               containerConfig);
          }
          else
          {
@@ -136,7 +80,7 @@ public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
          throw new RepositoryException(e);
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -144,5 +88,5 @@ public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
    public boolean isIDNeededForPaging()
    {
       return false;
-   }   
+   }
 }

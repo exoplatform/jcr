@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -38,10 +40,9 @@ import java.sql.Statement;
 public class OracleDBInitializer extends StorageDBInitializer
 {
 
-   public OracleDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
-      throws IOException
+   public OracleDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
-      super(containerName, connection, scriptPath, multiDb);
+      super(connection, containerConfig);
    }
 
    @Override
@@ -63,7 +64,9 @@ public class OracleDBInitializer extends StorageDBInitializer
       {
          // check: ORA-02289: sequence does not exist
          if (e.getMessage().indexOf("ORA-02289") >= 0)
+         {
             return false;
+         }
          throw e;
       }
       finally

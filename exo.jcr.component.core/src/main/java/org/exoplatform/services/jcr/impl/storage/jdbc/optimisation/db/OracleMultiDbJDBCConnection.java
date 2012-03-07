@@ -16,10 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,47 +31,27 @@ import java.sql.SQLException;
 public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
 
-   protected static final String FIND_NODES_BY_PARENTID_CQ_QUERY =
-      MultiDbJDBCConnection.FIND_NODES_BY_PARENTID_CQ_QUERY
-         .replaceFirst("select",
-            "select /*+ INDEX(I JCR_IDX_MITEM_PARENT_ID) INDEX(P JCR_IDX_MITEM_PARENT_ID) INDEX(V JCR_IDX_MVALUE_PROPERTY)*/");
+   protected String FIND_NODES_BY_PARENTID_CQ_QUERY;
 
-   protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
-      MultiDbJDBCConnection.FIND_PROPERTIES_BY_PARENTID_CQ_QUERY.replaceFirst("select",
-         "select /*+ INDEX(I JCR_IDX_MITEM_PARENT_ID) INDEX(V JCR_IDX_MVALUE_PROPERTY)*/");
-   
-   protected static final String FIND_ITEM_QPATH_BY_ID_CQ_QUERY =
-      MultiDbJDBCConnection.FIND_ITEM_QPATH_BY_ID_CQ_QUERY.replaceFirst("SELECT",
-         "SELECT /*+ INDEX(JCR_MITEM JCR_PK_MITEM) */");
+   protected String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
 
+   protected String FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
 
    /**
     * Oracle Multidatabase JDBC Connection constructor.
     * 
     * @param dbConnection
-    *          JDBC connection, shoudl be opened before
+    *          JDBC connection, should be opened before
     * @param readOnly
     *          boolean if true the dbConnection was marked as READ-ONLY.
-    * @param containerName
-    *          Workspace Storage Container name (see configuration)
-    * @param valueStorageProvider
-    *          External Value Storages provider
-    * @param maxBufferSize
-    *          Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          Swap directory File (see configuration)
-    * @param swapCleaner
-    *          Swap cleaner (internal FileCleaner).
-    * @throws SQLException
-    * 
-    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    * @param containerConfig
+    *          Workspace Storage Container configuration
     */
-   public OracleMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public OracleMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
 
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -83,30 +61,42 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected void prepareQueries() throws SQLException
    {
       super.prepareQueries();
+
+      FIND_NODES_BY_PARENTID_CQ_QUERY =
+         super.FIND_NODES_BY_PARENTID_CQ_QUERY.replaceFirst("select", "select /*+ INDEX(I " + JCR_IDX_ITEM_PARENT_ID
+            + ") INDEX(P " + JCR_IDX_ITEM_PARENT_ID + ") INDEX(V " + JCR_IDX_VALUE_PROPERTY + ")*/");
+
+      FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
+         super.FIND_PROPERTIES_BY_PARENTID_CQ_QUERY.replaceFirst("select", "select /*+ INDEX(I "
+            + JCR_IDX_ITEM_PARENT_ID + ") INDEX(V " + JCR_IDX_VALUE_PROPERTY + ")*/");
+
+      FIND_ITEM_QPATH_BY_ID_CQ_QUERY =
+         super.FIND_ITEM_QPATH_BY_ID_CQ_QUERY.replaceFirst("SELECT", "SELECT /*+ INDEX(" + JCR_ITEM + " " + JCR_PK_ITEM
+            + ") */");
+
       FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
       FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
       FIND_ITEM_QPATH_BY_ID_CQ = FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
       FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
-         "select /*+ INDEX(I JCR_FK_MITEM_PARENT) INDEX(V JCR_IDX_MVALUE_PROPERTY)*/"
+         "select /*+ INDEX(I " + JCR_FK_ITEM_PARENT + ") INDEX(V " + JCR_IDX_VALUE_PROPERTY + ")*/"
             + " I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED,"
-            + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from JCR_MITEM I LEFT OUTER JOIN JCR_MVALUE V ON (V.PROPERTY_ID=I.ID)";
+            + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from " + JCR_ITEM + " I LEFT OUTER JOIN " + JCR_VALUE
+            + " V ON (V.PROPERTY_ID=I.ID)";
 
       FIND_NODES_AND_PROPERTIES =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from " + JCR_VALUE + " V, " + JCR_ITEM + " P"
             + " join ( select * from ( select A.*, ROWNUM r__ from ("
-            + " select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I "
+            + " select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from " + JCR_ITEM + " I "
             + " where I.I_CLASS=1 order by I.ID) A where ROWNUM <= ?) where r__ > ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
-      
+
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         FIND_NODES_BY_PARENTID_LAZILY_CQ
-            .replaceFirst(
-               "select",
-               "select /*+ USE_NL(V) INDEX(I JCR_IDX_MITEM_N_ORDER_NUM) INDEX(P JCR_IDX_MITEM_PARENT_FK)"
-               + " INDEX(V JCR_IDX_MVALUE_PROPERTY) */");
+         FIND_NODES_BY_PARENTID_LAZILY_CQ.replaceFirst("select", "select /*+ USE_NL(V) INDEX(I "
+            + JCR_IDX_ITEM_N_ORDER_NUM + ") INDEX(P " + JCR_IDX_ITEM_PARENT_FK + ") INDEX(V " + JCR_IDX_VALUE_PROPERTY
+            + ") */");
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -126,5 +116,5 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
       findNodesAndProperties.setInt(2, offset);
 
       return findNodesAndProperties.executeQuery();
-   }    
+   }
 }

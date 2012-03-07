@@ -980,6 +980,13 @@
          </properties>
       </profile>      
       <profile>
+         <id>ijdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
+            <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
+         </properties>
+      </profile> 
+      <profile>
          <id>cluster</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-jbc.xml</jcr.test.configuration.file>

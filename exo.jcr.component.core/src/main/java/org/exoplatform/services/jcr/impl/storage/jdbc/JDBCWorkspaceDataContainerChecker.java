@@ -157,16 +157,15 @@ public class JDBCWorkspaceDataContainerChecker
       }
    }
 
-   private void checkConsistencyInJCRITEM(Set<String> lockedInJCRITEM, Set<String> lockedInJCRLOCK,
-      boolean autoRepair) throws RepositoryException, SQLException
+   private void checkConsistencyInJCRITEM(Set<String> lockedInJCRITEM, Set<String> lockedInJCRLOCK, boolean autoRepair)
+      throws RepositoryException, SQLException
    {
       for (String nodeId : lockedInJCRITEM)
       {
          if (!lockedInJCRLOCK.contains(nodeId))
          {
-            logBrokenObjectAndSetInconsistency("Lock exists in ITEM table but not in LOCK table. Node UUID: "
-               + nodeId);
-            
+            logBrokenObjectAndSetInconsistency("Lock exists in ITEM table but not in LOCK table. Node UUID: " + nodeId);
+
             if (autoRepair)
             {
                WorkspaceStorageConnection conn = jdbcDataContainer.openConnection();
@@ -224,7 +223,7 @@ public class JDBCWorkspaceDataContainerChecker
    public void checkDataBase(boolean autoRepair)
    {
       SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      
+
       Connection jdbcConn = null;
       try
       {
@@ -396,7 +395,8 @@ public class JDBCWorkspaceDataContainerChecker
 
    private String removeWorkspacePrefix(String str)
    {
-      return jdbcDataContainer.multiDb ? str : str.substring(jdbcDataContainer.containerName.length());
+      return jdbcDataContainer.containerConfig.multiDb ? str : str
+         .substring(jdbcDataContainer.containerConfig.containerName.length());
    }
 
    private String getBrokenObject(ResultSet resultSet, String[] fieldNames)
@@ -417,7 +417,7 @@ public class JDBCWorkspaceDataContainerChecker
          }
          record.append(' ');
       }
-      
+
       return record.toString();
    }
 
@@ -472,107 +472,112 @@ public class JDBCWorkspaceDataContainerChecker
    private void initInspectionQueries()
    {
       vsInspectionQuery =
-         new InspectionQuery(jdbcDataContainer.multiDb
+         new InspectionQuery(jdbcDataContainer.containerConfig.multiDb
             ? "select PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_MVALUE where STORAGE_DESC is not null"
             : "select V.PROPERTY_ID, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM I"
-               + " where I.CONTAINER_NAME='" + jdbcDataContainer.containerName
-               + "' and V.PROPERTY_ID = I.ID and STORAGE_DESC is not null",
-            new String[]{DBConstants.COLUMN_VPROPERTY_ID, DBConstants.COLUMN_VORDERNUM,
-               DBConstants.COLUMN_VSTORAGE_DESC}, "Items with value data stored in value storage", new DummyRepair());
+               + " where I.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
+               + "' and V.PROPERTY_ID = I.ID and STORAGE_DESC is not null", new String[]{
+            DBConstants.COLUMN_VPROPERTY_ID, DBConstants.COLUMN_VORDERNUM, DBConstants.COLUMN_VSTORAGE_DESC},
+            "Items with value data stored in value storage", new DummyRepair());
 
       lockInspectionQuery =
-         new InspectionQuery(jdbcDataContainer.multiDb ? "select distinct PARENT_ID from JCR_MITEM where I_CLASS=2 AND"
-            + " (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')"
-            : "select distinct PARENT_ID from JCR_SITEM WHERE CONTAINER_NAME='" + jdbcDataContainer.containerName + "'"
+         new InspectionQuery(jdbcDataContainer.containerConfig.multiDb
+            ? "select distinct PARENT_ID from JCR_MITEM where I_CLASS=2 AND"
+               + " (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')"
+            : "select distinct PARENT_ID from JCR_SITEM WHERE CONTAINER_NAME='"
+               + jdbcDataContainer.containerConfig.containerName + "'"
                + " AND I_CLASS=2 and (NAME='[http://www.jcp.org/jcr/1.0]lockOwner'"
                + " OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')", new String[]{DBConstants.COLUMN_PARENTID},
             "Items which have jcr:lockOwner and jcr:lockIsDeep properties", new DummyRepair());
 
       // ITEM tables
-      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
+      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.containerConfig.multiDb
          ? "select * from JCR_MITEM I where NOT EXISTS(select * from JCR_MITEM P where P.ID = I.PARENT_ID)"
-         : "select * from JCR_SITEM I where I.CONTAINER_NAME='" + jdbcDataContainer.containerName
+         : "select * from JCR_SITEM I where I.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
             + "' and NOT EXISTS(select * from JCR_SITEM P where P.ID = I.PARENT_ID)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS},
-            "Items that do not have parent nodes", new RootAsParentAssigner(jdbcDataContainer
-               .getConnectionFactory())));
+         "Items that do not have parent nodes", new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
 
       itemsInspectionQuery
          .add(new InspectionQueryFilteredMultivaluedProperties(
-            jdbcDataContainer.multiDb
+            jdbcDataContainer.containerConfig.multiDb
                ? "select * from JCR_MITEM P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_MVALUE V "
                   + "where V.PROPERTY_ID=P.ID)" : "select * from JCR_SITEM P where P.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName + "' and P.I_CLASS=2"
+                  + jdbcDataContainer.containerConfig.containerName + "' and P.I_CLASS=2"
                   + " and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
             "A node that has a single valued properties with nothing declared in the VALUE table.",
             new PropertyRemover(jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
 
-      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
+      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.containerConfig.multiDb
          ? "select * from JCR_MITEM N where N.I_CLASS=1 and NOT EXISTS "
             + "(select * from JCR_MITEM P where P.I_CLASS=2 and P.PARENT_ID=N.ID "
             + "and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType')"
-         : "select * from JCR_SITEM N where N.CONTAINER_NAME='" + jdbcDataContainer.containerName
+         : "select * from JCR_SITEM N where N.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
             + "' and N.I_CLASS=1 and NOT EXISTS (select * from JCR_SITEM P "
             + "where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' "
-            + "and P.CONTAINER_NAME='" + jdbcDataContainer.containerName + "')", new String[]{DBConstants.COLUMN_ID,
-         DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "A node that doesn't have primary type property",
-         new NodeRemover(jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
+            + "and P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName + "')", new String[]{
+         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+         "A node that doesn't have primary type property", new NodeRemover(jdbcDataContainer.getConnectionFactory(),
+            nodeTypeManager)));
 
-      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
+      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.containerConfig.multiDb
          ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
             + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
          : "select * from JCR_SVALUE V where NOT EXISTS(select * from JCR_SITEM P "
             + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not related property record",
-         new ValueRecordsRemover(jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerName,
-            jdbcDataContainer.multiDb)));
+         new ValueRecordsRemover(jdbcDataContainer.getConnectionFactory(),
+            jdbcDataContainer.containerConfig.containerName, jdbcDataContainer.containerConfig.multiDb)));
 
       // The differences in the queries by DB dialect.
       String statement;
-      if (jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+      if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
       {
          statement =
-            jdbcDataContainer.multiDb
+            jdbcDataContainer.containerConfig.multiDb
                ? "select * from JCR_MVALUE where (STORAGE_DESC is not null and not DATA like null)"
                : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName + "' AND ((STORAGE_DESC is not null and not DATA like null))";
+                  + jdbcDataContainer.containerConfig.containerName
+                  + "' AND ((STORAGE_DESC is not null and not DATA like null))";
       }
-      else if (jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-         || jdbcDataContainer.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
+      else if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
+         || jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
       {
          statement =
-            jdbcDataContainer.multiDb
+            jdbcDataContainer.containerConfig.multiDb
                ? "select * from JCR_MVALUE where (STORAGE_DESC is not null and DATA is not null)"
                : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName + "' AND (STORAGE_DESC is not null and DATA is not null)";
+                  + jdbcDataContainer.containerConfig.containerName
+                  + "' AND (STORAGE_DESC is not null and DATA is not null)";
       }
       else
       {
          statement =
-            jdbcDataContainer.multiDb
+            jdbcDataContainer.containerConfig.multiDb
                ? "select * from JCR_MVALUE where (STORAGE_DESC is not null and DATA is not null)"
                : "select V.* from JCR_SVALUE V, JCR_SITEM I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName + "' AND ((STORAGE_DESC is not null and DATA is not null))";
+                  + jdbcDataContainer.containerConfig.containerName
+                  + "' AND ((STORAGE_DESC is not null and DATA is not null))";
       }
       itemsInspectionQuery.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID},
          "Incorrect VALUE records. Both fields STORAGE_DESC and DATA contain not null value.", new DummyRepair()));
 
-      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
+      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.containerConfig.multiDb
          ? "select * from JCR_MITEM I where I.ID = I.PARENT_ID and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'"
          : "select * from JCR_SITEM I where I.ID = I.PARENT_ID and I.CONTAINER_NAME='"
-            + jdbcDataContainer.containerName + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'", new String[]{
-         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "An item is its own parent.",
-         new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
+            + jdbcDataContainer.containerConfig.containerName + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'",
+         new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+         "An item is its own parent.", new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
 
       itemsInspectionQuery
          .add(new InspectionQuery(
-            jdbcDataContainer.multiDb
+            jdbcDataContainer.containerConfig.multiDb
                ? "select * from JCR_MITEM I where EXISTS (select * from JCR_MITEM J"
                   + " WHERE I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
                   + " and I.VERSION != J.VERSION)"
                : "select * from JCR_SITEM I where I.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName
+                  + jdbcDataContainer.containerConfig.containerName
                   + "' and EXISTS (select * from JCR_SITEM J WHERE I.CONTAINER_NAME = J.CONTAINER_NAME and"
                   + " I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
                   + " and I.VERSION != J.VERSION)",
@@ -580,14 +585,14 @@ public class JDBCWorkspaceDataContainerChecker
                DBConstants.COLUMN_VERSION, DBConstants.COLUMN_CLASS, DBConstants.COLUMN_INDEX},
             "Several versions of same item.", new EarlierVersionsRemover(jdbcDataContainer.getConnectionFactory())));
 
-      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
+      itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.containerConfig.multiDb
          ? "select * from JCR_MITEM P, JCR_MVALUE V where P.ID=V.PROPERTY_ID and P.P_TYPE=9 and NOT EXISTS "
             + "(select * from JCR_MREF R where P.ID=R.PROPERTY_ID)"
          : "select * from JCR_SITEM P, JCR_SVALUE V where P.ID=V.PROPERTY_ID and P.CONTAINER_NAME='"
-            + jdbcDataContainer.containerName
+            + jdbcDataContainer.containerConfig.containerName
             + "' and P.P_TYPE=9 and NOT EXISTS (select * from JCR_SREF R where P.ID=R.PROPERTY_ID)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-         "Reference properties without reference records", new PropertyRemover(jdbcDataContainer
-            .getConnectionFactory(), nodeTypeManager)));
+         "Reference properties without reference records", new PropertyRemover(
+            jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
    }
 }

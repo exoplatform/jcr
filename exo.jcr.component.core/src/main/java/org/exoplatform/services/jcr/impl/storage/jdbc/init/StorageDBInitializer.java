@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
@@ -36,14 +38,27 @@ import java.sql.SQLException;
  */
 public class StorageDBInitializer extends DBInitializer
 {
-
-   protected final boolean multiDb;
-
-   public StorageDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
-      throws IOException
+   public StorageDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
-      super(containerName, connection, scriptPath);
-      this.multiDb = multiDb;
+      super(connection, containerConfig);
+   }
+
+   protected String prepareScripts() throws IOException
+   {
+      if (containerConfig.dbStructureType == DatabaseStructureType.ISOLATED)
+      {
+         // Replace the names of Database entities 
+         String scripts = super.prepareScripts();
+
+         return scripts.replace("MITEM", "I" + containerConfig.dbTableSuffix)
+            .replace("MVALUE", "V" + containerConfig.dbTableSuffix)
+            .replace("MREF", "R" + containerConfig.dbTableSuffix);
+      }
+      else
+      {
+         return super.prepareScripts();
+      }
+
    }
 
    /**
@@ -52,14 +67,27 @@ public class StorageDBInitializer extends DBInitializer
    @Override
    protected void postInit(Connection connection) throws SQLException
    {
-      final String MDB = (multiDb ? "M" : "S");
+      String tableSuffix = "";
+      switch (containerConfig.dbStructureType)
+      {
+         case MULTI :
+            tableSuffix = "MITEM";
+            break;
+         case SINGLE :
+            tableSuffix = "SITEM";
+            break;
+         case ISOLATED :
+            tableSuffix = "I" + containerConfig.dbTableSuffix;
+            break;
+      }
       String select =
-         "select * from JCR_" + MDB + "ITEM where ID='" + Constants.ROOT_PARENT_UUID + "' and PARENT_ID='"
+         "select * from JCR_" + tableSuffix + " where ID='" + Constants.ROOT_PARENT_UUID + "' and PARENT_ID='"
             + Constants.ROOT_PARENT_UUID + "'";
 
       if (!connection.createStatement().executeQuery(select).next())
       {
-         String insert = DBInitializerHelper.getRootNodeInitializeScript(multiDb);
+         // TODO
+         String insert = DBInitializerHelper.getRootNodeInitializeScript(containerConfig);
 
          connection.createStatement().executeUpdate(insert);
       }

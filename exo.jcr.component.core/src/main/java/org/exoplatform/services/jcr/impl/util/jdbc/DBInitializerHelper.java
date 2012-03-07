@@ -22,6 +22,7 @@ import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -121,17 +122,57 @@ public class DBInitializerHelper
 
    /**
     * Initialization script for root node.
+   * 
+    */
+   public static String getRootNodeInitializeScript(JDBCDataContainerConfig containerConfig)
+   {
+      // no ContainerNamer required
+      boolean simpleTable = containerConfig.dbStructureType.isSimpleTable();
+
+      return "insert into JCR_" + getTableSuffix(containerConfig) + "(ID, PARENT_ID, NAME, "
+         + (simpleTable ? "" : "CONTAINER_NAME, ") + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('"
+         + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_NAME
+         + "', " + (simpleTable ? "" : "'" + Constants.ROOT_PARENT_CONAINER_NAME + "', ") + "0, 0, 0, 0)";
+   }
+
+   /**
+    * Initialization script for root node.
     * 
     * @param multiDb
     *          indicates if we have multi-db configuration or not
     * @return SQL script
     */
+   @Deprecated
    public static String getRootNodeInitializeScript(boolean multiDb)
    {
-      return "insert into JCR_" + (multiDb ? "M" : "S") + "ITEM(ID, PARENT_ID, NAME, " + (multiDb ? "" : "CONTAINER_NAME, ") 
-         + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('"
+      return "insert into JCR_" + (multiDb ? "M" : "S") + "ITEM(ID, PARENT_ID, NAME, "
+         + (multiDb ? "" : "CONTAINER_NAME, ") + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('"
          + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_NAME
          + "', " + (multiDb ? "" : "'" + Constants.ROOT_PARENT_CONAINER_NAME + "', ") + "0, 0, 0, 0)";
+   }
+
+   public static String getTableSuffix(JDBCDataContainerConfig containerConfig)
+   {
+      String tableSuffix = "";
+      switch (containerConfig.dbStructureType)
+      {
+         case MULTI :
+            tableSuffix = "MITEM";
+            break;
+         case SINGLE :
+            tableSuffix = "SITEM";
+            break;
+         case ISOLATED :
+            tableSuffix = "I" + containerConfig.dbTableSuffix;
+            break;
+      }
+      return tableSuffix;
+   }
+
+   public static String getScriptAsString(String dbDialect, boolean multiDb) throws IOException
+   {
+      String scriptsPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
+      return IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(scriptsPath));
    }
 
    /**

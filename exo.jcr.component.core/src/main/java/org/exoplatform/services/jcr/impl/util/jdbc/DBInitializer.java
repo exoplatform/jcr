@@ -22,9 +22,11 @@ import org.exoplatform.commons.utils.IOUtil;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
@@ -66,7 +68,7 @@ public class DBInitializer
 
    protected final Connection connection;
 
-   protected final String containerName;
+   protected final JDBCDataContainerConfig containerConfig;
 
    protected final String script;
 
@@ -86,11 +88,11 @@ public class DBInitializer
 
    protected final Pattern dbTriggerNamePattern;
 
-   public DBInitializer(String containerName, Connection connection, String scriptPath) throws IOException
+   public DBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       this.connection = connection;
-      this.containerName = containerName;
-      this.script = IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(scriptPath));
+      this.containerConfig = containerConfig;
+      this.script = prepareScripts();
       this.creatTablePattern = Pattern.compile(SQL_CREATETABLE, Pattern.CASE_INSENSITIVE);
       this.creatViewPattern = Pattern.compile(SQL_CREATEVIEW, Pattern.CASE_INSENSITIVE);
       this.dbObjectNamePattern = Pattern.compile(SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
@@ -99,6 +101,11 @@ public class DBInitializer
       this.creatSequencePattern = Pattern.compile(SQL_CREATESEQUENCE, Pattern.CASE_INSENSITIVE);
       this.creatTriggerPattern = Pattern.compile(SQL_CREATETRIGGER, Pattern.CASE_INSENSITIVE);
       this.dbTriggerNamePattern = Pattern.compile(SQL_TRIGGERNAME, Pattern.CASE_INSENSITIVE);
+   }
+
+   protected String prepareScripts() throws IOException
+   {
+      return IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(containerConfig.initScriptPath));
    }
 
    protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
@@ -284,7 +291,7 @@ public class DBInitializer
          }
 
          postInit(connection);
-         LOG.info("DB schema of DataSource: '" + containerName + "' initialized succesfully");
+         LOG.info("DB schema of DataSource: '" + containerConfig.containerName + "' initialized succesfully");
       }
       catch (SQLException e)
       {
@@ -292,9 +299,8 @@ public class DBInitializer
          {
             LOG.error("Problem creating database structure.", e);
          }
-         LOG
-            .warn("Some tables were created and not rolled back. Please make sure to drop them manually in datasource : '"
-               + containerName + "'");
+         LOG.warn("Some tables were created and not rolled back. Please make sure to drop them manually in datasource : '"
+            + containerConfig.containerName + "'");
 
          boolean isAlreadyCreated = false;
          try
@@ -308,14 +314,14 @@ public class DBInitializer
 
          if (isAlreadyCreated)
          {
-            LOG.warn("Could not create db schema of DataSource: '" + containerName + "'. Reason: Objects form " + sql
-               + " already exists");
+            LOG.warn("Could not create db schema of DataSource: '" + containerConfig.containerName
+               + "'. Reason: Objects form " + sql + " already exists");
          }
          else
          {
             String msg =
-               "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
-                  + JDBCUtils.getFullMessage(e) + ". Last command: " + sql;
+               "Could not create db schema of DataSource: '" + containerConfig.containerName + "'. Reason: "
+                  + e.getMessage() + "; " + JDBCUtils.getFullMessage(e) + ". Last command: " + sql;
 
             throw new DBInitializerException(msg, e);
          }
