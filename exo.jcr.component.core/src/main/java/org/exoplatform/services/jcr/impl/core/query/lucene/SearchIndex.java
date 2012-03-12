@@ -515,7 +515,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /** 
     * The way to create initial index.. 
     */
-   private String indexRecoveryMode = INDEX_RECOVERY_MODE_FROM_INDEXING;
+   private String indexRecoveryMode = INDEX_RECOVERY_MODE_FROM_COORDINATOR;
 
    /**
     * Defines reindexing synchronization policy. Whether or not start it asynchronously  
