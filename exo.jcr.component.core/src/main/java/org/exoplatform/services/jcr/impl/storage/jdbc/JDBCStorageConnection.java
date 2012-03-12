@@ -1671,6 +1671,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX), caid);
             qrpath.add(qpe);
             caid = parent.getString(COLUMN_PARENTID);
+
+            if (caid.equals(parent.getString(COLUMN_ID)))
+            {
+               throw new InvalidItemStateException("An item with id='" + getIdentifier(caid) + "' is its own parent");
+            }
          }
          finally
          {
