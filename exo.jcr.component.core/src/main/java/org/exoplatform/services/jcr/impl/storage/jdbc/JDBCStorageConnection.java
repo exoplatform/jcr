@@ -24,7 +24,17 @@ import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
-import org.exoplatform.services.jcr.datamodel.*;
+import org.exoplatform.services.jcr.datamodel.IllegalACLException;
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
@@ -2864,12 +2874,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * properties directly from DB.
     */
    protected abstract void deleteLockProperties() throws SQLException;
-
-   /**
-    * Deletes [http://www.jcp.org/jcr/1.0]lockOwner and [http://www.jcp.org/jcr/1.0]lockIsDeep
-    * properties directly from DB for specific parent.
-    */
-   protected abstract void deleteLockProperties(String nodeIdentifier) throws SQLException;
 
    protected abstract ResultSet findReferences(String nodeIdentifier) throws SQLException;
 
