@@ -33,8 +33,8 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -509,10 +509,18 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
 
       if (shareable)
       {
-         // The cache cannot be stopped since it can be shared so we evict the root node instead
-         cache.getNode(lockRoot).setResident(false);
-         cache.evict(lockRoot, true);
-         cache.getRegion(lockRoot, false).processEvictionQueues();
+         // The cache cannot be stopped since it can be shared so we remove the root node instead
+         try
+         {
+            cache.getInvocationContext().getOptionOverrides().setSuppressPersistence(true);
+            cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
+            cache.removeNode(lockRoot);
+         }
+         finally
+         {
+            cache.getInvocationContext().getOptionOverrides().setSuppressPersistence(false);
+            cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(false);
+         }
       }
 
       try
