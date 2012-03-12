@@ -510,17 +510,9 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       if (shareable)
       {
          // The cache cannot be stopped since it can be shared so we remove the root node instead
-         try
-         {
-            cache.getInvocationContext().getOptionOverrides().setSuppressPersistence(true);
-            cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
-            cache.removeNode(lockRoot);
-         }
-         finally
-         {
-            cache.getInvocationContext().getOptionOverrides().setSuppressPersistence(false);
-            cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(false);
-         }
+         cache.getInvocationContext().getOptionOverrides().setSuppressPersistence(true);
+         cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
+         cache.removeNode(lockRoot);
       }
 
       try
