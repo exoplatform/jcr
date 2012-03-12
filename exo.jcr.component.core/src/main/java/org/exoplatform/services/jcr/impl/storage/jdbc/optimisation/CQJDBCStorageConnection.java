@@ -54,7 +54,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.PropertyType;
@@ -1129,11 +1138,18 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                throw new InvalidItemStateException("Parent not found, uuid: " + getIdentifier(caid));
             }
 
+            String cid = result.getString(COLUMN_ID);
+
             QPathEntry qpe1 =
-               new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX),
-                  result.getString(COLUMN_ID));
-            boolean isChild = caid.equals(result.getString(COLUMN_ID));
+               new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX), cid);
+            boolean isChild = caid.equals(cid);
             caid = result.getString(COLUMN_PARENTID);
+
+            if (cid.equals(caid))
+            {
+               throw new InvalidItemStateException("An item with id='" + getIdentifier(caid) + "' is its own parent");
+            }
+
             if (result.next())
             {
                QPathEntry qpe2 =
