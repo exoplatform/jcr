@@ -45,6 +45,7 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
@@ -283,7 +284,7 @@ public class ExoJBossCacheFactory<K, V>
       Map<ConfigurationKey, CacheInstance> caches = allCacheTypes.get(cacheType);
       if (caches == null)
       {
-         caches = new HashMap<ConfigurationKey, CacheInstance>();
+         caches = new ConcurrentHashMap<ConfigurationKey, CacheInstance>();
          allCacheTypes.put(cacheType, caches);
       }
       Configuration cfg = cache.getConfiguration();
