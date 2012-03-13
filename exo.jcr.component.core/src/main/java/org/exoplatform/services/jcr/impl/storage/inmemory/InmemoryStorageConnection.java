@@ -355,15 +355,6 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getValue(java.lang.String, int, int)
-    */
-   public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws IllegalStateException,
-      RepositoryException
-   {
-      return null;
-   }
-
-   /**
     * {@inheritDoc}
     */
    public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)

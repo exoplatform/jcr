@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 
@@ -221,23 +220,6 @@ public interface WorkspaceStorageConnection
     */
    List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException, IllegalStateException,
       UnsupportedOperationException;
-
-   /**
-    * Gets the value content of the property defined by the given parameters.
-    * 
-    * @param propertyId 
-    *           the id of the property
-    * @param orderNumb 
-    *           the order number or the property
-    * @param persistedVersion 
-    *           the persisted version of the property
-    * @return the value content wrapped into a ValueData object
-    * @throws IllegalStateException 
-    *           if connection is already closed
-    * @throws RepositoryException 
-    *           if some exception occurred
-    */
-   ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws IllegalStateException, RepositoryException;
 
    /**
     * Get child Nodes of the parent node.

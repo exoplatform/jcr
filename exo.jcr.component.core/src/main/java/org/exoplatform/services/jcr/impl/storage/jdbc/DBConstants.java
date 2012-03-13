@@ -120,11 +120,6 @@ public class DBConstants
    protected String FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID;
 
    /**
-    * FIND_VALUE_BY_PROPERTYID_OREDERNUMB.
-    */
-   protected String FIND_VALUE_BY_PROPERTYID_OREDERNUMB;
-
-   /**
     * FIND_NODES_BY_PARENTID.
     */
    protected String FIND_NODES_BY_PARENTID;

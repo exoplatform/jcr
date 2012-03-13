@@ -254,16 +254,4 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
       rs.next();
       assertEquals(rsRemote.getString("STORAGE_DESC"), rs.getString("STORAGE_DESC"));
    }
-
-   public void testFindValueByPropertyIdOrderNumber() throws Exception
-   {
-
-      ResultSet rsRemote = jdbcConn.findValueByPropertyIdOrderNumber("A", 16);
-      rsRemote.next();
-      ResultSet rs =
-         connect.createStatement().executeQuery(
-            "select DATA from " + "JCR_" + tableType + "VALUE" + " where PROPERTY_ID='A' and ORDER_NUM=16");
-      rs.next();
-      assertEquals(rsRemote.getString("DATA"), rs.getString("DATA"));
-   }
 }

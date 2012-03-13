@@ -33,7 +33,6 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
@@ -323,12 +322,6 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          IllegalStateException
       {
          return getChildNodesData(parent);
-      }
-
-      public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws IllegalStateException,
-         RepositoryException
-      {
-         return null;
       }
 
       public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
