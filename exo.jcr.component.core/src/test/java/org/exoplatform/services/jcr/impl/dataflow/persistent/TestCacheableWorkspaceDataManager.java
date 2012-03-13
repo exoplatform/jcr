@@ -605,12 +605,6 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
          return null;
       }
 
-      public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws IllegalStateException,
-         RepositoryException
-      {
-         return null;
-      }
-
       public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
          throws RepositoryException
       {

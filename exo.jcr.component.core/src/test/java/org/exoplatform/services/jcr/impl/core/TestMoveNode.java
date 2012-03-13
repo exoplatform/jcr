@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -34,8 +35,10 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
+import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 
 /**
@@ -209,6 +212,59 @@ public class TestMoveNode extends JcrImplBaseTest
 
    }
 
+   public void testRenameNodeWithBinaryProperty() throws Exception
+   {
+      Node parentNode = root.addNode("testRenameNodeWithBinaryProperty");
+      String path = parentNode.getPath();
+      String value = "my Property Value";
+
+      parentNode.setProperty("myBinaryData", new ByteArrayInputStream(value.getBytes("UTF-8")));
+      root.save();
+
+      value = "my Property Value 2";
+      parentNode.setProperty("myBinaryData", new ByteArrayInputStream(value.getBytes("UTF-8")));
+      session.move(path, path + "2");
+
+      value = "my Property Value 3";
+      parentNode.setProperty("myBinaryData", new ByteArrayInputStream(value.getBytes("UTF-8")));
+      session.move(path + "2", path + "3");
+      session.save();
+
+      Item i = session.getItem(path + "3/myBinaryData");
+
+      assertTrue(i instanceof Property);
+
+      Property p = (Property)i;
+      InputStream is = p.getStream();
+      byte[] bValue = new byte[is.available()];
+      is.read(bValue);
+      is.close();
+
+      assertEquals(value, new String(bValue, "UTF-8"));
+   }
+
+   public void testRenameNodeWithBinaryProperty2() throws Exception
+   {
+      Node parentNode = root.addNode("testRenameNodeWithBinaryProperty");
+      String path = parentNode.getPath();
+
+      String value = "my Property Value";
+      parentNode.setProperty("myBinaryData", new ByteArrayInputStream(value.getBytes("UTF-8")));
+      session.move(path, path + "2");
+      session.save();
+
+      Item i = session.getItem(path + "2/myBinaryData");
+
+      assertTrue(i instanceof Property);
+      Property p = (Property)i;
+      InputStream is = p.getStream();
+      byte[] bValue = new byte[is.available()];
+      is.read(bValue);
+      is.close();
+
+      assertEquals(value, new String(bValue, "UTF-8"));
+   }
+   
    public void testLocalBigFiles() throws Exception
    {
       Node testBinaryValue = root.addNode("testBinaryValue");

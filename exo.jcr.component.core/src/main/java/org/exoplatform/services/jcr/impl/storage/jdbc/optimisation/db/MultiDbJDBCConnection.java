@@ -137,9 +137,6 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID =
          "select distinct STORAGE_DESC from " + JCR_VALUE + " where PROPERTY_ID=?";
 
-      FIND_VALUE_BY_PROPERTYID_OREDERNUMB =
-         "select DATA, STORAGE_DESC from " + JCR_VALUE + " where PROPERTY_ID=? and ORDER_NUM=?";
-
       FIND_NODES_BY_PARENTID =
          "select * from " + JCR_ITEM + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
 
@@ -739,26 +736,6 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 
       findValuesByPropertyId.setString(1, cid);
       return findValuesByPropertyId.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException
-   {
-      if (findValueByPropertyIdOrderNumber == null)
-      {
-         findValueByPropertyIdOrderNumber = dbConnection.prepareStatement(FIND_VALUE_BY_PROPERTYID_OREDERNUMB);
-      }
-      else
-      {
-         findValueByPropertyIdOrderNumber.clearParameters();
-      }
-
-      findValueByPropertyIdOrderNumber.setString(1, cid);
-      findValueByPropertyIdOrderNumber.setInt(2, orderNumb);
-      return findValueByPropertyIdOrderNumber.executeQuery();
    }
 
    /**

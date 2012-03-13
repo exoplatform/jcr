@@ -1896,45 +1896,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             FilePersistedValueData fpvd = (FilePersistedValueData)vd;
             if (fpvd.getFile() == null)
             {
-               // need read from storage
-               ValueData svd = getPropertyValue(prop.getIdentifier(), vd.getOrderNumber(), prop.getPersistedVersion());
-
-               if (svd == null)
-               {
-                  // error, value not found
-                  throw new RepositoryException("Value cannot be found in storage for cached Property "
-                     + prop.getQPath().getAsString() + ", orderNumb:" + vd.getOrderNumber() + ", pversion:"
-                     + prop.getPersistedVersion());
-               }
-
-               vals.set(i, svd);
+               // error, value not found
+               throw new RepositoryException("Value cannot be found in storage for cached Property "
+                  + prop.getQPath().getAsString() + ", orderNumb:" + vd.getOrderNumber() + ", pversion:"
+                  + prop.getPersistedVersion());
             }
          }
       }
    }
 
-   /**
-    * Gets the value content of the property defined by the given parameters
-    * @param propertyId the id of the property
-    * @param orderNumb the order number or the property
-    * @param persistedVersion the persisted version of the property
-    * @return the value content wrapped into a ValueData object
-    * @throws IllegalStateException if connection is already closed
-    * @throws RepositoryException  if some exception occurred
-    */
-   protected ValueData getPropertyValue(String propertyId, int orderNumb, int persistedVersion)
-      throws IllegalStateException, RepositoryException
-   {
-      final WorkspaceStorageConnection con = dataContainer.openConnection();
-      try
-      {
-         return con.getValue(propertyId, orderNumb, persistedVersion);
-      }
-      finally
-      {
-         con.close();
-      }
-   }
 
    /**
     * {@inheritDoc}

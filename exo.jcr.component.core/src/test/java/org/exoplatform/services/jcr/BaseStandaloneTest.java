@@ -30,7 +30,6 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.ItemImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
@@ -717,16 +716,6 @@ public abstract class BaseStandaloneTest extends TestCase
          UnsupportedOperationException
       {
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
-      /**
-       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getValue(java.lang.String, int, int)
-       */
-
-      public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws IllegalStateException,
-         RepositoryException
-      {
-         return null;
       }
 
       /**

@@ -21,7 +21,6 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -91,12 +90,6 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     *                               int toOrderNum, List<NodeData> childNodes)</code>
     */
    private static final String GET_CHILD_NODES_DATA_BY_PAGE_DESCR = "getChildNodesDataByPage";
-
-   /**
-    * The description of the statistics corresponding to the method 
-    * <code>getValue(String propertyId, int orderNumb, int persistedVersion)</code>
-    */
-   private static final String GET_VALUE_DESCR = "getValue";
 
    /**
     * The description of the statistics corresponding to the method 
@@ -223,7 +216,6 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       ALL_STATISTICS.put(LIST_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
          LIST_CHILD_PROPERTIES_DATA_DESCR));
       ALL_STATISTICS.put(GET_REFERENCES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_REFERENCES_DATA_DESCR));
-      ALL_STATISTICS.put(GET_VALUE_DESCR, new Statistics(GLOBAL_STATISTICS, GET_VALUE_DESCR));
       ALL_STATISTICS.put(GET_ACL_HOLDERS, new Statistics(GLOBAL_STATISTICS, GET_ACL_HOLDERS));
       //Get nodes count 
       ALL_STATISTICS.put(NODES_COUNT, new Statistics(GLOBAL_STATISTICS, NODES_COUNT));
@@ -569,24 +561,6 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       {
          s.begin();
          return wcs.listChildPropertiesData(parent);
-      }
-      finally
-      {
-         s.end();
-      }
-   }
-   
-   /**
-    * {@inheritDoc}
-    */
-   public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws IllegalStateException,
-      RepositoryException
-   {
-      Statistics s = ALL_STATISTICS.get(GET_VALUE_DESCR);
-      try
-      {
-         s.begin();
-         return wcs.getValue(propertyId, orderNumb, persistedVersion);
       }
       finally
       {

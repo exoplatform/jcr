@@ -147,8 +147,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected PreparedStatement findValuesDataByPropertyId;
 
-   protected PreparedStatement findValueByPropertyIdOrderNumber;
-
    protected PreparedStatement findNodesByParentId;
 
    protected PreparedStatement findLastOrderNumberByParentId;
@@ -526,11 +524,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (findValuesDataByPropertyId != null)
          {
             findValuesDataByPropertyId.close();
-         }
-
-         if (findValueByPropertyIdOrderNumber != null)
-         {
-            findValueByPropertyIdOrderNumber.close();
          }
 
          if (findNodesByParentId != null)
@@ -1439,54 +1432,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             catch (SQLException e)
             {
                LOG.error("Can't close the ResultSet: " + e.getMessage());
-            }
-         }
-      }
-      catch (SQLException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e);
-      }
-   }
-
-   /**
-    * Reads Property Value from persistent storage.
-    * 
-    * @param propertyId String, Property id
-    * @param orderNumb int, Value order number (in list of values)
-    * @param persistedVersion int 
-    * @return ValueData
-    * @throws RepositoryException if read error occurs
-    */
-   public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws RepositoryException
-   {
-      try
-      {
-         String cid = getInternalId(propertyId);
-         ResultSet valueRecord = findValueByPropertyIdOrderNumber(cid, orderNumb);
-         try
-         {
-            if (valueRecord.next())
-            {
-               String storageId = valueRecord.getString(COLUMN_VSTORAGE_DESC);
-               return valueRecord.wasNull() ? readValueData(cid, orderNumb, persistedVersion,
-                  valueRecord.getBinaryStream(COLUMN_VDATA)) : readValueData(propertyId, orderNumb, storageId);
-            }
-
-            return null;
-         }
-         finally
-         {
-            try
-            {
-               valueRecord.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error("Can't close the ResultSet ", e);
             }
          }
       }
@@ -2895,8 +2840,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected abstract ResultSet findValuesByPropertyId(String cid) throws SQLException;
 
    protected abstract ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException;
-
-   protected abstract ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException;
 
    protected abstract ResultSet findMaxPropertyVersion(String parentId, String name, int index) throws SQLException;
 

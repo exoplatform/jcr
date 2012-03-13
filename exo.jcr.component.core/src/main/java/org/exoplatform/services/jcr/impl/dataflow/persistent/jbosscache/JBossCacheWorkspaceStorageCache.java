@@ -28,6 +28,8 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
@@ -49,7 +51,6 @@ import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
@@ -878,7 +879,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    public void onSaveItems(final ItemStateChangesLog itemStates)
    {
-      //  if something happen we will rollback changes
+      //  if something happen we will rollback changes 
       boolean rollback = true;
       try
       {
@@ -1776,38 +1777,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    }
 
    /**
-    * Update Node hierarchy in case of same-name siblings reorder.
-    * Assumes the new (updated) nodes already put in the cache. Previous name of updated nodes will be calculated
-    * and that node will be deleted (if has same id as the new node). Children paths will be updated to a new node path.
-    *
-    * @param node NodeData
-    * @param prevNode NodeData
-    */
-   protected void update(final NodeData node, final NodeData prevNode)
-   {
-      // get previously cached NodeData and using its name remove child on the parent
-      Fqn<String> prevFqn =
-         makeChildFqn(childNodes, node.getParentIdentifier(), prevNode.getQPath().getEntries()[prevNode.getQPath()
-            .getEntries().length - 1]);
-      if (node.getIdentifier().equals(cache.get(prevFqn, ITEM_ID)))
-      {
-         // it's same-name siblings re-ordering, delete previous child
-         if (!cache.removeNode(prevFqn) && LOG.isDebugEnabled())
-         {
-            LOG.debug("Node not extists as a child but update asked " + node.getQPath().getAsString());
-         }
-      }
-
-      // update childs paths if index changed
-      int nodeIndex = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1].getIndex();
-      int prevNodeIndex = prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1].getIndex();
-      if (nodeIndex != prevNodeIndex)
-      {
-         updateTreePath(node.getIdentifier(), node.getQPath(), null); // don't change ACL, it's same parent
-      }
-   }
-
-   /**
     * This method duplicate update method, except using getFromBuffer inside.
     * 
     * @param node NodeData
@@ -1889,10 +1858,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
                NodeData prevNode = (NodeData)data;
 
-               TransientNodeData newNode =
-                  new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
-                     prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
-                     prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL());
+               NodeData newNode =
+                  new PersistedNodeData(prevNode.getIdentifier(), newPath, prevNode.getParentIdentifier(),
+                     prevNode.getPersistedVersion(), prevNode.getOrderNumber(), prevNode.getPrimaryTypeName(),
+                     prevNode.getMixinTypeNames(), inheritACL ? acl : prevNode.getACL());
                // update this node
                cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
             }
@@ -1909,63 +1878,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                   inheritACL = false;
                }
 
-               TransientPropertyData newProp =
-                  new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(), prevProp
-                     .getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
+               PropertyData newProp =
+                  new PersistedPropertyData(prevProp.getIdentifier(), newPath, prevProp.getParentIdentifier(),
+                     prevProp.getPersistedVersion(), prevProp.getType(), prevProp.isMultiValued(), prevProp.getValues());
                cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
             }
          }
-      }
-   }
-
-   /**
-    * Update Nodes tree with new path.
-    *
-    * @param parentId String - root node id of JCR subtree.
-    * @param rootPath QPath
-    * @param acl AccessControlList
-    */
-   protected void updateTreePath(final String parentId, final QPath rootPath, final AccessControlList acl)
-   {
-      boolean inheritACL = acl != null;
-
-      // update properties
-      for (Iterator<PropertyData> iter = new ChildPropertiesIterator<PropertyData>(parentId); iter.hasNext();)
-      {
-         PropertyData prevProp = iter.next();
-
-         if (inheritACL
-            && (prevProp.getQPath().getName().equals(Constants.EXO_PERMISSIONS) || prevProp.getQPath().getName()
-               .equals(Constants.EXO_OWNER)))
-         {
-            inheritACL = false;
-         }
-         // recreate with new path for child Props only
-         QPath newPath =
-            QPath
-               .makeChildPath(rootPath, prevProp.getQPath().getEntries()[prevProp.getQPath().getEntries().length - 1]);
-         TransientPropertyData newProp =
-            new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(), prevProp
-               .getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
-         cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
-      }
-
-      // update child nodes
-      for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
-      {
-         NodeData prevNode = iter.next();
-         // recreate with new path for child Nodes only
-         QPath newPath =
-            QPath
-               .makeChildPath(rootPath, prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1]);
-         TransientNodeData newNode =
-            new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
-               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
-               prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL());
-         // update this node
-         cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
-         // update childs recursive
-         updateTreePath(newNode.getIdentifier(), newNode.getQPath(), inheritACL ? acl : null);
       }
    }
 
