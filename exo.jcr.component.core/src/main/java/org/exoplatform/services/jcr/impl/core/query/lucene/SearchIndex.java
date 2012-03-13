@@ -81,16 +81,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.RepositoryException;
@@ -532,7 +523,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    protected boolean isSuspended = false;
 
-   protected Set<String> recoveryFilterClasses = new HashSet<String>();
+   protected final Set<String> recoveryFilterClasses;
 
    protected List<AbstractRecoveryFilter> recoveryFilters = null;
 
@@ -554,6 +545,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       this.cfm = cfm;
       SearchIndexConfigurationHelper searchIndexConfigurationHelper = new SearchIndexConfigurationHelper(this);
       searchIndexConfigurationHelper.init(queryHandlerConfig);
+      this.recoveryFilterClasses = new LinkedHashSet<String>();
    }
 
    /**
@@ -576,6 +568,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       this.analyzer = new JcrStandartAnalyzer();
       this.cfm = null;
       this.wsId = null;
+      this.recoveryFilterClasses = new LinkedHashSet<String>();
    }
 
    /**
@@ -769,6 +762,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          recoveryFilters = new ArrayList<AbstractRecoveryFilter>();
          log.info("Initializing RecoveryFilters.");
+         // add default filter, if none configured.
+         if (recoveryFilterClasses.isEmpty())
+         {
+            this.recoveryFilterClasses.add(DocNumberRecoveryFilter.class.getName());
+         }
          for (String recoveryFilterClassName : recoveryFilterClasses)
          {
             AbstractRecoveryFilter filter = null;
