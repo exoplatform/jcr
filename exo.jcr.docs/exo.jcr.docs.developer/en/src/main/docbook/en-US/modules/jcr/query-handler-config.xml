@@ -334,8 +334,8 @@
         storages, databases and indexes, cluster nodes are synchronized
         anytime. But it's an issue when local index strategy used. If new node
         joins cluster, having no index it is retrieved or recreated. Node can
-        be restarted also and thus index not empty. By default existing index
-        is thought to be actual, but can be outdated. JCR offers a mechanism
+        be restarted also and thus index not empty. Usually existing index is
+        thought to be actual, but can be outdated. JCR offers a mechanism
         called RecoveryFilters that will automatically retrieve index for the
         joining node on startup. This feature is a set of filters that can be
         defined via QueryHandler configuration:</para>
@@ -348,10 +348,15 @@
 &lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.SystemPropertyRecoveryFilter" /&gt;
 </programlisting>
 
-        <para>If any one returns fires, the index is re-synchronized. This
-        feature uses standard index recovery mode defined by previously
-        described parameter (can be "from-indexing" or "from-coordinator"
-        (default value))</para>
+        <para>If any one fires, the index is re-synchronized. Please take in
+        account, that DocNumberRecoveryFilter is used in cases when no filter
+        configured. So, if resynchronization should be blocked, or strictly
+        required on start, then ConfigurationPropertyRecoveryFilter can be
+        used.</para>
+
+        <para>This feature uses standard index recovery mode defined by
+        previously described parameter (can be "from-indexing" or
+        "from-coordinator" (default value))</para>
 
         <programlisting language="xml">&lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
 </programlisting>
