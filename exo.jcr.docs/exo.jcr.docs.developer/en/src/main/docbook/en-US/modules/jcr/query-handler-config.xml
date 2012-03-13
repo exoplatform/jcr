@@ -5,7 +5,11 @@
   <?dbhtml filename="ch-query-handler-config.html"?>
 
   <title>QueryHandler configuration</title>
-  <para>This chapter shows you how to configure <emphasis>QueryHandler</emphasis>: <link linkend="JCR.QueryHandlerConfiguration.Indexing_in_clustered_environment">Indexing in clustered environment</link>.</para>
+
+  <para>This chapter shows you how to configure
+  <emphasis>QueryHandler</emphasis>: <link
+  linkend="JCR.QueryHandlerConfiguration.Indexing_in_clustered_environment">Indexing
+  in clustered environment</link>.</para>
 
   <section id="JCR.QueryHandlerConfiguration.Indexing_in_clustered_environment">
     <title>Indexing in clustered environment</title>
@@ -26,7 +30,7 @@
     <mediaobject>
       <imageobject>
         <imagedata align="center"
-                   fileref="images/diagram-standalone-index.png"/>
+                   fileref="images/diagram-standalone-index.png" />
       </imageobject>
     </mediaobject>
 
@@ -42,7 +46,7 @@
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/diagram-local-index.png"/>
+        <imagedata align="center" fileref="images/diagram-local-index.png" />
       </imageobject>
     </mediaobject>
 
@@ -65,7 +69,7 @@
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/diagram-shared-index.png"/>
+        <imagedata align="center" fileref="images/diagram-shared-index.png" />
       </imageobject>
     </mediaobject>
 
@@ -195,9 +199,9 @@
 
               <entry>If the parameter has been set to
               <command>from-indexing</command>, so a full indexing will be
-              automatically launched (default behavior), if the parameter has
-              been set to <command>from-coordinator</command>, the index will
-              be retrieved from coordinator</entry>
+              automatically launched, if the parameter has been set to
+              <command>from-coordinator</command> (default behavior), the
+              index will be retrieved from coordinator</entry>
             </row>
 
             <row>
@@ -346,8 +350,8 @@
 
         <para>If any one returns fires, the index is re-synchronized. This
         feature uses standard index recovery mode defined by previously
-        described parameter (can be "from-indexing" (default) or
-        "from-coordinator")</para>
+        described parameter (can be "from-indexing" or "from-coordinator"
+        (default value))</para>
 
         <programlisting language="xml">&lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
 </programlisting>
@@ -487,7 +491,7 @@
       blocking whole application by using any JMX-compatible console (see
       screenshot below, "JConsole in action").<mediaobject>
           <imageobject>
-            <imagedata align="center" fileref="images/jmx-jconsole.png"/>
+            <imagedata align="center" fileref="images/jmx-jconsole.png" />
           </imageobject>
         </mediaobject>Server can continue working as expected while index is
       recreated. This depends on the flag "allow queries", passed via JMX
