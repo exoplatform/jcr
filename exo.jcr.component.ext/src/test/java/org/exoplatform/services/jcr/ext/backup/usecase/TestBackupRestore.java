@@ -83,6 +83,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       repositoryBackupRestore("db4");
       repositoryBackupRestore("db4");
+      repositoryBackupRestore("db8");
+      repositoryBackupRestore("db8");
    }
 
    public void testBackupRestoreExistingWorkspaceSingleDB() throws Exception
@@ -95,6 +97,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       workspaceBackupRestore("db4");
       workspaceBackupRestore("db4");
+      workspaceBackupRestore("db8");
+      workspaceBackupRestore("db8");
    }
 
    public void testJobExistingRepositorySameConfigRestoreSingleDB() throws Exception
@@ -107,6 +111,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db4");
       repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db4");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db8");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db8");
    }
 
    public void testJobExistingRepositoryRestoreSingleDB() throws Exception
@@ -119,6 +125,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db4");
       repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db4");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db8");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db8");
    }
 
    public void testJobRepositoryRestoreSingleDB() throws Exception
@@ -131,6 +139,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db4");
       repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db4");
+      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db8");
+      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db8");
    }
 
    public void testJobExistingWorkspaceSameConfigRestoreSingleDB() throws Exception
@@ -143,6 +153,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db4");
       workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db4");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db8");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db8");
    }
 
    public void testJobExistingWorkspaceRestoreSingleDB() throws Exception
@@ -155,6 +167,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db4");
       workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db4");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db8");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db8");
    }
 
    public void testJobWorkspaceRestoreSingleDB() throws Exception
@@ -167,6 +181,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db4");
       workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db4");
+      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db8");
+      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db8");
    }
 
    protected void repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore(String repositoryName)
