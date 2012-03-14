@@ -487,41 +487,60 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
          try
          {
-            // if "from-coordinator" used along with RPC Service present and 
-            if (handler.getIndexRecoveryMode().equals(SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR)
-               && handler.getContext().getIndexRecovery() != null && handler.getContext().getRPCService() != null
-               && handler.getContext().getRPCService().isCoordinator() == false)
+            // isRecoveryFilterUsed returns true only if LocalIndex strategy used
+            if (handler.getContext().isRecoveryFilterUsed())
             {
-               LOG.info("Retrieving index from coordinator (" + handler.getContext().getWorkspacePath(true) + ")...");
-               indexCreated = recoveryIndexFromCoordinator();
+               // if "from-coordinator" index recovery configured 
+               if (SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR.equals(handler.getIndexRecoveryMode()))
+               {
+                  if (handler.getContext().getIndexRecovery() != null && handler.getContext().getRPCService() != null
+                     && !handler.getContext().getRPCService().isCoordinator())
+                  {
+                     LOG.info("Retrieving index from coordinator (" + handler.getContext().getWorkspacePath(true)
+                        + ")...");
+                     indexCreated = recoveryIndexFromCoordinator();
 
-               if (indexCreated)
-               {
-                  indexNames.read();
-                  refreshIndexList();
-               }
-               else
-               {
-                  LOG.info("Index can'b be retrieved from coordinator now, because it is offline. "
-                     + "Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
+                     if (indexCreated)
+                     {
+                        indexNames.read();
+                        refreshIndexList();
+                     }
+                     else
+                     {
+                        LOG.info("Index can'b be retrieved from coordinator now, because it is offline. "
+                           + "Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
+                     }
+                  }
+                  else
+                  {
+                     if (handler.getContext().getRPCService() == null)
+                     {
+                        // logging an event, when RPCService is not configured in clustered mode
+                        LOG.error("RPC Service is not configured but required for copying the index "
+                           + "from coordinator node. Index will be created by re-indexing.");
+                     }
+                     else
+                     {
+                        if (handler.getContext().getIndexRecovery() == null)
+                        {
+                           // Should never occurs, but logging an event, when RPCService configured, but IndexRecovery
+                           // instance is missing
+                           LOG.error("Instance of IndexRecovery class is missing for unknown reason. Index will be"
+                              + " created by re-indexing.");
+                        }
+                        if (handler.getContext().getRPCService().isCoordinator())
+                        {
+                           // logging an event when first node starts
+                           LOG.info("Copying the index from coordinator configured, but this node is the "
+                              + "only one in a cluster. Index will be created by re-indexing.");
+                        }
+                     }
+                  }
                }
             }
 
             if (!indexCreated)
             {
-               if (handler.getIndexRecoveryMode().equals(SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR))
-               {
-                  if (handler.getContext().getRPCService() == null)
-                  {
-                     LOG.error("RPC Service is not configured but required for copying the index "
-                        + "from coordinator node. Index will be created by re-indexing.");
-                  }
-                  else if (handler.getContext().getRPCService().isCoordinator() == true)
-                  {
-                     LOG.info("Copying the index from coordinator configured, but this node is the "
-                        + "only one in a cluster. Index will be created by re-indexing.");
-                  }
-               }
 
                // traverse and index workspace
                executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
