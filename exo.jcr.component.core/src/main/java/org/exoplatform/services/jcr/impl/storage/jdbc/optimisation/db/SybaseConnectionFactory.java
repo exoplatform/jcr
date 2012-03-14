@@ -19,11 +19,8 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
-import java.io.File;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -41,14 +38,6 @@ public class SybaseConnectionFactory extends GenericCQConnectionFactory
 {
 
    /**
-    * SybaseConnectionFactory constructor.
-    */
-   public SybaseConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
-   {
-      super(containerConfig);
-   }
-
-   /**
     * SybaseConnectionFactory  constructor.
     */
    public SybaseConnectionFactory(DataSource dbDataSource, JDBCDataContainerConfig containerConfig)
@@ -64,7 +53,7 @@ public class SybaseConnectionFactory extends GenericCQConnectionFactory
    {
       try
       {
-         if (this.containerConfig.dbStructureType.isSimpleTable())
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
             return new SybaseMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }

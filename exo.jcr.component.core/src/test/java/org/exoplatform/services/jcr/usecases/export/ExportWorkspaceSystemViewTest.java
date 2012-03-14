@@ -163,7 +163,7 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
       try
       {
          DatabaseStructureType databaseType = JDBCWorkspaceDataContainer.getDatabaseType(ws1e);
-         return !databaseType.isSingleDatabase();
+         return databaseType.isMultiDatabase();
       }
       catch (RepositoryConfigurationException e)
       {

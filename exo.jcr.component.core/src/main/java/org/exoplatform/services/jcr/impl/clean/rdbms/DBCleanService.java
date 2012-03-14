@@ -189,8 +189,6 @@ public class DBCleanService
    {
       SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
-      boolean multiDb = getMultiDbParameter(wsEntry);
-
       String dialect = resolveDialect(wsEntry);
       boolean autoCommit = dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE);
       
@@ -290,7 +288,7 @@ public class DBCleanService
    {
       try
       {
-         return Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
+         return JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase();
       }
       catch (RepositoryConfigurationException e)
       {

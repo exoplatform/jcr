@@ -38,13 +38,7 @@ public class JDBCDataContainerConfig
        */
       MULTI {
          @Override
-         public boolean isSingleDatabase()
-         {
-            return false;
-         }
-
-         @Override
-         public boolean isSimpleTable()
+         public boolean isMultiDatabase()
          {
             return true;
          }
@@ -55,13 +49,7 @@ public class JDBCDataContainerConfig
        */
       SINGLE {
          @Override
-         public boolean isSingleDatabase()
-         {
-            return true;
-         }
-
-         @Override
-         public boolean isSimpleTable()
+         public boolean isMultiDatabase()
          {
             return false;
          }
@@ -73,28 +61,16 @@ public class JDBCDataContainerConfig
        */
       ISOLATED {
          @Override
-         public boolean isSingleDatabase()
-         {
-            return true;
-         }
-
-         @Override
-         public boolean isSimpleTable()
+         public boolean isMultiDatabase()
          {
             return true;
          }
       };
 
       /**
-       * @return true if database structure type requires same database for workspaces within one repository
+       * @return true if every workspace stores data in separate table within one repository
        */
-      public abstract boolean isSingleDatabase(); // TODO rename?
-
-      /**
-       * @return true if database structure type doesn't have CONTAINER_NAME field in ITEM's table
-       */
-      public abstract boolean isSimpleTable(); // TODO rename?
-
+      public abstract boolean isMultiDatabase();
    }
 
    /**
@@ -113,29 +89,9 @@ public class JDBCDataContainerConfig
    public String dbDialect;
 
    /**
-    * Database driver
-    */
-   public String dbDriver;
-
-   /**
-    * Database password
-    */
-   public String dbPassword;
-
-   /**
     * Datasource name
     */
    public String dbSourceName;
-
-   /**
-    * Database URL
-    */
-   public String dbUrl;
-
-   /**
-    * Database username 
-    */
-   public String dbUserName;
 
    /**
     * Data structure type, replaces deprecated multiDb

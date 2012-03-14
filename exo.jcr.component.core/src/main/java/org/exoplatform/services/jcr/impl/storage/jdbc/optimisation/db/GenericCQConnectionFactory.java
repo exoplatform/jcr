@@ -18,13 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -50,32 +48,6 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    }
 
    /**
-    * GenericConnectionFactory constructor.
-    */
-   public GenericCQConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
-   {
-
-      this(null, containerConfig);
-
-      try
-      {
-         ClassLoading.forName(this.containerConfig.dbDriver, this).newInstance();
-      }
-      catch (InstantiationException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (ClassNotFoundException e)
-      {
-         throw new RepositoryException(e);
-      }
-   }
-
-   /**
     * {@inheritDoc}
     */
    @Override
@@ -93,7 +65,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
       try
       {
 
-         if (this.containerConfig.dbStructureType.isSimpleTable())
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
             return new MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
@@ -115,12 +87,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    {
       try
       {
-         Connection conn =
-            dbDataSource != null ? dbDataSource.getConnection() : (this.containerConfig.dbUserName != null
-               ? DriverManager.getConnection(this.containerConfig.dbUrl, this.containerConfig.dbUserName,
-                  this.containerConfig.dbPassword) : DriverManager.getConnection(this.containerConfig.dbUrl));
-
-         return conn;
+         return dbDataSource.getConnection();
       }
       catch (SQLException e)
       {

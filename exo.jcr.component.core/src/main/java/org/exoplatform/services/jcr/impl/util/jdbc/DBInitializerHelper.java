@@ -18,11 +18,15 @@ package org.exoplatform.services.jcr.impl.util.jdbc;
 
 import org.exoplatform.commons.utils.IOUtil;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.services.database.utils.DialectConstants;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -44,45 +48,102 @@ public class DBInitializerHelper
    protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBInitializerHelper");
 
    /**
-    * Getting path to initialization by specific dialect and multidb.
+    * Table prefix for all tables used in JCR.
+    */
+   public static final String JCR_TABLE_PREFIX = "JCR_";
+
+   /**
+    * Returns SQL scripts for initialization database for defined {@link JDBCDataContainerConfig}.  
+    */
+   public static String prepareScripts(JDBCDataContainerConfig containerConfig) throws IOException
+   {
+      String itemTableSuffix = getItemTableSuffix(containerConfig);
+      String valueTableSuffix = getValueTableSuffix(containerConfig);
+      String refTableSuffix = getRefTableSuffix(containerConfig);
+
+      boolean isolatedDB = containerConfig.dbStructureType == DatabaseStructureType.ISOLATED;
+
+      return prepareScripts(containerConfig.initScriptPath, itemTableSuffix, valueTableSuffix, refTableSuffix, isolatedDB);
+   }
+
+   /**
+    * Returns SQL scripts for initialization database for defined {@link WorkspaceEntry}. 
     * 
-    * @param dbDialect
-    *          String
-    * @param multiDb
-    *          Boolean
-    * @return String
-    *           Path to DB initialization script.
+    * @param wsEntry
+    *          workspace configuration 
+    * @param dialect
+    *          database dialect which is used, since {@link JDBCWorkspaceDataContainer#DB_DIALECT} parameter 
+    *          can contain {@link DialectConstants#DB_DIALECT_AUTO} value it is necessary to resolve dialect
+    *          before based on database connection.
+    */
+   public static String prepareScripts(WorkspaceEntry wsEntry, String dialect) throws IOException,
+      RepositoryConfigurationException
+   {
+      String itemTableSuffix = getItemTableSuffix(wsEntry);
+      String valueTableSuffix = getValueTableSuffix(wsEntry);
+      String refTableSuffix = getRefTableSuffix(wsEntry);
+
+      DatabaseStructureType dbType = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry);
+
+      boolean isolatedDB = dbType == DatabaseStructureType.ISOLATED;
+      String initScriptPath = DBInitializerHelper.scriptPath(dialect, dbType.isMultiDatabase());
+
+      return prepareScripts(initScriptPath, itemTableSuffix, valueTableSuffix, refTableSuffix, isolatedDB);
+   }
+
+   /**
+    * Preparing SQL scripts for database initialization.
+    */
+   private static String prepareScripts(String initScriptPath, String itemTableSuffix, String valueTableSuffix,
+      String refTableSuffix, boolean isolatedDB) throws IOException
+   {
+      String scripts = IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(initScriptPath));
+
+      if (isolatedDB)
+      {
+         scripts =
+            scripts.replace("MITEM", itemTableSuffix).replace("MVALUE", valueTableSuffix)
+               .replace("MREF", refTableSuffix);
+      }
+
+      return scripts;
+   }
+
+   /**
+    * Returns path where SQL scripts for database initialization is stored.
     */
    public static String scriptPath(String dbDialect, boolean multiDb)
    {
+      String suffix = multiDb ? "m" : "s";
+
       String sqlPath = null;
       if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.ora.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.ora.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.pgsql.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.pgsql.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-myisam.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-myisam.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-utf8.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-utf8.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-myisam-utf8.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-myisam-utf8.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
       {
@@ -90,111 +151,163 @@ public class DBInitializerHelper
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DERBY))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.derby.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.derby.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.db2.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2v8.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.db2v8.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sybase.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.sybase.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_INGRES))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ingres.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.ingres.sql";
       }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.sql";
       }
       else
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.sql";
       }
 
       return sqlPath;
    }
 
    /**
-    * Initialization script for root node.
-   * 
+    * Initialization script for root node based on {@link JDBCDataContainerConfig}.
     */
    public static String getRootNodeInitializeScript(JDBCDataContainerConfig containerConfig)
    {
-      // no ContainerNamer required
-      boolean simpleTable = containerConfig.dbStructureType.isSimpleTable();
+      boolean multiDb = containerConfig.dbStructureType.isMultiDatabase();
+      String itemTableName = getItemTableName(containerConfig);
 
-      return "insert into JCR_" + getTableSuffix(containerConfig) + "(ID, PARENT_ID, NAME, "
-         + (simpleTable ? "" : "CONTAINER_NAME, ") + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('"
-         + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_NAME
-         + "', " + (simpleTable ? "" : "'" + Constants.ROOT_PARENT_CONAINER_NAME + "', ") + "0, 0, 0, 0)";
+      return getRootNodeInitializeScript(itemTableName, multiDb);
    }
 
    /**
     * Initialization script for root node.
-    * 
-    * @param multiDb
-    *          indicates if we have multi-db configuration or not
-    * @return SQL script
     */
-   @Deprecated
-   public static String getRootNodeInitializeScript(boolean multiDb)
+   public static String getRootNodeInitializeScript(String itemTableName, boolean multiDb)
    {
-      return "insert into JCR_" + (multiDb ? "M" : "S") + "ITEM(ID, PARENT_ID, NAME, "
-         + (multiDb ? "" : "CONTAINER_NAME, ") + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('"
-         + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_NAME
-         + "', " + (multiDb ? "" : "'" + Constants.ROOT_PARENT_CONAINER_NAME + "', ") + "0, 0, 0, 0)";
+      String singeDbScript =
+         "insert into " + itemTableName + "(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, "
+            + "N_ORDER_NUM) VALUES('" + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_UUID + "', '"
+            + Constants.ROOT_PARENT_NAME + "', '" + Constants.ROOT_PARENT_CONAINER_NAME + "', 0, 0, 0, 0)";
+
+      String multiDbScript =
+         "insert into " + itemTableName + "(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, " + "N_ORDER_NUM) VALUES('"
+            + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_NAME
+            + "', 0, 0, 0, 0)";
+
+      return multiDb ? multiDbScript : singeDbScript;
    }
 
-   public static String getTableSuffix(JDBCDataContainerConfig containerConfig)
+   public static String getItemTableSuffix(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
+   {
+      return getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
+         JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "ITEM");
+   }
+
+   public static String getValueTableSuffix(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
+   {
+      return getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
+         JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "VALUE");
+   }
+
+   public static String getRefTableSuffix(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
+   {
+      return getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
+         JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "REF");
+   }
+
+   public static String getItemTableName(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
+   {
+      return JCR_TABLE_PREFIX
+         + getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
+            JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "ITEM");
+   }
+
+   public static String getValueTableName(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
+   {
+      return JCR_TABLE_PREFIX
+         + getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
+            JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "VALUE");
+   }
+
+   public static String getRefTableName(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
+   {
+      return JCR_TABLE_PREFIX
+         + getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
+            JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "REF");
+   }
+
+   public static String getItemTableSuffix(JDBCDataContainerConfig containerConfig)
+   {
+      return getTableSuffix(containerConfig.dbStructureType, containerConfig.dbTableSuffix, "ITEM");
+   }
+
+   public static String getValueTableSuffix(JDBCDataContainerConfig containerConfig)
+   {
+      return getTableSuffix(containerConfig.dbStructureType, containerConfig.dbTableSuffix, "VALUE");
+   }
+
+   public static String getRefTableSuffix(JDBCDataContainerConfig containerConfig)
+   {
+      return getTableSuffix(containerConfig.dbStructureType, containerConfig.dbTableSuffix, "REF");
+   }
+
+   public static String getItemTableName(JDBCDataContainerConfig containerConfig)
+   {
+      return JCR_TABLE_PREFIX + getTableSuffix(containerConfig.dbStructureType, containerConfig.dbTableSuffix, "ITEM");
+   }
+
+   public static String getValueTableName(JDBCDataContainerConfig containerConfig)
+   {
+      return JCR_TABLE_PREFIX + getTableSuffix(containerConfig.dbStructureType, containerConfig.dbTableSuffix, "VALUE");
+   }
+
+   public static String getRefTableName(JDBCDataContainerConfig containerConfig)
+   {
+      return JCR_TABLE_PREFIX + getTableSuffix(containerConfig.dbStructureType, containerConfig.dbTableSuffix, "REF");
+   }
+
+   private static String getTableSuffix(JDBCDataContainerConfig.DatabaseStructureType dbType, String dbTableSuffix,
+      String forTable)
    {
       String tableSuffix = "";
-      switch (containerConfig.dbStructureType)
+      switch (dbType)
       {
          case MULTI :
-            tableSuffix = "MITEM";
+            tableSuffix = "M" + forTable;
             break;
          case SINGLE :
-            tableSuffix = "SITEM";
+            tableSuffix = "S" + forTable;
             break;
          case ISOLATED :
-            tableSuffix = "I" + containerConfig.dbTableSuffix;
+            tableSuffix = forTable.substring(0, 1) + dbTableSuffix;
             break;
       }
       return tableSuffix;
    }
 
-   public static String getScriptAsString(String dbDialect, boolean multiDb) throws IOException
-   {
-      String scriptsPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
-      return IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(scriptsPath));
-   }
-
    /**
-    * Get script for creating object (index, etc...)
-    * @throws RepositoryConfigurationException 
+    * Returns SQL script for create objects such as index, primary of foreign key. 
     */
-   public static String getObjectScript(String objectName, boolean multiDb, String dialect)
-      throws RepositoryConfigurationException
+   public static String getObjectScript(String objectName, boolean multiDb, String dialect, WorkspaceEntry wsEntry)
+      throws RepositoryConfigurationException, IOException
    {
-      String scriptsPath = DBInitializerHelper.scriptPath(dialect, multiDb);
-      String script;
-      try
-      {
-         script = IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(scriptsPath));
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryConfigurationException("Can not read script file " + scriptsPath, e);
-      }
+      String scripts = prepareScripts(wsEntry, dialect);
 
       String sql = null;
-      for (String query : JDBCUtils.splitWithSQLDelimiter(script))
+      for (String query : JDBCUtils.splitWithSQLDelimiter(scripts))
       {
          String q = JDBCUtils.cleanWhitespaces(query);
          if (q.contains(objectName))

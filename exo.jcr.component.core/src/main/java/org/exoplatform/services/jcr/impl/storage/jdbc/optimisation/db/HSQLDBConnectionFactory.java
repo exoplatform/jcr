@@ -45,15 +45,6 @@ public class HSQLDBConnectionFactory extends GenericCQConnectionFactory
    }
 
    /**
-    * HSQLDBConnectionFactory constructor.
-    */
-   public HSQLDBConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
-   {
-
-      super(containerConfig);
-   }
-
-   /**
     * {@inheritDoc}
     */
    public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
@@ -61,7 +52,7 @@ public class HSQLDBConnectionFactory extends GenericCQConnectionFactory
       try
       {
 
-         if (this.containerConfig.dbStructureType.isSimpleTable())
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
             return new HSQLDBMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly,
                containerConfig);

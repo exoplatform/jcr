@@ -91,8 +91,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          // define one common database cleaner for all restores for single db case
          DBCleanerTool dbCleaner = null;
          
-         Boolean isMultiDb =
-            Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
+         Boolean isMultiDb = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase();
 
          if (!isMultiDb)
          {

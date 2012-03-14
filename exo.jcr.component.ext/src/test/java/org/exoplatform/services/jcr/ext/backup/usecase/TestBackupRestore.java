@@ -45,6 +45,7 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.io.File;
 import java.sql.Connection;
@@ -883,7 +884,9 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       ManageableRepository repository = repositoryService.getRepository(repositoryName);
       for (WorkspaceEntry wsEntry : repository.getConfiguration().getWorkspaceEntries())
       {
-         String multiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB) ? "M" : "S";
+         String itemTableName = DBInitializerHelper.getItemTableName(wsEntry);
+         String valueTableName = DBInitializerHelper.getValueTableName(wsEntry);
+         String refTableName = DBInitializerHelper.getRefTableName(wsEntry);
 
          DataSource ds =
             (DataSource)new InitialContext().lookup(wsEntry.getContainer().getParameterValue(
@@ -891,7 +894,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          Connection conn = ds.getConnection();
          try
          {
-            ResultSet result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM JCR_" + multiDb + "ITEM");
+            ResultSet result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + itemTableName);
             try
             {
                assertTrue(result.next());
@@ -902,7 +905,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
                result.close();
             }
 
-            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM JCR_" + multiDb + "VALUE");
+            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + valueTableName);
             try
             {
                assertTrue(result.next());
@@ -913,7 +916,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
                result.close();
             }
 
-            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM JCR_" + multiDb + "REF");
+            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + refTableName);
             try
             {
                assertTrue(result.next());

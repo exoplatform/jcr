@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms.scripts;
 
-import org.exoplatform.commons.utils.IOUtil;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -28,7 +26,6 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,19 +37,31 @@ import java.util.List;
  */
 public abstract class DBCleaningScripts
 {
-   protected final String tablePrefix;
+   protected String itemTableName;
+
+   protected String valueTableName;
+
+   protected String refTableName;
+
+   protected String itemTableSuffix;
+
+   protected String valueTableSuffix;
+
+   protected String refTableSuffix;
 
    protected final String dialect;
 
-   protected final boolean multiDb;
-
    protected final String workspaceName;
+
+   protected final boolean multiDb;
 
    protected final List<String> cleaningScripts = new ArrayList<String>();
 
    protected final List<String> committingScripts = new ArrayList<String>();
 
    protected final List<String> rollbackingScripts = new ArrayList<String>();
+
+   protected final WorkspaceEntry wsEntry;
 
    /**
     * DBCleaningScripts constructor.
@@ -61,15 +70,27 @@ public abstract class DBCleaningScripts
     */
    DBCleaningScripts(String dialect, RepositoryEntry rEntry) throws DBCleanException
    {
-      if (getMultiDbParameter(rEntry.getWorkspaceEntries().get(0)))
+      for (WorkspaceEntry wsEntry : rEntry.getWorkspaceEntries())
       {
-         throw new DBCleanException("Not supported operation.");
+         try
+         {
+            if (JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase())
+            {
+               throw new DBCleanException("Not supported operation.");
+            }
+         }
+         catch (RepositoryConfigurationException e)
+         {
+            throw new DBCleanException(e);
+         }
       }
 
       this.multiDb = false;
-      this.tablePrefix = "S";
       this.workspaceName = null;
       this.dialect = dialect;
+      this.wsEntry = rEntry.getWorkspaceEntries().get(0);
+
+      initTableNames(wsEntry);
    }
 
    /**
@@ -79,10 +100,20 @@ public abstract class DBCleaningScripts
     */
    DBCleaningScripts(String dialect, WorkspaceEntry wsEntry) throws DBCleanException
    {
-      this.multiDb = getMultiDbParameter(wsEntry);
-      this.tablePrefix = multiDb ? "M" : "S";
+      try
+      {
+         this.multiDb = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new DBCleanException(e);
+      }
+
       this.workspaceName = wsEntry.getName();
       this.dialect = dialect;
+      this.wsEntry = wsEntry;
+
+      initTableNames(wsEntry);
    }
    
    /**
@@ -217,8 +248,8 @@ public abstract class DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      String constraintName = "JCR_FK_" + tablePrefix + "ITEM_PARENT";
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM " + constraintDroppingSyntax() + " " + constraintName);
+      String constraintName = "JCR_FK_" + itemTableSuffix + "_PARENT";
+      scripts.add("ALTER TABLE " + itemTableName + " " + constraintDroppingSyntax() + " " + constraintName);
 
       return scripts;
    }
@@ -231,8 +262,8 @@ public abstract class DBCleaningScripts
       List<String> scripts = new ArrayList<String>();
 
       String constraintName =
-         "JCR_FK_" + tablePrefix + "ITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)";
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM ADD CONSTRAINT " + constraintName);
+         "JCR_FK_" + itemTableSuffix + "_PARENT FOREIGN KEY(PARENT_ID) REFERENCES " + itemTableName + "(ID)";
+      scripts.add("ALTER TABLE " + itemTableName + " ADD CONSTRAINT " + constraintName);
 
       return scripts;
    }
@@ -244,9 +275,9 @@ public abstract class DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TABLE JCR_" + tablePrefix + "VALUE_OLD");
-      scripts.add("DROP TABLE JCR_" + tablePrefix + "ITEM_OLD");
-      scripts.add("DROP TABLE JCR_" + tablePrefix + "REF_OLD");
+      scripts.add("DROP TABLE " + valueTableName + "_OLD");
+      scripts.add("DROP TABLE " + refTableName + "_OLD");
+      scripts.add("DROP TABLE " + itemTableName + "_OLD");
 
       return scripts;
    }
@@ -258,9 +289,9 @@ public abstract class DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TABLE JCR_" + tablePrefix + "VALUE");
-      scripts.add("DROP TABLE JCR_" + tablePrefix + "ITEM");
-      scripts.add("DROP TABLE JCR_" + tablePrefix + "REF");
+      scripts.add("DROP TABLE " + valueTableName);
+      scripts.add("DROP TABLE " + refTableName);
+      scripts.add("DROP TABLE " + itemTableName);
 
       return scripts;
    }
@@ -288,33 +319,27 @@ public abstract class DBCleaningScripts
     */
    protected Collection<String> getDBInitializationScripts() throws DBCleanException
    {
-      String scriptPath = DBInitializerHelper.scriptPath(dialect, multiDb);
-
-      String script;
+      String dbScripts;
       try
       {
-         script = IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(scriptPath));
-      }
-      catch (FileNotFoundException e)
-      {
-         throw new DBCleanException(e);
-      }
-      catch (IllegalArgumentException e)
-      {
-         throw new DBCleanException(e);
+         dbScripts = DBInitializerHelper.prepareScripts(wsEntry, dialect);
       }
       catch (IOException e)
       {
          throw new DBCleanException(e);
       }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new DBCleanException(e);
+      }
 
       List<String> scripts = new ArrayList<String>();
-      for (String query : JDBCUtils.splitWithSQLDelimiter(script))
+      for (String query : JDBCUtils.splitWithSQLDelimiter(dbScripts))
       {
          scripts.add(JDBCUtils.cleanWhitespaces(query));
       }
 
-      scripts.add(DBInitializerHelper.getRootNodeInitializeScript(multiDb));
+      scripts.add(DBInitializerHelper.getRootNodeInitializeScript(itemTableName, multiDb));
 
       return scripts;
    }
@@ -327,14 +352,17 @@ public abstract class DBCleaningScripts
       return "DROP CONSTRAINT";
    }
 
-   /**
-    * Return {@link JDBCWorkspaceDataContainer#MULTIDB} parameter from workspace configuration.
-    */
-   private boolean getMultiDbParameter(WorkspaceEntry wsEntry) throws DBCleanException
+   private void initTableNames(WorkspaceEntry wsConfig) throws DBCleanException
    {
       try
       {
-         return Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
+         itemTableName = DBInitializerHelper.getItemTableName(wsConfig);
+         refTableName = DBInitializerHelper.getRefTableName(wsConfig);
+         valueTableName = DBInitializerHelper.getValueTableName(wsConfig);
+
+         itemTableSuffix = DBInitializerHelper.getItemTableSuffix(wsConfig);
+         valueTableSuffix = DBInitializerHelper.getValueTableSuffix(wsConfig);
+         refTableSuffix = DBInitializerHelper.getRefTableSuffix(wsConfig);
       }
       catch (RepositoryConfigurationException e)
       {

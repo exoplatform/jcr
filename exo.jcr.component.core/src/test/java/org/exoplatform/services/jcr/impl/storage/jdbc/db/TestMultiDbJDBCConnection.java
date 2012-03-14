@@ -19,7 +19,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -43,7 +43,7 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
       containerConfig.initScriptPath = scriptPath;
       containerConfig.dbStructureType = multiDB ? DatabaseStructureType.MULTI : DatabaseStructureType.SINGLE;
       containerConfig.multiDb = multiDB;
-      new StorageDBInitializer(getJNDIConnection(), containerConfig).init();
+      new DBInitializer(getJNDIConnection(), containerConfig).init();
    }
 
    @Override

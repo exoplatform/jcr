@@ -18,14 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
-import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -57,31 +55,6 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    }
 
    /**
-    * GenericConnectionFactory constructor with dbDriver class validation
-    */
-   public GenericConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
-   {
-      this(null, containerConfig);
-
-      try
-      {
-         ClassLoading.forName(this.containerConfig.dbDriver, this).newInstance();
-      }
-      catch (InstantiationException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (ClassNotFoundException e)
-      {
-         throw new RepositoryException(e);
-      }
-   }
-
-   /**
     * {@inheritDoc}
     */
    public WorkspaceStorageConnection openConnection() throws RepositoryException
@@ -97,7 +70,7 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
       try
       {
 
-         if (this.containerConfig.dbStructureType.isSimpleTable())
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
             return new MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
@@ -118,10 +91,8 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    {
       try
       {
-         Connection conn =
-            dbDataSource != null ? dbDataSource.getConnection() : (this.containerConfig.dbUserName != null
-               ? DriverManager.getConnection(this.containerConfig.dbUrl, this.containerConfig.dbUserName,
-                  this.containerConfig.dbPassword) : DriverManager.getConnection(this.containerConfig.dbUrl));
+         Connection conn = dbDataSource.getConnection();
+
          if (readOnly)
          {
             // set this feature only if it asked

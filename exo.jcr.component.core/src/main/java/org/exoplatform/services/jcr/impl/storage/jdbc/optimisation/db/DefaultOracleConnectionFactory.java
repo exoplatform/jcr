@@ -41,15 +41,6 @@ public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
    }
 
    /**
-    * DefaultOracleConnectionFactory constructor.
-    */
-   public DefaultOracleConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
-   {
-
-      super(containerConfig);
-   }
-
-   /**
     * {@inheritDoc}
     */
    @Override
@@ -59,7 +50,7 @@ public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
       {
          if (containerConfig.useQueryHints)
          {
-            if (this.containerConfig.dbStructureType.isSimpleTable())
+            if (this.containerConfig.dbStructureType.isMultiDatabase())
             {
                return new OracleMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly,
                   containerConfig);

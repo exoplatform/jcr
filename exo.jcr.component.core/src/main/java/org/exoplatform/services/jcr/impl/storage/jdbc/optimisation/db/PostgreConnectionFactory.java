@@ -34,13 +34,6 @@ import javax.sql.DataSource;
  */
 public class PostgreConnectionFactory extends GenericCQConnectionFactory
 {
-   /**
-    * PostgreConnectionFactory constructor.
-    */
-   public PostgreConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
-   {
-      super(containerConfig);
-   }
 
    /**
     * PostgreConnectionFactory  constructor.
@@ -58,7 +51,7 @@ public class PostgreConnectionFactory extends GenericCQConnectionFactory
    {
       try
       {
-         if (this.containerConfig.dbStructureType.isSimpleTable())
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
             return new PostgreMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }

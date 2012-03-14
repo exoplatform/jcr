@@ -29,8 +29,8 @@
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="sourceName" value="jdbcjcr" />
-                     <property name="dialect" value="generic" />
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="max-buffer-size" value="204800" />
                      <property name="swap-directory" value="target/temp/swap/ws" />
@@ -68,8 +68,8 @@
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="sourceName" value="jdbcjcr" />
-                     <property name="dialect" value="generic" />
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="max-buffer-size" value="204800" />
                      <property name="swap-directory" value="target/temp/swap/ws2" />

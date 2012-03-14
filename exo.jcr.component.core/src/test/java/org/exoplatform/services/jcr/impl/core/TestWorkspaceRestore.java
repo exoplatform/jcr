@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.BufferedInputStream;
@@ -57,7 +58,7 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       super.setUp();
       wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
       
-      isDefaultWsMultiDb = "true".equals(wsEntry.getContainer().getParameterValue("multi-db")); 
+      isDefaultWsMultiDb = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase();
    }
 
    public void testRestore() throws RepositoryConfigurationException, Exception

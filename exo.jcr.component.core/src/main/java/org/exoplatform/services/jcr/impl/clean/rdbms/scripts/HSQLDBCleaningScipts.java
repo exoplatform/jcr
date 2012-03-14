@@ -66,29 +66,28 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       Collection<String> scripts = new ArrayList<String>();
 
       // renaming tables
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE RENAME TO JCR_" + tablePrefix + "VALUE_OLD");
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM RENAME TO JCR_" + tablePrefix + "ITEM_OLD");
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "REF RENAME TO JCR_" + tablePrefix + "REF_OLD");
+      scripts.add("ALTER TABLE " + valueTableName + " RENAME TO " + valueTableName + "_OLD");
+      scripts.add("ALTER TABLE " + itemTableName + " RENAME TO " + itemTableName + "_OLD");
+      scripts.add("ALTER TABLE " + refTableName + " RENAME TO " + refTableName + "_OLD");
 
       // droping constraints
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE_OLD DROP CONSTRAINT JCR_FK_" + tablePrefix
-         + "VALUE_PROPERTY");
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "ITEM_OLD DROP CONSTRAINT JCR_FK_" + tablePrefix + "ITEM_PARENT");
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "ITEM_OLD DROP CONSTRAINT JCR_PK_" + tablePrefix + "ITEM");
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE_OLD DROP CONSTRAINT JCR_PK_" + tablePrefix + "VALUE");
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "REF_OLD DROP CONSTRAINT JCR_PK_" + tablePrefix + "REF");
+      scripts.add("ALTER TABLE " + valueTableName + "_OLD DROP CONSTRAINT JCR_FK_" + valueTableSuffix + "_PROPERTY");
+      scripts.add("ALTER TABLE " + itemTableName + "_OLD DROP CONSTRAINT JCR_FK_" + itemTableSuffix + "_PARENT");
+      scripts.add("ALTER TABLE " + itemTableName + "_OLD DROP CONSTRAINT JCR_PK_" + itemTableSuffix);
+      scripts.add("ALTER TABLE " + valueTableName + "_OLD DROP CONSTRAINT JCR_PK_" + valueTableSuffix);
+      scripts.add("ALTER TABLE " + refTableName + "_OLD DROP CONSTRAINT JCR_PK_" + refTableSuffix);
 
       // renaming indexes
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "ITEM_PARENT RENAME TO JCR_IDX_" + tablePrefix
-         + "ITEM_PARENT_OLD");
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "ITEM_PARENT_ID RENAME TO JCR_IDX_" + tablePrefix
-         + "ITEM_PARENT_ID_OLD");
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "ITEM_N_ORDER_NUM RENAME TO JCR_IDX_" + tablePrefix
-         + "ITEM_N_ORDER_NUM_OLD");
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "VALUE_PROPERTY RENAME TO JCR_IDX_" + tablePrefix
-         + "VALUE_PROPERTY_OLD");
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "REF_PROPERTY RENAME TO JCR_IDX_" + tablePrefix
-         + "REF_PROPERTY_OLD");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_PARENT_OLD");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_ID RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_PARENT_ID_OLD");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_N_ORDER_NUM_OLD");
+      scripts.add("ALTER INDEX  JCR_IDX_" + valueTableSuffix + "_PROPERTY RENAME TO JCR_IDX_" + valueTableSuffix
+         + "_PROPERTY_OLD");
+      scripts.add("ALTER INDEX  JCR_IDX_" + refTableSuffix + "_PROPERTY RENAME TO JCR_IDX_" + refTableSuffix
+         + "_PROPERTY_OLD");
 
       return scripts;
    }
@@ -101,33 +100,31 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       Collection<String> scripts = new ArrayList<String>();
 
       // renaming tables
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE_OLD RENAME TO JCR_" + tablePrefix + "VALUE");
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM_OLD RENAME TO JCR_" + tablePrefix + "ITEM");
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "REF_OLD RENAME TO JCR_" + tablePrefix + "REF");
+      scripts.add("ALTER TABLE " + valueTableName + "_OLD RENAME TO " + valueTableName);
+      scripts.add("ALTER TABLE " + itemTableName + "_OLD RENAME TO " + itemTableName);
+      scripts.add("ALTER TABLE " + refTableName + "_OLD RENAME TO " + refTableName);
 
       // creating constraints
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "ITEM ADD CONSTRAINT JCR_PK_" + tablePrefix
-         + "ITEM PRIMARY KEY(ID)");
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE ADD CONSTRAINT JCR_FK_" + tablePrefix
-         + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)");
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "ITEM ADD CONSTRAINT JCR_FK_" + tablePrefix
-         + "ITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)");
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE ADD CONSTRAINT JCR_PK_" + tablePrefix
-         + "VALUE PRIMARY KEY(ID)");
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "REF ADD CONSTRAINT JCR_PK_" + tablePrefix
-         + "REF PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)");
+      scripts.add("ALTER TABLE " + itemTableName + " ADD CONSTRAINT JCR_PK_" + itemTableSuffix + " PRIMARY KEY(ID)");
+      scripts.add("ALTER TABLE  " + valueTableName + " ADD CONSTRAINT JCR_FK_" + valueTableSuffix
+         + "_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES " + itemTableName + "(ID)");
+      scripts.add("ALTER TABLE " + itemTableName + " ADD CONSTRAINT JCR_FK_" + itemTableSuffix
+         + "_PARENT FOREIGN KEY(PARENT_ID) REFERENCES " + itemTableName + "(ID)");
+      scripts.add("ALTER TABLE  " + valueTableName + " ADD CONSTRAINT JCR_PK_" + valueTableSuffix + " PRIMARY KEY(ID)");
+      scripts.add("ALTER TABLE  " + refTableName + " ADD CONSTRAINT JCR_PK_" + refTableSuffix
+         + " PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)");
 
       // renaming indexes
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "ITEM_PARENT_OLD RENAME TO JCR_IDX_" + tablePrefix
-         + "ITEM_PARENT");
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "ITEM_PARENT_ID_OLD RENAME TO JCR_IDX_" + tablePrefix
-         + "ITEM_PARENT_ID");
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "ITEM_N_ORDER_NUM_OLD RENAME TO JCR_IDX_" + tablePrefix
-         + "ITEM_N_ORDER_NUM");
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "VALUE_PROPERTY_OLD RENAME TO JCR_IDX_" + tablePrefix
-         + "VALUE_PROPERTY");
-      scripts.add("ALTER INDEX  JCR_IDX_" + tablePrefix + "REF_PROPERTY_OLD RENAME TO JCR_IDX_" + tablePrefix
-         + "REF_PROPERTY");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_OLD RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_PARENT");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_ID_OLD RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_PARENT_ID");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM_OLD RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_N_ORDER_NUM");
+      scripts.add("ALTER INDEX  JCR_IDX_" + valueTableSuffix + "_PROPERTY_OLD RENAME TO JCR_IDX_" + valueTableSuffix
+         + "_PROPERTY");
+      scripts.add("ALTER INDEX  JCR_IDX_" + refTableSuffix + "_PROPERTY_OLD RENAME TO JCR_IDX_" + refTableSuffix
+         + "_PROPERTY");
 
       return scripts;
    }

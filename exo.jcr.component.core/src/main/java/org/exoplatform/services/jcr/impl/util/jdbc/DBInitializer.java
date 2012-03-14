@@ -18,15 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
-import org.exoplatform.commons.utils.IOUtil;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
@@ -52,17 +50,17 @@ public class DBInitializer
 
    static public String SQL_CREATEVIEW = "^(CREATE(\\s)+VIEW(\\s)+(IF(\\s)+NOT(\\s)+EXISTS(\\s)+)*){1}";
 
-   static public String SQL_OBJECTNAME = "((JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+)+?";
+   static public String SQL_OBJECTNAME = "((JCR_[A-Z_0-9]+){1}(\\s*?|(\\(\\))*?)+)+?";
 
    static public String SQL_CREATEINDEX = "^(CREATE(\\s)+(UNIQUE(\\s)+)*INDEX(\\s)+){1}";
 
-   static public String SQL_ONTABLENAME = "(ON(\\s)+(JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+){1}";
+   static public String SQL_ONTABLENAME = "(ON(\\s)+(JCR_[A-Z_0-9]+){1}(\\s*?|(\\(\\))*?)+){1}";
 
    static public String SQL_CREATESEQUENCE = "^(CREATE(\\s)+SEQUENCE(\\s)+){1}";
 
    static public String SQL_CREATETRIGGER = "^(CREATE(\\s)+(OR(\\s){1}REPLACE(\\s)+)*TRIGGER(\\s)+){1}";
 
-   static public String SQL_TRIGGERNAME = "(([A-Z_]+JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+)+?";
+   static public String SQL_TRIGGERNAME = "(([A-Z_]+JCR_[A-Z_0-9]+){1}(\\s*?|(\\(\\))*?)+)+?";
 
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBInitializer");
 
@@ -92,7 +90,7 @@ public class DBInitializer
    {
       this.connection = connection;
       this.containerConfig = containerConfig;
-      this.script = prepareScripts();
+      this.script = DBInitializerHelper.prepareScripts(containerConfig);
       this.creatTablePattern = Pattern.compile(SQL_CREATETABLE, Pattern.CASE_INSENSITIVE);
       this.creatViewPattern = Pattern.compile(SQL_CREATEVIEW, Pattern.CASE_INSENSITIVE);
       this.dbObjectNamePattern = Pattern.compile(SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
@@ -101,11 +99,6 @@ public class DBInitializer
       this.creatSequencePattern = Pattern.compile(SQL_CREATESEQUENCE, Pattern.CASE_INSENSITIVE);
       this.creatTriggerPattern = Pattern.compile(SQL_CREATETRIGGER, Pattern.CASE_INSENSITIVE);
       this.dbTriggerNamePattern = Pattern.compile(SQL_TRIGGERNAME, Pattern.CASE_INSENSITIVE);
-   }
-
-   protected String prepareScripts() throws IOException
-   {
-      return IOUtil.getStreamContentAsString(PrivilegedFileHelper.getResourceAsStream(containerConfig.initScriptPath));
    }
 
    protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
@@ -352,9 +345,18 @@ public class DBInitializer
    }
 
    /**
-    * Place to perform additional operations in overriden classes.
+    * Init root node parent record.
     */
    protected void postInit(Connection connection) throws SQLException
    {
+      String select =
+         "select * from " + DBInitializerHelper.getItemTableName(containerConfig) + " where ID='"
+            + Constants.ROOT_PARENT_UUID + "' and PARENT_ID='" + Constants.ROOT_PARENT_UUID + "'";
+
+      if (!connection.createStatement().executeQuery(select).next())
+      {
+         String insert = DBInitializerHelper.getRootNodeInitializeScript(containerConfig);
+         connection.createStatement().executeUpdate(insert);
+      }
    }
 }

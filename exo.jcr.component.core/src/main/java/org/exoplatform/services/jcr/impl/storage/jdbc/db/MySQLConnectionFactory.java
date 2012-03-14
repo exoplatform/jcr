@@ -38,15 +38,6 @@ public class MySQLConnectionFactory extends GenericConnectionFactory
 {
 
    /**
-    * MySQLConnectionFactory constructor.
-    */
-   public MySQLConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
-   {
-
-      super(containerConfig);
-   }
-
-   /**
     * MySQLConnectionFactory  constructor.
     */
    public MySQLConnectionFactory(DataSource dbDataSource, JDBCDataContainerConfig containerConfig)
@@ -63,7 +54,7 @@ public class MySQLConnectionFactory extends GenericConnectionFactory
    {
       try
       {
-         if (this.containerConfig.dbStructureType.isSimpleTable())
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
             return new MySQLMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }

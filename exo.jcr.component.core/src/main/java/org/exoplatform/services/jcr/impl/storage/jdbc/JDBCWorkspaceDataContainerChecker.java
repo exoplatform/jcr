@@ -40,9 +40,9 @@ import org.exoplatform.services.jcr.impl.checker.ValueRecordsRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandlerFactory;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -472,68 +472,64 @@ public class JDBCWorkspaceDataContainerChecker
 
    private void initInspectionQueries()
    {
-      String itemTableSuffix = getItemTableSuffix(jdbcDataContainer.containerConfig.dbStructureType);
-      String valueTableSuffix = getValueTableSuffix(jdbcDataContainer.containerConfig.dbStructureType);
-      String referenceTableSuffix = getReferenceTableSuffix(jdbcDataContainer.containerConfig.dbStructureType);
+      String itemTable = DBInitializerHelper.getItemTableName(jdbcDataContainer.containerConfig);
+      String valueTable = DBInitializerHelper.getValueTableName(jdbcDataContainer.containerConfig);
+      String refTable = DBInitializerHelper.getRefTableName(jdbcDataContainer.containerConfig);
 
       boolean singleDatabase =
          jdbcDataContainer.containerConfig.dbStructureType == JDBCDataContainerConfig.DatabaseStructureType.SINGLE;
 
       vsInspectionQuery =
-         new InspectionQuery(singleDatabase ? "select V.PROPERTY_ID, V.ORDER_NUM, V.STORAGE_DESC from JCR_"
-            + valueTableSuffix + " V, JCR_" + itemTableSuffix + " I" + " where I.CONTAINER_NAME='"
-            + jdbcDataContainer.containerConfig.containerName
+         new InspectionQuery(singleDatabase ? "select V.PROPERTY_ID, V.ORDER_NUM, V.STORAGE_DESC from " + valueTable
+            + " V, " + itemTable + " I" + " where I.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
             + "' and V.PROPERTY_ID = I.ID and STORAGE_DESC is not null"
-            : "select PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_" + valueTableSuffix
-               + " where STORAGE_DESC is not null", new String[]{
-            DBConstants.COLUMN_VPROPERTY_ID, DBConstants.COLUMN_VORDERNUM, DBConstants.COLUMN_VSTORAGE_DESC},
-            "Items with value data stored in value storage", new DummyRepair());
+            : "select PROPERTY_ID, ORDER_NUM, STORAGE_DESC from " + valueTable + " where STORAGE_DESC is not null",
+            new String[]{DBConstants.COLUMN_VPROPERTY_ID, DBConstants.COLUMN_VORDERNUM,
+               DBConstants.COLUMN_VSTORAGE_DESC}, "Items with value data stored in value storage", new DummyRepair());
 
       lockInspectionQuery =
-         new InspectionQuery(singleDatabase ? "select distinct PARENT_ID from JCR_" + itemTableSuffix
-            + " WHERE CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName + "'"
+         new InspectionQuery(singleDatabase ? "select distinct PARENT_ID from " + itemTable + " WHERE CONTAINER_NAME='"
+            + jdbcDataContainer.containerConfig.containerName + "'"
             + " AND I_CLASS=2 and (NAME='[http://www.jcp.org/jcr/1.0]lockOwner'"
-            + " OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')" : "select distinct PARENT_ID from JCR_"
-            + itemTableSuffix + " where I_CLASS=2 AND"
+            + " OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')" : "select distinct PARENT_ID from " + itemTable
+            + " where I_CLASS=2 AND"
             + " (NAME='[http://www.jcp.org/jcr/1.0]lockOwner' OR NAME='[http://www.jcp.org/jcr/1.0]lockIsDeep')",
             new String[]{DBConstants.COLUMN_PARENTID}, "Items which have jcr:lockOwner and jcr:lockIsDeep properties",
             new DummyRepair());
 
       // ITEM tables
-      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from JCR_" + itemTableSuffix
+      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + itemTable
          + " I where I.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
-         + "' and NOT EXISTS(select * from JCR_" + itemTableSuffix + " P where P.ID = I.PARENT_ID)"
-         : "select * from JCR_" + itemTableSuffix + " I where NOT EXISTS(select * from JCR_" + itemTableSuffix
-            + " P where P.ID = I.PARENT_ID)", new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID,
-         DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS}, "Items that do not have parent nodes",
-         new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
+         + "' and NOT EXISTS(select * from " + itemTable + " P where P.ID = I.PARENT_ID)" : "select * from "
+         + itemTable + " I where NOT EXISTS(select * from " + itemTable + " P where P.ID = I.PARENT_ID)", new String[]{
+         DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS},
+         "Items that do not have parent nodes", new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
 
-      itemsInspectionQuery.add(new InspectionQueryFilteredMultivaluedProperties(singleDatabase ? "select * from JCR_"
-         + itemTableSuffix + " P where P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
-         + "' and P.I_CLASS=2" + " and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_" + valueTableSuffix
-         + " V where V.PROPERTY_ID=P.ID)" : "select * from JCR_" + itemTableSuffix
-         + " P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_" + valueTableSuffix + " V "
+      itemsInspectionQuery.add(new InspectionQueryFilteredMultivaluedProperties(singleDatabase ? "select * from "
+         + itemTable + " P where P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
+         + "' and P.I_CLASS=2" + " and P.P_MULTIVALUED=? and NOT EXISTS( select * from " + valueTable
+         + " V where V.PROPERTY_ID=P.ID)" : "select * from " + itemTable
+         + " P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from " + valueTable + " V "
          + "where V.PROPERTY_ID=P.ID)", new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID,
          DBConstants.COLUMN_NAME},
          "A node that has a single valued properties with nothing declared in the VALUE table.", new PropertyRemover(
             jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
 
-      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from JCR_" + itemTableSuffix
+      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + itemTable
          + " N where N.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
-         + "' and N.I_CLASS=1 and NOT EXISTS (select * from JCR_" + itemTableSuffix + " P "
+         + "' and N.I_CLASS=1 and NOT EXISTS (select * from " + itemTable + " P "
          + "where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' "
-         + "and P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName + "')" : "select * from JCR_"
-         + itemTableSuffix + " N where N.I_CLASS=1 and NOT EXISTS " + "(select * from JCR_" + itemTableSuffix
+         + "and P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName + "')" : "select * from "
+         + itemTable + " N where N.I_CLASS=1 and NOT EXISTS " + "(select * from " + itemTable
          + " P where P.I_CLASS=2 and P.PARENT_ID=N.ID " + "and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType')",
          new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
          "A node that doesn't have primary type property", new NodeRemover(jdbcDataContainer.getConnectionFactory(),
             nodeTypeManager)));
 
-      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from JCR_" + valueTableSuffix
-         + " V where NOT EXISTS(select * from JCR_" + itemTableSuffix + " P "
-         + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)" : "select * from JCR_" + valueTableSuffix
-         + " V where NOT EXISTS(select * from JCR_" + itemTableSuffix + " P "
-         + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
+      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + valueTable
+         + " V where NOT EXISTS(select * from " + itemTable + " P " + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
+         : "select * from " + valueTable + " V where NOT EXISTS(select * from " + itemTable + " P "
+            + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not related property record",
          new ValueRecordsRemover(jdbcDataContainer.getConnectionFactory(),
             jdbcDataContainer.containerConfig.containerName, jdbcDataContainer.containerConfig.multiDb)));
@@ -543,107 +539,59 @@ public class JDBCWorkspaceDataContainerChecker
       if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
       {
          statement =
-            singleDatabase ? "select V.* from JCR_" + valueTableSuffix + " V, JCR_" + itemTableSuffix
+            singleDatabase ? "select V.* from " + valueTable + " V, " + itemTable
                + " I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
                + jdbcDataContainer.containerConfig.containerName
-               + "' AND ((STORAGE_DESC is not null and not DATA like null))" : "select * from JCR_" + valueTableSuffix
+               + "' AND ((STORAGE_DESC is not null and not DATA like null))" : "select * from " + valueTable
                + " where (STORAGE_DESC is not null and not DATA like null)";
       }
       else if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
          || jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
       {
          statement =
-            singleDatabase ? "select V.* from JCR_" + valueTableSuffix + " V, JCR_" + itemTableSuffix
+            singleDatabase ? "select V.* from " + valueTable + " V, " + itemTable
                + " I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
                + jdbcDataContainer.containerConfig.containerName
-               + "' AND (STORAGE_DESC is not null and DATA is not null)" : "select * from JCR_" + valueTableSuffix
+               + "' AND (STORAGE_DESC is not null and DATA is not null)" : "select * from " + valueTable
                + " where (STORAGE_DESC is not null and DATA is not null)";
       }
       else
       {
          statement =
-            singleDatabase ? "select V.* from JCR_" + valueTableSuffix + " V, JCR_" + itemTableSuffix
+            singleDatabase ? "select V.* from " + valueTable + " V, " + itemTable
                + " I where V.PROPERTY_ID = I.ID and I.CONTAINER_NAME='"
                + jdbcDataContainer.containerConfig.containerName
-               + "' AND ((STORAGE_DESC is not null and DATA is not null))" : "select * from JCR_" + valueTableSuffix
+               + "' AND ((STORAGE_DESC is not null and DATA is not null))" : "select * from " + valueTable
                + " where (STORAGE_DESC is not null and DATA is not null)";
       }
       itemsInspectionQuery.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID},
          "Incorrect VALUE records. Both fields STORAGE_DESC and DATA contain not null value.", new DummyRepair()));
 
-      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from JCR_" + itemTableSuffix
+      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + itemTable
          + " I where I.ID = I.PARENT_ID and I.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
-         + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'" : "select * from JCR_" + itemTableSuffix
+         + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'" : "select * from " + itemTable
          + " I where I.ID = I.PARENT_ID and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "An item is its own parent.",
          new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
 
-      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from JCR_" + itemTableSuffix
+      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + itemTable
          + " I where I.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
-         + "' and EXISTS (select * from JCR_" + itemTableSuffix + " J WHERE I.CONTAINER_NAME = J.CONTAINER_NAME and"
+         + "' and EXISTS (select * from " + itemTable + " J WHERE I.CONTAINER_NAME = J.CONTAINER_NAME and"
          + " I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
-         + " and I.VERSION != J.VERSION)" : "select * from JCR_" + itemTableSuffix
-         + " I where EXISTS (select * from JCR_" + itemTableSuffix + " J"
+         + " and I.VERSION != J.VERSION)" : "select * from " + itemTable + " I where EXISTS (select * from "
+         + itemTable + " J"
          + " WHERE I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
          + " and I.VERSION != J.VERSION)", new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID,
          DBConstants.COLUMN_NAME, DBConstants.COLUMN_VERSION, DBConstants.COLUMN_CLASS, DBConstants.COLUMN_INDEX},
          "Several versions of same item.", new EarlierVersionsRemover(jdbcDataContainer.getConnectionFactory())));
 
-      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from JCR_" + itemTableSuffix + " P, JCR_"
-         + valueTableSuffix + " V where P.ID=V.PROPERTY_ID and P.CONTAINER_NAME='"
-         + jdbcDataContainer.containerConfig.containerName + "' and P.P_TYPE=9 and NOT EXISTS (select * from JCR_"
-         + referenceTableSuffix + " R where P.ID=R.PROPERTY_ID)" : "select * from JCR_" + itemTableSuffix + " P, JCR_"
-         + valueTableSuffix + " V where P.ID=V.PROPERTY_ID and P.P_TYPE=9 and NOT EXISTS " + "(select * from JCR_"
-         + referenceTableSuffix + " R where P.ID=R.PROPERTY_ID)", new String[]{DBConstants.COLUMN_ID,
-         DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "Reference properties without reference records",
-         new PropertyRemover(jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
-   }
-
-   private String getItemTableSuffix(DatabaseStructureType dbStructureType)
-   {
-      if (dbStructureType == DatabaseStructureType.MULTI)
-      {
-         return "MITEM";
-      }
-      else if (dbStructureType == DatabaseStructureType.SINGLE)
-      {
-         return "SITEM";
-      }
-      else
-      {
-         return "I" + jdbcDataContainer.containerConfig.dbTableSuffix;
-      }
-   }
-
-   private String getValueTableSuffix(DatabaseStructureType dbStructureType)
-   {
-      if (dbStructureType == DatabaseStructureType.MULTI)
-      {
-         return "MVALUE";
-      }
-      else if (dbStructureType == DatabaseStructureType.SINGLE)
-      {
-         return "SVALUE";
-      }
-      else
-      {
-         return "V" + jdbcDataContainer.containerConfig.dbTableSuffix;
-      }
-   }
-
-   private String getReferenceTableSuffix(DatabaseStructureType dbStructureType)
-   {
-      if (dbStructureType == DatabaseStructureType.MULTI)
-      {
-         return "MREF";
-      }
-      else if (dbStructureType == DatabaseStructureType.SINGLE)
-      {
-         return "SREF";
-      }
-      else
-      {
-         return "R" + jdbcDataContainer.containerConfig.dbTableSuffix;
-      }
+      itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + itemTable + " P, " + valueTable
+         + " V where P.ID=V.PROPERTY_ID and P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
+         + "' and P.P_TYPE=9 and NOT EXISTS (select * from " + refTable + " R where P.ID=R.PROPERTY_ID)"
+         : "select * from " + itemTable + " P, " + valueTable
+            + " V where P.ID=V.PROPERTY_ID and P.P_TYPE=9 and NOT EXISTS " + "(select * from " + refTable
+            + " R where P.ID=R.PROPERTY_ID)", new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID,
+         DBConstants.COLUMN_NAME}, "Reference properties without reference records", new PropertyRemover(
+         jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
    }
 }

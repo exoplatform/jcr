@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -37,7 +38,7 @@ import java.sql.Statement;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: OracleDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class OracleDBInitializer extends StorageDBInitializer
+public class OracleDBInitializer extends DBInitializer
 {
 
    public OracleDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException

@@ -74,8 +74,8 @@ public class MySQLCleaningScipts extends DBCleaningScripts
       cleaningScripts.addAll(getIndexesDroppingScripts());
 
       String constraintName =
-         "JCR_FK_" + tablePrefix + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)";
-      committingScripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
+         "JCR_FK_" + valueTableSuffix + "_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES " + itemTableName + "(ID)";
+      committingScripts.add("ALTER TABLE " + valueTableName + " ADD CONSTRAINT " + constraintName);
    }
 
    /**
@@ -103,15 +103,14 @@ public class MySQLCleaningScipts extends DBCleaningScripts
     */
    private Collection<String> filter(Collection<String> scripts)
    {
-      String JCR_ITEM_PRIMARY_KEY = "CONSTRAINT JCR_PK_" + tablePrefix + "ITEM PRIMARY KEY(ID)";
+      String JCR_ITEM_PRIMARY_KEY = "CONSTRAINT JCR_PK_" + itemTableSuffix + " PRIMARY KEY(ID)";
       String JCR_ITEM_FOREIGN_KEY =
-         "CONSTRAINT JCR_FK_" + tablePrefix + "ITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + tablePrefix
-            + "ITEM(ID)";
+         "CONSTRAINT JCR_FK_" + itemTableSuffix + "_PARENT FOREIGN KEY(PARENT_ID) REFERENCES " + itemTableName + "(ID)";
 
-      String JCR_VALUE_PRIMARY_KEY = "CONSTRAINT JCR_PK_" + tablePrefix + "VALUE PRIMARY KEY(ID)";
+      String JCR_VALUE_PRIMARY_KEY = "CONSTRAINT JCR_PK_" + valueTableSuffix + " PRIMARY KEY(ID)";
       String JCR_VALUE_FOREIGN_KEY =
-         "CONSTRAINT JCR_FK_" + tablePrefix + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + tablePrefix
-            + "ITEM(ID)";
+         "CONSTRAINT JCR_FK_" + valueTableSuffix + "_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES " + itemTableName
+            + "(ID)";
 
       Collection<String> filteredScripts = new ArrayList<String>();
 
@@ -141,9 +140,9 @@ public class MySQLCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE RENAME TO JCR_" + tablePrefix + "VALUE_OLD");
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM RENAME TO JCR_" + tablePrefix + "ITEM_OLD");
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "REF RENAME TO JCR_" + tablePrefix + "REF_OLD");
+      scripts.add("ALTER TABLE " + valueTableName + " RENAME TO " + valueTableName + "_OLD");
+      scripts.add("ALTER TABLE " + itemTableName + " RENAME TO " + itemTableName + "_OLD");
+      scripts.add("ALTER TABLE " + refTableName + " RENAME TO " + refTableName + "_OLD");
 
       return scripts;
    }
@@ -155,9 +154,9 @@ public class MySQLCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM_OLD RENAME TO JCR_" + tablePrefix + "ITEM");
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE_OLD RENAME TO JCR_" + tablePrefix + "VALUE");
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "REF_OLD RENAME TO JCR_" + tablePrefix + "REF");
+      scripts.add("ALTER TABLE " + itemTableName + "_OLD RENAME TO " + itemTableName);
+      scripts.add("ALTER TABLE " + valueTableName + "_OLD RENAME TO " + valueTableName);
+      scripts.add("ALTER TABLE " + refTableName + "_OLD RENAME TO " + refTableName);
 
       return scripts;
    }

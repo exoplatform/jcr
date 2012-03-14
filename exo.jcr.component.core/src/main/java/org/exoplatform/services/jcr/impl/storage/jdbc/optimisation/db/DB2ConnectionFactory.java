@@ -19,13 +19,10 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -49,14 +46,6 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
    private Boolean isReindexingSupport;
 
    /**
-    * DB2ConnectionFactory constructor.
-    */
-   public DB2ConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
-   {
-      super(containerConfig);
-   }
-
-   /**
     * DB2ConnectionFactory  constructor.
     */
    public DB2ConnectionFactory(DataSource dataSource, JDBCDataContainerConfig containerConfig)
@@ -72,7 +61,7 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
    {
       try
       {
-         if (this.containerConfig.dbStructureType.isSimpleTable())
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
             return new DB2MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }

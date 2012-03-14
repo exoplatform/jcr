@@ -22,6 +22,7 @@ import org.exoplatform.services.database.utils.DialectConstants;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -31,6 +32,13 @@ public class DBCleaningScriptsFactory
 {
    /**
     * Prepare SQL scripts for cleaning workspace data from database. 
+    * 
+    * @param wsEntry
+    *          workspace configuration
+    * @param dialect
+    *          database dialect which is used, since {@link JDBCWorkspaceDataContainer#DB_DIALECT} parameter 
+    *          can contain {@link DialectConstants#DB_DIALECT_AUTO} value it is necessary to resolve dialect
+    *          before based on database connection.          
     */
    public static DBCleaningScripts prepareScripts(String dialect, WorkspaceEntry wsEntry) throws DBCleanException
    {
@@ -75,6 +83,13 @@ public class DBCleaningScriptsFactory
 
    /**
     * Prepare SQL scripts for cleaning repository data from database. 
+    * 
+    * @param rEntry
+    *          repository configuration
+    * @param dialect
+    *          database dialect which is used, since {@link JDBCWorkspaceDataContainer#DB_DIALECT} parameter 
+    *          can contain {@link DialectConstants#DB_DIALECT_AUTO} value it is necessary to resolve dialect
+    *          before based on database connection.  
     */
    public static DBCleaningScripts prepareScripts(String dialect, RepositoryEntry rEntry) throws DBCleanException
    {

@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -69,15 +70,15 @@ public class SybaseCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      String constraintName = "JCR_PK_" + tablePrefix + "ITEM PRIMARY KEY(ID)";
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM ADD CONSTRAINT " + constraintName);
+      String constraintName = "JCR_PK_" + itemTableSuffix + " PRIMARY KEY(ID)";
+      scripts.add("ALTER TABLE " + itemTableName + " ADD CONSTRAINT " + constraintName);
 
-      constraintName = "JCR_PK_" + tablePrefix + "VALUE PRIMARY KEY(ID)";
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
+      constraintName = "JCR_PK_" + valueTableSuffix + " PRIMARY KEY(ID)";
+      scripts.add("ALTER TABLE " + valueTableName + " ADD CONSTRAINT " + constraintName);
 
       constraintName =
-         "JCR_FK_" + tablePrefix + "VALUE_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)";
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "VALUE ADD CONSTRAINT " + constraintName);
+         "JCR_FK_" + valueTableSuffix + "_PROPERTY FOREIGN KEY(PROPERTY_ID) REFERENCES " + itemTableName + "(ID)";
+      scripts.add("ALTER TABLE " + valueTableName + " ADD CONSTRAINT " + constraintName);
 
       return scripts;
    }
@@ -89,14 +90,14 @@ public class SybaseCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      String constraintName = "JCR_FK_" + tablePrefix + "VALUE_PROPERTY";
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
+      String constraintName = "JCR_FK_" + valueTableSuffix + "_PROPERTY";
+      scripts.add("ALTER TABLE  " + valueTableName + " DROP CONSTRAINT " + constraintName);
 
-      constraintName = "JCR_PK_" + tablePrefix + "ITEM";
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "ITEM DROP CONSTRAINT " + constraintName);
+      constraintName = "JCR_PK_" + itemTableSuffix;
+      scripts.add("ALTER TABLE  " + itemTableName + " DROP CONSTRAINT " + constraintName);
 
-      constraintName = "JCR_PK_" + tablePrefix + "VALUE";
-      scripts.add("ALTER TABLE  JCR_" + tablePrefix + "VALUE DROP CONSTRAINT " + constraintName);
+      constraintName = "JCR_PK_" + valueTableSuffix;
+      scripts.add("ALTER TABLE  " + valueTableName + " DROP CONSTRAINT " + constraintName);
 
       return scripts;
    }
@@ -108,11 +109,11 @@ public class SybaseCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP INDEX JCR_" + tablePrefix + "ITEM.JCR_IDX_" + tablePrefix + "ITEM_PARENT");
-      scripts.add("DROP INDEX JCR_" + tablePrefix + "ITEM.JCR_IDX_" + tablePrefix + "ITEM_PARENT_ID");
-      scripts.add("DROP INDEX JCR_" + tablePrefix + "ITEM.JCR_IDX_" + tablePrefix + "ITEM_N_ORDER_NUM");
-      scripts.add("DROP INDEX JCR_" + tablePrefix + "VALUE.JCR_IDX_" + tablePrefix + "VALUE_PROPERTY");
-      scripts.add("DROP INDEX JCR_" + tablePrefix + "REF.JCR_IDX_" + tablePrefix + "REF_PROPERTY");
+      scripts.add("DROP INDEX " + itemTableName + ".JCR_IDX_" + itemTableSuffix + "_PARENT");
+      scripts.add("DROP INDEX " + itemTableName + ".JCR_IDX_" + itemTableSuffix + "_PARENT_ID");
+      scripts.add("DROP INDEX " + itemTableName + ".JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM");
+      scripts.add("DROP INDEX " + valueTableName + ".JCR_IDX_" + valueTableSuffix + "_PROPERTY");
+      scripts.add("DROP INDEX " + refTableName + ".JCR_IDX_" + refTableSuffix + "_PROPERTY");
 
       return scripts;
    }
@@ -126,18 +127,22 @@ public class SybaseCleaningScipts extends DBCleaningScripts
 
       try
       {
-         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + tablePrefix + "ITEM_PARENT ON JCR_"
-            + tablePrefix + "ITEM", multiDb, dialect));
-         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + tablePrefix + "ITEM_PARENT_ID ON JCR_"
-            + tablePrefix + "ITEM", multiDb, dialect));
-         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + tablePrefix + "ITEM_N_ORDER_NUM ON JCR_"
-            + tablePrefix + "ITEM", multiDb, dialect));
-         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + tablePrefix + "VALUE_PROPERTY ON JCR_"
-            + tablePrefix + "VALUE", multiDb, dialect));
-         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + tablePrefix + "REF_PROPERTY ON JCR_"
-            + tablePrefix + "REF", multiDb, dialect));
+         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + itemTableSuffix + "_PARENT ON "
+            + itemTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_ID ON "
+            + itemTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM ON "
+            + itemTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + valueTableSuffix + "_PROPERTY ON "
+            + valueTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + refTableSuffix + "_PROPERTY ON " + refTableName,
+            multiDb, dialect, wsEntry));
       }
       catch (RepositoryConfigurationException e)
+      {
+         throw new DBCleanException(e);
+      }
+      catch (IOException e)
       {
          throw new DBCleanException(e);
       }
@@ -152,12 +157,12 @@ public class SybaseCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("sp_rename JCR_" + tablePrefix + "VALUE, JCR_" + tablePrefix + "VALUE_OLD");
-      scripts.add("sp_rename JCR_" + tablePrefix + "ITEM, JCR_" + tablePrefix + "ITEM_OLD");
-      scripts.add("sp_rename JCR_" + tablePrefix + "REF, JCR_" + tablePrefix + "REF_OLD");
+      scripts.add("sp_rename " + valueTableName + ", " + valueTableName + "_OLD");
+      scripts.add("sp_rename " + itemTableName + ", " + itemTableName + "_OLD");
+      scripts.add("sp_rename " + refTableName + ", " + refTableName + "_OLD");
 
-      scripts.add("sp_rename JCR_FK_" + tablePrefix + "VALUE_PROPERTY, JCR_FK_" + tablePrefix + "VALUE_PROPERTY_OLD");
-      scripts.add("sp_rename JCR_FK_" + tablePrefix + "ITEM_PARENT, JCR_FK_" + tablePrefix + "ITEM_PARENT_OLD");
+      scripts.add("sp_rename JCR_FK_" + valueTableSuffix + "_PROPERTY, JCR_FK_" + valueTableSuffix + "_PROPERTY_OLD");
+      scripts.add("sp_rename JCR_FK_" + itemTableSuffix + "_PARENT, JCR_FK_" + itemTableSuffix + "_PARENT_OLD");
 
       return scripts;
    }
@@ -169,12 +174,12 @@ public class SybaseCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("sp_rename JCR_" + tablePrefix + "VALUE_OLD, JCR_" + tablePrefix + "VALUE");
-      scripts.add("sp_rename JCR_" + tablePrefix + "ITEM_OLD, JCR_" + tablePrefix + "ITEM");
-      scripts.add("sp_rename JCR_" + tablePrefix + "REF_OLD, JCR_" + tablePrefix + "REF");
+      scripts.add("sp_rename " + valueTableName + "_OLD, " + valueTableName);
+      scripts.add("sp_rename " + itemTableName + "_OLD, " + itemTableName);
+      scripts.add("sp_rename " + refTableName + "_OLD, " + refTableName);
 
-      scripts.add("sp_rename JCR_FK_" + tablePrefix + "VALUE_PROPERTY_OLD, JCR_FK_" + tablePrefix + "VALUE_PROPERTY");
-      scripts.add("sp_rename JCR_FK_" + tablePrefix + "ITEM_PARENT_OLD, JCR_FK_" + tablePrefix + "ITEM_PARENT");
+      scripts.add("sp_rename JCR_FK_" + valueTableSuffix + "_PROPERTY_OLD, JCR_FK_" + valueTableSuffix + "_PROPERTY");
+      scripts.add("sp_rename JCR_FK_" + itemTableSuffix + "_PARENT_OLD, JCR_FK_" + itemTableSuffix + "_PARENT");
 
       return scripts;
    }

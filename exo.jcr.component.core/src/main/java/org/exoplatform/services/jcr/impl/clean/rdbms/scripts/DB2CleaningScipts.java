@@ -67,8 +67,8 @@ public class DB2CleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      String constraintName = "JCR_FK_" + tablePrefix + "ITEM_PAREN";
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM DROP CONSTRAINT " + constraintName);
+      String constraintName = "JCR_FK_" + itemTableSuffix + "_PAREN";
+      scripts.add("ALTER TABLE " + itemTableName + " DROP CONSTRAINT " + constraintName);
 
       return scripts;
    }
@@ -81,8 +81,8 @@ public class DB2CleaningScipts extends DBCleaningScripts
       List<String> scripts = new ArrayList<String>();
 
       String constraintName =
-         "JCR_FK_" + tablePrefix + "ITEM_PAREN FOREIGN KEY(PARENT_ID) REFERENCES JCR_" + tablePrefix + "ITEM(ID)";
-      scripts.add("ALTER TABLE JCR_" + tablePrefix + "ITEM ADD CONSTRAINT " + constraintName);
+         "JCR_FK_" + itemTableSuffix + "_PAREN FOREIGN KEY(PARENT_ID) REFERENCES " + itemTableName + "(ID)";
+      scripts.add("ALTER TABLE " + itemTableName + " ADD CONSTRAINT " + constraintName);
 
       return scripts;
    }

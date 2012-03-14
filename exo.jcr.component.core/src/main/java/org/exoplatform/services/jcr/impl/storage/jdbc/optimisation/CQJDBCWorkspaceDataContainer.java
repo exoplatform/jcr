@@ -27,19 +27,17 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactor
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2ConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DefaultOracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.GenericCQConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MSSQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
-import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.OracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.PostgreConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseConnectionFactory;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.jdbc.DataSourceProvider;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -94,20 +92,11 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
    @Override
    protected void initDatabase() throws NamingException, RepositoryException, IOException
    {
-
-      StorageDBInitializer dbInitializer = null;
+      DBInitializer dbInitializer = null;
       if (containerConfig.dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
       {
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
-         // sample of connection factory customization
-         if (containerConfig.dbSourceName != null)
-         {
-            this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
-         }
-         else
-         {
-            this.connFactory = new OracleConnectionFactory(containerConfig);
-         }
+         this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
 
          // a particular db initializer may be configured here too
          dbInitializer =
@@ -115,28 +104,11 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_ORACLE)
       {
-
-         if (containerConfig.dbSourceName != null)
-         {
-            this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
-         }
-         else
-         {
-            this.connFactory = new DefaultOracleConnectionFactory(containerConfig);
-         }
-
+         this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL)
       {
-         if (containerConfig.dbSourceName != null)
-         {
-            this.connFactory = new PostgreConnectionFactory(getDataSource(), containerConfig);
-         }
-         else
-         {
-            this.connFactory = new PostgreConnectionFactory(containerConfig);
-         }
-
+         this.connFactory = new PostgreConnectionFactory(getDataSource(), containerConfig);
          dbInitializer =
             new PgSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
@@ -152,28 +124,13 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
                + " if you don't expect any support and performances in read accesses are more important than the consistency"
                + " in your use-case. This dialect is only dedicated to the community.");
          }
-         if (containerConfig.dbSourceName != null)
-         {
-            this.connFactory = new MySQLConnectionFactory(getDataSource(), containerConfig);
-         }
-         else
-         {
-            this.connFactory = new MySQLConnectionFactory(containerConfig);
-         }
 
+         this.connFactory = new MySQLConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MSSQL)
       {
-         if (containerConfig.dbSourceName != null)
-         {
-            this.connFactory = new MSSQLConnectionFactory(getDataSource(), containerConfig);
-         }
-         else
-         {
-            this.connFactory = new MSSQLConnectionFactory(containerConfig);
-         }
-
+         this.connFactory = new MSSQLConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DERBY)
@@ -183,41 +140,17 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2)
       {
-         if (containerConfig.dbSourceName != null)
-         {
-            this.connFactory = new DB2ConnectionFactory(getDataSource(), containerConfig);
-         }
-         else
-         {
-            this.connFactory = new DB2ConnectionFactory(containerConfig);
-         }
-
+         new DB2ConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
-         if (containerConfig.dbSourceName != null)
-         {
-            this.connFactory = new DB2ConnectionFactory(getDataSource(), containerConfig);
-         }
-         else
-         {
-            this.connFactory = new DB2ConnectionFactory(containerConfig);
-         }
-
+         new DB2ConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_SYBASE)
       {
-         if (containerConfig.dbSourceName != null)
-         {
-            this.connFactory = new SybaseConnectionFactory(getDataSource(), containerConfig);
-         }
-         else
-         {
-            this.connFactory = new SybaseConnectionFactory(containerConfig);
-         }
-
+         this.connFactory = new SybaseConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_INGRES)
@@ -229,14 +162,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_HSQLDB)
       {
-         if (containerConfig.dbSourceName != null)
-         {
-            this.connFactory = new HSQLDBConnectionFactory(getDataSource(), containerConfig);
-         }
-         else
-         {
-            this.connFactory = new HSQLDBConnectionFactory(containerConfig);
-         }
+         this.connFactory = new HSQLDBConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else
@@ -269,12 +195,6 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
    @Override
    protected GenericConnectionFactory defaultConnectionFactory() throws NamingException, RepositoryException
    {
-      // by default
-      if (containerConfig.dbSourceName != null)
-      {
-         return new GenericCQConnectionFactory(getDataSource(), containerConfig);
-      }
-
-      return new GenericCQConnectionFactory(containerConfig);
+      return new GenericCQConnectionFactory(getDataSource(), containerConfig);
    }
 }

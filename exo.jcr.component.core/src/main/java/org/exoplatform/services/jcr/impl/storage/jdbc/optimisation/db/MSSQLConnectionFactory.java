@@ -38,14 +38,6 @@ public class MSSQLConnectionFactory extends GenericCQConnectionFactory
 {
 
    /**
-    * MSSQLConnectionFactory constructor.
-    */
-   public MSSQLConnectionFactory(JDBCDataContainerConfig containerConfig) throws RepositoryException
-   {
-      super(containerConfig);
-   }
-
-   /**
     * MSSQLConnectionFactory  constructor.
     */
    public MSSQLConnectionFactory(DataSource dbDataSource, JDBCDataContainerConfig containerConfig)
@@ -61,7 +53,7 @@ public class MSSQLConnectionFactory extends GenericCQConnectionFactory
    {
       try
       {
-         if (this.containerConfig.dbStructureType.isSimpleTable())
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
             return new MSSQLMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
