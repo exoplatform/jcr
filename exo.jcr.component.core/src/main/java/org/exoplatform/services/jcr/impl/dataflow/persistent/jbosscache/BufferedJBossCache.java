@@ -75,12 +75,15 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
    private final long expirationTimeOut;
 
+   private final TransactionManager tm;
+
    protected static final Log LOG =
       ExoLogger.getLogger("org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache");
 
    public BufferedJBossCache(Cache<Serializable, Object> parentCache, boolean useExpiration, long expirationTimeOut)
    {
       super();
+      this.tm = ((CacheSPI<Serializable, Object>)parentCache).getTransactionManager();
       this.parentCache = parentCache;
       this.useExpiration = useExpiration;
       this.expirationTimeOut = expirationTimeOut;
@@ -128,7 +131,6 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     */
    private void commitChanges(List<ChangesContainer> containers)
    {
-      TransactionManager tm = getTransactionManager();
       for (ChangesContainer cacheChange : containers)
       {
          boolean isTxCreated = false;
