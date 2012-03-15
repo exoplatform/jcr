@@ -72,6 +72,7 @@ import org.exoplatform.services.log.Log;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.NamespaceRegistry;
@@ -150,11 +151,21 @@ public class RepositoryContainer extends ExoContainer
          public Void run()
          {
             context.setName(parent.getContext().getName() + "-" + name);
-            parent.registerComponentInstance(name, RepositoryContainer.this);
+            try
+            {
+               parent.registerComponentInstance(name, RepositoryContainer.this);
+               registerComponents();
+            }
+            catch (Throwable t)
+            {
+               unregisterAllComponents();
+               parent.unregisterComponent(name);
+               throw new IllegalStateException("Can not register repository container " + name
+                  + " in parent container.", t);
+            }
             return null;
          }
       });
-      registerComponents();
    }
 
    /**
@@ -172,26 +183,7 @@ public class RepositoryContainer extends ExoContainer
    public RepositoryContainer(final ExoContainer parent, RepositoryEntry config) throws RepositoryException,
       RepositoryConfigurationException
    {
-
-      super(new MX4JComponentAdapterFactory(), parent);
-
-      // Defaults:
-      if (config.getAccessControl() == null)
-         config.setAccessControl(AccessControlPolicy.OPTIONAL);
-
-      this.config = config;
-      this.name = config.getName();
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-      {
-         public Void run()
-         {
-            context.setName(parent.getContext().getName() + "-" + name);
-            parent.registerComponentInstance(name, RepositoryContainer.this);
-            return null;
-         }
-      });
-
-      registerComponents();
+      this(parent, config, new ArrayList<ComponentPlugin>());
    }
 
    public LocationFactory getLocationFactory()

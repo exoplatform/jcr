@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.ext.backup;
 import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -1456,6 +1457,268 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       log.info("Total time of restore the repository = " + ((System.currentTimeMillis() - timeOfRestore)) + "ms.");
       checkConent(repositoryService.getRepository(repository.getConfiguration().getName()), repository
                .getConfiguration().getSystemWorkspaceName());
+   }
+   
+   public void testCreateRepositoryAfterFailRestoreOnSystemWS() throws Exception
+   {
+      // create repository
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      String dsName = helper.createDatasource();
+      RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, dsName);
+      service.createRepository(repoEntry);
+
+      ManageableRepository repository = service.getRepository(repoEntry.getName());
+
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      helper.addWorkspace(repository, wsEntry);
+      service.getConfig().retain();
+
+      addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
+
+      // backup
+      File backDir = new File("target/backup/" + IdGenerator.generate());
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      File backLog = new File(bch.getLogFilePath());
+      assertTrue(backLog.exists());
+
+      // copy repository entry and set new ata source 
+      RepositoryEntry newRepoEntry = helper.copyRepositoryEntry(repoEntry);
+      String newDSName = helper.createDatasource();
+      for (WorkspaceEntry ws : newRepoEntry.getWorkspaceEntries())
+      {
+         for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
+         {
+            SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
+
+            if (spe.getName().equals("source-name"))
+            {
+               ws.getContainer().getParameters().set(i, new SimpleParameterEntry(spe.getName(), newDSName));
+               break;
+            }
+         }
+      }
+
+      // create repository entry with name of data source name is wrong in system workspace 
+      RepositoryEntry wrongRepoEntry = helper.copyRepositoryEntry(repoEntry);
+      for (WorkspaceEntry ws : wrongRepoEntry.getWorkspaceEntries())
+      {
+         if (repository.getConfiguration().getSystemWorkspaceName().equals(ws.getName()))
+         {
+            for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
+            {
+               SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
+
+               if (spe.getName().equals("source-name"))
+               {
+                  ws.getContainer().getParameters().set(i,
+                     new SimpleParameterEntry(spe.getName(), spe.getValue() + "_wrong"));
+                  break;
+               }
+            }
+            break;
+         }
+      }
+
+      // remove existed repository
+      removeRepositoryFully(repository.getConfiguration().getName());
+
+      // wrong restore
+      try
+      {
+         backup.restore(new RepositoryBackupChainLog(backLog), wrongRepoEntry, false);
+         fail();
+      }
+      catch (Exception e)
+      {
+         //ok
+      }
+
+      // restore
+      long timeOfRestore = System.currentTimeMillis();
+      backup.restore(new RepositoryBackupChainLog(backLog), newRepoEntry, false);
+      log.info("Total time of restore the repository = " + ((System.currentTimeMillis() - timeOfRestore)) + "ms.");
+      checkConent(repositoryService.getRepository(newRepoEntry.getName()), newRepoEntry.getSystemWorkspaceName());
+   }
+
+   public void testCreateRepositoryAfterFailRestoreOnNonSystemWS() throws Exception
+   {
+      // create repository
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      String dsName = helper.createDatasource();
+      RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, dsName);
+      service.createRepository(repoEntry);
+
+      ManageableRepository repository = service.getRepository(repoEntry.getName());
+
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      helper.addWorkspace(repository, wsEntry);
+      service.getConfig().retain();
+
+      addConent(repository, wsEntry.getName());
+
+      // backup
+      File backDir = new File("target/backup/" + IdGenerator.generate());
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      File backLog = new File(bch.getLogFilePath());
+      assertTrue(backLog.exists());
+
+      // copy repository entry and set new ata source 
+      RepositoryEntry newRepoEntry = helper.copyRepositoryEntry(repoEntry);
+      String newDSName = helper.createDatasource();
+      for (WorkspaceEntry ws : newRepoEntry.getWorkspaceEntries())
+      {
+         for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
+         {
+            SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
+
+            if (spe.getName().equals("source-name"))
+            {
+               ws.getContainer().getParameters().set(i, new SimpleParameterEntry(spe.getName(), newDSName));
+               break;
+            }
+         }
+      }
+
+      // create repository entry with name of data source name is wrong in second workspace 
+      RepositoryEntry wrongRepoEntry = helper.copyRepositoryEntry(repoEntry);
+      for (WorkspaceEntry ws : wrongRepoEntry.getWorkspaceEntries())
+      {
+         if (wsEntry.getName().equals(ws.getName()))
+         {
+            for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
+            {
+               SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
+
+               if (spe.getName().equals("source-name"))
+               {
+                  ws.getContainer().getParameters().set(i,
+                     new SimpleParameterEntry(spe.getName(), spe.getValue() + "_wrong"));
+                  break;
+               }
+            }
+            break;
+         }
+      }
+
+      // remove existed repository
+      removeRepositoryFully(repository.getConfiguration().getName());
+
+      // wrong restore
+      try
+      {
+         backup.restore(new RepositoryBackupChainLog(backLog), wrongRepoEntry, false);
+         fail();
+      }
+      catch (Exception e)
+      {
+         //ok
+      }
+
+      // restore
+      long timeOfRestore = System.currentTimeMillis();
+      backup.restore(new RepositoryBackupChainLog(backLog), newRepoEntry, false);
+      log.info("Total time of restore the repository = " + ((System.currentTimeMillis() - timeOfRestore)) + "ms.");
+      checkConent(repositoryService.getRepository(newRepoEntry.getName()), wsEntry.getName());
+   }
+
+   public void testCreateRepositoryAfterFailRestoreWithFailConfiguration() throws Exception
+   {
+      // create repository
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      String dsName = helper.createDatasource();
+      RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, dsName);
+      service.createRepository(repoEntry);
+
+      ManageableRepository repository = service.getRepository(repoEntry.getName());
+
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      helper.addWorkspace(repository, wsEntry);
+      service.getConfig().retain();
+
+      addConent(repository, wsEntry.getName());
+
+      // backup
+      File backDir = new File("target/backup/" + IdGenerator.generate());
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      File backLog = new File(bch.getLogFilePath());
+      assertTrue(backLog.exists());
+
+      // copy repository entry and set new data source 
+      RepositoryEntry newRepoEntry = helper.copyRepositoryEntry(repoEntry);
+      String newDSName = helper.createDatasource();
+      for (WorkspaceEntry ws : newRepoEntry.getWorkspaceEntries())
+      {
+         for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
+         {
+            SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
+
+            if (spe.getName().equals("source-name"))
+            {
+               ws.getContainer().getParameters().set(i, new SimpleParameterEntry(spe.getName(), newDSName));
+               break;
+            }
+         }
+      }
+
+      // create repository entry with name of data source name is wrong in second workspace 
+      RepositoryEntry wrongRepoEntry = helper.copyRepositoryEntry(repoEntry);
+      for (WorkspaceEntry ws : wrongRepoEntry.getWorkspaceEntries())
+      {
+         if (wsEntry.getName().equals(ws.getName()))
+         {
+            ws.getContainer().setType("wrong parameter");
+         }
+      }
+
+      // remove existed repository
+      removeRepositoryFully(repository.getConfiguration().getName());
+
+      // wrong restore
+      try
+      {
+         backup.restore(new RepositoryBackupChainLog(backLog), wrongRepoEntry, false);
+         fail();
+      }
+      catch (Exception e)
+      {
+         //ok  
+      }
+
+      // restore
+      long timeOfRestore = System.currentTimeMillis();
+      backup.restore(new RepositoryBackupChainLog(backLog), newRepoEntry, false);
+      log.info("Total time of restore the repository = " + ((System.currentTimeMillis() - timeOfRestore)) + "ms.");
+      checkConent(repositoryService.getRepository(newRepoEntry.getName()), wsEntry.getName());
    }
 
    /**
