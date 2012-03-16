@@ -6,8 +6,9 @@
 
   <title>JBoss Cache configuration</title>
 
-  <para>This chapter will show you how to use and configure Jboss Cache in the clustered environment.
-  Also, you will know how to use a template-based configuration offered by eXo JCR for JBoss Cache instances.</para>
+  <para>This chapter will show you how to use and configure Jboss Cache in the
+  clustered environment. Also, you will know how to use a template-based
+  configuration offered by eXo JCR for JBoss Cache instances.</para>
 
   <section id="JCR.JBossCacheConfigurationTemplates.JBoss_Cache_Config_for_Indexer">
     <title>JBoss cache configuration for indexer, lock manager and data
@@ -65,7 +66,7 @@
     channel for set of clusters. This feature reduces network overheads and
     increase performance and stability of application. To enable multiplexer
     stack, you should define appropriate configuration file (upd-mux.xml is
-    pre-shipped one with eXo JCR) and set "jgroups-multiplexer-stack" into
+    pre-shipped one with eXo JCR) and set "jgroups-multiplexer-stack" to
     "true".</para>
 
     <programlisting language="xml">&lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;
@@ -73,9 +74,14 @@
 
     <para>I<emphasis>t is now highly recommended to use the shared transport
     instead of the multiplexer</emphasis>, to do so simply disable the
-    multiplexer stack in the configuration of each component then set the
-    property <emphasis>singleton_name</emphasis> of your JGroups configuration
-    to a unique name.</para>
+    multiplexer stack in the configuration of each component by setting the
+    property <emphasis>jgroups-multiplexer-stack</emphasis> to
+    <emphasis>false</emphasis> then you will need to ensure that the format of
+    your jgroups configuration is not anymore a jgroups stack definitions but
+    a normal configuration and finally you will need to set the property
+    <emphasis>singleton_name</emphasis> of your JGroups configuration to a
+    unique name (this name must not be the same from one portal container to
+    another).</para>
 
     <programlisting language="xml">&lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;
 &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;</programlisting>

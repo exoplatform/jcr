@@ -322,14 +322,18 @@ session.logout();
 
               <listitem>
                 <para>"jgroups-configuration" is path to JGroups configuration
-                that is multiplexer stack is used (default). This file is also
+                that should not be anymore jgroups' stack definitions but a
+                normal jgroups configuration format with the shared transport
+                configured by simply setting the jgroups property
+                singleton_name to a unique name (it must remain unique from
+                one portal container to another). This file is also
                 pre-bundled with templates and is recommended for use;</para>
               </listitem>
 
               <listitem>
-                <para>"jgroups-multiplexer-stack" set to "false" with the
-                jgroups configuration with the shared transport enabled in
-                order to use the shared transport.</para>
+                <para>"jgroups-multiplexer-stack" set to "false" in order to
+                disable the multiplexer stack as now it is recommended to use
+                the JGroups' shared transport instead.</para>
               </listitem>
 
               <listitem>
