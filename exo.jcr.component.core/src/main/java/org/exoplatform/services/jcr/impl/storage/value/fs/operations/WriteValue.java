@@ -86,6 +86,13 @@ public class WriteValue extends ValueFileOperation
       {
          // be sure the destination dir exists (case for Tree-style storage)
          file.getParentFile().mkdirs();
+         if (file.exists())
+         {
+            // The file still exists so either it is a file that could not be removed
+            // or it is a multi update use case, in both cases we will need
+            // to prevent the file cleaner to remove it
+            cleaner.removeFile(file);
+         }
          // write value to the file
          writeValue(file, value);
       }
