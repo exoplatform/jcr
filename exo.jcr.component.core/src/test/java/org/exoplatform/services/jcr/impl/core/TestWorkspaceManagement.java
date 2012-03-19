@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.util.ArrayList;
@@ -37,8 +38,6 @@ import javax.jcr.RepositoryException;
  */
 public class TestWorkspaceManagement extends JcrImplBaseTest
 {
-   private boolean isDefaultWsMultiDb = false;
-
    private final TesterConfigurationHelper helper;
 
    private WorkspaceEntry wsEntry;
@@ -55,11 +54,11 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          try
          {
-            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, "not-existed-ds");
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, "not-existed-ds");
             helper.addWorkspace(repository, wsEntry);
             fail();
          }
@@ -83,11 +82,11 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       try
       {
          String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, false, dsName);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
 
          try
          {
-            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
             wsEntry.setName(repository.getConfiguration().getSystemWorkspaceName());
 
             helper.addWorkspace(repository, wsEntry);
@@ -113,11 +112,11 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       try
       {
          String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, false, dsName);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
 
          try
          {
-            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
 
             ValueStorageEntry valueStorageEntry = wsEntry.getContainer().getValueStorages().get(0);
 
@@ -149,11 +148,11 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       try
       {
          String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, false, dsName);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
 
          try
          {
-            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
             wsEntry.setContainer(new ContainerEntry(
                "org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", new ArrayList()));
 
@@ -180,12 +179,12 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       try
       {
          String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, false, dsName);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
 
          SessionImpl session = null;
          try
          {
-            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
             helper.addWorkspace(repository, wsEntry);
 
             session = (SessionImpl)repository.login(credentials, wsEntry.getName());
@@ -216,11 +215,11 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       try
       {
          String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, false, dsName);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
 
          try
          {
-            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, dsName);
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, dsName);
             helper.addWorkspace(repository, wsEntry);
             fail();
          }
@@ -244,7 +243,7 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       try
       {
          String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, false, dsName);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
 
          try
          {
@@ -270,8 +269,8 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       try
       {
          String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, false, dsName);
-         WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
+         WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
 
          helper.addWorkspace(repository, wsEntry);
          assertEquals(2, repository.getWorkspaceNames().length);

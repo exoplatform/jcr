@@ -25,9 +25,11 @@ import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
+import org.exoplatform.services.jcr.ext.distribution.DataDistributionMode;
 import org.exoplatform.services.jcr.ext.repository.creation.DBCreationProperties;
 import org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationException;
 import org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationService;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 
 import java.io.File;
 import java.util.HashMap;
@@ -61,8 +63,8 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
 
       // prepare
       String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, false, dsName);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -89,10 +91,10 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
 
       // restore             
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(false, repository.getConfiguration().getSystemWorkspaceName(), tenantName);
+         helper.createRepositoryEntry(DatabaseStructureType.SINGLE, repository.getConfiguration().getSystemWorkspaceName(), tenantName);
       newRE.setName(tenantName);
 
-      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(false, tenantName);
+      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, tenantName);
       newWSEntry.setName(wsEntry.getName());
       newRE.addWorkspace(newWSEntry);
 

@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
@@ -356,7 +357,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
    public void testRemoveRepository() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
 
       String wsName = repository.getConfiguration().getSystemWorkspaceName();
       String repoName = repository.getConfiguration().getName();

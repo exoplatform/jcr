@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -95,11 +96,11 @@ public class TesterConfigurationHelper
 
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, String dsName)
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, String dsName)
       throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, dsName);
+      RepositoryEntry repoEntry = createRepositoryEntry(dbStructureType, null, dsName);
       service.createRepository(repoEntry);
 
       return service.getRepository(repoEntry.getName());
@@ -108,12 +109,12 @@ public class TesterConfigurationHelper
    /**
    * Create workspace entry. 
    */
-   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName) throws Exception
+   public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName, String dsName) throws Exception
    {
       // create system workspace entry
       List<String> ids = new ArrayList<String>();
       ids.add("id");
-      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids);
+      WorkspaceEntry wsEntry = createWorkspaceEntry(dbStructureType, dsName, ids);
 
       if (systemWSName != null)
       {
@@ -265,18 +266,18 @@ public class TesterConfigurationHelper
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName) throws Exception
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName) throws Exception
    {
       List<String> ids = new ArrayList<String>();
       ids.add("id");
 
-      return createWorkspaceEntry(isMultiDb, dsName, ids);
+      return createWorkspaceEntry(dbStructureType, dsName, ids);
    }
 
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds)
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName, List<String> valueStorageIds)
       throws Exception
    {
       if (dsName == null)
@@ -290,7 +291,7 @@ public class TesterConfigurationHelper
       // container entry
       List params = new ArrayList();
       params.add(new SimpleParameterEntry("source-name", dsName));
-      params.add(new SimpleParameterEntry("multi-db", isMultiDb ? "true" : "false"));
+      params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE, dbStructureType.toString()));
       params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
       params.add(new SimpleParameterEntry("dialect", "auto"));
       params.add(new SimpleParameterEntry("swap-directory", "target/temp/swap/" + wsName));

@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 
@@ -70,7 +71,7 @@ public class StorageUpdateTest extends JcrImplBaseTest
 
    private Version version2_node_R = null;
 
-   private boolean isDefaultWsMultiDb;
+   private DatabaseStructureType dbStructureType;
 
    @Override
    public void setUp() throws Exception
@@ -89,10 +90,8 @@ public class StorageUpdateTest extends JcrImplBaseTest
 
       .getComponentInstanceOfType(WorkspaceEntry.class);
 
-      if ("true".equals(wsEntry.getContainer().getParameterValue("multi-db")))
-      {
-         isDefaultWsMultiDb = true;
-      }
+      dbStructureType = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+				JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE));
 
       testNode = session.getRootNode().addNode("test_node", "nt:unstructured");
       // create referenceable node
@@ -165,7 +164,7 @@ public class StorageUpdateTest extends JcrImplBaseTest
          // =================== remove version record ===================
          Statement smnt = jdbcConn.getJdbcConnection().createStatement();
          log.info("Update container version records: "
-            + smnt.executeUpdate("update JCR_" + (isDefaultWsMultiDb ? "M" : "S") + "CONTAINER set VERSION='1.0'"));
+            + smnt.executeUpdate("update JCR_" + (dbStructureType.isMultiDatabase() ? "M" : "S") + "CONTAINER set VERSION='1.0'"));
          jdbcConn.getJdbcConnection().commit();
 
          conn.commit();

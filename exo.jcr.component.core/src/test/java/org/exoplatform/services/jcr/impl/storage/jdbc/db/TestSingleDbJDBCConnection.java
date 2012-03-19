@@ -35,21 +35,20 @@ import java.sql.Statement;
 public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
 {
 
-   private void setUp(String scriptPath, boolean multiDB) throws Exception
+   private void setUp(String scriptPath, DatabaseStructureType dbStructureType) throws Exception
    {
       super.setUp();
       JDBCDataContainerConfig containerConfig = new JDBCDataContainerConfig();
       containerConfig.containerName = "ws3";
       containerConfig.initScriptPath = scriptPath;
-      containerConfig.dbStructureType = multiDB ? DatabaseStructureType.MULTI : DatabaseStructureType.SINGLE;
-      containerConfig.multiDb = multiDB;
+      containerConfig.dbStructureType = dbStructureType;
       new DBInitializer(getJNDIConnection(), containerConfig).init();
    }
 
    @Override
    public void setUp() throws Exception
    {
-      setUp("/conf/storage/jcr-sjdbc.sql", false);
+      setUp("/conf/storage/jcr-sjdbc.sql", DatabaseStructureType.SINGLE);
       try
       {
          Statement st = getJNDIConnection().createStatement();
@@ -68,7 +67,6 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
          jdbcDataContainerConfig.containerName = "ws3";
          jdbcDataContainerConfig.maxBufferSize = 10;
          jdbcDataContainerConfig.dbStructureType = DatabaseStructureType.SINGLE;
-         jdbcDataContainerConfig.multiDb = false;
          jdbcConn = new SingleDbJDBCConnection(getJNDIConnection(), false, jdbcDataContainerConfig);
          tableType = "S";
       }

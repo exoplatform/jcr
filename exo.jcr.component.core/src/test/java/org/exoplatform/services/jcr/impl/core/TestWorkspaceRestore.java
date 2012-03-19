@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.BufferedInputStream;
@@ -50,15 +51,14 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 
    private WorkspaceEntry wsEntry;
 
-   private boolean isDefaultWsMultiDb;
+   private DatabaseStructureType dbStructureType;
 
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
       wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
-      
-      isDefaultWsMultiDb = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase();
+      dbStructureType = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry);
    }
 
    public void testRestore() throws RepositoryConfigurationException, Exception
@@ -67,10 +67,10 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       try
       {
          String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
+         repository = helper.createRepository(container, dbStructureType, dsName);
 
          WorkspaceEntry workspaceEntry =
-            helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
+            helper.createWorkspaceEntry(dbStructureType, dbStructureType.isMultiDatabase() ? helper.createDatasource() : dsName);
          helper.addWorkspace(repository, workspaceEntry);
 
          InputStream is = TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
@@ -91,10 +91,10 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       try
       {
          String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
+         repository = helper.createRepository(container, dbStructureType, dsName);
 
          WorkspaceEntry workspaceEntry =
-            helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
+            helper.createWorkspaceEntry(dbStructureType, dbStructureType.isMultiDatabase() ? helper.createDatasource() : dsName);
          helper.addWorkspace(repository, workspaceEntry);
 
          Session defSession = repository.login(this.credentials, workspaceEntry.getName());

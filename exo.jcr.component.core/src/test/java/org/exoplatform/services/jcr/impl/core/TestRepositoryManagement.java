@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
@@ -54,14 +55,6 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
    public static int BINDED_DS_COUNT = 100;
 
-   private static boolean isBinded = false;
-
-   private final int lastDS = 0;
-
-   private WorkspaceEntry wsEntry;
-
-   private boolean isDefaultWsMultiDb;
-
    private final TesterConfigurationHelper helper;
 
 
@@ -76,7 +69,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          Session session = null;
          try
@@ -107,7 +100,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          final long lockManagerTimeOut =
             repository.getConfiguration().getWorkspaceEntries().get(0).getLockManager().getParameterLong("time-out");
@@ -184,11 +177,11 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          try
          {
-            RepositoryEntry rEntry = helper.createRepositoryEntry(false, null, null, true);
+            RepositoryEntry rEntry = helper.createRepositoryEntry(DatabaseStructureType.SINGLE, null, null, true);
             rEntry.setName(repository.getConfiguration().getName());
 
             helper.createRepository(container, rEntry);
@@ -213,7 +206,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
@@ -238,7 +231,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          SessionImpl session = null;
          try
@@ -271,7 +264,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          SessionImpl session = null;
          try
@@ -302,7 +295,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
    public void testRemove() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, false, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       service.removeRepository(repository.getConfiguration().getName());
@@ -413,7 +406,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          try
          {
             latcher.await();
-            tRrepository = helper.createRepository(container, false, null);
+            tRrepository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
          }
          catch (Exception e)
          {
@@ -433,7 +426,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       try
       {
          RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-         RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, null, true);
+         RepositoryEntry repoEntry = helper.createRepositoryEntry(DatabaseStructureType.SINGLE, null, null, true);
 
          try
          {

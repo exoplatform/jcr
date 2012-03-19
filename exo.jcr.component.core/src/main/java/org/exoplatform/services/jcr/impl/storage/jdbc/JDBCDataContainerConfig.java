@@ -104,12 +104,6 @@ public class JDBCDataContainerConfig
    public String dbTableSuffix;
 
    /**
-    * Use {@link #dbStructureType}
-    */
-   @Deprecated
-   public boolean multiDb;
-
-   /**
     * Datasource provider
     */
    public DataSourceProvider dsProvider;

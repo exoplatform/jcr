@@ -37,6 +37,7 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jdbc.impl.CloseableDataSource;
 import org.exoplatform.services.log.ExoLogger;
@@ -696,8 +697,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       Set<String> dataSourceNames = new HashSet<String>();
       for (WorkspaceEntry wsEntry : repositoryEntry.getWorkspaceEntries())
       {
-         boolean isMultiDB =
-            Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
+    	 boolean isMultiDB = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+  				JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE)).isMultiDatabase();
          String dbSourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 
          if (isMultiDB && dataSourceNames.contains(dbSourceName))

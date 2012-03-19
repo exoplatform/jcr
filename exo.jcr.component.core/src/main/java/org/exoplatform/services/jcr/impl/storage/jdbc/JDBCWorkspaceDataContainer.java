@@ -122,11 +122,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
    public final static String SOURCE_NAME = "source-name";
 
-   @Deprecated
-   public final static String MULTIDB = "multi-db";
-
    /**
-    * Data structure type, replaces deprecated MULTI_DB
+    * Data structure type
     */
    public final static String DB_STRUCTURE_TYPE = "db-structure-type";
 
@@ -213,7 +210,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       this.containerConfig.dbStructureType = getDatabaseType(wsConfig);
       this.containerConfig.dbTableSuffix = getDBTableSuffix(wsConfig);
 
-      this.containerConfig.multiDb = containerConfig.dbStructureType.isMultiDatabase();
       this.containerConfig.valueStorageProvider = valueStorageProvider;
       this.containerConfig.dsProvider = dsProvider;
 
@@ -615,7 +611,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       String str =
          "JDBC based JCR Workspace Data container \n" + "container name: " + containerConfig.containerName + " \n"
             + (containerConfig.isManaged ? "managed " : "") + "data source JNDI name: " + containerConfig.dbSourceName
-            + "\n" + "is multi database: " + containerConfig.multiDb + "\n" + "storage version: "
+            + "\n" + "is multi database: " + containerConfig.dbStructureType.isMultiDatabase() + "\n" + "storage version: "
             + containerConfig.storageVersion + "\n" + "value storage provider: " + containerConfig.valueStorageProvider
             + "\n" + "max buffer size (bytes): " + containerConfig.maxBufferSize + "\n" + "swap directory path: "
             + PrivilegedFileHelper.getAbsolutePath(containerConfig.swapDirectory);
@@ -957,7 +953,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          restoreTableRule.setDstMultiDb(containerConfig.dbStructureType.isMultiDatabase());
          restoreTableRule.setSrcTableName(srcTableName);
 
-         if (containerConfig.multiDb)
+         if (containerConfig.dbStructureType.isMultiDatabase())
          {
             if (!dbType.isMultiDatabase())
             {
@@ -1217,23 +1213,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public static DatabaseStructureType getDatabaseType(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
    {
-      try
-      {
-         if (wsConfig.getContainer().getParameterBoolean(MULTIDB))
-         {
-            return JDBCDataContainerConfig.DatabaseStructureType.MULTI;
-         }
-         else
-         {
-            return JDBCDataContainerConfig.DatabaseStructureType.SINGLE;
-         }
-      }
-      catch (Exception e)
-      {
-         // parameter MULTIDB is missing
-         String dbStructureType = wsConfig.getContainer().getParameterValue(DB_STRUCTURE_TYPE).toUpperCase();
-         return JDBCDataContainerConfig.DatabaseStructureType.valueOf(dbStructureType);
-      }
+      String dbStructureType = wsConfig.getContainer().getParameterValue(DB_STRUCTURE_TYPE).toUpperCase();
+      return JDBCDataContainerConfig.DatabaseStructureType.valueOf(dbStructureType);
    }
 
    /**

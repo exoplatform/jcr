@@ -42,6 +42,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.util.IdGenerator;
@@ -75,10 +76,6 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    private static boolean SHARED_CACHE = true;
 
    private static boolean NOT_SHARED_CACHE = false;
-
-   private static boolean MULTI_DB = true;
-
-   private static boolean SINGLE_DB = false;
 
    private static boolean CACHE_ENABLED = true;
 
@@ -115,15 +112,15 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    public void testLockUsecases() throws Exception
    {
-      checkConsistentLocksInDataBase(helper.createRepository(container, SINGLE_DB, CACHE_ENABLED, NOT_SHARED_CACHE));
-      checkConsistentLocksInDataBase(helper.createRepository(container, MULTI_DB, CACHE_ENABLED, NOT_SHARED_CACHE));
-      checkConsistentLocksInDataBase(helper.createRepository(container, SINGLE_DB, CACHE_ENABLED, SHARED_CACHE));
-      checkConsistentLocksInDataBase(helper.createRepository(container, MULTI_DB, CACHE_ENABLED, SHARED_CACHE));
+      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_ENABLED, NOT_SHARED_CACHE));
+      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_ENABLED, NOT_SHARED_CACHE));
+      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_ENABLED, SHARED_CACHE));
+      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_ENABLED, SHARED_CACHE));
 
-      checkInconsistentLocksInLockTable(helper.createRepository(container, SINGLE_DB, CACHE_ENABLED, NOT_SHARED_CACHE));
-      checkInconsistentLocksInLockTable(helper.createRepository(container, MULTI_DB, CACHE_ENABLED, NOT_SHARED_CACHE));
-      checkInconsistentLocksInLockTable(helper.createRepository(container, SINGLE_DB, CACHE_ENABLED, SHARED_CACHE));
-      checkInconsistentLocksInLockTable(helper.createRepository(container, MULTI_DB, CACHE_ENABLED, SHARED_CACHE));
+      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_ENABLED, NOT_SHARED_CACHE));
+      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_ENABLED, NOT_SHARED_CACHE));
+      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_ENABLED, SHARED_CACHE));
+      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_ENABLED, SHARED_CACHE));
    }
 
    private void checkConsistentLocksInDataBase(ManageableRepository repository) throws Exception
@@ -210,7 +207,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, SINGLE_DB, CACHE_DISABLED);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED);
          TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
          Node node = addTestNode(repository);
@@ -236,7 +233,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, SINGLE_DB, CACHE_DISABLED);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED);
          TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
          Node node = addTestNode(repository);
@@ -262,7 +259,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, SINGLE_DB, CACHE_DISABLED);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED);
          TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
          Node node = addTestNode(repository);
@@ -285,11 +282,11 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesTheParentIdIsIdOfThisNode() throws Exception
    {
-      checkDBUsecasesTheParentIdIsIdOfThisNode(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
-      checkDBUsecasesTheParentIdIsIdOfThisNode2(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
+      checkDBUsecasesTheParentIdIsIdOfThisNode(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
+      checkDBUsecasesTheParentIdIsIdOfThisNode2(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
 
-      checkDBUsecasesTheParentIdIsIdOfThisNode(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
-      checkDBUsecasesTheParentIdIsIdOfThisNode2(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
+      checkDBUsecasesTheParentIdIsIdOfThisNode(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
+      checkDBUsecasesTheParentIdIsIdOfThisNode2(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
    }
 
    private void checkDBUsecasesTheParentIdIsIdOfThisNode(ManageableRepository repository) throws Exception
@@ -347,8 +344,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesSeveralVersionsOfSameItem() throws Exception
    {
-      checkSeveralVersionsOfSameItem(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
-      checkSeveralVersionsOfSameItem(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
+      checkSeveralVersionsOfSameItem(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
+      checkSeveralVersionsOfSameItem(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
    }
 
    private void checkSeveralVersionsOfSameItem(ManageableRepository repository) throws Exception
@@ -382,8 +379,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesPropertyWithoutParent() throws Exception
    {
-      checkDBUsecasesPropertyWithoutParent(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
-      checkDBUsecasesPropertyWithoutParent(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
+      checkDBUsecasesPropertyWithoutParent(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
+      checkDBUsecasesPropertyWithoutParent(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
    }
 
    private void checkDBUsecasesPropertyWithoutParent(ManageableRepository repository) throws Exception
@@ -413,8 +410,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesIncorrectValueRecords() throws Exception
    {
-      checkDBUsecasesIncorrectValueRecords(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
-      checkDBUsecasesIncorrectValueRecords(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
+      checkDBUsecasesIncorrectValueRecords(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
+      checkDBUsecasesIncorrectValueRecords(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
    }
 
    private void checkDBUsecasesIncorrectValueRecords(ManageableRepository repository) throws Exception
@@ -448,8 +445,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesValueRecordHasNoItemRecord() throws Exception
    {
-      checkDBUsecasesValueRecordHasNoItemRecord(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
-      checkDBUsecasesValueRecordHasNoItemRecord(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
+      checkDBUsecasesValueRecordHasNoItemRecord(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
+      checkDBUsecasesValueRecordHasNoItemRecord(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
    }
 
    private void checkDBUsecasesValueRecordHasNoItemRecord(ManageableRepository repository) throws Exception
@@ -483,11 +480,11 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesPropertiesHasNoValueRecord() throws Exception
    {
-      checkDBUsecasesPropertiesHasNoSingleValueRecord(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
-      checkDBUsecasesPropertiesHasEmptyMultiValueRecord(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
+      checkDBUsecasesPropertiesHasNoSingleValueRecord(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
+      checkDBUsecasesPropertiesHasEmptyMultiValueRecord(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
 
-      checkDBUsecasesPropertiesHasNoSingleValueRecord(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
-      checkDBUsecasesPropertiesHasEmptyMultiValueRecord(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
+      checkDBUsecasesPropertiesHasNoSingleValueRecord(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
+      checkDBUsecasesPropertiesHasEmptyMultiValueRecord(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
    }
 
    private void checkDBUsecasesPropertiesHasNoSingleValueRecord(ManageableRepository repository) throws Exception
@@ -543,9 +540,9 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesReferencePropertyWithoutReferenceRecord() throws Exception
    {
-      checkDBUsecasesReferencePropertyWithoutReferenceRecord(helper.createRepository(container, SINGLE_DB,
+      checkDBUsecasesReferencePropertyWithoutReferenceRecord(helper.createRepository(container, DatabaseStructureType.SINGLE,
          CACHE_DISABLED));
-      checkDBUsecasesReferencePropertyWithoutReferenceRecord(helper.createRepository(container, MULTI_DB,
+      checkDBUsecasesReferencePropertyWithoutReferenceRecord(helper.createRepository(container, DatabaseStructureType.MULTI,
          CACHE_DISABLED));
    }
 
@@ -583,8 +580,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testDBUsecasesNodeHasNoProperties() throws Exception
    {
-      checkDBUsecasesNodeHasNotPrimaryTypeProperties(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
-      checkDBUsecasesNodeHasNotPrimaryTypeProperties(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
+      checkDBUsecasesNodeHasNotPrimaryTypeProperties(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
+      checkDBUsecasesNodeHasNotPrimaryTypeProperties(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
    }
 
    private void checkDBUsecasesNodeHasNotPrimaryTypeProperties(ManageableRepository repository) throws Exception
@@ -616,8 +613,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
     */
    public void testValueStorageUsecases() throws Exception
    {
-      checkValueStorageUsecases(helper.createRepository(container, SINGLE_DB, CACHE_DISABLED));
-      checkValueStorageUsecases(helper.createRepository(container, MULTI_DB, CACHE_DISABLED));
+      checkValueStorageUsecases(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED));
+      checkValueStorageUsecases(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED));
    }
 
    private void checkValueStorageUsecases(ManageableRepository repository) throws Exception
@@ -683,7 +680,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    {
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
 
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+	  boolean isMultiDb = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+						JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE)).isMultiDatabase();
       String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 
       String vTable = "JCR_" + (isMultiDb ? "M" : "S") + "VALUE";
@@ -714,7 +712,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    {
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
 
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+      boolean isMultiDb = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+				JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE)).isMultiDatabase();
       String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 
       String vTable = "JCR_" + (isMultiDb ? "M" : "S") + "VALUE";
@@ -736,7 +735,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    {
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
 
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+      boolean isMultiDb = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+				JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE)).isMultiDatabase();
       String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 
       String vTable = "JCR_" + (isMultiDb ? "M" : "S") + "VALUE";
@@ -758,7 +758,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    {
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
 
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+      boolean isMultiDb = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+				JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE)).isMultiDatabase();
       String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 
       String rTable = "JCR_" + (isMultiDb ? "M" : "S") + "REF";
@@ -778,7 +779,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    {
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
 
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+      boolean isMultiDb = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+				JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE)).isMultiDatabase();
       String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 
       String vTable = "JCR_" + (isMultiDb ? "M" : "S") + "VALUE";
@@ -803,7 +805,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       RepositoryConfigurationException, NamingException
    {
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+      boolean isMultiDb = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+				JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE)).isMultiDatabase();
 
       String iTable = "JCR_" + (isMultiDb ? "M" : "S") + "ITEM";
       String itemId = (isMultiDb ? "" : wsEntry.getName()) + item.getInternalIdentifier();
@@ -899,7 +902,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       throws RepositoryConfigurationException, SQLException, NamingException, RepositoryException
    {
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+      boolean isMultiDb = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+				JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE)).isMultiDatabase();
 
       String iTable = "JCR_" + (isMultiDb ? "M" : "S") + "ITEM";
       String vTable = "JCR_" + (isMultiDb ? "M" : "S") + "VALUE";
@@ -937,7 +941,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       throws RepositoryConfigurationException, SQLException, NamingException
    {
       WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
-      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+      boolean isMultiDb = DatabaseStructureType.valueOf(wsEntry.getContainer().getParameterValue(
+				JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE)).isMultiDatabase();
 
       String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 

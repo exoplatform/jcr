@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -50,8 +51,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testFullBackupRestore() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -70,7 +71,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.stopBackup(bch);
 
       // restore
-      WorkspaceEntry newWS = helper.createWorkspaceEntry(true, null);
+      WorkspaceEntry newWS = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
 
       File backLog = new File(bch.getLogFilePath());
       assertTrue(backLog.exists());
@@ -87,8 +88,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testIncrementalBackupRestore() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -110,7 +111,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.stopBackup(bch);
 
       // restore
-      WorkspaceEntry newWS = helper.createWorkspaceEntry(true, null);
+      WorkspaceEntry newWS = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
 
       File backLog = new File(bch.getLogFilePath());
       assertTrue(backLog.exists());
@@ -128,8 +129,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testFullBackupRestoreAsync() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -148,7 +149,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.stopBackup(bch);
 
       // restore
-      WorkspaceEntry newWS = helper.createWorkspaceEntry(true, null);
+      WorkspaceEntry newWS = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
 
       File backLog = new File(bch.getLogFilePath());
       assertTrue(backLog.exists());
@@ -169,8 +170,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testAutoStopBackupFull() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
 
       // backup
@@ -200,8 +201,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testAutoStopBackupIncr() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
 
       // backup
@@ -233,8 +234,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void _testAutoStopBackupIncrRepetion() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
 
       // backup
@@ -312,8 +313,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRestoreAfterFailureRestore() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -332,7 +333,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.stopBackup(bch);
 
       // restore
-      WorkspaceEntry newWS = helper.createWorkspaceEntry(true, "NOT_EXISTED_DS");
+      WorkspaceEntry newWS = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, "NOT_EXISTED_DS");
 
       File backLog = new File(bch.getLogFilePath());
       assertTrue(backLog.exists());
@@ -351,7 +352,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       {
       }
 
-      newWS = helper.createWorkspaceEntry(true, null);
+      newWS = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       backup.restore(bchLog, config.getRepository(), newWS, false);
 
       checkConent(repository, newWS.getName());
@@ -360,7 +361,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRepositoryFullBackupRestore() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -378,7 +379,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(true, repository.getConfiguration().getSystemWorkspaceName(), null);
+         helper.createRepositoryEntry(DatabaseStructureType.MULTI, repository.getConfiguration().getSystemWorkspaceName(), null);
 
       File backLog = new File(bch.getLogFilePath());
       assertTrue(backLog.exists());
@@ -395,7 +396,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRepositoryFullAndIncrementalBackupRestore() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -416,7 +417,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(true, repository.getConfiguration().getSystemWorkspaceName(), null);
+         helper.createRepositoryEntry(DatabaseStructureType.MULTI, repository.getConfiguration().getSystemWorkspaceName(), null);
 
       File backLog = new File(bch.getLogFilePath());
       assertTrue(backLog.exists());
@@ -434,7 +435,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRepositoryFullBackupAsynchronusRestore() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -452,7 +453,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(true, repository.getConfiguration().getSystemWorkspaceName(), null);
+         helper.createRepositoryEntry(DatabaseStructureType.MULTI, repository.getConfiguration().getSystemWorkspaceName(), null);
 
       File backLog = new File(bch.getLogFilePath());
       assertTrue(backLog.exists());
@@ -471,7 +472,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRepositoryFullBackupAsynchronusRestoreWorkspaceMapping() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -488,7 +489,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.stopBackup(bch);
 
       // restore
-      RepositoryEntry newRE = helper.createRepositoryEntry(true, null, null);
+      RepositoryEntry newRE = helper.createRepositoryEntry(DatabaseStructureType.MULTI, null, null);
 
       // create workspace mappingS
       Map<String, String> workspaceMapping = new HashedMap();
@@ -511,7 +512,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void _testAutoStopRepositoryBackupIncrRepetion() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -530,7 +531,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.stopBackup(bch);
 
       // restore
-      RepositoryEntry newRE = helper.createRepositoryEntry(true, null, null);
+      RepositoryEntry newRE = helper.createRepositoryEntry(DatabaseStructureType.MULTI, null, null);
 
       // create workspace mappingS
       Map<String, String> workspaceMapping = new HashedMap();
@@ -554,7 +555,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRepositoryRestoreFail() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -571,7 +572,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.stopBackup(bch);
 
       // restore
-      RepositoryEntry newRE = helper.createRepositoryEntry(true, null, null);
+      RepositoryEntry newRE = helper.createRepositoryEntry(DatabaseStructureType.MULTI, null, null);
       newRE.getWorkspaceEntries().get(0).getQueryHandler().setType("gg");
 
       // create workspace mappingS
@@ -599,8 +600,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testExistedWorkspaceRestoreMultiDB() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -637,8 +638,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       // prepare
       String dsName = helper.createDatasource();
 
-      ManageableRepository repository = helper.createRepository(container, false, dsName);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -673,8 +674,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testExistedWorkspaceRestoreAsync() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -718,7 +719,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    {
       // prepare
       String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, true, dsName);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, dsName);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -745,7 +746,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(true, repository.getConfiguration().getSystemWorkspaceName(), dsName);
+         helper.createRepositoryEntry(DatabaseStructureType.MULTI, repository.getConfiguration().getSystemWorkspaceName(), dsName);
       newRE.setName(repository.getConfiguration().getName());
 
       backup.restoreExistingRepository(bchLog, newRE, false);
@@ -756,7 +757,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    {
       // prepare
       String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, false, dsName);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -783,7 +784,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(false, repository.getConfiguration().getSystemWorkspaceName(), dsName);
+         helper.createRepositoryEntry(DatabaseStructureType.SINGLE, repository.getConfiguration().getSystemWorkspaceName(), dsName);
       newRE.setName(repository.getConfiguration().getName());
 
       backup.restoreExistingRepository(bchLog, newRE, false);
@@ -794,7 +795,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    {
       // prepare
       String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, false, dsName);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -820,7 +821,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(false, repository.getConfiguration().getSystemWorkspaceName(), dsName);
+         helper.createRepositoryEntry(DatabaseStructureType.SINGLE, repository.getConfiguration().getSystemWorkspaceName(), dsName);
       newRE.setName(repository.getConfiguration().getName());
 
       backup.restoreExistingRepository(bchLog, newRE, true);
@@ -837,8 +838,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testExistedWorkspaceRestoreWithConfig() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -873,7 +874,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    {
       // prepare
       String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, true, dsName);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, dsName);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -899,7 +900,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(true, repository.getConfiguration().getSystemWorkspaceName(), dsName);
+         helper.createRepositoryEntry(DatabaseStructureType.MULTI, repository.getConfiguration().getSystemWorkspaceName(), dsName);
       newRE.setName(repository.getConfiguration().getName());
 
       backup.restoreExistingRepository(bchLog.getBackupId(), false);
@@ -909,8 +910,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testWorkspaceRestoreWithConfig() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -946,7 +947,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRepositoryRestoreWithConfig() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -982,7 +983,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRepositoryRestoreWithNullConfig() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -1017,8 +1018,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testWorkspaceRestoreWithNullConfig() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -1063,8 +1064,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testExistedWorkspaceRestoreWithConfigBackupSetDir() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -1098,7 +1099,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testExistedRepositoryRestoreWithConfigBackupSetDir() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -1130,8 +1131,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testWorkspaceRestoreWithConfigBackupSetDir() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -1167,7 +1168,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRepositoryRestoreWithConfigBackupSetDir() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -1202,7 +1203,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testEnvironmentVariablesToBackupDir() throws Exception
    {
       // prepare stage #1
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       String tempDir = PrivilegedSystemHelper.getProperty("java.io.tmpdir");
@@ -1263,7 +1264,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    public void testRelativeBackupDir() throws Exception
    {
       // prepare stage #1
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -1322,12 +1323,12 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    String dsName1 = helper.createDatasource();
    String dsName2 = helper.createDatasource();
 
-   ManageableRepository repository = helper.createRepository(container, false, dsName1);
-   WorkspaceEntry wsEntry1 = helper.createWorkspaceEntry(false, dsName1);
+   ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName1);
+   WorkspaceEntry wsEntry1 = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName1);
    helper.addWorkspace(repository, wsEntry1);
    addConent(repository, wsEntry1.getName());
 
-   WorkspaceEntry wsEntry2 = helper.createWorkspaceEntry(false, dsName2);
+   WorkspaceEntry wsEntry2 = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName2);
    helper.addWorkspace(repository, wsEntry2);
    addConent(repository, wsEntry2.getName());
 
@@ -1374,12 +1375,12 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    String dsName1 = helper.createDatasource();
    String dsName2 = helper.createDatasource();
 
-   ManageableRepository repository = helper.createRepository(container, false, dsName1);
-   WorkspaceEntry wsEntry1 = helper.createWorkspaceEntry(false, dsName1);
+   ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName1);
+   WorkspaceEntry wsEntry1 = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName1);
    helper.addWorkspace(repository, wsEntry1);
    addConent(repository, wsEntry1.getName());
 
-   WorkspaceEntry wsEntry2 = helper.createWorkspaceEntry(false, dsName2);
+   WorkspaceEntry wsEntry2 = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName2);
    helper.addWorkspace(repository, wsEntry2);
    addConent(repository, wsEntry2.getName());
 
@@ -1423,10 +1424,10 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    {
       // prepare
       String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, false, dsName);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
-      WorkspaceEntry wsEntry1 = helper.createWorkspaceEntry(false, dsName);
+      WorkspaceEntry wsEntry1 = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
       helper.addWorkspace(repository, wsEntry1);
       addConent(repository, wsEntry1.getName());
 
@@ -1464,12 +1465,12 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       // create repository
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       String dsName = helper.createDatasource();
-      RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, dsName);
+      RepositoryEntry repoEntry = helper.createRepositoryEntry(DatabaseStructureType.SINGLE, null, dsName);
       service.createRepository(repoEntry);
 
       ManageableRepository repository = service.getRepository(repoEntry.getName());
 
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
       helper.addWorkspace(repository, wsEntry);
       service.getConfig().retain();
 
@@ -1555,12 +1556,12 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       // create repository
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       String dsName = helper.createDatasource();
-      RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, dsName);
+      RepositoryEntry repoEntry = helper.createRepositoryEntry(DatabaseStructureType.SINGLE, null, dsName);
       service.createRepository(repoEntry);
 
       ManageableRepository repository = service.getRepository(repoEntry.getName());
 
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
       helper.addWorkspace(repository, wsEntry);
       service.getConfig().retain();
 
@@ -1646,12 +1647,12 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       // create repository
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       String dsName = helper.createDatasource();
-      RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, dsName);
+      RepositoryEntry repoEntry = helper.createRepositoryEntry(DatabaseStructureType.SINGLE, null, dsName);
       service.createRepository(repoEntry);
 
       ManageableRepository repository = service.getRepository(repoEntry.getName());
 
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
       helper.addWorkspace(repository, wsEntry);
       service.getConfig().retain();
 

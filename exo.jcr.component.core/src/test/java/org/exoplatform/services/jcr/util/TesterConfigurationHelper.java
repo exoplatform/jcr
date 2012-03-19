@@ -34,6 +34,8 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -116,32 +118,32 @@ public class TesterConfigurationHelper
 
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, String dsName)
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, String dsName)
       throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, dsName, true);
+      RepositoryEntry repoEntry = createRepositoryEntry(dbStructureType, null, dsName, true);
       service.createRepository(repoEntry);
       service.getConfig().retain();
 
       return service.getRepository(repoEntry.getName());
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled,
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, boolean cacheEnabled,
       boolean cacheShared) throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, null, cacheEnabled, cacheShared);
+      RepositoryEntry repoEntry = createRepositoryEntry(dbStructureType, null, null, cacheEnabled, cacheShared);
       service.createRepository(repoEntry);
       service.getConfig().retain();
 
       return service.getRepository(repoEntry.getName());
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled)
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, boolean cacheEnabled)
       throws Exception
    {
-      return createRepository(container, isMultiDb, cacheEnabled, false);
+      return createRepository(container, dbStructureType, cacheEnabled, false);
    }
 
    public ManageableRepository createRepository(ExoContainer container, RepositoryEntry repoEntry) throws Exception
@@ -155,22 +157,22 @@ public class TesterConfigurationHelper
    /**
     * Create workspace entry. 
     */
-   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName,
+   public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName, String dsName,
       boolean cacheEnabled) throws Exception
    {
-      return createRepositoryEntry(isMultiDb, systemWSName, dsName, cacheEnabled, false);
+      return createRepositoryEntry(dbStructureType, systemWSName, dsName, cacheEnabled, false);
    }
 
    /**
    * Create workspace entry. 
    */
-   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName,
+   public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName, String dsName,
       boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       // create system workspace entry
       List<String> ids = new ArrayList<String>();
       ids.add("id");
-      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids, cacheEnabled, cacheShared);
+      WorkspaceEntry wsEntry = createWorkspaceEntry(dbStructureType, dsName, ids, cacheEnabled, cacheShared);
 
       if (systemWSName != null)
       {
@@ -192,27 +194,27 @@ public class TesterConfigurationHelper
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName) throws Exception
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName) throws Exception
    {
       List<String> ids = new ArrayList<String>();
       ids.add("id");
 
-      return createWorkspaceEntry(isMultiDb, dsName, ids, true);
+      return createWorkspaceEntry(dbStructureType, dsName, ids, true);
    }
 
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds,
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName, List<String> valueStorageIds,
       boolean cacheEnabled) throws Exception
    {
-      return createWorkspaceEntry(isMultiDb, dsName, valueStorageIds, cacheEnabled, false);
+      return createWorkspaceEntry(dbStructureType, dsName, valueStorageIds, cacheEnabled, false);
    }
 
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds,
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName, List<String> valueStorageIds,
       boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       if (dsName == null)
@@ -226,7 +228,7 @@ public class TesterConfigurationHelper
       // container entry
       List params = new ArrayList();
       params.add(new SimpleParameterEntry("source-name", dsName));
-      params.add(new SimpleParameterEntry("multi-db", isMultiDb ? "true" : "false"));
+      params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE, dbStructureType.toString()));
       params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
       params.add(new SimpleParameterEntry("dialect", "auto"));
       params.add(new SimpleParameterEntry("swap-directory", "target/temp/swap/" + wsName));

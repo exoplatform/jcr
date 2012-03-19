@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RdbmsWorkspaceInitiali
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.jcr.util.TesterRdbmsWorkspaceInitializer;
@@ -66,7 +67,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
          {
             String dsName = helper.createDatasource();
             WorkspaceEntry newEntry =
-               helper.createWorkspaceEntry(true, dsName,
+               helper.createWorkspaceEntry(DatabaseStructureType.MULTI, dsName,
                   helper.getValueStorageIds(workspaceEntry.getContainer().getValueStorages()));
 
             List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
@@ -83,7 +84,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             dsName = helper.createDatasource();
             newEntry =
-               helper.createWorkspaceEntry(true, dsName,
+               helper.createWorkspaceEntry(DatabaseStructureType.MULTI, dsName,
                   helper.getValueStorageIds(workspaceEntry.getContainer().getValueStorages()));
 
             wieParams = new ArrayList<SimpleParameterEntry>();
@@ -132,7 +133,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
          {
             String dsName = helper.createDatasource();
             WorkspaceEntry newEntry =
-               helper.createWorkspaceEntry(true, dsName,
+               helper.createWorkspaceEntry(DatabaseStructureType.MULTI, dsName,
                   helper.getValueStorageIds(workspaceEntry.getContainer().getValueStorages()));
 
             List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
@@ -153,7 +154,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             dsName = helper.createDatasource();
             newEntry =
-               helper.createWorkspaceEntry(true, dsName,
+               helper.createWorkspaceEntry(DatabaseStructureType.MULTI, dsName,
                   helper.getValueStorageIds(workspaceEntry.getContainer().getValueStorages()));
 
             wieParams = new ArrayList<SimpleParameterEntry>();

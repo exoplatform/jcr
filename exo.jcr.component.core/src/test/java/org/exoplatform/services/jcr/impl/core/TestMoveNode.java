@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
@@ -341,11 +342,11 @@ public class TestMoveNode extends JcrImplBaseTest
    public void testMoveWithoutGenerationChangesForAllSubTree() throws Exception
    {
       TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       wsEntry.getContainer().getParameters()
          .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME, "false"));
       
-      ManageableRepository repository = helper.createRepository(container, true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
 
       SessionImpl session = (SessionImpl)repository.login(credentials, wsEntry.getName());

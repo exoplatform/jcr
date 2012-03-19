@@ -396,7 +396,7 @@ public class JDBCWorkspaceDataContainerChecker
 
    private String removeWorkspacePrefix(String str)
    {
-      return jdbcDataContainer.containerConfig.multiDb ? str : str
+      return jdbcDataContainer.containerConfig.dbStructureType.isMultiDatabase() ? str : str
          .substring(jdbcDataContainer.containerConfig.containerName.length());
    }
 
@@ -532,7 +532,7 @@ public class JDBCWorkspaceDataContainerChecker
             + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not related property record",
          new ValueRecordsRemover(jdbcDataContainer.getConnectionFactory(),
-            jdbcDataContainer.containerConfig.containerName, jdbcDataContainer.containerConfig.multiDb)));
+            jdbcDataContainer.containerConfig.containerName, jdbcDataContainer.containerConfig.dbStructureType.isMultiDatabase())));
 
       // The differences in the queries by DB dialect.
       String statement;

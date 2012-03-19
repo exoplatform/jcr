@@ -30,7 +30,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
-                     <property name="multi-db" value="false" />
+                     <property name="db-structure-type" value="single" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/production" />
                   </properties>
@@ -90,7 +90,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
-                     <property name="multi-db" value="false" />
+                     <property name="db-structure-type" value="single" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/backup" />
                   </properties>
@@ -150,7 +150,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
-                     <property name="multi-db" value="false" />
+                     <property name="db-structure-type" value="single" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/digital-assets" />
                   </properties>
