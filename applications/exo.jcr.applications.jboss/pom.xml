@@ -22,7 +22,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.config</artifactId>
-      <version>1.14.7-GA-SNAPSHOT</version>
+      <version>1.14.7-GA</version>
       <relativePath>../exo.jcr.applications.config/pom.xml</relativePath>
    </parent>
 
@@ -41,7 +41,7 @@
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.ear</artifactId>
-         <version>1.14.7-GA-SNAPSHOT</version>
+         <version>1.14.7-GA</version>
          <type>ear</type>
          <scope>runtime</scope>
       </dependency>
@@ -128,7 +128,7 @@
                      <fileset dir="${basedir}/../product-patches/as/jboss/bin/" includes="*.*" />
                   </copy>
 
-                  <replace dir="${exo.projects.directory.working}/exo-jboss/bin" token="-Dexo.profiles=jbc" value="-Dexo.profiles=${exo.deploy.profile}"/>
+                  <replace dir="${exo.projects.directory.working}/exo-jboss/bin" token="-Dexo.profiles=jbc" value="-Dexo.profiles=${exo.deploy.profile}" />
                   <move file="${exo.projects.directory.working}/exo-jboss/bin/run.bat" tofile="${exo.projects.directory.working}/exo-jboss/bin/run-${exo.deploy.profile}.bat" />
                   <move file="${exo.projects.directory.working}/exo-jboss/bin/run.sh" tofile="${exo.projects.directory.working}/exo-jboss/bin/run-${exo.deploy.profile}.sh" />
                </tasks>
