@@ -190,6 +190,10 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
     */
    protected final void doCommit(Map commitUserData)
    {
+      if (!hasChanges)
+      {
+         return;
+      }
       throw new UnsupportedOperationException("IndexReader is read-only");
    }
 

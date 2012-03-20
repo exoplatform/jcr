@@ -62,7 +62,8 @@ public final class SingletonTokenStream extends TokenStream implements Externali
     */
    public SingletonTokenStream()
    {
-
+      termAttribute = addAttribute(TermAttribute.class);
+      payloadAttribute = addAttribute(PayloadAttribute.class);
    }
 
    /**
@@ -77,8 +78,8 @@ public final class SingletonTokenStream extends TokenStream implements Externali
    {
       this.value = value;
       this.payload = payload;
-      termAttribute = (TermAttribute)addAttribute(TermAttribute.class);
-      payloadAttribute = (PayloadAttribute)addAttribute(PayloadAttribute.class);
+      termAttribute = addAttribute(TermAttribute.class);
+      payloadAttribute = addAttribute(PayloadAttribute.class);
    }
 
    /**
@@ -93,17 +94,6 @@ public final class SingletonTokenStream extends TokenStream implements Externali
    public SingletonTokenStream(String value, int type)
    {
       this(value, new Payload(new PropertyMetaData(type).toByteArray()));
-   }
-
-   /**
-    * Creates a new SingleTokenStream with the given token.
-    *
-    * @param t the token.
-    */
-   @Deprecated
-   public SingletonTokenStream(Token t)
-   {
-      this(t.term(), t.getPayload());
    }
 
    @Override
@@ -136,8 +126,6 @@ public final class SingletonTokenStream extends TokenStream implements Externali
    public void close() throws IOException
    {
       consumed = true;
-      value = null;
-      payload = null;
       payloadAttribute = null;
       termAttribute = null;
    }

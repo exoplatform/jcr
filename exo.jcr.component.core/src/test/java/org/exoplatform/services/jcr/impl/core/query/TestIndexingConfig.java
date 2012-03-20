@@ -101,9 +101,9 @@ public class TestIndexingConfig extends BaseQueryTest
       IndexingConfigurationImpl indexingConfigurationImpl = (IndexingConfigurationImpl)searchIndex.getIndexingConfig();
       assertNotNull(indexingConfigurationImpl);
 
-      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer());
-      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer());
-      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + stop, new StopAnalyzer(Version.LUCENE_24));
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer(Version.LUCENE_30));
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer(Version.LUCENE_30));
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + stop, new StopAnalyzer(Version.LUCENE_30));
       testRoot = testSession.getRootNode().addNode("testrootAnalyzers");
       root.save();
    }

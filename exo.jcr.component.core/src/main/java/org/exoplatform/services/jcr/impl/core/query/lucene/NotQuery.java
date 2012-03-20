@@ -220,7 +220,7 @@ class NotQuery extends Query
          if (docNo == -1)
          {
             // get first doc of context scorer
-            int docId = contextScorer.nextDoc();
+            int docId = contextScorer == null ? NO_MORE_DOCS : contextScorer.nextDoc();
             if (docId != NO_MORE_DOCS)
             {
                contextNo = docId;
@@ -237,7 +237,7 @@ class NotQuery extends Query
          while (contextNo != -1 && contextNo == docNo)
          {
             docNo++;
-            int docId = contextScorer.nextDoc();
+            int docId = contextScorer == null ? NO_MORE_DOCS : contextScorer.nextDoc();
             contextNo = docId == NO_MORE_DOCS ? -1 : docId;
          }
          if (docNo >= reader.maxDoc())

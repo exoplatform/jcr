@@ -48,7 +48,7 @@ public class JcrQueryParser extends QueryParser
     */
    public JcrQueryParser(String fieldName, Analyzer analyzer, SynonymProvider synonymProvider)
    {
-      super(Version.LUCENE_24, fieldName, analyzer);
+      super(Version.LUCENE_30, fieldName, analyzer);
       this.synonymProvider = synonymProvider;
       setAllowLeadingWildcard(true);
       setDefaultOperator(Operator.AND);
@@ -155,7 +155,7 @@ public class JcrQueryParser extends QueryParser
       }
       else
       {
-         return super.getFieldQuery(field, queryText);
+         return super.getFieldQuery(field, queryText, true);
       }
    }
 

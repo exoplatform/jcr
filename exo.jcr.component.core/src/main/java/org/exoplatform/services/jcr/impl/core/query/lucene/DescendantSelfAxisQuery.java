@@ -542,7 +542,18 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
          }
 
          collectContextHits();
-         currentDoc = subScorer.nextDoc();
+         try
+         {
+            currentDoc = subScorer.nextDoc();
+         }
+         catch (UnsupportedOperationException e)
+         {
+            // workaround. Consider getting rid of it
+            ScorerWrapper collector = new ScorerWrapper(subScorer.getSimilarity());
+            subScorer.score(collector.getCollector());
+            subScorer = collector;
+            currentDoc = subScorer.nextDoc();
+         }
          if (contextHits.isEmpty())
          {
             currentDoc = NO_MORE_DOCS;

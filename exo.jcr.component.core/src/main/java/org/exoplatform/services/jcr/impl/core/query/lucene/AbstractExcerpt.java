@@ -17,8 +17,8 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
@@ -268,9 +268,9 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
       {
          while (ts.incrementToken())
          {
-            OffsetAttribute offset = (OffsetAttribute)ts.getAttribute(OffsetAttribute.class);
-            TermAttribute term = (TermAttribute)ts.getAttribute(TermAttribute.class);
-            String termText = term.term();
+            OffsetAttribute offset = ts.getAttribute(OffsetAttribute.class);
+            CharTermAttribute term = ts.getAttribute(CharTermAttribute.class);
+            String termText = new String(term.buffer(), 0, term.length());
             TermVectorOffsetInfo[] info = termMap.get(termText);
             if (info == null)
             {

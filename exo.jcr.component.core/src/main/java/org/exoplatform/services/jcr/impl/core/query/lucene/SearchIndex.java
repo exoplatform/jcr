@@ -21,7 +21,6 @@ import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.collection.TransformedCollection;
 import org.apache.commons.collections.iterators.TransformIterator;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.document.Document;
@@ -1959,7 +1958,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                      {
                         // find the right fields to transfer
                         Fieldable[] fields = aDoc.getFieldables(FieldNames.PROPERTIES);
-                        Token t = new Token();
                         for (int k = 0; k < fields.length; k++)
                         {
                            Fieldable field = fields[k];
@@ -1967,12 +1965,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                            // SingleTokenStream
                            //t = field.tokenStreamValue().next(t);
                            field.tokenStreamValue().incrementToken();
-                           TermAttribute term =
-                              field.tokenStreamValue().getAttribute(TermAttribute.class);
-                           PayloadAttribute payload =
-                              field.tokenStreamValue().getAttribute(PayloadAttribute.class);
+                           TermAttribute term = field.tokenStreamValue().getAttribute(TermAttribute.class);
+                           PayloadAttribute payload = field.tokenStreamValue().getAttribute(PayloadAttribute.class);
 
-                           String value = new String(t.termBuffer(), 0, t.termLength());
+                           String value = new String(term.termBuffer(), 0, term.termLength());
+
                            if (value.startsWith(namePrefix))
                            {
                               // extract value
@@ -1981,7 +1978,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                               QPath p = getRelativePath(state, propState);
                               String path = getNamespaceMappings().translatePath(p);
                               value = FieldNames.createNamedValue(path, value);
-                              t.setTermBuffer(value);
+
+                              term.setTermBuffer(value);
                               doc.add(new Field(field.name(), new SingletonTokenStream(term.term(), payload
                                  .getPayload())));
                               doc.add(new Field(FieldNames.AGGREGATED_NODE_UUID, parent.getIdentifier(),
@@ -2026,30 +2024,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *             if an error occurs while reading item states.
     */
    protected QPath getRelativePath(NodeData nodeState, PropertyData propState) throws RepositoryException
-
    {
-
-      QPath nodePath = nodeState.getQPath();
-      QPath propPath = propState.getQPath();
       throw new RepositoryException();
-      // Path p = nodePath.computeRelativePath(propPath);
-      // // make sure it does not contain indexes
-      // boolean clean = true;
-      // Path.Element[] elements = p.getElements();
-      // for (int i = 0; i < elements.length; i++)
-      // {
-      // if (elements[i].getIndex() != 0)
-      // {
-      // elements[i] = PATH_FACTORY.createElement(elements[i].getName());
-      // clean = false;
-      // }
-      // }
-      // if (!clean)
-      // {
-      // p = PATH_FACTORY.create(elements);
-      // }
-
-      // return p;
    }
 
    /**
@@ -2101,7 +2077,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *            value=NodeState.
     */
    protected void retrieveAggregateRoot(final Set<String> removedNodeIds, final Map<String, NodeData> map)
-
    {
       if (indexingConfig != null)
       {

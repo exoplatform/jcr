@@ -20,9 +20,12 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.LogMergePolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,9 +56,6 @@ abstract class AbstractIndex
 
    /** PrintStream that pipes all calls to println(String) into log.info() */
    private static final LoggingPrintStream STREAM_LOGGER = new LoggingPrintStream();
-
-   /** Executor with a pool size equal to the number of available processors */
-   private static final DynamicPooledExecutor EXECUTOR = new DynamicPooledExecutor();
 
    /** The currently set IndexWriter or <code>null</code> if none is set */
    private IndexWriter indexWriter;
@@ -124,7 +124,8 @@ abstract class AbstractIndex
 
       if (!isExisting)
       {
-         indexWriter = new IndexWriter(directory, analyzer, IndexWriter.MaxFieldLength.LIMITED);
+         IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_30, analyzer);
+         indexWriter = new IndexWriter(directory, config);
          // immediately close, now that index has been created
          indexWriter.close();
          indexWriter = null;
@@ -231,7 +232,7 @@ abstract class AbstractIndex
          log.debug("closing IndexWriter.");
          indexWriter = null;
       }
-
+      
       if (indexReader == null || !indexReader.isCurrent())
       {
          IndexReader reader = IndexReader.open(getDirectory(), null, false, termInfosIndexDivisor);
@@ -335,9 +336,17 @@ abstract class AbstractIndex
       }
       if (indexWriter == null)
       {
-         indexWriter = new IndexWriter(getDirectory(), analyzer, new IndexWriter.MaxFieldLength(maxFieldLength));
-         indexWriter.setSimilarity(similarity);
-         indexWriter.setUseCompoundFile(useCompoundFile);
+         IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_30, analyzer);
+         config.setSimilarity(similarity);
+         if (config.getMergePolicy() instanceof LogMergePolicy)
+         {
+            ((LogMergePolicy)config.getMergePolicy()).setUseCompoundFile(useCompoundFile);
+         }
+         else
+         {
+            log.error("Can't set \"UseCompoundFile\". Merge policy is not an instance of LogMergePolicy. ");
+         }
+         indexWriter = new IndexWriter(directory, config);
          indexWriter.setInfoStream(STREAM_LOGGER);
       }
       return indexWriter;
@@ -501,7 +510,15 @@ abstract class AbstractIndex
       useCompoundFile = b;
       if (indexWriter != null)
       {
-         indexWriter.setUseCompoundFile(b);
+         IndexWriterConfig config = indexWriter.getConfig();
+         if (config.getMergePolicy() instanceof LogMergePolicy)
+         {
+            ((LogMergePolicy)config.getMergePolicy()).setUseCompoundFile(useCompoundFile);
+         }
+         else
+         {
+            log.error("Can't set \"UseCompoundFile\". Merge policy is not an instance of LogMergePolicy. ");
+         }
       }
    }
 
@@ -513,7 +530,7 @@ abstract class AbstractIndex
       this.maxFieldLength = maxFieldLength;
       if (indexWriter != null)
       {
-         indexWriter.setMaxFieldLength(maxFieldLength);
+         indexWriter.setMaxFieldLength(this.maxFieldLength);
       }
    }
 

@@ -91,7 +91,7 @@ class PersistentIndex extends AbstractIndex
    void addIndexes(IndexReader[] readers) throws IOException
    {
       getIndexWriter().addIndexes(readers);
-      getIndexWriter().optimize();
+      getIndexWriter().maybeMerge();
    }
 
    /**

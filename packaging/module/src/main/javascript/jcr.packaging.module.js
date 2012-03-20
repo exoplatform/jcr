@@ -26,9 +26,10 @@ function getModule(params) {
     addDependency(new Project("jboss.jbossts","jbossjts","jar","4.6.1.GA")).
     addDependency(new Project("jboss.jbossts","jbossts-common","jar","4.6.1.GA")).
     addDependency(new Project("org.apache.ws.commons","ws-commons-util","jar","1.0.1")).
-    addDependency(new Project("org.apache.lucene", "lucene-core", "jar", "2.9.4")).
-    addDependency(new Project("org.apache.lucene", "lucene-spellchecker", "jar", "2.9.4")).
-    addDependency(new Project("org.apache.lucene", "lucene-memory", "jar", "2.9.4"));
+    addDependency(new Project("org.apache.lucene", "lucene-core", "jar", "3.5.0")).
+    addDependency(new Project("org.apache.lucene", "lucene-spellchecker", "jar", "3.5.0")).
+    addDependency(new Project("org.apache.lucene", "lucene-wordnet", "jar", "3.3.0")).
+    addDependency(new Project("org.apache.lucene", "lucene-memory", "jar", "3.5.0"));
 
   module.frameworks = {}
   module.frameworks.web = 

@@ -17,15 +17,19 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene.spell;
 
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.spell.Dictionary;
 import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
+import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.Version;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
@@ -362,23 +366,23 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       private void tokenize(String statement, List<String> words, List<TokenData> tokens) throws IOException
       {
          TokenStream ts = handler.getTextAnalyzer().tokenStream(FieldNames.FULLTEXT, new StringReader(statement));
-         TermAttribute term = (TermAttribute)ts.getAttribute(TermAttribute.class);
-         PositionIncrementAttribute positionIncrement =
-            (PositionIncrementAttribute)ts.getAttribute(PositionIncrementAttribute.class);
-         OffsetAttribute offset = (OffsetAttribute)ts.getAttribute(OffsetAttribute.class);
+         CharTermAttribute term = ts.getAttribute(CharTermAttribute.class);
+         PositionIncrementAttribute positionIncrement = ts.getAttribute(PositionIncrementAttribute.class);
+         OffsetAttribute offset = ts.getAttribute(OffsetAttribute.class);
          try
          {
+            String word;
             while (ts.incrementToken())
             {
 
-               String word = term.term();
+               word = new String(term.buffer(), 0, term.length());
                //            while ((t = ts.next()) != null)
                //            {
                String origWord = statement.substring(offset.startOffset(), offset.endOffset());
                if (positionIncrement.getPositionIncrement() > 0)
                {
                   words.add(word);
-                  tokens.add(new TokenData(offset.startOffset(), offset.endOffset(), term.term()));
+                  tokens.add(new TokenData(offset.startOffset(), offset.endOffset(), word));
                }
                else
                {
@@ -389,8 +393,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   {
                      // replace current token and word
                      words.set(words.size() - 1, word);
-                     tokens
-                        .set(tokens.size() - 1, new TokenData(offset.startOffset(), offset.endOffset(), term.term()));
+                     tokens.set(tokens.size() - 1, new TokenData(offset.startOffset(), offset.endOffset(), word));
                   }
                }
             }
@@ -459,8 +462,9 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                         {
                            public String[] run() throws Exception
                            {
-                              return spellChecker.suggestSimilar(words[currentIndex], 5, reader, FieldNames.FULLTEXT,
-                                 morePopular);
+                              return spellChecker
+                                 .suggestSimilar(words[currentIndex], 5, reader, FieldNames.FULLTEXT, morePopular
+                                    ? SuggestMode.SUGGEST_MORE_POPULAR : SuggestMode.SUGGEST_WHEN_NOT_IN_INDEX);
                            }
                         });
 
@@ -548,7 +552,8 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                                     long time = System.currentTimeMillis();
                                     Dictionary dict = new LuceneDictionary(reader, FieldNames.FULLTEXT);
                                     LOG.debug("Starting spell checker index refresh");
-                                    spellChecker.indexDictionary(dict);
+                                    spellChecker.indexDictionary(dict, new IndexWriterConfig(Version.LUCENE_30,
+                                       new StandardAnalyzer(Version.LUCENE_30)), true);
                                     time = System.currentTimeMillis() - time;
                                     time = time / 1000;
                                     LOG.info("Spell checker index refreshed in: " + new Long(time) + " s.");

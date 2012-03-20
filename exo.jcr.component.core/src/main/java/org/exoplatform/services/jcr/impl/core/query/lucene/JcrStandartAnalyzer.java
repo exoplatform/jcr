@@ -36,7 +36,7 @@ import java.util.Collections;
  * index the text of the property and to parse searchtext for this property.
  */
 
-public class JcrStandartAnalyzer extends Analyzer
+public final class JcrStandartAnalyzer extends Analyzer
 {
 
    /**
@@ -47,7 +47,7 @@ public class JcrStandartAnalyzer extends Analyzer
    {
       public Analyzer run()
       {
-         return new StandardAnalyzer(Version.LUCENE_24, Collections.EMPTY_SET);
+         return new StandardAnalyzer(Version.LUCENE_30, Collections.EMPTY_SET);
       }
    });
 

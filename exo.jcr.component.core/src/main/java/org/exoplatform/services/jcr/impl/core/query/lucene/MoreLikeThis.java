@@ -19,7 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -153,7 +153,7 @@ public final class MoreLikeThis
     * Default analyzer to parse source doc with.
     * @see #getAnalyzer
     */
-   public static final Analyzer DEFAULT_ANALYZER = new StandardAnalyzer(Version.LUCENE_24);
+   public static final Analyzer DEFAULT_ANALYZER = new StandardAnalyzer(Version.LUCENE_30);
 
    /**
     * Ignore terms with less than this frequency in the source doc.
@@ -203,12 +203,12 @@ public final class MoreLikeThis
     * @see #setStopWords
     * @see #getStopWords
     */
-   public static final Set DEFAULT_STOP_WORDS = null;
+   public static final Set<String> DEFAULT_STOP_WORDS = null;
 
    /**
     * Current set of stop words.
     */
-   private Set stopWords = DEFAULT_STOP_WORDS;
+   private Set<String> stopWords = DEFAULT_STOP_WORDS;
 
    /**
     * Return a Query with no more than this many terms.
@@ -466,7 +466,7 @@ public final class MoreLikeThis
     * @see org.apache.lucene.analysis.StopFilter#makeStopSet StopFilter.makeStopSet()
     * @see #getStopWords
     */
-   public void setStopWords(Set stopWords)
+   public void setStopWords(Set<String> stopWords)
    {
       this.stopWords = stopWords;
    }
@@ -475,7 +475,7 @@ public final class MoreLikeThis
     * Get the current stop words being used.
     * @see #setStopWords
     */
-   public Set getStopWords()
+   public Set<String> getStopWords()
    {
       return stopWords;
    }
@@ -530,8 +530,8 @@ public final class MoreLikeThis
       if (fieldNames == null)
       {
          // gather list of valid fields from lucene
-         Collection fields = ir.getFieldNames(IndexReader.FieldOption.INDEXED);
-         fieldNames = (String[])fields.toArray(new String[fields.size()]);
+         Collection<String> fields = ir.getFieldNames(IndexReader.FieldOption.INDEXED);
+         fieldNames = fields.toArray(new String[fields.size()]);
       }
 
       return createQuery(retrieveTerms(docNum));
@@ -547,8 +547,8 @@ public final class MoreLikeThis
       if (fieldNames == null)
       {
          // gather list of valid fields from lucene
-         Collection fields = ir.getFieldNames(IndexReader.FieldOption.INDEXED);
-         fieldNames = (String[])fields.toArray(new String[fields.size()]);
+         Collection<String> fields = ir.getFieldNames(IndexReader.FieldOption.INDEXED);
+         fieldNames = fields.toArray(new String[fields.size()]);
       }
 
       return like(new FileReader(f));
@@ -585,9 +585,9 @@ public final class MoreLikeThis
    }
 
    /**
-    * Create the More like query from a PriorityQueue
+    * Create the More like query from a PriorityQueue<Object[]>
     */
-   private Query createQuery(PriorityQueue q)
+   private Query createQuery(PriorityQueue<Object[]> q)
    {
       BooleanQuery query = new BooleanQuery();
       Object cur;
@@ -630,22 +630,22 @@ public final class MoreLikeThis
    }
 
    /**
-    * Create a PriorityQueue from a word->tf map.
+    * Create a PriorityQueue<Object[]> from a word->tf map.
     *
     * @param words a map of words keyed on the word(String) with Int objects as the values.
     */
-   private PriorityQueue createQueue(Map words) throws IOException
+   private PriorityQueue<Object[]> createQueue(Map<String, Int> words) throws IOException
    {
       // have collected all words in doc and their freqs
       int numDocs = ir.numDocs();
       FreqQ res = new FreqQ(words.size()); // will order words by score
 
-      Iterator it = words.keySet().iterator();
+      Iterator<String> it = words.keySet().iterator();
       while (it.hasNext())
       { // for every word
-         String word = (String)it.next();
+         String word = it.next();
 
-         int tf = ((Int)words.get(word)).x; // term freq in the source doc
+         int tf = words.get(word).x; // term freq in the source doc
          if (minTermFreq > 0 && tf < minTermFreq)
          {
             continue; // filter out words that don't occur enough times in the source
@@ -714,9 +714,9 @@ public final class MoreLikeThis
     *
     * @param docNum the id of the lucene document from which to find terms
     */
-   public PriorityQueue retrieveTerms(int docNum) throws IOException
+   public PriorityQueue<Object[]> retrieveTerms(int docNum) throws IOException
    {
-      Map termFreqMap = new HashMap();
+      Map<String, Int> termFreqMap = new HashMap<String, Int>();
       for (int i = 0; i < fieldNames.length; i++)
       {
          String fieldName = fieldNames[i];
@@ -750,7 +750,7 @@ public final class MoreLikeThis
     * @param termFreqMap a Map of terms and their frequencies
     * @param vector List of terms and their frequencies for a doc/field
     */
-   private void addTermFrequencies(Map termFreqMap, TermFreqVector vector)
+   private void addTermFrequencies(Map<String, Int> termFreqMap, TermFreqVector vector)
    {
       String[] terms = vector.getTerms();
       int[] freqs = vector.getTermFrequencies();
@@ -763,7 +763,7 @@ public final class MoreLikeThis
             continue;
          }
          // increment frequency
-         Int cnt = (Int)termFreqMap.get(term);
+         Int cnt = termFreqMap.get(term);
          if (cnt == null)
          {
             cnt = new Int();
@@ -790,8 +790,8 @@ public final class MoreLikeThis
       // for every token
       while (ts.incrementToken())
       {
-         TermAttribute term = (TermAttribute)ts.getAttribute(TermAttribute.class);
-         String word = term.term();
+         CharTermAttribute term = ts.getAttribute(CharTermAttribute.class);
+         String word = new String(term.buffer(), 0, term.length());
          tokenCount++;
          if (tokenCount > maxNumTokensParsed)
          {
@@ -862,9 +862,9 @@ public final class MoreLikeThis
     *
     * @see #retrieveInterestingTerms
     */
-   public PriorityQueue retrieveTerms(Reader r) throws IOException
+   public PriorityQueue<Object[]> retrieveTerms(Reader r) throws IOException
    {
-      Map words = new HashMap();
+      Map<String, Int> words = new HashMap<String, Int>();
       for (int i = 0; i < fieldNames.length; i++)
       {
          String fieldName = fieldNames[i];
@@ -878,8 +878,8 @@ public final class MoreLikeThis
     */
    public String[] retrieveInterestingTerms(int docNum) throws IOException
    {
-      ArrayList al = new ArrayList(maxQueryTerms);
-      PriorityQueue pq = retrieveTerms(docNum);
+      ArrayList<Object> al = new ArrayList<Object>(maxQueryTerms);
+      PriorityQueue<Object[]> pq = retrieveTerms(docNum);
       Object cur;
       // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
       int lim = maxQueryTerms;
@@ -890,7 +890,7 @@ public final class MoreLikeThis
          al.add(ar[0]); // the 1st entry is the interesting word
       }
       String[] res = new String[al.size()];
-      return (String[])al.toArray(res);
+      return al.toArray(res);
    }
 
    /**
@@ -904,8 +904,8 @@ public final class MoreLikeThis
     */
    public String[] retrieveInterestingTerms(Reader r) throws IOException
    {
-      ArrayList al = new ArrayList(maxQueryTerms);
-      PriorityQueue pq = retrieveTerms(r);
+      ArrayList<Object> al = new ArrayList<Object>(maxQueryTerms);
+      PriorityQueue<Object[]> pq = retrieveTerms(r);
       Object cur;
       // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
       int lim = maxQueryTerms;
@@ -916,25 +916,23 @@ public final class MoreLikeThis
          al.add(ar[0]); // the 1st entry is the interesting word
       }
       String[] res = new String[al.size()];
-      return (String[])al.toArray(res);
+      return al.toArray(res);
    }
 
    /**
-    * PriorityQueue that orders words by score.
+    * PriorityQueue<Object[]> that orders words by score.
     */
-   private static class FreqQ extends PriorityQueue
+   private static class FreqQ extends PriorityQueue<Object[]>
    {
       FreqQ(int s)
       {
          initialize(s);
       }
 
-      protected boolean lessThan(Object a, Object b)
+      protected boolean lessThan(Object[] a, Object[] b)
       {
-         Object[] aa = (Object[])a;
-         Object[] bb = (Object[])b;
-         Float fa = (Float)aa[2];
-         Float fb = (Float)bb[2];
+         Float fa = (Float)a[2];
+         Float fb = (Float)b[2];
          return fa.floatValue() > fb.floatValue();
       }
    }
