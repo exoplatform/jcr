@@ -30,7 +30,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
-                     <property name="multi-db" value="true" />
+                     <property name="db-structure-type" value="isolated" />
                   </properties>
                </container>
                <cache enabled="true">

@@ -121,12 +121,12 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
       Calendar calendar = Calendar.getInstance();
 
-      job.init(repositoryService.getRepository("db7"), "ws1", config, calendar);
+      job.init(repositoryService.getRepository("db3"), "ws1", config, calendar);
       job.run();
 
       URL url = job.getStorageURL();
 
-      for (WorkspaceEntry workspaceEntry : repositoryService.getRepository("db7").getConfiguration()
+      for (WorkspaceEntry workspaceEntry : repositoryService.getRepository("db3").getConfiguration()
          .getWorkspaceEntries())
       {
          if (workspaceEntry.getName().equals("ws1"))

@@ -24,7 +24,7 @@
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws" />
                   </properties>
@@ -90,9 +90,9 @@
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr1" />
+                     <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1" />
                   </properties>
@@ -147,7 +147,7 @@
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
-                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr1" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
@@ -156,9 +156,9 @@
             <workspace name="ws2" lazy-read-threshold="1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr2" />
+                     <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws2" />
                   </properties>
@@ -213,7 +213,7 @@
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
-                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr2" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
@@ -223,9 +223,9 @@
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr3" />
+                     <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws3" />
                   </properties>
@@ -303,7 +303,7 @@
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
-                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr3" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
@@ -324,7 +324,7 @@
                   <properties>
                      <property name="source-name" value="jdbcjcrdb2" />
                      <property name="dialect" value="auto" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/wsdb2" />
                   </properties>
@@ -387,9 +387,9 @@
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr1db2" />
+                     <property name="source-name" value="jdbcjcrdb2" />
                      <property name="dialect" value="auto" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1db2" />
                   </properties>
@@ -442,7 +442,7 @@
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
-                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr1db2" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
@@ -463,7 +463,7 @@
                   <properties>
                      <property name="source-name" value="jdbcjcrtck" />
                      <property name="dialect" value="auto" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/wstck" />
                   </properties>
@@ -535,9 +535,9 @@
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr1tck" />
+                     <property name="source-name" value="jdbcjcrtck" />
                      <property name="dialect" value="auto" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1tck" />
                   </properties>
@@ -599,7 +599,7 @@
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
-                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr1tck" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
@@ -608,9 +608,9 @@
             <workspace name="ws2">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr2tck" />
+                     <property name="source-name" value="jdbcjcrtck" />
                      <property name="dialect" value="auto" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws2tck" />
                   </properties>
@@ -675,7 +675,7 @@
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
-                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr2tck" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>

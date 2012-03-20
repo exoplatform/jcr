@@ -23,7 +23,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws" />
                      <property name="dialect" value="auto" />
@@ -92,8 +92,8 @@
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr1" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1" />
                      <property name="dialect" value="auto" />
@@ -167,8 +167,8 @@
             <workspace name="ws2" lazy-read-threshold="1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr2" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws2" />
                      <property name="dialect" value="auto" />
@@ -243,8 +243,8 @@
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr3" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws3" />
                      <property name="dialect" value="auto" />
@@ -345,7 +345,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcrdb2" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/wsdb2" />
                      <property name="dialect" value="auto" />
@@ -404,7 +404,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -413,8 +413,8 @@
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr1db2" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="source-name" value="jdbcjcrdb2" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1db2" />
                      <property name="dialect" value="auto" />
@@ -474,7 +474,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -494,7 +494,7 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcrtck" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/wstck" />
                      <property name="dialect" value="auto" />
@@ -566,7 +566,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -575,8 +575,8 @@
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr1tck" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="source-name" value="jdbcjcrtck" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1tck" />
                      <property name="dialect" value="auto" />
@@ -646,7 +646,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -655,8 +655,8 @@
             <workspace name="ws2">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr2tck" />
-                     <property name="db-structure-type" value="multi" />
+                     <property name="source-name" value="jdbcjcktck" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws2tck" />
                      <property name="dialect" value="auto" />
@@ -729,7 +729,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>

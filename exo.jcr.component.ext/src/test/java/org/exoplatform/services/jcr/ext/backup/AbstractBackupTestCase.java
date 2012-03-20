@@ -40,9 +40,13 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
+import org.exoplatform.services.rest.ContainerResponseWriter;
+import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.tools.ByteArrayContainerResponseWriter;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -52,12 +56,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Map;
 
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.ValueFormatException;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
@@ -250,120 +254,6 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       list.add(valueStorageEntry);
       ce.setValueStorages(list);
 
-
-      ws1back.setContainer(ce);
-
-      return ws1back;
-   }
-
-   protected RepositoryEntry makeRepositoryEntry(String repoName, RepositoryEntry baseRepoEntry, String sourceName,
-            Map<String, String> workspaceMapping)
-   {
-      ArrayList<WorkspaceEntry> wsEntries = new ArrayList<WorkspaceEntry>();
-
-      for (WorkspaceEntry wsEntry : baseRepoEntry.getWorkspaceEntries())
-      {
-         String newWorkspaceName = wsEntry.getName();
-         if (workspaceMapping != null)
-         {
-            newWorkspaceName = workspaceMapping.get(wsEntry.getName());
-         }
-
-         WorkspaceEntry newWSEntry =
-            makeWorkspaceEntry(wsEntry, newWorkspaceName, repoName, sourceName);
-
-         wsEntries.add(newWSEntry);
-      }
-
-      RepositoryEntry newRepositoryEntry = new RepositoryEntry();
-
-      newRepositoryEntry.setSystemWorkspaceName(workspaceMapping == null ? baseRepoEntry.getSystemWorkspaceName()
-               : workspaceMapping.get(baseRepoEntry.getSystemWorkspaceName()));
-      newRepositoryEntry.setAccessControl(baseRepoEntry.getAccessControl());
-      newRepositoryEntry.setAuthenticationPolicy(baseRepoEntry.getAuthenticationPolicy());
-      newRepositoryEntry.setDefaultWorkspaceName(workspaceMapping == null ? baseRepoEntry.getDefaultWorkspaceName()
-               : workspaceMapping.get(baseRepoEntry.getDefaultWorkspaceName()));
-      newRepositoryEntry.setName(repoName);
-      newRepositoryEntry.setSecurityDomain(baseRepoEntry.getSecurityDomain());
-      newRepositoryEntry.setSessionTimeOut(baseRepoEntry.getSessionTimeOut());
-
-      newRepositoryEntry.setWorkspaceEntries(wsEntries);
-
-      return newRepositoryEntry;
-   }
-
-   protected WorkspaceEntry makeWorkspaceEntry(WorkspaceEntry baseWorkspaceEntry, String wsName, String repoName,
-            String sourceName)
-   {
-      WorkspaceEntry ws1back = new WorkspaceEntry();
-      ws1back.setName(wsName);
-      ws1back.setUniqueName(repoName + "_" + ws1back.getName());
-
-      ws1back.setAccessManager(baseWorkspaceEntry.getAccessManager());
-      ws1back.setCache(baseWorkspaceEntry.getCache());
-      ws1back.setLockManager(baseWorkspaceEntry.getLockManager());
-      ws1back.setInitializer(baseWorkspaceEntry.getInitializer());
-
-      // Indexer
-      if (sourceName != null)
-      {
-         ArrayList qParams = new ArrayList();
-         qParams.add(new SimpleParameterEntry(QueryHandlerParams.PARAM_INDEX_DIR, "target" + File.separator + repoName
-                  + "_" + wsName));
-         QueryHandlerEntry qEntry =
-                  new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
-
-         ws1back.setQueryHandler(qEntry);
-      }
-      else
-      {
-         ws1back.setQueryHandler(baseWorkspaceEntry.getQueryHandler());
-      }
-
-      ArrayList params = new ArrayList();
-      for (Iterator i = baseWorkspaceEntry.getContainer().getParameters().iterator(); i.hasNext();)
-      {
-         SimpleParameterEntry p = (SimpleParameterEntry) i.next();
-         SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
-
-         if (newp.getName().equals("source-name"))
-         {
-            if (sourceName != null)
-            {
-               newp.setValue(sourceName);
-            }
-         }
-         else if (newp.getName().equals("swap-directory"))
-            newp.setValue("target/temp/swap/" + repoName + "_" + wsName);
-         else if (newp.getName().equals("multi-db"))
-            newp.setValue("false");
-
-         params.add(newp);
-      }
-
-      ContainerEntry ce =
-               new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
-      
-      ArrayList list = new ArrayList();
-      
-      // value storage
-      ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
-      ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
-      filterEntry.setPropertyType("Binary");
-      vsparams.add(filterEntry);
-
-      ValueStorageEntry valueStorageEntry =
-         new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage", vsparams);
-      ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
-      spe.add(new SimpleParameterEntry("path", "target/temp/swap/" + repoName + "_" + wsName + "_"
-         + System.currentTimeMillis()));
-      valueStorageEntry.setId("draft");
-      valueStorageEntry.setParameters(spe);
-      valueStorageEntry.setFilters(vsparams);
-
-      // containerEntry.setValueStorages();
-      list.add(valueStorageEntry);
-      ce.setValueStorages(list);
 
       ws1back.setContainer(ce);
 
@@ -720,6 +610,50 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       {
          in.close();
       }
+   }
+
+   protected RepoInfo createRepositoryAndGetSession() throws Exception
+   {
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
+      helper.addWorkspace(repository, wsEntry);
+
+      RepoInfo rInfo = new RepoInfo();
+      rInfo.rName = repository.getConfiguration().getName();
+      rInfo.wsName = wsEntry.getName();
+      rInfo.sysWsName = repository.getConfiguration().getSystemWorkspaceName();
+      rInfo.session = repositoryService.getRepository(rInfo.rName).login(credentials, rInfo.wsName);
+
+      return rInfo;
+   }
+
+   /**
+    * Class for tests purpose only. To have ability to access to {@link ContainerResponseWriter}.
+    */
+   protected class TesterContainerResponce extends ContainerResponse
+   {
+
+      public ByteArrayContainerResponseWriter responseWriter;
+
+      public TesterContainerResponce(ByteArrayContainerResponseWriter responseWriter)
+      {
+         super(responseWriter);
+         this.responseWriter = responseWriter;
+      }
+   }
+
+   /**
+    * Aggregate info about newly created repository.
+    */
+   protected class RepoInfo
+   {
+      public String rName;
+
+      public String wsName;
+
+      public String sysWsName;
+
+      public Session session;
    }
 
 }

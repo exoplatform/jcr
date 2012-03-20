@@ -25,12 +25,13 @@ import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
-import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.backup.AbstractBackupTestCase;
 import org.exoplatform.services.jcr.ext.backup.ContainerRequestUserRole;
+import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.rest.RequestHandler;
 import org.exoplatform.services.rest.impl.ContainerResponse;
@@ -68,7 +69,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: RestRepositoryServiceTest.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class RestRepositoryServiceTest extends BaseStandaloneTest
+public class RestRepositoryServiceTest extends AbstractBackupTestCase
 {
    private String REST_REPOSITORY_SERVICE_PATH = RestRepositoryService.Constants.BASE_URL;
 
@@ -179,25 +180,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
    public void testCreateRepository() throws Exception
    {
-      String wsName = "ws_over_rest_1";
-      String rName = "repo_over_rest";
-
-      RepositoryEntry rDefault =
-         repositoryService.getConfig().getRepositoryConfiguration(
-            repositoryService.getConfig().getDefaultRepositoryName());
-
-      RepositoryEntry rEntry = new RepositoryEntry();
-
-      rEntry.setName(rName);
-      rEntry.setSessionTimeOut(3600000);
-      rEntry.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
-      rEntry.setSecurityDomain("exo-domain");
-      rEntry.setSystemWorkspaceName(wsName);
-      rEntry.setDefaultWorkspaceName(wsName);
-
-      WorkspaceEntry wEntry =
-         makeWorkspaceEntry(rDefault.getWorkspaceEntries().get(0), rName, wsName, "jdbcjcr_to_rest_repo_1", true);
-      rEntry.addWorkspace(wEntry);
+      RepositoryEntry rEntry = helper.createRepositoryEntry(DatabaseStructureType.MULTI, null, null);
 
       JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
       JsonValue json = generatorImpl.createJsonObject(rEntry);
@@ -219,7 +202,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       assertEquals(200, cres.getStatus());
 
       Session session =
-         repositoryService.getRepository(rName).login(new CredentialsImpl("root", "exo".toCharArray()), wsName);
+         repositoryService.getRepository(rEntry.getName()).login(new CredentialsImpl("root", "exo".toCharArray()));
       assertNotNull(session);
       assertNotNull(session.getRootNode());
       session.logout();
@@ -230,22 +213,11 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       String wsName = "ws_over:?//\\__rest!!_1";
       String rName = "repo:?//\\_over:_re??st";
 
-      RepositoryEntry rDefault =
-         repositoryService.getConfig().getRepositoryConfiguration(
-            repositoryService.getConfig().getDefaultRepositoryName());
-
-      RepositoryEntry rEntry = new RepositoryEntry();
-
+      RepositoryEntry rEntry = helper.createRepositoryEntry(DatabaseStructureType.MULTI, null, null);
       rEntry.setName(rName);
-      rEntry.setSessionTimeOut(3600000);
-      rEntry.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
-      rEntry.setSecurityDomain("exo-domain");
+      rEntry.getWorkspaceEntries().get(0).setName(wsName);
       rEntry.setSystemWorkspaceName(wsName);
       rEntry.setDefaultWorkspaceName(wsName);
-
-      WorkspaceEntry wEntry =
-         makeWorkspaceEntry(rDefault.getWorkspaceEntries().get(0), rName, wsName, "jdbcjcr_to_rest_repo_1", true);
-      rEntry.addWorkspace(wEntry);
 
       JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
       JsonValue json = generatorImpl.createJsonObject(rEntry);
@@ -257,8 +229,6 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
          new ContainerRequestUserRole("POST", new URI(REST_REPOSITORY_SERVICE_PATH
             + RestRepositoryService.Constants.OperationType.CREATE_REPOSITORY), new URI(""), new ByteArrayInputStream(
             json.toString().getBytes("UTF-8")), new InputHeadersMap(headers));
-
-      System.out.print("testCreateRepository  : " + json.toString());
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
       ContainerResponse cres = new ContainerResponse(responseWriter);
@@ -275,13 +245,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
    public void testCreateWorkspace() throws Exception
    {
-      String wsName = "ws_over_rest_2";
-      String rName = "repo_over_rest";
-
-      WorkspaceEntry wEntry =
-         makeWorkspaceEntry(repositoryService.getDefaultRepository().getConfiguration().getWorkspaceEntries().get(0),
-            rName, wsName, "jdbcjcr_to_rest_repo_2", true);
-      wEntry.setAccessManager(null);
+      WorkspaceEntry wEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
 
       JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
       JsonValue json = generatorImpl.createJsonObject(wEntry);
@@ -291,10 +255,8 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
       ContainerRequestUserRole creq =
          new ContainerRequestUserRole("POST", new URI(REST_REPOSITORY_SERVICE_PATH
-            + RestRepositoryService.Constants.OperationType.CREATE_WORKSPACE + "/" + rName), new URI(""),
+            + RestRepositoryService.Constants.OperationType.CREATE_WORKSPACE + "/db1"), new URI(""),
             new ByteArrayInputStream(json.toString().getBytes("UTF-8")), new InputHeadersMap(headers));
-
-      System.out.print("testCreateWorkspace  : " + json.toString());
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
       ContainerResponse cres = new ContainerResponse(responseWriter);
@@ -303,7 +265,8 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       assertEquals(200, cres.getStatus());
 
       Session session =
-         repositoryService.getRepository(rName).login(new CredentialsImpl("root", "exo".toCharArray()), wsName);
+         repositoryService.getRepository("db1").login(new CredentialsImpl("root", "exo".toCharArray()),
+            wEntry.getName());
       assertNotNull(session);
       assertNotNull(session.getRootNode());
 
@@ -312,19 +275,14 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
    public void testRemoveWorkspace() throws Exception
    {
-      String wsName = "ws_over_rest_2";
-      String rName = "repo_over_rest";
-      Session session =
-         repositoryService.getRepository(rName).login(new CredentialsImpl("root", "exo".toCharArray()), wsName);
-      assertNotNull(session);
-      assertNotNull(session.getRootNode());
+      RepoInfo rInfo = createRepositoryAndGetSession();
 
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
 
       ContainerRequestUserRole creq =
          new ContainerRequestUserRole("POST", new URI(REST_REPOSITORY_SERVICE_PATH
-            + RestRepositoryService.Constants.OperationType.REMOVE_WORKSPACE + "/" + rName + "/" + wsName + "/false/"),
-            new URI(""), null, new InputHeadersMap(headers));
+            + RestRepositoryService.Constants.OperationType.REMOVE_WORKSPACE + "/" + rInfo.rName + "/" + rInfo.wsName
+            + "/false/"), new URI(""), null, new InputHeadersMap(headers));
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
       ContainerResponse cres = new ContainerResponse(responseWriter);
@@ -335,7 +293,8 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       //remove with prepare close sessions
       creq =
          new ContainerRequestUserRole("POST", new URI(REST_REPOSITORY_SERVICE_PATH
-            + RestRepositoryService.Constants.OperationType.REMOVE_WORKSPACE + "/" + rName + "/" + wsName + "/true/"),
+            + RestRepositoryService.Constants.OperationType.REMOVE_WORKSPACE + "/" + rInfo.rName + "/" + rInfo.wsName
+            + "/true/"),
             new URI(""), null, new InputHeadersMap(headers));
 
       responseWriter = new ByteArrayContainerResponseWriter();
@@ -346,8 +305,9 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
       try
       {
-         repositoryService.getRepository(rName).login(new CredentialsImpl("root", "exo".toCharArray()), wsName);
-         fail("The workspace /" + rName + "/" + wsName + "should be removed. ");
+         repositoryService.getRepository(rInfo.rName).login(new CredentialsImpl("root", "exo".toCharArray()),
+            rInfo.wsName);
+         fail("The workspace /" + rInfo.rName + "/" + rInfo.wsName + "should be removed. ");
       }
       catch (NoSuchWorkspaceException e)
       {
@@ -476,5 +436,11 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
          return s;
       }
 
+   }
+
+   @Override
+   protected ExtendedBackupManager getBackupManager()
+   {
+      return null;
    }
 }

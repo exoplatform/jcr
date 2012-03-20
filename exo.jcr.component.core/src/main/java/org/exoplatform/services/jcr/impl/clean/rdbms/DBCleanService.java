@@ -65,7 +65,7 @@ public class DBCleanService
       SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       Connection jdbcConn = getConnection(wsEntry);
-      boolean autoCommit = DialectConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(resolveDialect(wsEntry));
+      boolean autoCommit = DialectConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(resolveDialect(jdbcConn, wsEntry));
 
       try
       {
@@ -115,7 +115,7 @@ public class DBCleanService
       else
       {
          Connection jdbcConn = getConnection(wsEntry);
-         boolean autoCommit = DialectConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(resolveDialect(wsEntry));
+         boolean autoCommit = DialectConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(resolveDialect(jdbcConn, wsEntry));
 
          try
          {
@@ -166,7 +166,7 @@ public class DBCleanService
             "It is not possible to create cleaner with common connection for multi database repository configuration");
       }
 
-      String dialect = resolveDialect(wsEntry);
+      String dialect = resolveDialect(jdbcConn, wsEntry);
       boolean autoCommit = dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE);
 
       DBCleaningScripts scripts = DBCleaningScriptsFactory.prepareScripts(dialect, rEntry);
@@ -189,7 +189,7 @@ public class DBCleanService
    {
       SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
-      String dialect = resolveDialect(wsEntry);
+      String dialect = resolveDialect(jdbcConn, wsEntry);
       boolean autoCommit = dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE);
       
       DBCleaningScripts scripts = DBCleaningScriptsFactory.prepareScripts(dialect, wsEntry);
@@ -307,7 +307,7 @@ public class DBCleanService
     * @return dialect
     * @throws DBCleanException
     */
-   private static String resolveDialect(WorkspaceEntry wsEntry) throws DBCleanException
+   private static String resolveDialect(Connection jdbcConn, WorkspaceEntry wsEntry) throws DBCleanException
    {
       String dialect =
          wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
@@ -316,7 +316,6 @@ public class DBCleanService
       {
          try
          {
-            Connection jdbcConn = getConnection(wsEntry);
             dialect = DialectDetecter.detect(jdbcConn.getMetaData());
          }
          catch (SQLException e)
